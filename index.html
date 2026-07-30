@@ -64,6 +64,18 @@
   }
   header button.toggle-btn:hover{ background:rgba(255,255,255,.18); }
 
+  header .mode-switcher{
+    display:flex; gap:2px; background:rgba(0,0,0,.22); border-radius:9px; padding:3px;
+    margin:0 auto;
+  }
+  header .mode-btn{
+    background:transparent; border:none; color:rgba(255,255,255,.75);
+    font-family:inherit; font-size:12.5px; font-weight:700; letter-spacing:.2px;
+    padding:7px 16px; border-radius:7px; cursor:pointer; transition:background .15s,color .15s;
+  }
+  header .mode-btn:hover{ color:#fff; }
+  header .mode-btn.active{ background:var(--gold); color:var(--navy-deep); }
+
   /* ---------- LAYOUT ---------- */
   .app-grid{
     display:grid;
@@ -235,7 +247,7 @@
 
   /* ---------- RESPONSIVE (iPad / narrow) ---------- */
   @media (max-width: 980px){
-    .app-grid{ grid-template-columns: 1fr; }
+    .app-grid, .app-grid.left-collapsed, .app-grid.right-collapsed, .app-grid.left-collapsed.right-collapsed{ grid-template-columns: 1fr; }
     aside{
       position:fixed; top:56px; bottom:0; width:82%; max-width:330px;
       z-index:1500; box-shadow:0 0 24px rgba(0,0,0,.25);
@@ -282,6 +294,57 @@
   .move-box-hint{ font-size:10px; color:var(--muted); line-height:1.4; }
   #move-done-btn{ padding:6px 10px; font-size:12px; }
 
+  /* ---------- MODOS: EDICIÓN / COA ---------- */
+  .mode-content{ display:none; flex-direction:column; gap:18px; }
+  body.mode-edicion #left-edicion-content,
+  body.mode-edicion #right-edicion-content{ display:flex; }
+  body.mode-coa #left-coa-content,
+  body.mode-coa #right-coa-content{ display:flex; }
+
+  body.mode-coa #draw-toolbar,
+  body.mode-coa #move-box{ display:none !important; }
+
+  .coa-textarea{
+    flex:1; width:100%; min-height:220px; resize:vertical;
+    border:1px solid var(--border); border-radius:8px; padding:10px 12px;
+    font-family:inherit; font-size:13px; line-height:1.5; color:var(--text);
+    background:#FBFAF7;
+  }
+  .coa-textarea:focus{ outline:1.5px solid var(--gold); background:#fff; }
+
+  #coa-bottom-panel{
+    display:none; position:fixed; left:0; right:0; bottom:0; z-index:1600;
+    max-height:25vh; height:25vh; background:var(--panel-bg); border-top:3px solid var(--gold);
+    box-shadow:0 -4px 18px rgba(0,0,0,.25); padding:10px 20px; flex-direction:column; gap:6px;
+  }
+  body.mode-coa #coa-bottom-panel{ display:flex; }
+  #coa-bottom-panel h2{
+    font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--navy); margin:0;
+    font-weight:700; flex-shrink:0;
+  }
+  #coa-bottom-panel .coa-textarea{ min-height:0; }
+
+  /* ---------- COLAPSO DE PANELES LATERALES (escritorio) ---------- */
+  .app-grid.left-collapsed{ grid-template-columns: 0px 1fr 300px; }
+  .app-grid.right-collapsed{ grid-template-columns: 280px 1fr 0px; }
+  .app-grid.left-collapsed.right-collapsed{ grid-template-columns: 0px 1fr 0px; }
+  .app-grid.left-collapsed #left-panel,
+  .app-grid.right-collapsed #right-panel{ padding:0; border:none; overflow:hidden; }
+
+  .panel-edge-tab{
+    position:fixed; top:50%; transform:translateY(-50%); z-index:1000;
+    width:20px; height:56px; border:1px solid var(--border); border-radius:0 8px 8px 0;
+    background:var(--panel-bg); color:var(--navy); font-size:14px; cursor:pointer;
+    box-shadow:2px 0 8px rgba(0,0,0,.12); display:flex; align-items:center; justify-content:center;
+    transition:left .2s, right .2s;
+  }
+  .panel-edge-tab.right{ border-radius:8px 0 0 8px; box-shadow:-2px 0 8px rgba(0,0,0,.12); }
+  .panel-edge-tab.left{ left:280px; }
+  .panel-edge-tab.right{ right:300px; }
+  .app-grid.left-collapsed ~ .panel-edge-tab.left{ left:0; }
+  .app-grid.right-collapsed ~ .panel-edge-tab.right{ right:0; }
+  @media (max-width:980px){ .panel-edge-tab{ display:none; } }
+
   .gh-field{ display:flex; flex-direction:column; gap:3px; }
   .gh-field label{ font-size:11px; color:var(--muted); font-weight:600; }
   .gh-field input{ border:1px solid var(--border); border-radius:6px; padding:6px 8px; font-family:inherit; font-size:12px; }
@@ -304,9 +367,13 @@
       <div class="subtitle">Norte de Santander, Colombia</div>
     </div>
   </div>
+  <div class="mode-switcher">
+    <button class="mode-btn active" id="mode-edicion-btn">✎ Edición</button>
+    <button class="mode-btn" id="mode-coa-btn">◎ COA</button>
+  </div>
   <div class="panel-toggles">
-    <button class="toggle-btn" id="toggle-left">☰ Capas</button>
-    <button class="toggle-btn" id="toggle-right">Propiedades ▤</button>
+    <button class="toggle-btn" id="toggle-left">☰</button>
+    <button class="toggle-btn" id="toggle-right">▤</button>
   </div>
 </header>
 
@@ -326,7 +393,7 @@
 
   <!-- LEFT PANEL -->
   <aside id="left-panel">
-
+   <div id="left-edicion-content" class="mode-content">
     <section class="block">
       <h2>Capas de dibujo</h2>
       <div id="layer-list"></div>
@@ -389,7 +456,14 @@
       <div id="gh-status" class="gh-status off">Sin configurar</div>
       <div class="hint">⚠️ El token queda guardado solo en este navegador (nunca en el archivo público). Use un token <b>de tipo fine-grained, limitado a este único repositorio</b>, con permiso de "Contents: Read and write" únicamente — no un token clásico con acceso a toda su cuenta.</div>
     </section>
+   </div>
 
+   <div id="left-coa-content" class="mode-content">
+    <section class="block">
+      <h2>Esfuerzos</h2>
+      <textarea id="coa-esfuerzos-text" class="coa-textarea" placeholder="Escriba aquí los esfuerzos…"></textarea>
+    </section>
+   </div>
   </aside>
 
   <!-- CENTER: MAP -->
@@ -473,17 +547,32 @@
 
   <!-- RIGHT PANEL -->
   <aside id="right-panel">
-    <section class="block">
-      <h2>Vista actual</h2>
-      <div id="view-info"></div>
-    </section>
+    <div id="right-edicion-content" class="mode-content">
+      <section class="block">
+        <h2>Vista actual</h2>
+        <div id="view-info"></div>
+      </section>
 
-    <section class="block">
-      <h2>Propiedades del elemento</h2>
-      <div id="properties-body" class="empty">Seleccione una forma dibujada en el mapa, o desde la lista de capas, para ver y editar sus propiedades.</div>
-    </section>
+      <section class="block">
+        <h2>Propiedades del elemento</h2>
+        <div id="properties-body" class="empty">Seleccione una forma dibujada en el mapa, o desde la lista de capas, para ver y editar sus propiedades.</div>
+      </section>
+    </div>
+    <div id="right-coa-content" class="mode-content">
+      <section class="block">
+        <h2>Fases</h2>
+        <textarea id="coa-fases-text" class="coa-textarea" placeholder="Describa aquí las fases del curso de acción…"></textarea>
+      </section>
+    </div>
   </aside>
 
+</div>
+<button class="panel-edge-tab left" id="collapse-left-btn" title="Mostrar/ocultar panel izquierdo">‹</button>
+<button class="panel-edge-tab right" id="collapse-right-btn" title="Mostrar/ocultar panel derecho">›</button>
+
+<div id="coa-bottom-panel">
+  <h2>Desarrollo del Curso de Acción</h2>
+  <textarea id="coa-desarrollo-text" class="coa-textarea" placeholder="Escriba aquí el desarrollo del curso de acción…"></textarea>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -535,6 +624,9 @@
       shapeCounter: shapeCounter,
       paletteIdx: paletteIdx,
       activeLayerId: activeLayerId,
+      coaEsfuerzos: document.getElementById('coa-esfuerzos-text').value,
+      coaFases: document.getElementById('coa-fases-text').value,
+      coaDesarrollo: document.getElementById('coa-desarrollo-text').value,
       layers: layers.map(function(l){
         return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, geojson: layerToGeoJSON(l) };
       })
@@ -556,7 +648,11 @@
   }
 
   function applyRemoteState(state){
-    if (!state || !state.layers || !state.layers.length) return false;
+    if (!state) return false;
+    document.getElementById('coa-esfuerzos-text').value = state.coaEsfuerzos || '';
+    document.getElementById('coa-fases-text').value = state.coaFases || '';
+    document.getElementById('coa-desarrollo-text').value = state.coaDesarrollo || '';
+    if (!state.layers || !state.layers.length) return false;
     layers.forEach(function(l){ map.removeLayer(l.group); });
     layers = [];
     selectedShape = null;
@@ -2707,6 +2803,43 @@
   });
   scrim.addEventListener('click', closePanels);
 
+  /* ---------------- MODOS: EDICIÓN / COA ---------------- */
+  var modeEdicionBtn = document.getElementById('mode-edicion-btn');
+  var modeCoaBtn = document.getElementById('mode-coa-btn');
+
+  function setMode(mode){
+    document.body.classList.remove('mode-edicion','mode-coa');
+    document.body.classList.add('mode-' + mode);
+    modeEdicionBtn.classList.toggle('active', mode === 'edicion');
+    modeCoaBtn.classList.toggle('active', mode === 'coa');
+    if (mode === 'coa'){
+      disableAllTools();
+      exitMoveMode();
+      selectedShape = null;
+    }
+    map.invalidateSize();
+  }
+  modeEdicionBtn.addEventListener('click', function(){ setMode('edicion'); });
+  modeCoaBtn.addEventListener('click', function(){ setMode('coa'); });
+
+  /* ---------------- COLAPSO DE PANELES (escritorio) ---------------- */
+  var appGrid = document.querySelector('.app-grid');
+  document.getElementById('collapse-left-btn').addEventListener('click', function(){
+    appGrid.classList.toggle('left-collapsed');
+    document.getElementById('collapse-left-btn').textContent = appGrid.classList.contains('left-collapsed') ? '›' : '‹';
+    setTimeout(function(){ map.invalidateSize(); }, 220);
+  });
+  document.getElementById('collapse-right-btn').addEventListener('click', function(){
+    appGrid.classList.toggle('right-collapsed');
+    document.getElementById('collapse-right-btn').textContent = appGrid.classList.contains('right-collapsed') ? '‹' : '›';
+    setTimeout(function(){ map.invalidateSize(); }, 220);
+  });
+
+  /* ---------------- CAMPOS DE TEXTO COA (persistentes) ---------------- */
+  ['coa-esfuerzos-text','coa-fases-text','coa-desarrollo-text'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', scheduleSave);
+  });
+
   document.getElementById('reset-storage-btn').addEventListener('click', function(){
     showConfirm('¿Borrar todos los datos guardados en este navegador y reiniciar el mapa? Esta acción no se puede deshacer (considere exportar antes).', function(){
       try{ localStorage.removeItem(STORAGE_KEY); }catch(err){}
@@ -2715,6 +2848,7 @@
   });
 
   /* ---------------- INIT ---------------- */
+  setMode('edicion');
   loadGithubConfig();
   fillGithubConfigInputs();
 
