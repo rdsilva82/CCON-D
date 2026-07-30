@@ -360,27 +360,28 @@
 
     <section class="block">
       <h2>Nube compartida (GitHub)</h2>
-      <div class="hint">Sincroniza el mapa entre todos sus dispositivos guardando un archivo en un repositorio de GitHub. Requiere un token de acceso personal con permiso de escritura sobre ese repositorio.</div>
+      <div class="hint">Sincroniza el mapa entre todos sus dispositivos guardando un archivo en un repositorio de GitHub. Requiere un token de acceso personal con permiso de escritura sobre ese repositorio. Por seguridad, el token <b>nunca</b> viene incluido en esta página — se pega una sola vez por dispositivo y queda guardado solo en su navegador.</div>
       <div class="gh-field">
         <label for="gh-repo-input">Repositorio (usuario/repo)</label>
-        <input type="text" id="gh-repo-input" placeholder="usuario/mapa-norte-santander">
+        <input type="text" id="gh-repo-input" placeholder="usuario/mapa-norte-santander" value="rdsilva82/CCON-D">
       </div>
       <div class="gh-field">
         <label for="gh-branch-input">Rama</label>
-        <input type="text" id="gh-branch-input" placeholder="main">
+        <input type="text" id="gh-branch-input" placeholder="main" value="main">
       </div>
       <div class="gh-field">
         <label for="gh-path-input">Ruta del archivo</label>
-        <input type="text" id="gh-path-input" placeholder="data/estado.json">
+        <input type="text" id="gh-path-input" placeholder="data/estado.json" value="data/estado.json">
       </div>
       <div class="gh-field">
         <label for="gh-token-input">Token de acceso personal</label>
-        <input type="password" id="gh-token-input" placeholder="ghp_...">
+        <input type="password" id="gh-token-input" placeholder="Pegue aquí su token (una vez por dispositivo)">
       </div>
       <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600;cursor:pointer;">
-        <input type="checkbox" id="gh-autosync-input"> Sincronización automática
+        <input type="checkbox" id="gh-autosync-input" checked> Sincronización automática
       </label>
       <button class="primary-btn" id="gh-save-config-btn">Guardar configuración</button>
+      <div class="hint">💡 Como no vas a copiar y pegar aquí el mismo token que compartiste antes (por seguridad, revócalo y genera uno nuevo), solo falta que lo pegues en el campo de arriba la primera vez que abras la página en cada dispositivo — el resto ya queda listo.</div>
       <div class="gh-actions">
         <button class="outline-btn" id="gh-push-btn">⇧ Subir cambios</button>
         <button class="outline-btn" id="gh-pull-btn">⇩ Descargar última versión</button>
