@@ -341,6 +341,12 @@
       <div class="hint">La exportación genera archivos <b>GeoJSON</b> (estándar RFC 7946), compatibles con QGIS, ArcGIS y la mayoría de software SIG. Las coordenadas quedan georreferenciadas en WGS84.</div>
     </section>
 
+    <section class="block">
+      <h2>Guardado local</h2>
+      <div class="hint">Los cambios se guardan automáticamente en este navegador y se restauran al volver a abrir la página, incluso si la cierra por completo.</div>
+      <button class="outline-btn danger-outline" id="reset-storage-btn">Borrar datos guardados y reiniciar</button>
+    </section>
+
   </aside>
 
   <!-- CENTER: MAP -->
@@ -472,6 +478,76 @@
   var confirmNoBtn = document.getElementById('confirm-no-btn');
   var confirmActiveCleanup = null;
 
+  /* ---------------- GUARDADO AUTOMÁTICO (localStorage) ---------------- */
+  var STORAGE_KEY = 'mapa_teatro_operaciones_state_v1';
+  var saveTimer = null;
+
+  function scheduleSave(){
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveStateToStorage, 500);
+  }
+
+  function saveStateToStorage(){
+    try{
+      var state = {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        mapView: { lat: map.getCenter().lat, lng: map.getCenter().lng, zoom: map.getZoom() },
+        baseLayer: currentBase,
+        layerCounter: layerCounter,
+        shapeCounter: shapeCounter,
+        paletteIdx: paletteIdx,
+        activeLayerId: activeLayerId,
+        layers: layers.map(function(l){
+          return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, geojson: layerToGeoJSON(l) };
+        })
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(err){ /* almacenamiento no disponible; se continúa sin guardar */ }
+  }
+
+  function loadStateFromStorage(){
+    var raw;
+    try{ raw = localStorage.getItem(STORAGE_KEY); } catch(err){ return false; }
+    if (!raw) return false;
+    var state;
+    try{ state = JSON.parse(raw); } catch(err){ return false; }
+    if (!state || !state.layers || !state.layers.length) return false;
+
+    try{
+      state.layers.forEach(function(entry){
+        var layerObj = {
+          id: entry.id, name: entry.name, color: entry.color,
+          group: L.featureGroup().addTo(map),
+          visible: entry.visible !== false,
+          expanded: !!entry.expanded
+        };
+        layers.push(layerObj);
+        if (entry.geojson) L.geoJSON(entry.geojson, buildGeoJSONReconstructOptions(layerObj));
+        if (!layerObj.visible) map.removeLayer(layerObj.group);
+      });
+
+      layerCounter = state.layerCounter || layers.length;
+      shapeCounter = state.shapeCounter || shapeCounter;
+      paletteIdx = state.paletteIdx || paletteIdx;
+
+      if (state.baseLayer && baseLayers[state.baseLayer] && state.baseLayer !== currentBase){
+        map.removeLayer(baseLayers[currentBase]);
+        currentBase = state.baseLayer;
+        baseLayers[currentBase].addTo(map);
+        var radio = document.querySelector('input[name="basemap"][value="' + currentBase + '"]');
+        if (radio) radio.checked = true;
+      }
+      if (state.mapView) map.setView([state.mapView.lat, state.mapView.lng], state.mapView.zoom);
+
+      var restoreActiveId = (state.activeLayerId && getLayer(state.activeLayerId)) ? state.activeLayerId : layers[layers.length-1].id;
+      setActiveLayer(restoreActiveId);
+      return true;
+    } catch(err){
+      return false;
+    }
+  }
+
   function showConfirm(message, onYes){
     if (confirmActiveCleanup) confirmActiveCleanup();
     confirmMessage.textContent = message;
@@ -528,6 +604,7 @@
       map.removeLayer(baseLayers[currentBase]);
       currentBase = radio.value;
       baseLayers[currentBase].addTo(map);
+      scheduleSave();
     });
   });
 
@@ -1745,6 +1822,7 @@
 
       list.appendChild(card);
     });
+    scheduleSave();
   }
 
   function renderShapeRow(shape, layerObj){
@@ -2324,6 +2402,57 @@
   function slug(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'capa'; }
 
   /* ---------------- IMPORT ---------------- */
+  function buildGeoJSONReconstructOptions(targetLayerObj){
+    return {
+      pointToLayer: function(feature, latlng){
+        var p = feature.properties || {};
+        if (p.mil){
+          var mil = { affiliation: p.mil.affiliation || 'friendly', unitType: p.mil.unitType || 'generic', echelon: p.mil.echelon || '', designation: p.mil.designation || '' };
+          var m = L.marker(latlng, { icon: buildMilSymbolIcon(mil) });
+          m._isMilSymbol = true;
+          m._mil = mil;
+          updateMilSymbolTooltip(m);
+          return m;
+        }
+        return L.marker(latlng, { icon: buildPointIcon(p.color || targetLayerObj.color) });
+      },
+      style: function(feature){
+        var p = feature.properties || {};
+        return {
+          color: p.color || targetLayerObj.color,
+          fillColor: p.fillColor || p.color || targetLayerObj.color,
+          fillOpacity: p.fillOpacity != null ? p.fillOpacity : .25,
+          opacity: p.opacity != null ? p.opacity : 1,
+          weight: p.weight != null ? p.weight : 3,
+          dashArray: p.dashArray || null
+        };
+      },
+      onEachFeature: function(feature, layer){
+        var p = feature.properties || {};
+        targetLayerObj.group.addLayer(layer);
+        if (p.nombre) layer._customName = p.nombre;
+        layer._fillColorRaw = p.fillColor || targetLayerObj.color;
+        layer._fillStyleKey = p.fillStyle || 'solid';
+        if (p.arrow){
+          layer._isArrow = true;
+          layer._arrow = {
+            tail: L.latLng(p.arrow.tail[0], p.arrow.tail[1]),
+            head: L.latLng(p.arrow.head[0], p.arrow.head[1]),
+            curve: p.arrow.curve ? L.latLng(p.arrow.curve[0], p.arrow.curve[1]) : null,
+            shaftWidth: p.arrow.shaftWidth,
+            headWidth: p.arrow.headWidth,
+            headLength: p.arrow.headLength
+          };
+          rebuildArrow(layer);
+        }
+        attachShapeInteractivity(layer, targetLayerObj);
+        if (layer._fillStyleKey && layer._fillStyleKey !== 'solid' && layer.setStyle){
+          applyFillStyle(layer, layer._fillStyleKey, layer._fillColorRaw);
+        }
+      }
+    };
+  }
+
   document.getElementById('import-input').addEventListener('change', function(ev){
     var file = ev.target.files[0];
     if (!file) return;
@@ -2337,54 +2466,7 @@
       var imported = createLayer(baseName, nextColor());
 
       try{
-        L.geoJSON(data, {
-          pointToLayer: function(feature, latlng){
-            var p = feature.properties || {};
-            if (p.mil){
-              var mil = { affiliation: p.mil.affiliation || 'friendly', unitType: p.mil.unitType || 'generic', echelon: p.mil.echelon || '', designation: p.mil.designation || '' };
-              var m = L.marker(latlng, { icon: buildMilSymbolIcon(mil) });
-              m._isMilSymbol = true;
-              m._mil = mil;
-              updateMilSymbolTooltip(m);
-              return m;
-            }
-            return L.marker(latlng, { icon: buildPointIcon(p.color || imported.color) });
-          },
-          style: function(feature){
-            var p = feature.properties || {};
-            return {
-              color: p.color || imported.color,
-              fillColor: p.fillColor || p.color || imported.color,
-              fillOpacity: p.fillOpacity != null ? p.fillOpacity : .25,
-              opacity: p.opacity != null ? p.opacity : 1,
-              weight: p.weight != null ? p.weight : 3,
-              dashArray: p.dashArray || null
-            };
-          },
-          onEachFeature: function(feature, layer){
-            var p = feature.properties || {};
-            imported.group.addLayer(layer);
-            if (p.nombre) layer._customName = p.nombre;
-            layer._fillColorRaw = p.fillColor || imported.color;
-            layer._fillStyleKey = p.fillStyle || 'solid';
-            if (p.arrow){
-              layer._isArrow = true;
-              layer._arrow = {
-                tail: L.latLng(p.arrow.tail[0], p.arrow.tail[1]),
-                head: L.latLng(p.arrow.head[0], p.arrow.head[1]),
-                curve: p.arrow.curve ? L.latLng(p.arrow.curve[0], p.arrow.curve[1]) : null,
-                shaftWidth: p.arrow.shaftWidth,
-                headWidth: p.arrow.headWidth,
-                headLength: p.arrow.headLength
-              };
-              rebuildArrow(layer);
-            }
-            attachShapeInteractivity(layer, imported);
-            if (layer._fillStyleKey && layer._fillStyleKey !== 'solid' && layer.setStyle){
-              applyFillStyle(layer, layer._fillStyleKey, layer._fillColorRaw);
-            }
-          }
-        });
+        L.geoJSON(data, buildGeoJSONReconstructOptions(imported));
       } catch(err){
         alert('No se pudo interpretar el contenido geoespacial del archivo.');
       }
@@ -2439,11 +2521,27 @@
   });
   scrim.addEventListener('click', closePanels);
 
+  document.getElementById('reset-storage-btn').addEventListener('click', function(){
+    showConfirm('¿Borrar todos los datos guardados en este navegador y reiniciar el mapa? Esta acción no se puede deshacer (considere exportar antes).', function(){
+      try{ localStorage.removeItem(STORAGE_KEY); }catch(err){}
+      location.reload();
+    });
+  });
+
   /* ---------------- INIT ---------------- */
-  createTeatroOperacionesLayer();
-  createLayer('Capa 1', PALETTE[0]);
+  if (!loadStateFromStorage()){
+    createTeatroOperacionesLayer();
+    createLayer('Capa 1', PALETTE[0]);
+  }
   updateViewInfo();
   updateUndoRedoUI();
+
+  map.on('moveend zoomend', scheduleSave);
+  setInterval(saveStateToStorage, 8000);
+  window.addEventListener('beforeunload', saveStateToStorage);
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'hidden') saveStateToStorage();
+  });
 
 })();
 </script>
