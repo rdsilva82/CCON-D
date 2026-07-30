@@ -281,6 +281,17 @@
   .move-box-row input{ width:112px; border:1px solid var(--border); border-radius:6px; padding:4px 6px; font-family:inherit; font-size:12px; text-align:right; }
   .move-box-hint{ font-size:10px; color:var(--muted); line-height:1.4; }
   #move-done-btn{ padding:6px 10px; font-size:12px; }
+
+  .gh-field{ display:flex; flex-direction:column; gap:3px; }
+  .gh-field label{ font-size:11px; color:var(--muted); font-weight:600; }
+  .gh-field input{ border:1px solid var(--border); border-radius:6px; padding:6px 8px; font-family:inherit; font-size:12px; }
+  .gh-actions{ display:flex; gap:8px; }
+  .gh-actions button{ flex:1; font-size:11.5px; padding:7px 6px; }
+  .gh-status{ font-size:11.5px; font-weight:700; padding:6px 8px; border-radius:6px; text-align:center; }
+  .gh-status.off{ background:#F0F0EE; color:var(--muted); }
+  .gh-status.syncing{ background:#FBF4E1; color:var(--navy); }
+  .gh-status.ok{ background:#E3F3E5; color:#1F6B1F; }
+  .gh-status.error{ background:#FBEDED; color:var(--danger); }
 </style>
 </head>
 <body>
@@ -343,8 +354,39 @@
 
     <section class="block">
       <h2>Guardado local</h2>
-      <div class="hint">Los cambios se guardan automáticamente en este navegador y se restauran al volver a abrir la página, incluso si la cierra por completo.</div>
+      <div class="hint">Además de la nube (abajo), cada cambio se guarda de respaldo en este navegador y se restaura si abre la página sin conexión.</div>
       <button class="outline-btn danger-outline" id="reset-storage-btn">Borrar datos guardados y reiniciar</button>
+    </section>
+
+    <section class="block">
+      <h2>Nube compartida (GitHub)</h2>
+      <div class="hint">Sincroniza el mapa entre todos sus dispositivos guardando un archivo en un repositorio de GitHub. Requiere un token de acceso personal con permiso de escritura sobre ese repositorio.</div>
+      <div class="gh-field">
+        <label for="gh-repo-input">Repositorio (usuario/repo)</label>
+        <input type="text" id="gh-repo-input" placeholder="usuario/mapa-norte-santander">
+      </div>
+      <div class="gh-field">
+        <label for="gh-branch-input">Rama</label>
+        <input type="text" id="gh-branch-input" placeholder="main">
+      </div>
+      <div class="gh-field">
+        <label for="gh-path-input">Ruta del archivo</label>
+        <input type="text" id="gh-path-input" placeholder="data/estado.json">
+      </div>
+      <div class="gh-field">
+        <label for="gh-token-input">Token de acceso personal</label>
+        <input type="password" id="gh-token-input" placeholder="ghp_...">
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600;cursor:pointer;">
+        <input type="checkbox" id="gh-autosync-input"> Sincronización automática
+      </label>
+      <button class="primary-btn" id="gh-save-config-btn">Guardar configuración</button>
+      <div class="gh-actions">
+        <button class="outline-btn" id="gh-push-btn">⇧ Subir cambios</button>
+        <button class="outline-btn" id="gh-pull-btn">⇩ Descargar última versión</button>
+      </div>
+      <div id="gh-status" class="gh-status off">Sin configurar</div>
+      <div class="hint">⚠️ El token queda guardado solo en este navegador (nunca en el archivo público). Use un token <b>de tipo fine-grained, limitado a este único repositorio</b>, con permiso de "Contents: Read and write" únicamente — no un token clásico con acceso a toda su cuenta.</div>
     </section>
 
   </aside>
@@ -482,28 +524,73 @@
   var STORAGE_KEY = 'mapa_teatro_operaciones_state_v1';
   var saveTimer = null;
 
+  function buildStateObject(){
+    return {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      mapView: { lat: map.getCenter().lat, lng: map.getCenter().lng, zoom: map.getZoom() },
+      baseLayer: currentBase,
+      layerCounter: layerCounter,
+      shapeCounter: shapeCounter,
+      paletteIdx: paletteIdx,
+      activeLayerId: activeLayerId,
+      layers: layers.map(function(l){
+        return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, geojson: layerToGeoJSON(l) };
+      })
+    };
+  }
+
   function scheduleSave(){
+    lastLocalEditTime = Date.now();
     if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveStateToStorage, 500);
+    saveTimer = setTimeout(function(){
+      saveStateToStorage();
+      if (githubConfig && githubConfig.token && githubConfig.autoSync) scheduleGithubPush();
+    }, 500);
   }
 
   function saveStateToStorage(){
-    try{
-      var state = {
-        version: 1,
-        savedAt: new Date().toISOString(),
-        mapView: { lat: map.getCenter().lat, lng: map.getCenter().lng, zoom: map.getZoom() },
-        baseLayer: currentBase,
-        layerCounter: layerCounter,
-        shapeCounter: shapeCounter,
-        paletteIdx: paletteIdx,
-        activeLayerId: activeLayerId,
-        layers: layers.map(function(l){
-          return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, geojson: layerToGeoJSON(l) };
-        })
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(buildStateObject())); }
+    catch(err){ /* almacenamiento no disponible; se continúa sin guardar */ }
+  }
+
+  function applyRemoteState(state){
+    if (!state || !state.layers || !state.layers.length) return false;
+    layers.forEach(function(l){ map.removeLayer(l.group); });
+    layers = [];
+    selectedShape = null;
+    exitMoveMode();
+    clearProperties();
+
+    state.layers.forEach(function(entry){
+      var layerObj = {
+        id: entry.id, name: entry.name, color: entry.color,
+        group: L.featureGroup().addTo(map),
+        visible: entry.visible !== false,
+        expanded: !!entry.expanded
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch(err){ /* almacenamiento no disponible; se continúa sin guardar */ }
+      layers.push(layerObj);
+      if (entry.geojson) L.geoJSON(entry.geojson, buildGeoJSONReconstructOptions(layerObj));
+      if (!layerObj.visible) map.removeLayer(layerObj.group);
+    });
+
+    layerCounter = state.layerCounter || layers.length;
+    shapeCounter = state.shapeCounter || shapeCounter;
+    paletteIdx = state.paletteIdx || paletteIdx;
+
+    if (state.baseLayer && baseLayers[state.baseLayer] && state.baseLayer !== currentBase){
+      map.removeLayer(baseLayers[currentBase]);
+      currentBase = state.baseLayer;
+      baseLayers[currentBase].addTo(map);
+      var radio = document.querySelector('input[name="basemap"][value="' + currentBase + '"]');
+      if (radio) radio.checked = true;
+    }
+    if (state.mapView) map.setView([state.mapView.lat, state.mapView.lng], state.mapView.zoom);
+
+    var restoreActiveId = (state.activeLayerId && getLayer(state.activeLayerId)) ? state.activeLayerId : layers[layers.length-1].id;
+    setActiveLayer(restoreActiveId);
+    saveStateToStorage();
+    return true;
   }
 
   function loadStateFromStorage(){
@@ -512,41 +599,139 @@
     if (!raw) return false;
     var state;
     try{ state = JSON.parse(raw); } catch(err){ return false; }
-    if (!state || !state.layers || !state.layers.length) return false;
-
-    try{
-      state.layers.forEach(function(entry){
-        var layerObj = {
-          id: entry.id, name: entry.name, color: entry.color,
-          group: L.featureGroup().addTo(map),
-          visible: entry.visible !== false,
-          expanded: !!entry.expanded
-        };
-        layers.push(layerObj);
-        if (entry.geojson) L.geoJSON(entry.geojson, buildGeoJSONReconstructOptions(layerObj));
-        if (!layerObj.visible) map.removeLayer(layerObj.group);
-      });
-
-      layerCounter = state.layerCounter || layers.length;
-      shapeCounter = state.shapeCounter || shapeCounter;
-      paletteIdx = state.paletteIdx || paletteIdx;
-
-      if (state.baseLayer && baseLayers[state.baseLayer] && state.baseLayer !== currentBase){
-        map.removeLayer(baseLayers[currentBase]);
-        currentBase = state.baseLayer;
-        baseLayers[currentBase].addTo(map);
-        var radio = document.querySelector('input[name="basemap"][value="' + currentBase + '"]');
-        if (radio) radio.checked = true;
-      }
-      if (state.mapView) map.setView([state.mapView.lat, state.mapView.lng], state.mapView.zoom);
-
-      var restoreActiveId = (state.activeLayerId && getLayer(state.activeLayerId)) ? state.activeLayerId : layers[layers.length-1].id;
-      setActiveLayer(restoreActiveId);
-      return true;
-    } catch(err){
-      return false;
-    }
+    try{ return applyRemoteState(state); } catch(err){ return false; }
   }
+
+  /* ---------------- NUBE COMPARTIDA (sincronización vía GitHub) ---------------- */
+  var GITHUB_CONFIG_KEY = 'github_sync_config_v1';
+  var githubConfig = null;
+  var githubFileSha = null;
+  var githubPushTimer = null;
+  var lastLocalEditTime = 0;
+
+  function utf8ToBase64(str){
+    var bytes = new TextEncoder().encode(str);
+    var binary = '';
+    for (var i=0;i<bytes.length;i++){ binary += String.fromCharCode(bytes[i]); }
+    return btoa(binary);
+  }
+  function base64ToUtf8(b64){
+    var binary = atob(b64.replace(/\n/g,''));
+    var bytes = new Uint8Array(binary.length);
+    for (var i=0;i<binary.length;i++){ bytes[i] = binary.charCodeAt(i); }
+    return new TextDecoder().decode(bytes);
+  }
+
+  function loadGithubConfig(){
+    try{
+      var raw = localStorage.getItem(GITHUB_CONFIG_KEY);
+      if (raw) githubConfig = JSON.parse(raw);
+    } catch(err){ githubConfig = null; }
+  }
+  function persistGithubConfig(){
+    try{ localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(githubConfig)); } catch(err){}
+  }
+
+  function updateSyncStatus(kind, text){
+    var el = document.getElementById('gh-status');
+    el.className = 'gh-status ' + kind;
+    el.textContent = text;
+  }
+
+  function githubConfigured(){
+    return !!(githubConfig && githubConfig.token && githubConfig.repo && githubConfig.path);
+  }
+
+  function githubApiUrl(withRef){
+    var url = 'https://api.github.com/repos/' + githubConfig.repo + '/contents/' + githubConfig.path;
+    if (withRef) url += '?ref=' + encodeURIComponent(githubConfig.branch || 'main');
+    return url;
+  }
+
+  function githubPull(showAlertOnError){
+    if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
+    updateSyncStatus('syncing','Descargando…');
+    return fetch(githubApiUrl(true), {
+      headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
+    }).then(function(res){
+      if (res.status === 404){
+        githubFileSha = null;
+        updateSyncStatus('ok','Repositorio conectado (sin datos aún)');
+        return false;
+      }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json().then(function(data){
+        githubFileSha = data.sha;
+        var state = JSON.parse(base64ToUtf8(data.content));
+        applyRemoteState(state);
+        updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+        return true;
+      });
+    }).catch(function(err){
+      updateSyncStatus('error','Error al descargar: ' + err.message);
+      if (showAlertOnError) alert('No se pudo descargar desde GitHub: ' + err.message);
+      return false;
+    });
+  }
+
+  function githubPush(){
+    if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
+    updateSyncStatus('syncing','Subiendo…');
+    var content = utf8ToBase64(JSON.stringify(buildStateObject(), null, 2));
+    var body = { message:'Actualizar mapa - ' + new Date().toISOString(), content: content, branch: githubConfig.branch || 'main' };
+    if (githubFileSha) body.sha = githubFileSha;
+    return fetch(githubApiUrl(false), {
+      method:'PUT',
+      headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' },
+      body: JSON.stringify(body)
+    }).then(function(res){
+      if (res.status === 409){
+        updateSyncStatus('error','Alguien más actualizó el mapa; se descargó esa versión');
+        return githubPull(false).then(function(){ return false; });
+      }
+      return res.json().then(function(data){
+        if (!res.ok) throw new Error(data.message || ('HTTP ' + res.status));
+        githubFileSha = data.content.sha;
+        updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+        return true;
+      });
+    }).catch(function(err){
+      updateSyncStatus('error','Error al subir: ' + err.message);
+      return false;
+    });
+  }
+
+  function scheduleGithubPush(){
+    if (githubPushTimer) clearTimeout(githubPushTimer);
+    githubPushTimer = setTimeout(function(){ githubPushTimer = null; githubPush(); }, 3000);
+  }
+
+  function fillGithubConfigInputs(){
+    if (!githubConfig) return;
+    document.getElementById('gh-repo-input').value = githubConfig.repo || '';
+    document.getElementById('gh-branch-input').value = githubConfig.branch || 'main';
+    document.getElementById('gh-path-input').value = githubConfig.path || 'data/estado.json';
+    document.getElementById('gh-token-input').value = githubConfig.token || '';
+    document.getElementById('gh-autosync-input').checked = !!githubConfig.autoSync;
+  }
+
+  document.getElementById('gh-save-config-btn').addEventListener('click', function(){
+    var repo = document.getElementById('gh-repo-input').value.trim().replace(/^\/+|\/+$/g,'');
+    var branch = document.getElementById('gh-branch-input').value.trim() || 'main';
+    var path = document.getElementById('gh-path-input').value.trim().replace(/^\/+/,'') || 'data/estado.json';
+    var token = document.getElementById('gh-token-input').value.trim();
+    var autoSync = document.getElementById('gh-autosync-input').checked;
+    if (!repo || !token){ alert('Complete al menos el repositorio y el token de acceso.'); return; }
+    githubConfig = { repo: repo, branch: branch, path: path, token: token, autoSync: autoSync };
+    persistGithubConfig();
+    githubFileSha = null;
+    githubPull(true);
+  });
+
+  document.getElementById('gh-push-btn').addEventListener('click', function(){ githubPush(); });
+  document.getElementById('gh-pull-btn').addEventListener('click', function(){
+    showConfirm('Esto reemplazará lo que ve en pantalla por la última versión guardada en GitHub. ¿Continuar?', function(){ githubPull(true); });
+  });
 
   function showConfirm(message, onYes){
     if (confirmActiveCleanup) confirmActiveCleanup();
@@ -2529,6 +2714,9 @@
   });
 
   /* ---------------- INIT ---------------- */
+  loadGithubConfig();
+  fillGithubConfigInputs();
+
   if (!loadStateFromStorage()){
     createTeatroOperacionesLayer();
     createLayer('Capa 1', PALETTE[0]);
@@ -2536,12 +2724,27 @@
   updateViewInfo();
   updateUndoRedoUI();
 
+  if (githubConfigured()){
+    githubPull(false);
+  } else {
+    updateSyncStatus('off','Sin configurar');
+  }
+
   map.on('moveend zoomend', scheduleSave);
   setInterval(saveStateToStorage, 8000);
   window.addEventListener('beforeunload', saveStateToStorage);
   document.addEventListener('visibilitychange', function(){
-    if (document.visibilityState === 'hidden') saveStateToStorage();
+    if (document.visibilityState === 'hidden'){
+      saveStateToStorage();
+      if (githubConfigured() && githubConfig.autoSync) githubPush();
+    }
   });
+
+  setInterval(function(){
+    if (githubConfigured() && githubConfig.autoSync && !githubPushTimer && (Date.now()-lastLocalEditTime > 10000)){
+      githubPull(false);
+    }
+  }, 25000);
 
 })();
 </script>
