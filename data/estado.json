@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:30:09.197Z",
+  "savedAt": "2026-07-31T00:30:37.202Z",
   "mapView": {
     "lat": 8.925773751363279,
     "lng": -72.70202636718751,
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:30:09.197Z"
+          "generado": "2026-07-31T00:30:37.202Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:30:09.197Z"
+          "generado": "2026-07-31T00:30:37.202Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:30:09.197Z"
+          "generado": "2026-07-31T00:30:37.203Z"
         }
       }
     },
@@ -15262,7 +15262,7 @@
         "properties": {
           "capa": "calcos_terreno",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:30:09.197Z"
+          "generado": "2026-07-31T00:30:37.203Z"
         }
       }
     },
@@ -15278,7 +15278,7 @@
         "properties": {
           "capa": "calcos_terreno",
           "color": "#4C7A57",
-          "generado": "2026-07-31T00:30:09.197Z"
+          "generado": "2026-07-31T00:30:37.203Z"
         }
       }
     }
