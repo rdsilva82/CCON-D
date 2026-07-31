@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:35:33.773Z",
+  "savedAt": "2026-07-31T00:35:37.777Z",
   "mapView": {
     "lat": 9.809210001222878,
     "lng": -72.80090332031251,
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:35:33.773Z"
+          "generado": "2026-07-31T00:35:37.777Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:35:33.773Z"
+          "generado": "2026-07-31T00:35:37.777Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:35:33.773Z"
+          "generado": "2026-07-31T00:35:37.778Z"
         }
       }
     },
@@ -21998,7 +21998,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T00:35:33.773Z"
+          "generado": "2026-07-31T00:35:37.778Z"
         }
       }
     },
@@ -24827,7 +24827,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T00:35:33.773Z"
+          "generado": "2026-07-31T00:35:37.778Z"
         }
       }
     },
@@ -25664,7 +25664,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:35:33.773Z"
+          "generado": "2026-07-31T00:35:37.778Z"
         }
       }
     },
@@ -25672,8 +25672,8 @@
       "id": "capa-9",
       "name": "calco_avenidas",
       "color": "#B8962E",
-      "visible": true,
-      "expanded": true,
+      "visible": false,
+      "expanded": false,
       "geojson": {
         "type": "FeatureCollection",
         "features": [
@@ -25875,7 +25875,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:35:33.773Z"
+          "generado": "2026-07-31T00:35:37.778Z"
         }
       }
     }
