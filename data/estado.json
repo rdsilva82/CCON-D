@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:36:15.213Z",
+  "savedAt": "2026-07-31T00:36:28.918Z",
   "mapView": {
     "lat": 10.05269833241438,
-    "lng": -72.59765625000001,
+    "lng": -72.72399902343751,
     "zoom": 8
   },
   "baseLayer": "street",
-  "layerCounter": 11,
-  "shapeCounter": 207,
-  "paletteIdx": 10,
-  "activeLayerId": "capa-11",
+  "layerCounter": 12,
+  "shapeCounter": 211,
+  "paletteIdx": 11,
+  "activeLayerId": "capa-12",
   "coaEsfuerzos": "",
   "coaFases": "",
   "coaDesarrollo": "",
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:36:15.213Z"
+          "generado": "2026-07-31T00:36:28.918Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:36:15.213Z"
+          "generado": "2026-07-31T00:36:28.918Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:36:15.213Z"
+          "generado": "2026-07-31T00:36:28.918Z"
         }
       }
     },
@@ -21998,7 +21998,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T00:36:15.214Z"
+          "generado": "2026-07-31T00:36:28.918Z"
         }
       }
     },
@@ -24827,7 +24827,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T00:36:15.214Z"
+          "generado": "2026-07-31T00:36:28.918Z"
         }
       }
     },
@@ -25664,7 +25664,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:36:15.214Z"
+          "generado": "2026-07-31T00:36:28.918Z"
         }
       }
     },
@@ -25875,7 +25875,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:36:15.214Z"
+          "generado": "2026-07-31T00:36:28.918Z"
         }
       }
     },
@@ -26112,7 +26112,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-07-31T00:36:15.214Z"
+          "generado": "2026-07-31T00:36:28.918Z"
         }
       }
     },
@@ -26334,7 +26334,212 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-07-31T00:36:15.214Z"
+          "generado": "2026-07-31T00:36:28.918Z"
+        }
+      }
+    },
+    {
+      "id": "capa-12",
+      "name": "calco_cubierta",
+      "color": "#2F6F8F",
+      "visible": true,
+      "expanded": false,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#2E7D32",
+              "weight": 2,
+              "fillColor": "#2E7D32",
+              "fillOpacity": 0.28,
+              "popup": "A — Selva húmeda del Catatumbo (cobertura densa)",
+              "calco": "7. Cubierta y encubrimiento",
+              "nombre": "Polígono 208",
+              "capa": "calco_cubierta",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72.9,
+                    9
+                  ],
+                  [
+                    -73.5,
+                    8.3
+                  ],
+                  [
+                    -73.2,
+                    7.9
+                  ],
+                  [
+                    -72.3,
+                    8.3
+                  ],
+                  [
+                    -72.3,
+                    8.9
+                  ],
+                  [
+                    -72.9,
+                    9
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#2E7D32",
+              "weight": 2,
+              "fillColor": "#2E7D32",
+              "fillOpacity": 0.2,
+              "popup": "B — Bosque de montaña, Serranía del Perijá",
+              "calco": "7. Cubierta y encubrimiento",
+              "nombre": "Polígono 209",
+              "capa": "calco_cubierta",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72.98,
+                    10.6
+                  ],
+                  [
+                    -73.1,
+                    9.1
+                  ],
+                  [
+                    -73.15,
+                    8.7
+                  ],
+                  [
+                    -72.85,
+                    8.7
+                  ],
+                  [
+                    -72.7,
+                    10.6
+                  ],
+                  [
+                    -72.98,
+                    10.6
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#D2691E",
+              "weight": 2,
+              "fillColor": "#D2691E",
+              "fillOpacity": 0.18,
+              "popup": "C — Desierto guajiro: cobertura vegetal escasa",
+              "calco": "7. Cubierta y encubrimiento",
+              "nombre": "Polígono 210",
+              "capa": "calco_cubierta",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72,
+                    12.2
+                  ],
+                  [
+                    -71.7,
+                    11.9
+                  ],
+                  [
+                    -72,
+                    11.4
+                  ],
+                  [
+                    -72.5,
+                    11.1
+                  ],
+                  [
+                    -72.9,
+                    11.5
+                  ],
+                  [
+                    -72.5,
+                    12
+                  ],
+                  [
+                    -72,
+                    12.2
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#2E7D32",
+              "weight": 2,
+              "fillColor": "#2E7D32",
+              "fillOpacity": 0.28,
+              "popup": "D — Sierra Nevada de Santa Marta (bosque denso)",
+              "calco": "7. Cubierta y encubrimiento",
+              "nombre": "Polígono 211",
+              "capa": "calco_cubierta",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -73.65,
+                    11.35
+                  ],
+                  [
+                    -73.75,
+                    11.15
+                  ],
+                  [
+                    -73.6,
+                    10.95
+                  ],
+                  [
+                    -73.45,
+                    11.15
+                  ],
+                  [
+                    -73.65,
+                    11.35
+                  ]
+                ]
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "capa": "calco_cubierta",
+          "color": "#2F6F8F",
+          "generado": "2026-07-31T00:36:28.918Z"
         }
       }
     }
