@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T12:27:21.082Z",
+  "savedAt": "2026-07-31T12:28:35.532Z",
   "mapView": {
-    "lat": 9.546583349757588,
-    "lng": -73.28430175781251,
-    "zoom": 8
+    "lat": 7.762701662689146,
+    "lng": -72.55371093750001,
+    "zoom": 9
   },
-  "baseLayer": "street",
+  "baseLayer": "topo",
   "layerCounter": 14,
   "shapeCounter": 220,
   "paletteIdx": 13,
@@ -7077,7 +7077,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T12:27:21.083Z"
+          "generado": "2026-07-31T12:28:35.533Z"
         }
       }
     },
@@ -7095,7 +7095,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T12:27:21.083Z"
+          "generado": "2026-07-31T12:28:35.533Z"
         }
       }
     },
@@ -15252,7 +15252,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T12:27:21.085Z"
+          "generado": "2026-07-31T12:28:35.534Z"
         }
       }
     },
@@ -15260,7 +15260,7 @@
       "id": "capa-6",
       "name": "calcos_terreno_combinado",
       "color": "#2F6F8F",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": "capa-14",
       "sortIndex": 5,
@@ -22006,7 +22006,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T12:27:21.086Z"
+          "generado": "2026-07-31T12:28:35.536Z"
         }
       }
     },
@@ -22014,7 +22014,7 @@
       "id": "capa-7",
       "name": "calco_ao",
       "color": "#7A4A2F",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": "capa-14",
       "sortIndex": 6,
@@ -24837,7 +24837,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T12:27:21.086Z"
+          "generado": "2026-07-31T12:28:35.536Z"
         }
       }
     },
@@ -24845,7 +24845,7 @@
       "id": "capa-8",
       "name": "calco_enemigo",
       "color": "#1F3864",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": "capa-14",
       "sortIndex": 7,
@@ -25676,7 +25676,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-07-31T12:27:21.086Z"
+          "generado": "2026-07-31T12:28:35.536Z"
         }
       }
     },
@@ -25684,7 +25684,7 @@
       "id": "capa-9",
       "name": "calco_avenidas",
       "color": "#B8962E",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": "capa-14",
       "sortIndex": 8,
@@ -25889,7 +25889,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-07-31T12:27:21.087Z"
+          "generado": "2026-07-31T12:28:35.536Z"
         }
       }
     },
@@ -25897,7 +25897,7 @@
       "id": "capa-10",
       "name": "calco_terreno",
       "color": "#4C7A57",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": "capa-14",
       "sortIndex": 9,
@@ -26128,7 +26128,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-07-31T12:27:21.087Z"
+          "generado": "2026-07-31T12:28:35.536Z"
         }
       }
     },
@@ -26136,7 +26136,7 @@
       "id": "capa-11",
       "name": "calco_observacion",
       "color": "#8A3A5A",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": "capa-14",
       "sortIndex": 10,
@@ -26352,7 +26352,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-07-31T12:27:21.087Z"
+          "generado": "2026-07-31T12:28:35.536Z"
         }
       }
     },
@@ -26360,7 +26360,7 @@
       "id": "capa-12",
       "name": "calco_cubierta",
       "color": "#2F6F8F",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": "capa-14",
       "sortIndex": 11,
@@ -26559,7 +26559,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T12:27:21.087Z"
+          "generado": "2026-07-31T12:28:35.536Z"
         }
       }
     },
@@ -26567,7 +26567,7 @@
       "id": "capa-13",
       "name": "calco_civiles",
       "color": "#7A4A2F",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": "capa-14",
       "sortIndex": 12,
@@ -28558,7 +28558,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T12:27:21.087Z"
+          "generado": "2026-07-31T12:28:35.537Z"
         }
       }
     },
@@ -28566,7 +28566,7 @@
       "id": "capa-14",
       "name": "PICC",
       "color": "#ff0000",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": null,
       "sortIndex": 3,
@@ -28576,7 +28576,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-07-31T12:27:21.087Z"
+          "generado": "2026-07-31T12:28:35.537Z"
         }
       }
     }
