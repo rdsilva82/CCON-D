@@ -1,16 +1,19 @@
 {
   "version": 1,
-  "savedAt": "2026-07-30T23:57:01.150Z",
+  "savedAt": "2026-07-31T00:01:25.599Z",
   "mapView": {
-    "lat": 10.815770856696746,
-    "lng": -74.02038574218751,
-    "zoom": 9
+    "lat": 8.205373824582004,
+    "lng": -73.38180541992189,
+    "zoom": 10
   },
   "baseLayer": "street",
   "layerCounter": 2,
   "shapeCounter": 99,
   "paletteIdx": 1,
   "activeLayerId": "capa-1",
+  "coaEsfuerzos": "",
+  "coaFases": "",
+  "coaDesarrollo": "",
   "layers": [
     {
       "id": "capa-teatro-operaciones",
@@ -7072,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-30T23:57:01.150Z"
+          "generado": "2026-07-31T00:01:25.599Z"
         }
       }
     },
@@ -7582,7 +7585,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-30T23:57:01.150Z"
+          "generado": "2026-07-31T00:01:25.599Z"
         }
       }
     },
@@ -15737,7 +15740,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-30T23:57:01.150Z"
+          "generado": "2026-07-31T00:01:25.599Z"
         }
       }
     }
