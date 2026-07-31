@@ -1058,21 +1058,32 @@
     return result;
   }
 
+  function setLayerVisibilityRecursive(id, visible){
+    var node = getLayer(id);
+    if (!node) return;
+    node.visible = visible;
+    if (visible) map.addLayer(node.group); else map.removeLayer(node.group);
+    getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
+  }
+
   function createLayer(name, color, parentId){
     layerCounter++;
     parentId = parentId || null;
+    var parentNode = parentId ? getLayer(parentId) : null;
+    var startVisible = parentNode ? parentNode.visible : true;
     var obj = {
       id: 'capa-' + layerCounter,
       name: name || ('Capa ' + layerCounter),
       color: color || nextColor(),
-      group: L.featureGroup().addTo(map),
-      visible: true,
+      group: L.featureGroup(),
+      visible: startVisible,
       expanded: true,
       parentId: parentId,
       sortIndex: nextSortIndex(parentId)
     };
+    if (startVisible) obj.group.addTo(map);
     layers.push(obj);
-    if (parentId){ var p = getLayer(parentId); if (p) p.expanded = true; }
+    if (parentNode) parentNode.expanded = true;
     setActiveLayer(obj.id);
     renderLayerList();
     return obj;
@@ -2173,12 +2184,11 @@
 
     var visBtn = document.createElement('button');
     visBtn.className = 'vis-btn';
-    visBtn.title = l.visible ? 'Ocultar capa' : 'Mostrar capa';
+    visBtn.title = l.visible ? 'Ocultar capa (y sus subcapas)' : 'Mostrar capa (y sus subcapas)';
     visBtn.textContent = l.visible ? '👁' : '🚫';
     visBtn.addEventListener('click', function(ev){
       ev.stopPropagation();
-      l.visible = !l.visible;
-      if (l.visible) map.addLayer(l.group); else map.removeLayer(l.group);
+      setLayerVisibilityRecursive(l.id, !l.visible);
       renderLayerList();
     });
 
