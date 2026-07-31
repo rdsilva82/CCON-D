@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:34:13.197Z",
+  "savedAt": "2026-07-31T00:34:38.990Z",
   "mapView": {
-    "lat": 9.671153534953039,
-    "lng": -72.53173828125001,
-    "zoom": 7
+    "lat": 9.922860428632177,
+    "lng": -72.82287597656251,
+    "zoom": 8
   },
   "baseLayer": "street",
   "layerCounter": 8,
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:34:13.197Z"
+          "generado": "2026-07-31T00:34:38.991Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:34:13.197Z"
+          "generado": "2026-07-31T00:34:38.991Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:34:13.198Z"
+          "generado": "2026-07-31T00:34:38.991Z"
         }
       }
     },
@@ -21998,7 +21998,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T00:34:13.198Z"
+          "generado": "2026-07-31T00:34:38.991Z"
         }
       }
     },
@@ -24827,7 +24827,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T00:34:13.198Z"
+          "generado": "2026-07-31T00:34:38.991Z"
         }
       }
     },
@@ -24836,7 +24836,7 @@
       "name": "calco_enemigo",
       "color": "#1F3864",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "geojson": {
         "type": "FeatureCollection",
         "features": [
@@ -25664,7 +25664,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:34:13.198Z"
+          "generado": "2026-07-31T00:34:38.991Z"
         }
       }
     }
