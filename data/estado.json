@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:28:59.217Z",
+  "savedAt": "2026-07-31T00:29:14.549Z",
   "mapView": {
     "lat": 8.925773751363279,
     "lng": -72.70202636718751,
     "zoom": 8
   },
   "baseLayer": "street",
-  "layerCounter": 2,
+  "layerCounter": 3,
   "shapeCounter": 99,
-  "paletteIdx": 1,
-  "activeLayerId": "capa-1",
+  "paletteIdx": 2,
+  "activeLayerId": "capa-3",
   "coaEsfuerzos": "",
   "coaFases": "",
   "coaDesarrollo": "",
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:28:59.217Z"
+          "generado": "2026-07-31T00:29:14.549Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:28:59.217Z"
+          "generado": "2026-07-31T00:29:14.549Z"
         }
       }
     },
@@ -15246,7 +15246,23 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:28:59.217Z"
+          "generado": "2026-07-31T00:29:14.549Z"
+        }
+      }
+    },
+    {
+      "id": "capa-3",
+      "name": "calcos_terreno",
+      "color": "#B8962E",
+      "visible": true,
+      "expanded": true,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [],
+        "properties": {
+          "capa": "calcos_terreno",
+          "color": "#B8962E",
+          "generado": "2026-07-31T00:29:14.549Z"
         }
       }
     }
