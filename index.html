@@ -107,8 +107,8 @@
   }
   .layer-card.active{ border-color:var(--gold); box-shadow:0 0 0 1px var(--gold-light) inset; background:#FBF4E1; }
   .layer-row{
-    display:flex; align-items:center; gap:7px;
-    padding:7px 8px; cursor:pointer;
+    display:flex; align-items:center; gap:4px;
+    padding:7px 6px; cursor:pointer;
   }
   .layer-row input[type="color"]{
     width:20px;height:20px;border:none;border-radius:5px;padding:0;background:none;flex-shrink:0;cursor:pointer;
@@ -125,8 +125,19 @@
   }
   .layer-row button:hover{ color:var(--danger); background:#F3E3E3; }
   .layer-row .vis-btn:hover{ color:var(--navy); background:#E6EAF1; }
+  .layer-row .reorder-btn{ font-size:9px; padding:2px 3px; }
+  .layer-row .reorder-btn:hover{ color:var(--navy); background:#E6EAF1; }
   .expand-btn{ font-size:11px; width:18px; text-align:center; transition:transform .15s; }
   .expand-btn.open{ transform:rotate(90deg); }
+
+  .layer-tools-row{ display:flex; gap:6px; padding:0 8px 6px 8px; }
+  .layer-tools-row .outline-btn{ font-size:10.5px; padding:5px 8px; flex-shrink:0; }
+  .layer-move-select, .shape-move-select{
+    border:1px solid var(--border); border-radius:6px; font-family:inherit; font-size:10.5px;
+    padding:4px 4px; background:#fff; color:var(--navy); max-width:100%;
+  }
+  .layer-move-select{ flex:1; min-width:0; }
+  .shape-move-select{ flex-shrink:0; width:26px; padding:2px 1px; text-align:center; }
 
   .shape-list{ border-top:1px solid var(--border); padding:6px 8px 8px 8px; display:flex; flex-direction:column; gap:6px; background:#fff; }
   .shape-list .empty-shapes{ font-size:11px; color:var(--muted); padding:4px 2px; }
@@ -628,7 +639,7 @@
       coaFases: document.getElementById('coa-fases-text').value,
       coaDesarrollo: document.getElementById('coa-desarrollo-text').value,
       layers: layers.map(function(l){
-        return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, geojson: layerToGeoJSON(l) };
+        return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, parentId: l.parentId, sortIndex: l.sortIndex, geojson: layerToGeoJSON(l) };
       })
     };
   }
@@ -659,12 +670,14 @@
     exitMoveMode();
     clearProperties();
 
-    state.layers.forEach(function(entry){
+    state.layers.forEach(function(entry, idx){
       var layerObj = {
         id: entry.id, name: entry.name, color: entry.color,
         group: L.featureGroup().addTo(map),
         visible: entry.visible !== false,
-        expanded: !!entry.expanded
+        expanded: !!entry.expanded,
+        parentId: entry.parentId || null,
+        sortIndex: entry.sortIndex != null ? entry.sortIndex : idx
       };
       layers.push(layerObj);
       if (entry.geojson) L.geoJSON(entry.geojson, buildGeoJSONReconstructOptions(layerObj));
@@ -981,24 +994,85 @@
     return select;
   }
 
-  /* ---------------- LAYER MODEL ---------------- */
-  var layers = [];          // {id, name, color, group, visible, expanded}
+  /* ---------------- LAYER MODEL (jerárquico: capas y subcapas) ---------------- */
+  var layers = [];          // {id, name, color, group, visible, expanded, parentId, sortIndex}
   var activeLayerId = null;
   var layerCounter = 0;
   var shapeCounter = 0;
   var selectedShape = null;
 
-  function createLayer(name, color){
+  function getChildren(parentId){
+    return layers.filter(function(l){ return l.parentId === parentId; })
+                 .sort(function(a,b){ return a.sortIndex - b.sortIndex; });
+  }
+  function getRootLayers(){ return getChildren(null); }
+
+  function nextSortIndex(parentId){
+    var siblings = getChildren(parentId);
+    return siblings.length ? Math.max.apply(null, siblings.map(function(s){ return s.sortIndex; })) + 1 : 0;
+  }
+
+  function isDescendantOf(candidateId, ancestorId){
+    var node = getLayer(candidateId);
+    while (node && node.parentId){
+      if (node.parentId === ancestorId) return true;
+      node = getLayer(node.parentId);
+    }
+    return false;
+  }
+
+  function moveSibling(id, direction){
+    var node = getLayer(id);
+    if (!node) return;
+    var siblings = getChildren(node.parentId);
+    var idx = siblings.findIndex(function(s){ return s.id === id; });
+    var swapIdx = idx + direction;
+    if (swapIdx < 0 || swapIdx >= siblings.length) return;
+    var tmp = siblings[idx].sortIndex;
+    siblings[idx].sortIndex = siblings[swapIdx].sortIndex;
+    siblings[swapIdx].sortIndex = tmp;
+    renderLayerList();
+  }
+
+  function reparentLayer(id, newParentId){
+    newParentId = newParentId || null;
+    var node = getLayer(id);
+    if (!node || node.parentId === newParentId) return;
+    if (newParentId === id || (newParentId && isDescendantOf(newParentId, id))){
+      alert('No se puede mover una capa dentro de sí misma o de una de sus propias subcapas.');
+      return;
+    }
+    node.parentId = newParentId;
+    node.sortIndex = nextSortIndex(newParentId);
+    var parentNode = newParentId ? getLayer(newParentId) : null;
+    if (parentNode) parentNode.expanded = true;
+    renderLayerList();
+  }
+
+  function allDescendantIds(id){
+    var result = [];
+    getChildren(id).forEach(function(child){
+      result.push(child.id);
+      result = result.concat(allDescendantIds(child.id));
+    });
+    return result;
+  }
+
+  function createLayer(name, color, parentId){
     layerCounter++;
+    parentId = parentId || null;
     var obj = {
       id: 'capa-' + layerCounter,
       name: name || ('Capa ' + layerCounter),
       color: color || nextColor(),
       group: L.featureGroup().addTo(map),
       visible: true,
-      expanded: true
+      expanded: true,
+      parentId: parentId,
+      sortIndex: nextSortIndex(parentId)
     };
     layers.push(obj);
+    if (parentId){ var p = getLayer(parentId); if (p) p.expanded = true; }
     setActiveLayer(obj.id);
     renderLayerList();
     return obj;
@@ -1011,7 +1085,9 @@
       color: '#B8962E',
       group: L.featureGroup().addTo(map),
       visible: true,
-      expanded: true
+      expanded: true,
+      parentId: null,
+      sortIndex: nextSortIndex(null)
     };
     layers.push(obj);
     L.geoJSON(TEATRO_OPERACIONES_GEOJSON, {
@@ -2004,107 +2080,228 @@
   }
 
   /* ---------------- LAYER LIST UI ---------------- */
+  function flattenLayersForSelect(excludeId){
+    var result = [];
+    function walk(parentId, depth){
+      getChildren(parentId).forEach(function(node){
+        if (excludeId && (node.id === excludeId || isDescendantOf(node.id, excludeId))) return;
+        result.push({ id: node.id, label: (depth ? '　'.repeat(depth) + '↳ ' : '') + node.name, depth: depth });
+        walk(node.id, depth + 1);
+      });
+    }
+    walk(null, 0);
+    return result;
+  }
+
+  function buildMoveToSelect(currentValueExcludeId, onMove){
+    var select = document.createElement('select');
+    select.className = 'layer-move-select';
+    var optPlaceholder = document.createElement('option');
+    optPlaceholder.value = ''; optPlaceholder.textContent = 'Mover a…'; optPlaceholder.disabled = true; optPlaceholder.selected = true;
+    select.appendChild(optPlaceholder);
+    var optTop = document.createElement('option');
+    optTop.value = '__root__'; optTop.textContent = '— Nivel superior —';
+    select.appendChild(optTop);
+    flattenLayersForSelect(currentValueExcludeId).forEach(function(opt){
+      var o = document.createElement('option');
+      o.value = opt.id; o.textContent = opt.label;
+      select.appendChild(o);
+    });
+    select.addEventListener('click', function(ev){ ev.stopPropagation(); });
+    select.addEventListener('change', function(ev){
+      var val = ev.target.value;
+      onMove(val === '__root__' ? null : val);
+      select.value = '';
+    });
+    return select;
+  }
+
   function renderLayerList(){
     var list = document.getElementById('layer-list');
     list.innerHTML = '';
-    layers.forEach(function(l){
-      var card = document.createElement('div');
-      card.className = 'layer-card' + (l.id === activeLayerId ? ' active' : '');
+    getRootLayers().forEach(function(node){ list.appendChild(buildLayerCard(node, 0)); });
+    scheduleSave();
+  }
 
-      var row = document.createElement('div');
-      row.className = 'layer-row';
+  function buildLayerCard(l, depth){
+    var card = document.createElement('div');
+    card.className = 'layer-card' + (l.id === activeLayerId ? ' active' : '');
+    if (depth > 0) card.style.marginLeft = (depth * 12) + 'px';
 
-      var expandBtn = document.createElement('button');
-      expandBtn.className = 'expand-btn' + (l.expanded ? ' open' : '');
-      expandBtn.textContent = '▸';
-      expandBtn.title = 'Mostrar/ocultar objetos de la capa';
-      expandBtn.addEventListener('click', function(ev){
-        ev.stopPropagation();
-        l.expanded = !l.expanded;
-        renderLayerList();
-      });
+    var row = document.createElement('div');
+    row.className = 'layer-row';
 
-      var colorInput = document.createElement('input');
-      colorInput.type = 'color';
-      colorInput.value = l.color;
-      colorInput.title = 'Color base de la capa';
-      colorInput.addEventListener('input', function(ev){
-        l.color = ev.target.value;
-        if (l.id === activeLayerId) buildDrawHandlers();
-      });
-      colorInput.addEventListener('click', function(ev){ ev.stopPropagation(); });
+    var expandBtn = document.createElement('button');
+    expandBtn.className = 'expand-btn' + (l.expanded ? ' open' : '');
+    expandBtn.textContent = '▸';
+    expandBtn.title = 'Mostrar/ocultar objetos y subcapas';
+    expandBtn.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      l.expanded = !l.expanded;
+      renderLayerList();
+    });
 
-      var nameInput = document.createElement('input');
-      nameInput.className = 'layer-name';
-      nameInput.value = l.name;
-      nameInput.addEventListener('click', function(ev){ ev.stopPropagation(); });
-      nameInput.addEventListener('change', function(ev){ l.name = ev.target.value || l.name; });
+    var colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.value = l.color;
+    colorInput.title = 'Color base de la capa';
+    colorInput.addEventListener('input', function(ev){
+      l.color = ev.target.value;
+      if (l.id === activeLayerId) buildDrawHandlers();
+    });
+    colorInput.addEventListener('click', function(ev){ ev.stopPropagation(); });
 
-      var count = document.createElement('span');
-      count.className = 'layer-count';
-      count.textContent = l.group.getLayers().length;
+    var nameInput = document.createElement('input');
+    nameInput.className = 'layer-name';
+    nameInput.value = l.name;
+    nameInput.addEventListener('click', function(ev){ ev.stopPropagation(); });
+    nameInput.addEventListener('change', function(ev){ l.name = ev.target.value || l.name; scheduleSave(); });
 
-      var visBtn = document.createElement('button');
-      visBtn.className = 'vis-btn';
-      visBtn.title = l.visible ? 'Ocultar capa' : 'Mostrar capa';
-      visBtn.textContent = l.visible ? '👁' : '🚫';
-      visBtn.addEventListener('click', function(ev){
-        ev.stopPropagation();
-        l.visible = !l.visible;
-        if (l.visible) map.addLayer(l.group); else map.removeLayer(l.group);
-        renderLayerList();
-      });
+    var childCount = getChildren(l.id).length;
+    var count = document.createElement('span');
+    count.className = 'layer-count';
+    count.title = childCount ? (l.group.getLayers().length + ' objeto(s) · ' + childCount + ' subcapa(s)') : '';
+    count.textContent = l.group.getLayers().length + (childCount ? '+' + childCount + 'sc' : '');
 
-      var delBtn = document.createElement('button');
-      delBtn.title = 'Eliminar capa';
-      delBtn.textContent = '✕';
-      delBtn.addEventListener('click', function(ev){
-        ev.stopPropagation();
-        if (layers.length === 1){ alert('Debe existir al menos una capa.'); return; }
-        showConfirm('¿Eliminar la capa "' + l.name + '" y todo su contenido?', function(){
-          if (arrowHandlesShapeRef && l.group.hasLayer(arrowHandlesShapeRef)){
+    var upBtn = document.createElement('button');
+    upBtn.className = 'reorder-btn'; upBtn.textContent = '▲'; upBtn.title = 'Subir de orden';
+    upBtn.addEventListener('click', function(ev){ ev.stopPropagation(); moveSibling(l.id, -1); });
+
+    var downBtn = document.createElement('button');
+    downBtn.className = 'reorder-btn'; downBtn.textContent = '▼'; downBtn.title = 'Bajar de orden';
+    downBtn.addEventListener('click', function(ev){ ev.stopPropagation(); moveSibling(l.id, 1); });
+
+    var visBtn = document.createElement('button');
+    visBtn.className = 'vis-btn';
+    visBtn.title = l.visible ? 'Ocultar capa' : 'Mostrar capa';
+    visBtn.textContent = l.visible ? '👁' : '🚫';
+    visBtn.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      l.visible = !l.visible;
+      if (l.visible) map.addLayer(l.group); else map.removeLayer(l.group);
+      renderLayerList();
+    });
+
+    var delBtn = document.createElement('button');
+    delBtn.title = 'Eliminar capa';
+    delBtn.textContent = '✕';
+    delBtn.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      var descendantIds = allDescendantIds(l.id);
+      var totalToDelete = 1 + descendantIds.length;
+      if (layers.length === totalToDelete){ alert('Debe existir al menos una capa.'); return; }
+      var msg = descendantIds.length > 0
+        ? '¿Eliminar la capa "' + l.name + '", sus ' + descendantIds.length + ' subcapa(s) y todo su contenido?'
+        : '¿Eliminar la capa "' + l.name + '" y todo su contenido?';
+      showConfirm(msg, function(){
+        var allIds = [l.id].concat(descendantIds);
+        allIds.forEach(function(id){
+          var node = getLayer(id);
+          if (!node) return;
+          if (arrowHandlesShapeRef && node.group.hasLayer(arrowHandlesShapeRef)){
             removeArrowHandles(arrowHandlesShapeRef);
             arrowHandlesShapeRef = null;
             selectedShape = null;
             clearProperties();
           }
-          map.removeLayer(l.group);
-          layers = layers.filter(function(x){ return x.id !== l.id; });
-          if (activeLayerId === l.id) setActiveLayer(layers[0].id);
-          else renderLayerList();
+          map.removeLayer(node.group);
         });
+        layers = layers.filter(function(x){ return allIds.indexOf(x.id) === -1; });
+        if (allIds.indexOf(activeLayerId) !== -1){
+          var fallback = getRootLayers()[0];
+          if (fallback) setActiveLayer(fallback.id); else renderLayerList();
+        } else {
+          renderLayerList();
+        }
+      });
+    });
+
+    row.appendChild(expandBtn);
+    row.appendChild(colorInput);
+    row.appendChild(nameInput);
+    row.appendChild(count);
+    row.appendChild(upBtn);
+    row.appendChild(downBtn);
+    row.appendChild(visBtn);
+    row.appendChild(delBtn);
+    row.addEventListener('click', function(){ setActiveLayer(l.id); });
+
+    card.appendChild(row);
+
+    if (l.expanded){
+      var toolsRow = document.createElement('div');
+      toolsRow.className = 'layer-tools-row';
+
+      var addSubBtn = document.createElement('button');
+      addSubBtn.className = 'outline-btn';
+      addSubBtn.textContent = '＋ Subcapa';
+      addSubBtn.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        createLayer('Subcapa', nextColor(), l.id);
       });
 
-      row.appendChild(expandBtn);
-      row.appendChild(colorInput);
-      row.appendChild(nameInput);
-      row.appendChild(count);
-      row.appendChild(visBtn);
-      row.appendChild(delBtn);
-      row.addEventListener('click', function(){ setActiveLayer(l.id); });
+      var moveSelect = buildMoveToSelect(l.id, function(newParentId){ reparentLayer(l.id, newParentId); });
 
-      card.appendChild(row);
+      toolsRow.appendChild(addSubBtn);
+      toolsRow.appendChild(moveSelect);
+      card.appendChild(toolsRow);
 
-      if (l.expanded){
-        var shapesWrap = document.createElement('div');
-        shapesWrap.className = 'shape-list';
-        var shapes = l.group.getLayers();
-        if (shapes.length === 0){
-          var empty = document.createElement('div');
-          empty.className = 'empty-shapes';
-          empty.textContent = 'Sin objetos todavía.';
-          shapesWrap.appendChild(empty);
-        } else {
-          shapes.forEach(function(shape){
-            shapesWrap.appendChild(renderShapeRow(shape, l));
-          });
-        }
-        card.appendChild(shapesWrap);
+      var shapesWrap = document.createElement('div');
+      shapesWrap.className = 'shape-list';
+      var shapes = l.group.getLayers();
+      var children = getChildren(l.id);
+      if (shapes.length === 0 && children.length === 0){
+        var empty = document.createElement('div');
+        empty.className = 'empty-shapes';
+        empty.textContent = 'Sin objetos ni subcapas todavía.';
+        shapesWrap.appendChild(empty);
+      } else {
+        shapes.forEach(function(shape){
+          shapesWrap.appendChild(renderShapeRow(shape, l));
+        });
       }
+      card.appendChild(shapesWrap);
 
-      list.appendChild(card);
-    });
-    scheduleSave();
+      children.forEach(function(childNode){
+        card.appendChild(buildLayerCard(childNode, depth + 1));
+      });
+    }
+
+    return card;
+  }
+
+  function flattenAllLayers(excludeExactId){
+    var result = [];
+    function walk(parentId, depth){
+      getChildren(parentId).forEach(function(node){
+        if (node.id !== excludeExactId){
+          result.push({ id: node.id, label: (depth ? '　'.repeat(depth) + '↳ ' : '') + node.name, depth: depth });
+        }
+        walk(node.id, depth + 1);
+      });
+    }
+    walk(null, 0);
+    return result;
+  }
+
+  function moveShapeToLayer(shape, fromLayerObj, toLayerObj){
+    if (!toLayerObj || fromLayerObj.id === toLayerObj.id) return;
+    fromLayerObj.group.removeLayer(shape);
+    toLayerObj.group.addLayer(shape);
+    pushAction(
+      function(){
+        toLayerObj.group.removeLayer(shape); fromLayerObj.group.addLayer(shape);
+        if (selectedShape === shape) showProperties(shape, fromLayerObj);
+        renderLayerList();
+      },
+      function(){
+        fromLayerObj.group.removeLayer(shape); toLayerObj.group.addLayer(shape);
+        if (selectedShape === shape) showProperties(shape, toLayerObj);
+        renderLayerList();
+      }
+    );
+    if (selectedShape === shape) showProperties(shape, toLayerObj);
+    renderLayerList();
   }
 
   function renderShapeRow(shape, layerObj){
@@ -2140,6 +2337,24 @@
       renderLayerList();
     });
 
+    var shapeMoveSelect = document.createElement('select');
+    shapeMoveSelect.className = 'shape-move-select';
+    shapeMoveSelect.title = 'Mover este objeto a otra capa';
+    var moveOptPlaceholder = document.createElement('option');
+    moveOptPlaceholder.value = ''; moveOptPlaceholder.textContent = '⇄'; moveOptPlaceholder.disabled = true; moveOptPlaceholder.selected = true;
+    shapeMoveSelect.appendChild(moveOptPlaceholder);
+    flattenAllLayers(layerObj.id).forEach(function(opt){
+      var o = document.createElement('option');
+      o.value = opt.id; o.textContent = opt.label;
+      shapeMoveSelect.appendChild(o);
+    });
+    shapeMoveSelect.addEventListener('click', function(ev){ ev.stopPropagation(); });
+    shapeMoveSelect.addEventListener('change', function(ev){
+      var target = getLayer(ev.target.value);
+      if (target) moveShapeToLayer(shape, layerObj, target);
+      shapeMoveSelect.value = '';
+    });
+
     var delBtn = document.createElement('button');
     delBtn.textContent = '✕';
     delBtn.title = 'Eliminar este objeto';
@@ -2156,6 +2371,7 @@
     top.appendChild(icon);
     top.appendChild(nameInput);
     top.appendChild(focusBtn);
+    top.appendChild(shapeMoveSelect);
     top.appendChild(delBtn);
     row.appendChild(top);
 
