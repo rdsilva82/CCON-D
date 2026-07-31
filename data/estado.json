@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:34:38.990Z",
+  "savedAt": "2026-07-31T00:34:51.325Z",
   "mapView": {
-    "lat": 9.922860428632177,
-    "lng": -72.82287597656251,
-    "zoom": 8
+    "lat": 10.091233952393575,
+    "lng": -73.00277709960939,
+    "zoom": 10
   },
   "baseLayer": "street",
   "layerCounter": 8,
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:34:38.991Z"
+          "generado": "2026-07-31T00:34:51.325Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:34:38.991Z"
+          "generado": "2026-07-31T00:34:51.325Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:34:38.991Z"
+          "generado": "2026-07-31T00:34:51.325Z"
         }
       }
     },
@@ -21998,7 +21998,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T00:34:38.991Z"
+          "generado": "2026-07-31T00:34:51.325Z"
         }
       }
     },
@@ -22006,7 +22006,7 @@
       "id": "capa-7",
       "name": "calco_ao",
       "color": "#7A4A2F",
-      "visible": true,
+      "visible": false,
       "expanded": false,
       "geojson": {
         "type": "FeatureCollection",
@@ -24827,7 +24827,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T00:34:38.991Z"
+          "generado": "2026-07-31T00:34:51.325Z"
         }
       }
     },
@@ -24835,7 +24835,7 @@
       "id": "capa-8",
       "name": "calco_enemigo",
       "color": "#1F3864",
-      "visible": true,
+      "visible": false,
       "expanded": false,
       "geojson": {
         "type": "FeatureCollection",
@@ -25664,7 +25664,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:34:38.991Z"
+          "generado": "2026-07-31T00:34:51.325Z"
         }
       }
     }
