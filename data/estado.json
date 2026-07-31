@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:35:41.043Z",
+  "savedAt": "2026-07-31T00:35:53.215Z",
   "mapView": {
     "lat": 9.809210001222878,
-    "lng": -72.80090332031251,
+    "lng": -72.74597167968751,
     "zoom": 8
   },
   "baseLayer": "street",
-  "layerCounter": 9,
-  "shapeCounter": 190,
-  "paletteIdx": 8,
-  "activeLayerId": "capa-9",
+  "layerCounter": 10,
+  "shapeCounter": 201,
+  "paletteIdx": 9,
+  "activeLayerId": "capa-10",
   "coaEsfuerzos": "",
   "coaFases": "",
   "coaDesarrollo": "",
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:35:41.043Z"
+          "generado": "2026-07-31T00:35:53.215Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:35:41.043Z"
+          "generado": "2026-07-31T00:35:53.215Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:35:41.043Z"
+          "generado": "2026-07-31T00:35:53.215Z"
         }
       }
     },
@@ -21998,7 +21998,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T00:35:41.043Z"
+          "generado": "2026-07-31T00:35:53.216Z"
         }
       }
     },
@@ -24827,7 +24827,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T00:35:41.043Z"
+          "generado": "2026-07-31T00:35:53.216Z"
         }
       }
     },
@@ -25664,7 +25664,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:35:41.043Z"
+          "generado": "2026-07-31T00:35:53.216Z"
         }
       }
     },
@@ -25875,7 +25875,244 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:35:41.043Z"
+          "generado": "2026-07-31T00:35:53.216Z"
+        }
+      }
+    },
+    {
+      "id": "capa-10",
+      "name": "calco_terreno",
+      "color": "#4C7A57",
+      "visible": false,
+      "expanded": false,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P1</b> — 4 vías — acceso N/S y a Riohacha",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 191",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.55,
+                11.3
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P2</b> — Albania — rutas principales/secundarias",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 192",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.59,
+                11.163
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P3</b> — Uribia — plataforma de lanzamiento/reabastecimiento",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 193",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.266,
+                11.714
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P4</b> — Valledupar — control accesos norte del país",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 194",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -73.253,
+                10.463
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P5</b> — Riohacha — centro político/económico",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 195",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.907,
+                11.544
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P6</b> — Maicao — recursos, cercanía a frontera",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 196",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.239,
+                11.378
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P7</b> — Cerro La Teta — vigilancia/comunicaciones",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 197",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.55,
+                11.65
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P8</b> — Carraipia — plataforma de vigilancia",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 198",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.35,
+                11.42
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P9</b> — Puente Gral. Rafael Urdaneta — paso obligado",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 199",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.65,
+                10.9
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P10</b> — Tibú — núcleo logístico del Catatumbo",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 200",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.735,
+                8.635
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "popup": "<b>P11</b> — Cúcuta — área metropolitana fronteriza",
+              "calco": "5. Terreno clave",
+              "nombre": "Punto 201",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.507,
+                7.894
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "capa": "calco_terreno",
+          "color": "#4C7A57",
+          "generado": "2026-07-31T00:35:53.216Z"
         }
       }
     }
