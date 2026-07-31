@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:33:49.203Z",
+  "savedAt": "2026-07-31T00:34:04.646Z",
   "mapView": {
-    "lat": 9.671153534953039,
-    "lng": -72.53173828125001,
-    "zoom": 7
+    "lat": 9.922860428632177,
+    "lng": -72.82287597656251,
+    "zoom": 8
   },
   "baseLayer": "street",
-  "layerCounter": 7,
-  "shapeCounter": 173,
-  "paletteIdx": 6,
-  "activeLayerId": "capa-7",
+  "layerCounter": 8,
+  "shapeCounter": 184,
+  "paletteIdx": 7,
+  "activeLayerId": "capa-8",
   "coaEsfuerzos": "",
   "coaFases": "",
   "coaDesarrollo": "",
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:33:49.203Z"
+          "generado": "2026-07-31T00:34:04.646Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:33:49.203Z"
+          "generado": "2026-07-31T00:34:04.646Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:33:49.204Z"
+          "generado": "2026-07-31T00:34:04.647Z"
         }
       }
     },
@@ -21998,7 +21998,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T00:33:49.204Z"
+          "generado": "2026-07-31T00:34:04.647Z"
         }
       }
     },
@@ -24827,7 +24827,844 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T00:33:49.204Z"
+          "generado": "2026-07-31T00:34:04.647Z"
+        }
+      }
+    },
+    {
+      "id": "capa-8",
+      "name": "calco_enemigo",
+      "color": "#1F3864",
+      "visible": true,
+      "expanded": true,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#C00000",
+              "weight": 2,
+              "fillColor": "#C00000",
+              "fillOpacity": 0.12,
+              "dashArray": "5,4",
+              "popup": "<b>EMBF Fte.33 / ELN F.G. Nororiental — Catatumbo</b><br>Fuente: AT 026-2024",
+              "radius_m": 55000,
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Polígono 174",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72.85,
+                    9.044627
+                  ],
+                  [
+                    -72.784627,
+                    9.04039
+                  ],
+                  [
+                    -72.720377,
+                    9.027751
+                  ],
+                  [
+                    -72.658353,
+                    9.006928
+                  ],
+                  [
+                    -72.599621,
+                    8.978278
+                  ],
+                  [
+                    -72.545188,
+                    8.942293
+                  ],
+                  [
+                    -72.495986,
+                    8.899591
+                  ],
+                  [
+                    -72.452859,
+                    8.850905
+                  ],
+                  [
+                    -72.416543,
+                    8.79707
+                  ],
+                  [
+                    -72.387658,
+                    8.739009
+                  ],
+                  [
+                    -72.366695,
+                    8.677718
+                  ],
+                  [
+                    -72.35401,
+                    8.614245
+                  ],
+                  [
+                    -72.349815,
+                    8.549679
+                  ],
+                  [
+                    -72.354178,
+                    8.485124
+                  ],
+                  [
+                    -72.367019,
+                    8.421683
+                  ],
+                  [
+                    -72.388117,
+                    8.360443
+                  ],
+                  [
+                    -72.417105,
+                    8.302448
+                  ],
+                  [
+                    -72.453486,
+                    8.248691
+                  ],
+                  [
+                    -72.496635,
+                    8.200088
+                  ],
+                  [
+                    -72.545815,
+                    8.157469
+                  ],
+                  [
+                    -72.600183,
+                    8.121562
+                  ],
+                  [
+                    -72.658812,
+                    8.092978
+                  ],
+                  [
+                    -72.720702,
+                    8.072206
+                  ],
+                  [
+                    -72.784795,
+                    8.059599
+                  ],
+                  [
+                    -72.85,
+                    8.055373
+                  ],
+                  [
+                    -72.915205,
+                    8.059599
+                  ],
+                  [
+                    -72.979298,
+                    8.072206
+                  ],
+                  [
+                    -73.041188,
+                    8.092978
+                  ],
+                  [
+                    -73.099817,
+                    8.121562
+                  ],
+                  [
+                    -73.154185,
+                    8.157469
+                  ],
+                  [
+                    -73.203365,
+                    8.200088
+                  ],
+                  [
+                    -73.246514,
+                    8.248691
+                  ],
+                  [
+                    -73.282895,
+                    8.302448
+                  ],
+                  [
+                    -73.311883,
+                    8.360443
+                  ],
+                  [
+                    -73.332981,
+                    8.421683
+                  ],
+                  [
+                    -73.345822,
+                    8.485124
+                  ],
+                  [
+                    -73.350185,
+                    8.549679
+                  ],
+                  [
+                    -73.34599,
+                    8.614245
+                  ],
+                  [
+                    -73.333305,
+                    8.677718
+                  ],
+                  [
+                    -73.312342,
+                    8.739009
+                  ],
+                  [
+                    -73.283457,
+                    8.79707
+                  ],
+                  [
+                    -73.247141,
+                    8.850905
+                  ],
+                  [
+                    -73.204014,
+                    8.899591
+                  ],
+                  [
+                    -73.154812,
+                    8.942293
+                  ],
+                  [
+                    -73.100379,
+                    8.978278
+                  ],
+                  [
+                    -73.041647,
+                    9.006928
+                  ],
+                  [
+                    -72.979623,
+                    9.027751
+                  ],
+                  [
+                    -72.915373,
+                    9.04039
+                  ],
+                  [
+                    -72.85,
+                    9.044627
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#C00000",
+              "weight": 2,
+              "fillColor": "#C00000",
+              "fillOpacity": 0.12,
+              "dashArray": "5,4",
+              "popup": "<b>GAO-ELN F.G. Norte — Perijá (Cesar)</b><br>Fuente: JIPOE CCON D",
+              "radius_m": 45000,
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Polígono 175",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -73.18,
+                    10.784695
+                  ],
+                  [
+                    -73.126228,
+                    10.781228
+                  ],
+                  [
+                    -73.07338,
+                    10.770887
+                  ],
+                  [
+                    -73.022363,
+                    10.75385
+                  ],
+                  [
+                    -72.974053,
+                    10.73041
+                  ],
+                  [
+                    -72.929279,
+                    10.700968
+                  ],
+                  [
+                    -72.888808,
+                    10.66603
+                  ],
+                  [
+                    -72.853333,
+                    10.626196
+                  ],
+                  [
+                    -72.823461,
+                    10.58215
+                  ],
+                  [
+                    -72.799701,
+                    10.534645
+                  ],
+                  [
+                    -72.782458,
+                    10.484498
+                  ],
+                  [
+                    -72.772023,
+                    10.432565
+                  ],
+                  [
+                    -72.768572,
+                    10.379738
+                  ],
+                  [
+                    -72.772161,
+                    10.32692
+                  ],
+                  [
+                    -72.782724,
+                    10.275014
+                  ],
+                  [
+                    -72.800077,
+                    10.224908
+                  ],
+                  [
+                    -72.823922,
+                    10.177458
+                  ],
+                  [
+                    -72.853847,
+                    10.133474
+                  ],
+                  [
+                    -72.88934,
+                    10.093708
+                  ],
+                  [
+                    -72.929793,
+                    10.058838
+                  ],
+                  [
+                    -72.974514,
+                    10.029459
+                  ],
+                  [
+                    -73.022739,
+                    10.006073
+                  ],
+                  [
+                    -73.073646,
+                    9.989078
+                  ],
+                  [
+                    -73.126366,
+                    9.978763
+                  ],
+                  [
+                    -73.18,
+                    9.975305
+                  ],
+                  [
+                    -73.233634,
+                    9.978763
+                  ],
+                  [
+                    -73.286354,
+                    9.989078
+                  ],
+                  [
+                    -73.337261,
+                    10.006073
+                  ],
+                  [
+                    -73.385486,
+                    10.029459
+                  ],
+                  [
+                    -73.430207,
+                    10.058838
+                  ],
+                  [
+                    -73.47066,
+                    10.093708
+                  ],
+                  [
+                    -73.506153,
+                    10.133474
+                  ],
+                  [
+                    -73.536078,
+                    10.177458
+                  ],
+                  [
+                    -73.559923,
+                    10.224908
+                  ],
+                  [
+                    -73.577276,
+                    10.275014
+                  ],
+                  [
+                    -73.587839,
+                    10.32692
+                  ],
+                  [
+                    -73.591428,
+                    10.379738
+                  ],
+                  [
+                    -73.587977,
+                    10.432565
+                  ],
+                  [
+                    -73.577542,
+                    10.484498
+                  ],
+                  [
+                    -73.560299,
+                    10.534645
+                  ],
+                  [
+                    -73.536539,
+                    10.58215
+                  ],
+                  [
+                    -73.506667,
+                    10.626196
+                  ],
+                  [
+                    -73.471192,
+                    10.66603
+                  ],
+                  [
+                    -73.430721,
+                    10.700968
+                  ],
+                  [
+                    -73.385947,
+                    10.73041
+                  ],
+                  [
+                    -73.337637,
+                    10.75385
+                  ],
+                  [
+                    -73.28662,
+                    10.770887
+                  ],
+                  [
+                    -73.233772,
+                    10.781228
+                  ],
+                  [
+                    -73.18,
+                    10.784695
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#C00000",
+              "weight": 2,
+              "fillColor": "#C00000",
+              "fillOpacity": 0.12,
+              "dashArray": "5,4",
+              "popup": "<b>Disputa AGC/ACSN–ELN — Guajira</b><br>Fuente: ATI 025-2023",
+              "radius_m": 60000,
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Polígono 176",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72.6,
+                    11.939593
+                  ],
+                  [
+                    -72.528014,
+                    11.934968
+                  ],
+                  [
+                    -72.457267,
+                    11.921172
+                  ],
+                  [
+                    -72.388975,
+                    11.898443
+                  ],
+                  [
+                    -72.324314,
+                    11.867171
+                  ],
+                  [
+                    -72.264394,
+                    11.827895
+                  ],
+                  [
+                    -72.210242,
+                    11.781291
+                  ],
+                  [
+                    -72.162787,
+                    11.728157
+                  ],
+                  [
+                    -72.122838,
+                    11.669409
+                  ],
+                  [
+                    -72.091076,
+                    11.606053
+                  ],
+                  [
+                    -72.068042,
+                    11.539177
+                  ],
+                  [
+                    -72.054122,
+                    11.469926
+                  ],
+                  [
+                    -72.049548,
+                    11.399488
+                  ],
+                  [
+                    -72.054392,
+                    11.329067
+                  ],
+                  [
+                    -72.068564,
+                    11.259867
+                  ],
+                  [
+                    -72.091816,
+                    11.193072
+                  ],
+                  [
+                    -72.123743,
+                    11.129823
+                  ],
+                  [
+                    -72.163796,
+                    11.071198
+                  ],
+                  [
+                    -72.211288,
+                    11.018197
+                  ],
+                  [
+                    -72.265404,
+                    10.971725
+                  ],
+                  [
+                    -72.325219,
+                    10.932573
+                  ],
+                  [
+                    -72.389715,
+                    10.901407
+                  ],
+                  [
+                    -72.457789,
+                    10.878759
+                  ],
+                  [
+                    -72.528284,
+                    10.865015
+                  ],
+                  [
+                    -72.6,
+                    10.860407
+                  ],
+                  [
+                    -72.671716,
+                    10.865015
+                  ],
+                  [
+                    -72.742211,
+                    10.878759
+                  ],
+                  [
+                    -72.810285,
+                    10.901407
+                  ],
+                  [
+                    -72.874781,
+                    10.932573
+                  ],
+                  [
+                    -72.934596,
+                    10.971725
+                  ],
+                  [
+                    -72.988712,
+                    11.018197
+                  ],
+                  [
+                    -73.036204,
+                    11.071198
+                  ],
+                  [
+                    -73.076257,
+                    11.129823
+                  ],
+                  [
+                    -73.108184,
+                    11.193072
+                  ],
+                  [
+                    -73.131436,
+                    11.259867
+                  ],
+                  [
+                    -73.145608,
+                    11.329067
+                  ],
+                  [
+                    -73.150452,
+                    11.399488
+                  ],
+                  [
+                    -73.145878,
+                    11.469926
+                  ],
+                  [
+                    -73.131958,
+                    11.539177
+                  ],
+                  [
+                    -73.108924,
+                    11.606053
+                  ],
+                  [
+                    -73.077162,
+                    11.669409
+                  ],
+                  [
+                    -73.037213,
+                    11.728157
+                  ],
+                  [
+                    -72.989758,
+                    11.781291
+                  ],
+                  [
+                    -72.935606,
+                    11.827895
+                  ],
+                  [
+                    -72.875686,
+                    11.867171
+                  ],
+                  [
+                    -72.811025,
+                    11.898443
+                  ],
+                  [
+                    -72.742733,
+                    11.921172
+                  ],
+                  [
+                    -72.671986,
+                    11.934968
+                  ],
+                  [
+                    -72.6,
+                    11.939593
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#C00000",
+              "popup": "<b>Tibú: hostigamiento a Fuerza Pública</b>",
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Punto 177",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.74,
+                8.64
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#111111",
+              "popup": "<b>El Tarra: AEI / ataques con drones (Def. del Pueblo, abr-2026)</b>",
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Punto 178",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -73,
+                8.58
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#C00000",
+              "popup": "<b>Ocaña–Ábrego: riesgo de reconfiguración (AT 006-2026)</b>",
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Punto 179",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -73.3,
+                8.24
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#8B6F00",
+              "popup": "<b>Cúcuta: extorsión en corredor urbano</b>",
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Punto 180",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.55,
+                7.89
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#C00000",
+              "popup": "<b>González/Río de Oro: choques ELN–EMBF</b>",
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Punto 181",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -73.39,
+                8.37
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#8B6F00",
+              "popup": "<b>Maicao: extorsión y contrabando (AT 013-2026)</b>",
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Punto 182",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.3,
+                11.38
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#111111",
+              "popup": "<b>Dibulla: disputa ACSN–AGC (ATI 025-2023)</b>",
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Punto 183",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -73.28,
+                11.27
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#111111",
+              "popup": "<b>Barrancas/Fonseca: presencia GAO-ELN F.G. Norte</b>",
+              "calco": "2. Actividades del enemigo",
+              "nombre": "Punto 184",
+              "capa": "calco_enemigo",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.8,
+                10.96
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "capa": "calco_enemigo",
+          "color": "#1F3864",
+          "generado": "2026-07-31T00:34:04.647Z"
         }
       }
     }
