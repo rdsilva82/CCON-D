@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:35:53.215Z",
+  "savedAt": "2026-07-31T00:36:15.213Z",
   "mapView": {
-    "lat": 9.809210001222878,
-    "lng": -72.74597167968751,
+    "lat": 10.05269833241438,
+    "lng": -72.59765625000001,
     "zoom": 8
   },
   "baseLayer": "street",
-  "layerCounter": 10,
-  "shapeCounter": 201,
-  "paletteIdx": 9,
-  "activeLayerId": "capa-10",
+  "layerCounter": 11,
+  "shapeCounter": 207,
+  "paletteIdx": 10,
+  "activeLayerId": "capa-11",
   "coaEsfuerzos": "",
   "coaFases": "",
   "coaDesarrollo": "",
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:35:53.215Z"
+          "generado": "2026-07-31T00:36:15.213Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:35:53.215Z"
+          "generado": "2026-07-31T00:36:15.213Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:35:53.215Z"
+          "generado": "2026-07-31T00:36:15.213Z"
         }
       }
     },
@@ -21998,7 +21998,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T00:35:53.216Z"
+          "generado": "2026-07-31T00:36:15.214Z"
         }
       }
     },
@@ -24827,7 +24827,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T00:35:53.216Z"
+          "generado": "2026-07-31T00:36:15.214Z"
         }
       }
     },
@@ -25664,7 +25664,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:35:53.216Z"
+          "generado": "2026-07-31T00:36:15.214Z"
         }
       }
     },
@@ -25875,7 +25875,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:35:53.216Z"
+          "generado": "2026-07-31T00:36:15.214Z"
         }
       }
     },
@@ -26112,7 +26112,229 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-07-31T00:35:53.216Z"
+          "generado": "2026-07-31T00:36:15.214Z"
+        }
+      }
+    },
+    {
+      "id": "capa-11",
+      "name": "calco_observacion",
+      "color": "#8A3A5A",
+      "visible": false,
+      "expanded": false,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#2E7D32",
+              "weight": 2,
+              "fillColor": "#2E7D32",
+              "fillOpacity": 0.18,
+              "popup": "Observación amplia / campos de tiro largos (desierto guajiro)",
+              "calco": "6. Observación y campos de tiro",
+              "nombre": "Polígono 202",
+              "capa": "calco_observacion",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72,
+                    12.2
+                  ],
+                  [
+                    -71.7,
+                    11.9
+                  ],
+                  [
+                    -72,
+                    11.4
+                  ],
+                  [
+                    -72.5,
+                    11.1
+                  ],
+                  [
+                    -72.9,
+                    11.5
+                  ],
+                  [
+                    -72.5,
+                    12
+                  ],
+                  [
+                    -72,
+                    12.2
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#C00000",
+              "weight": 2,
+              "fillColor": "#C00000",
+              "fillOpacity": 0.15,
+              "popup": "Observación restringida (Serranía del Perijá)",
+              "calco": "6. Observación y campos de tiro",
+              "nombre": "Polígono 203",
+              "capa": "calco_observacion",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72.98,
+                    10.6
+                  ],
+                  [
+                    -73.1,
+                    9.1
+                  ],
+                  [
+                    -73.15,
+                    8.7
+                  ],
+                  [
+                    -72.85,
+                    8.7
+                  ],
+                  [
+                    -72.7,
+                    10.6
+                  ],
+                  [
+                    -72.98,
+                    10.6
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#C00000",
+              "weight": 2,
+              "fillColor": "#C00000",
+              "fillOpacity": 0.12,
+              "popup": "Campos de tiro limitados (selva del Catatumbo)",
+              "calco": "6. Observación y campos de tiro",
+              "nombre": "Polígono 204",
+              "capa": "calco_observacion",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72.9,
+                    9
+                  ],
+                  [
+                    -73.5,
+                    8.3
+                  ],
+                  [
+                    -73.2,
+                    7.9
+                  ],
+                  [
+                    -72.3,
+                    8.3
+                  ],
+                  [
+                    -72.3,
+                    8.9
+                  ],
+                  [
+                    -72.9,
+                    9
+                  ]
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#000",
+              "popup": "<b>Cerro La Teta</b> — punto dominante",
+              "calco": "6. Observación y campos de tiro",
+              "nombre": "Punto 205",
+              "capa": "calco_observacion",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.55,
+                11.65
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#000",
+              "popup": "<b>Alturas Perijá (Manaure Balcón)</b> — punto dominante",
+              "calco": "6. Observación y campos de tiro",
+              "nombre": "Punto 206",
+              "capa": "calco_observacion",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -73,
+                10.4
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "fillColor": "#000",
+              "popup": "<b>Alturas Perijá (N. de Santander)</b> — punto dominante",
+              "calco": "6. Observación y campos de tiro",
+              "nombre": "Punto 207",
+              "capa": "calco_observacion",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -73,
+                9
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "capa": "calco_observacion",
+          "color": "#8A3A5A",
+          "generado": "2026-07-31T00:36:15.214Z"
         }
       }
     }
