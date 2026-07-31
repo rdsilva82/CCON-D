@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:33:12.930Z",
+  "savedAt": "2026-07-31T00:33:16.501Z",
   "mapView": {
     "lat": 10.460803738006575,
     "lng": -73.21289062500001,
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:33:12.930Z"
+          "generado": "2026-07-31T00:33:16.501Z"
         }
       }
     },
@@ -7084,14 +7084,14 @@
       "name": "Operaciones",
       "color": "#1F3864",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "geojson": {
         "type": "FeatureCollection",
         "features": [],
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:33:12.930Z"
+          "generado": "2026-07-31T00:33:16.501Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:33:12.930Z"
+          "generado": "2026-07-31T00:33:16.501Z"
         }
       }
     }
