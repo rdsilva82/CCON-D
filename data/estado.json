@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-07-31T00:35:15.671Z",
+  "savedAt": "2026-07-31T00:35:33.773Z",
   "mapView": {
-    "lat": 10.091233952393575,
-    "lng": -73.00277709960939,
-    "zoom": 10
+    "lat": 9.809210001222878,
+    "lng": -72.80090332031251,
+    "zoom": 8
   },
   "baseLayer": "street",
-  "layerCounter": 8,
-  "shapeCounter": 184,
-  "paletteIdx": 7,
-  "activeLayerId": "capa-8",
+  "layerCounter": 9,
+  "shapeCounter": 190,
+  "paletteIdx": 8,
+  "activeLayerId": "capa-9",
   "coaEsfuerzos": "",
   "coaFases": "",
   "coaDesarrollo": "",
@@ -7075,7 +7075,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-07-31T00:35:15.671Z"
+          "generado": "2026-07-31T00:35:33.773Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:35:15.671Z"
+          "generado": "2026-07-31T00:35:33.773Z"
         }
       }
     },
@@ -15246,7 +15246,7 @@
         "properties": {
           "capa": "PICC_Calcos_Terreno_compatible",
           "color": "#ff0000",
-          "generado": "2026-07-31T00:35:15.671Z"
+          "generado": "2026-07-31T00:35:33.773Z"
         }
       }
     },
@@ -21998,7 +21998,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-07-31T00:35:15.672Z"
+          "generado": "2026-07-31T00:35:33.773Z"
         }
       }
     },
@@ -24827,7 +24827,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-07-31T00:35:15.672Z"
+          "generado": "2026-07-31T00:35:33.773Z"
         }
       }
     },
@@ -25664,7 +25664,218 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-07-31T00:35:15.672Z"
+          "generado": "2026-07-31T00:35:33.773Z"
+        }
+      }
+    },
+    {
+      "id": "capa-9",
+      "name": "calco_avenidas",
+      "color": "#B8962E",
+      "visible": true,
+      "expanded": true,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#C00000",
+              "weight": 6,
+              "opacity": 0.65,
+              "popup": "<b>A/A1 Caracas–Maracaibo–Maicao–Riohacha</b>",
+              "calco": "4. Avenidas de aproximación",
+              "nombre": "Línea 185",
+              "capa": "calco_avenidas",
+              "fillColor": "#B8962E",
+              "fillOpacity": 0.25,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -72.907,
+                  11.544
+                ],
+                [
+                  -72.6,
+                  11.45
+                ],
+                [
+                  -72.239,
+                  11.378
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#C00000",
+              "weight": 6,
+              "opacity": 0.65,
+              "popup": "<b>A/A2 Zulia–Perijá–Valledupar</b>",
+              "calco": "4. Avenidas de aproximación",
+              "nombre": "Línea 186",
+              "capa": "calco_avenidas",
+              "fillColor": "#B8962E",
+              "fillOpacity": 0.25,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -72.9,
+                  10.85
+                ],
+                [
+                  -73,
+                  10.6
+                ],
+                [
+                  -73.253,
+                  10.463
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#C00000",
+              "weight": 6,
+              "opacity": 0.65,
+              "popup": "<b>A/A3 Maracaibo–Paraguachón–Uribia</b>",
+              "calco": "4. Avenidas de aproximación",
+              "nombre": "Línea 187",
+              "capa": "calco_avenidas",
+              "fillColor": "#B8962E",
+              "fillOpacity": 0.25,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -72.239,
+                  11.378
+                ],
+                [
+                  -72.25,
+                  11.55
+                ],
+                [
+                  -72.266,
+                  11.714
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#C00000",
+              "weight": 6,
+              "opacity": 0.65,
+              "popup": "<b>A/A4 Maracaibo–Carraipia–Dibulla</b>",
+              "calco": "4. Avenidas de aproximación",
+              "nombre": "Línea 188",
+              "capa": "calco_avenidas",
+              "fillColor": "#B8962E",
+              "fillOpacity": 0.25,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -72.907,
+                  11.544
+                ],
+                [
+                  -73.31,
+                  11.271
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#8B6F00",
+              "weight": 6,
+              "opacity": 0.65,
+              "popup": "<b>A/A5 Zulia–Catatumbo–Cúcuta (táctico)</b>",
+              "calco": "4. Avenidas de aproximación",
+              "nombre": "Línea 189",
+              "capa": "calco_avenidas",
+              "fillColor": "#B8962E",
+              "fillOpacity": 0.25,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -72.735,
+                  8.635
+                ],
+                [
+                  -72.55,
+                  8.2
+                ],
+                [
+                  -72.507,
+                  7.894
+                ]
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "color": "#8B6F00",
+              "weight": 6,
+              "opacity": 0.65,
+              "popup": "<b>A/A6 Cúcuta–Ocaña (táctico)</b>",
+              "calco": "4. Avenidas de aproximación",
+              "nombre": "Línea 190",
+              "capa": "calco_avenidas",
+              "fillColor": "#B8962E",
+              "fillOpacity": 0.25,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -72.507,
+                  7.894
+                ],
+                [
+                  -73.22,
+                  8.08
+                ],
+                [
+                  -73.358,
+                  8.239
+                ]
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "capa": "calco_avenidas",
+          "color": "#B8962E",
+          "generado": "2026-07-31T00:35:33.773Z"
         }
       }
     }
