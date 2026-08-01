@@ -1252,8 +1252,32 @@
     ['medical','Médico / Sanidad'],
     ['logistics','Logística / Abastecimiento'],
     ['signal','Comunicaciones'],
-    ['specialforces','Fuerzas especiales']
+    ['specialforces','Fuerzas especiales'],
+    ['aspc','ASPC'],
+    ['biter','BITER'],
+    ['ggcar','GGCAR'],
+    ['ggmag','GGMAG'],
+    ['bapom','BAPOM'],
+    ['biacm','BIACM'],
+    ['futam','FUTAM'],
+    ['udiv','U/DIV'],
+    ['gmar','GMAR'],
+    ['imi','IMI'],
+    ['bafur','BAFUR'],
+    ['ev','EV'],
+    ['ggsan','GGSAN'],
+    ['ggmmag','GGMMAG'],
+    ['badre','BADRE'],
+    ['badra','BADRA'],
+    ['gtm','GTM'],
+    ['evipe','EVIPE']
   ];
+  var MIL_TEXT_UNIT_CODES = {
+    aspc:'ASPC', biter:'BITER', ggcar:'GGCAR', ggmag:'GGMAG', bapom:'BAPOM',
+    biacm:'BIACM', futam:'FUTAM', udiv:'U/DIV', gmar:'GMAR', imi:'IMI',
+    bafur:'BAFUR', ev:'EV', ggsan:'GGSAN', ggmmag:'GGMMAG', badre:'BADRE',
+    badra:'BADRA', gtm:'GTM', evipe:'EVIPE'
+  };
   var MIL_ECHELONS = [
     ['','Sin especificar'],
     ['team','Equipo/Célula'],
@@ -1295,6 +1319,11 @@
 
   function milGlyphSVG(unitType){
     var g = '#000';
+    if (MIL_TEXT_UNIT_CODES[unitType]){
+      var txt = MIL_TEXT_UNIT_CODES[unitType];
+      var fs = txt.length > 5 ? 8 : (txt.length > 4 ? 9 : 10.5);
+      return '<text x="30" y="34" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="' + fs + '" font-weight="800" fill="' + g + '">' + txt + '</text>';
+    }
     switch(unitType){
       case 'infantry':
         return '<line x1="16" y1="20" x2="44" y2="40" stroke="'+g+'" stroke-width="2.4"/><line x1="44" y1="20" x2="16" y2="40" stroke="'+g+'" stroke-width="2.4"/>';
@@ -1311,7 +1340,10 @@
       case 'airdefense':
         return '<path d="M14,38 A16,16 0 0 1 46,38" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/><circle cx="30" cy="34" r="2" fill="'+g+'"/>';
       case 'engineer':
-        return '<path d="M18,20 L18,40 L42,40 L42,20" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+        return '<line x1="15" y1="19" x2="45" y2="19" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>' +
+               '<line x1="22" y1="19" x2="22" y2="41" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>' +
+               '<line x1="30" y1="19" x2="30" y2="41" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>' +
+               '<line x1="38" y1="19" x2="38" y2="41" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>';
       case 'commandpost':
         return '<line x1="30" y1="12" x2="30" y2="46" stroke="'+g+'" stroke-width="2.2"/><polygon points="30,12 46,17.5 30,23" fill="'+g+'"/>';
       case 'medical':
