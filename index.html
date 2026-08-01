@@ -227,7 +227,7 @@
 
   .mil-symbol-label{
     background:transparent !important; border:none !important; box-shadow:none !important;
-    color:var(--navy-deep); font-family:Calibri,'Segoe UI',Arial,sans-serif; font-size:11px; font-weight:700;
+    color:var(--navy-deep); font-family:Calibri,'Segoe UI',Arial,sans-serif; font-size:22px; font-weight:700;
     padding:0 !important; text-shadow:0 0 3px #fff, 0 0 4px #fff, 0 0 5px #fff;
   }
   .mil-symbol-label::before{ display:none !important; }
@@ -1363,7 +1363,7 @@
 
   function updateMilSymbolTooltip(shape){
     if (shape._mil.designation){
-      shape.bindTooltip(shape._mil.designation, { permanent:true, direction:'right', offset:[16,0], className:'mil-symbol-label' });
+      shape.bindTooltip(shape._mil.designation, { permanent:true, direction:'right', offset:[26,0], className:'mil-symbol-label' });
     } else if (shape.getTooltip()){
       shape.unbindTooltip();
     }
@@ -1794,7 +1794,7 @@
       if (otherHandlesCleanup) otherHandlesCleanup();
       otherHandlesShapeRef = null; otherHandlesCleanup = null;
     }
-    if (!shape) return;
+    if (!shape || otherHandlesShapeRef === shape) return;
     if (shape._isRectangle){
       otherHandlesCleanup = createRectangleRotationHandle(shape);
       otherHandlesShapeRef = shape;
@@ -1813,6 +1813,7 @@
     var handleLatLng = fromLocalXY(center, handleDist, 0);
     var stem = L.polyline([center, handleLatLng], { color:'#B8962E', weight:1.5, dashArray:'3 4', interactive:false }).addTo(map);
     var marker = L.marker(handleLatLng, { draggable:true, icon: makeHandleIcon('#B8962E',16), zIndexOffset:2000, title:'Arrastre para girar' }).addTo(map);
+    shape._rectHandles = { marker: marker, stem: stem, dist: handleDist };
 
     var startAngle, beforeSnapshot, basePoints;
     function onDragStart(){
@@ -1841,7 +1842,17 @@
     return function cleanup(){
       map.removeLayer(marker);
       map.removeLayer(stem);
+      shape._rectHandles = null;
     };
+  }
+
+  function positionRectangleHandle(shape){
+    var h = shape._rectHandles;
+    if (!h) return;
+    var center = shape.getBounds().getCenter();
+    var handleLatLng = fromLocalXY(center, h.dist, 0);
+    h.marker.setLatLng(handleLatLng);
+    h.stem.setLatLngs([center, handleLatLng]);
   }
 
   function ellipseHandlePositions(ellipse){
@@ -2017,6 +2028,7 @@
       })(shape.getLatLngs());
       shape.setLatLngs(shape.getLatLngs());
       syncDoubleLineCompanion(shape);
+      if (shape._rectHandles) positionRectangleHandle(shape);
     }
   }
 
@@ -2034,7 +2046,7 @@
     if (shape._isEllipse){ shape._ellipse = cloneEllipseState(snap); rebuildEllipse(shape); return; }
     if (shape._isText){ shape._text.latlng = L.latLng(snap); shape.setLatLng(snap); if (shape._textHandles) positionTextHandle(shape); return; }
     if (shape instanceof L.Marker || shape instanceof L.Circle){ shape.setLatLng(snap); return; }
-    if (shape.getLatLngs){ shape.setLatLngs(snap); syncDoubleLineCompanion(shape); return; }
+    if (shape.getLatLngs){ shape.setLatLngs(snap); syncDoubleLineCompanion(shape); if (shape._rectHandles) positionRectangleHandle(shape); return; }
   }
 
   function pushMoveUndo(shape, beforeSnap){
@@ -2429,6 +2441,8 @@
           function(){ restoreGeometry(l, after); if (selectedShape === l) showProperties(l, findLayerOfShape(l)); }
         );
       }
+      syncDoubleLineCompanion(l);
+      if (l._rectHandles) positionRectangleHandle(l);
       if (selectedShape === l) showProperties(l, findLayerOfShape(l));
     });
     editSnapshots = {};
