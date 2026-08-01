@@ -226,11 +226,11 @@
   .leaflet-control-scale{ margin-bottom:30px !important; }
 
   .mil-symbol-label{
-    background:var(--navy-deep); color:#fff; border:1px solid var(--gold);
-    font-family:Calibri,'Segoe UI',Arial,sans-serif; font-size:11px; font-weight:700;
-    padding:2px 6px; border-radius:4px; box-shadow:0 1px 4px rgba(0,0,0,.3);
+    background:transparent !important; border:none !important; box-shadow:none !important;
+    color:var(--navy-deep); font-family:Calibri,'Segoe UI',Arial,sans-serif; font-size:11px; font-weight:700;
+    padding:0 !important; text-shadow:0 0 3px #fff, 0 0 4px #fff, 0 0 5px #fff;
   }
-  .mil-symbol-label::before{ border-right-color:var(--gold) !important; }
+  .mil-symbol-label::before{ display:none !important; }
 
   /* ---------- RIGHT PANEL / PROPERTIES ---------- */
   #view-info{
@@ -513,6 +513,10 @@
       <button class="tool-btn" data-tool="elements" title="Elementos: unidades y símbolos militares tipo NATO (APP-6)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="7" width="16" height="10"/><path d="M4 7l16 10M20 7L4 17" stroke-width="1.6"/></svg>
         <span>Elementos</span>
+      </button>
+      <button class="tool-btn" data-tool="text" title="Cuadro de texto editable">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M8 11h8M8 14h5"/></svg>
+        <span>Texto</span>
       </button>
       <hr>
       <button class="tool-btn" data-tool="edit" title="Editar elementos de la capa activa">
@@ -1196,18 +1200,34 @@
   var deleteLayerObj = null;
   var editSnapshots = {};
 
-  function buildPointIcon(color){
+  var POINT_SHAPES = [
+    ['target','Mira'],
+    ['circle','Círculo'],
+    ['square','Cuadrado'],
+    ['triangle','Triángulo']
+  ];
+
+  function buildPointIcon(color, shapeType){
     color = color || '#1F3864';
-    var html =
-      '<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+    shapeType = shapeType || 'target';
+    var inner;
+    if (shapeType === 'circle'){
+      inner = '<circle cx="15" cy="15" r="8" fill="' + color + '" stroke="#fff" stroke-width="2"/>';
+    } else if (shapeType === 'square'){
+      inner = '<rect x="7.5" y="7.5" width="15" height="15" fill="' + color + '" stroke="#fff" stroke-width="2"/>';
+    } else if (shapeType === 'triangle'){
+      inner = '<polygon points="15,6 24,24 6,24" fill="' + color + '" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>';
+    } else {
+      inner =
         '<circle cx="15" cy="15" r="10" fill="' + color + '" fill-opacity="0.16" stroke="' + color + '" stroke-width="2"/>' +
         '<line x1="15" y1="1.5" x2="15" y2="7" stroke="' + color + '" stroke-width="2" stroke-linecap="round"/>' +
         '<line x1="15" y1="23" x2="15" y2="28.5" stroke="' + color + '" stroke-width="2" stroke-linecap="round"/>' +
         '<line x1="1.5" y1="15" x2="7" y2="15" stroke="' + color + '" stroke-width="2" stroke-linecap="round"/>' +
         '<line x1="23" y1="15" x2="28.5" y2="15" stroke="' + color + '" stroke-width="2" stroke-linecap="round"/>' +
         '<circle cx="15" cy="15" r="3" fill="#fff" stroke="' + color + '" stroke-width="1.5"/>' +
-        '<circle cx="15" cy="15" r="1.1" fill="' + color + '"/>' +
-      '</svg>';
+        '<circle cx="15" cy="15" r="1.1" fill="' + color + '"/>';
+    }
+    var html = '<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' + inner + '</svg>';
     return L.divIcon({ className:'', html: html, iconSize:[30,30], iconAnchor:[15,15] });
   }
 
@@ -1359,7 +1379,6 @@
     if (!active) return;
     var shapeOptions = { color: active.color, fillColor: active.color, fillOpacity:.25, weight:3, opacity:1 };
     drawHandlers.marker = new L.Draw.Marker(map, { icon: buildPointIcon(active.color) });
-    drawHandlers.elements = new L.Draw.Marker(map, { icon: buildMilSymbolIcon(defaultMilParams()) });
     drawHandlers.polyline = new L.Draw.Polyline(map, { shapeOptions: shapeOptions });
     drawHandlers.polygon = new L.Draw.Polygon(map, { shapeOptions: shapeOptions, showArea:true, allowIntersection:false });
     drawHandlers.rectangle = new L.Draw.Rectangle(map, { shapeOptions: shapeOptions });
@@ -1372,14 +1391,80 @@
     });
   }
 
+  var elementsClickHandler = null;
+  function stopElementsTool(){
+    if (elementsClickHandler){ map.off('click', elementsClickHandler); elementsClickHandler = null; }
+    mapContainer.style.cursor = '';
+  }
+  function activateElementsTool(){
+    if (activeToolName === 'elements'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar un elemento.'); return; }
+    disableAllTools();
+    activeToolName = 'elements';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    elementsClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var mil = defaultMilParams();
+      var layer = L.marker(e.latlng, { icon: buildMilSymbolIcon(mil) });
+      layer._isMilSymbol = true;
+      layer._mil = mil;
+      layer._fillColorRaw = activeNow.color;
+      layer._fillStyleKey = 'solid';
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', elementsClickHandler);
+  }
+
+  var textClickHandler = null;
+  function stopTextTool(){
+    if (textClickHandler){ map.off('click', textClickHandler); textClickHandler = null; }
+    mapContainer.style.cursor = '';
+  }
+  function activateTextTool(){
+    if (activeToolName === 'text'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar un texto.'); return; }
+    disableAllTools();
+    activeToolName = 'text';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    textClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var t = defaultTextParams(e.latlng);
+      var layer = L.marker(e.latlng, { icon: buildTextIcon(t) });
+      layer._isText = true;
+      layer._text = t;
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', textClickHandler);
+  }
+
   function disableAllTools(){
-    ['marker','elements','polyline','polygon','rectangle','circle'].forEach(function(k){
+    ['marker','polyline','polygon','rectangle','circle'].forEach(function(k){
       if (drawHandlers[k] && drawHandlers[k].enabled()) drawHandlers[k].disable();
     });
     if (editHandler){ try{ editHandler.disable(); }catch(e){} editHandler = null; }
     if (deleteHandler){ try{ deleteHandler.disable(); }catch(e){} deleteHandler = null; }
     if (freehandActive) stopFreehandMode();
     if (arrowActive) stopArrowTool();
+    stopElementsTool();
+    stopTextTool();
     activeToolName = null;
     updateToolbarUI();
   }
@@ -1490,6 +1575,24 @@
     return Math.sqrt(p.x*p.x + p.y*p.y);
   }
 
+  function rotatePointsAround(points, pivot, angleDeg){
+    if (Array.isArray(points[0])){
+      return points.map(function(ring){ return rotatePointsAround(ring, pivot, angleDeg); });
+    }
+    var rad = angleDeg * Math.PI/180;
+    var cos = Math.cos(rad), sin = Math.sin(rad);
+    return points.map(function(pt){
+      var p = localXY(pivot, pt);
+      var xr = p.x*cos - p.y*sin;
+      var yr = p.x*sin + p.y*cos;
+      return fromLocalXY(pivot, xr, yr);
+    });
+  }
+  function angleFromPivot(pivot, point){
+    var p = localXY(pivot, point);
+    return Math.atan2(p.y, p.x) * 180/Math.PI;
+  }
+
   function midLocal(tail, head){
     var p = localXY(tail, head);
     return fromLocalXY(tail, p.x/2, p.y/2);
@@ -1501,6 +1604,55 @@
   }
 
   var ARROW_CURVE_SEGMENTS = 24;
+
+  function escapeHtmlText(s){
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function hexToRgba(hex, alpha){
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '#ffffff');
+    if (!m) return 'rgba(255,255,255,' + alpha + ')';
+    return 'rgba(' + parseInt(m[1],16) + ',' + parseInt(m[2],16) + ',' + parseInt(m[3],16) + ',' + alpha + ')';
+  }
+  function metersPerPixel(lat, zoom){
+    return 156543.03392 * Math.cos(lat * Math.PI/180) / Math.pow(2, zoom);
+  }
+  function defaultTextParams(latlng){
+    return { latlng: latlng, text:'Texto', fontSize:14, color:'#1A1A1A', bgColor:'#ffffff', bgOpacity:.85, hasBorder:true, borderColor:'#1F3864', rotation:0, boxWidth:150, boxHeight:50 };
+  }
+  function buildTextIcon(t){
+    var borderCss = t.hasBorder ? ('2px solid ' + (t.borderColor||'#1F3864')) : 'none';
+    var bg = hexToRgba(t.bgColor, t.bgOpacity != null ? t.bgOpacity : .85);
+    var html =
+      '<div style="width:100%;height:100%;transform:rotate(' + (t.rotation||0) + 'deg);transform-origin:50% 50%;' +
+        'border:' + borderCss + ';background:' + bg + ';border-radius:4px;padding:4px 8px;box-sizing:border-box;' +
+        'font-family:Calibri,\'Segoe UI\',Arial,sans-serif;font-size:' + (t.fontSize||14) + 'px;font-weight:600;color:' + (t.color||'#1A1A1A') + ';' +
+        'display:flex;align-items:center;justify-content:center;text-align:center;white-space:pre-wrap;overflow:hidden;">' +
+        escapeHtmlText(t.text).replace(/\n/g,'<br>') +
+      '</div>';
+    var w = Math.max(t.boxWidth||150, 40), h = Math.max(t.boxHeight||50, 24);
+    return L.divIcon({ className:'', html: html, iconSize:[w,h], iconAnchor:[w/2, h/2] });
+  }
+
+  function computeEllipsePoints(ellipse){
+    var N = 48;
+    var pts = [];
+    var rad = (ellipse.rotation || 0) * Math.PI/180;
+    var cos = Math.cos(rad), sin = Math.sin(rad);
+    for (var i=0;i<N;i++){
+      var t = (i/N) * 2 * Math.PI;
+      var x = ellipse.radiusX * Math.cos(t);
+      var y = ellipse.radiusY * Math.sin(t);
+      var xr = x*cos - y*sin;
+      var yr = x*sin + y*cos;
+      pts.push(fromLocalXY(ellipse.center, xr, yr));
+    }
+    return pts;
+  }
+  function rebuildEllipse(shape){
+    shape.setLatLngs(computeEllipsePoints(shape._ellipse));
+    syncDoubleLineCompanion(shape);
+    if (shape._ellipseHandles) positionEllipseHandles(shape);
+  }
 
   function computeArrowPoints(arrow){
     var tail = arrow.tail, head = arrow.head;
@@ -1633,10 +1785,191 @@
     }
   }
 
-  var arrowActive = false;
-  var arrowPointerId = null;
-  var arrowShape = null;
-  var arrowTail = null;
+  /* ---------------- MANIJAS: rectángulo (rotar), elipse (radios+rotar), texto (rotar) ---------------- */
+  var otherHandlesShapeRef = null;
+  var otherHandlesCleanup = null;
+
+  function syncOtherHandlesForSelection(shape){
+    if (otherHandlesShapeRef && otherHandlesShapeRef !== shape){
+      if (otherHandlesCleanup) otherHandlesCleanup();
+      otherHandlesShapeRef = null; otherHandlesCleanup = null;
+    }
+    if (!shape) return;
+    if (shape._isRectangle){
+      otherHandlesCleanup = createRectangleRotationHandle(shape);
+      otherHandlesShapeRef = shape;
+    } else if (shape._isEllipse){
+      otherHandlesCleanup = createEllipseHandles(shape);
+      otherHandlesShapeRef = shape;
+    } else if (shape._isText){
+      otherHandlesCleanup = createTextRotationHandle(shape);
+      otherHandlesShapeRef = shape;
+    }
+  }
+
+  function createRectangleRotationHandle(shape){
+    var center = shape.getBounds().getCenter();
+    var handleDist = Math.max(distanceMeters(center, shape.getBounds().getNorthEast()) * 1.3, 20);
+    var handleLatLng = fromLocalXY(center, handleDist, 0);
+    var stem = L.polyline([center, handleLatLng], { color:'#B8962E', weight:1.5, dashArray:'3 4', interactive:false }).addTo(map);
+    var marker = L.marker(handleLatLng, { draggable:true, icon: makeHandleIcon('#B8962E',16), zIndexOffset:2000, title:'Arrastre para girar' }).addTo(map);
+
+    var startAngle, beforeSnapshot, basePoints;
+    function onDragStart(){
+      beforeSnapshot = JSON.parse(JSON.stringify(shape.getLatLngs()));
+      basePoints = JSON.parse(JSON.stringify(shape.getLatLngs()));
+      startAngle = angleFromPivot(shape.getBounds().getCenter(), marker.getLatLng());
+    }
+    function onDrag(){
+      var c = shape.getBounds().getCenter();
+      var curAngle = angleFromPivot(c, marker.getLatLng());
+      var delta = curAngle - startAngle;
+      shape.setLatLngs(rotatePointsAround(basePoints, c, delta));
+      syncDoubleLineCompanion(shape);
+      stem.setLatLngs([c, marker.getLatLng()]);
+    }
+    function onDragEnd(){
+      var afterSnapshot = JSON.parse(JSON.stringify(shape.getLatLngs()));
+      pushAction(
+        function(){ shape.setLatLngs(beforeSnapshot); syncDoubleLineCompanion(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); },
+        function(){ shape.setLatLngs(afterSnapshot); syncDoubleLineCompanion(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); }
+      );
+      renderLayerList();
+    }
+    marker.on('dragstart', onDragStart).on('drag', onDrag).on('dragend', onDragEnd);
+
+    return function cleanup(){
+      map.removeLayer(marker);
+      map.removeLayer(stem);
+    };
+  }
+
+  function ellipseHandlePositions(ellipse){
+    var rad = (ellipse.rotation||0) * Math.PI/180;
+    var cos = Math.cos(rad), sin = Math.sin(rad);
+    function rot(x,y){ return { x: x*cos-y*sin, y: x*sin+y*cos }; }
+    var eastLocal = rot(ellipse.radiusX, 0);
+    var northLocal = rot(0, ellipse.radiusY);
+    var rotDist = ellipse.radiusY + Math.max(ellipse.radiusX, ellipse.radiusY)*0.3 + 15;
+    var rotLocal = rot(0, rotDist);
+    return {
+      east: fromLocalXY(ellipse.center, eastLocal.x, eastLocal.y),
+      north: fromLocalXY(ellipse.center, northLocal.x, northLocal.y),
+      rotate: fromLocalXY(ellipse.center, rotLocal.x, rotLocal.y)
+    };
+  }
+
+  function positionEllipseHandles(shape){
+    var h = shape._ellipseHandles;
+    if (!h) return;
+    var pos = ellipseHandlePositions(shape._ellipse);
+    h.east.setLatLng(pos.east);
+    h.north.setLatLng(pos.north);
+    h.rotate.setLatLng(pos.rotate);
+    h.stem.setLatLngs([shape._ellipse.center, pos.rotate]);
+  }
+
+  function createEllipseHandles(shape){
+    var pos = ellipseHandlePositions(shape._ellipse);
+    var eastM = L.marker(pos.east, { draggable:true, icon: makeHandleIcon('#1F3864',15), zIndexOffset:2000, title:'Ancho (radio X)' }).addTo(map);
+    var northM = L.marker(pos.north, { draggable:true, icon: makeHandleIcon('#1F3864',15), zIndexOffset:2000, title:'Alto (radio Y)' }).addTo(map);
+    var rotateM = L.marker(pos.rotate, { draggable:true, icon: makeHandleIcon('#B8962E',16), zIndexOffset:2000, title:'Arrastre para girar' }).addTo(map);
+    var stem = L.polyline([shape._ellipse.center, pos.rotate], { color:'#B8962E', weight:1.5, dashArray:'3 4', interactive:false }).addTo(map);
+    shape._ellipseHandles = { east: eastM, north: northM, rotate: rotateM, stem: stem };
+
+    var beforeSnap = null;
+    function onStart(){ beforeSnap = cloneEllipseState(shape._ellipse); }
+    function onCommit(){
+      var afterSnap = cloneEllipseState(shape._ellipse);
+      pushAction(
+        function(){ shape._ellipse = cloneEllipseState(beforeSnap); rebuildEllipse(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); },
+        function(){ shape._ellipse = cloneEllipseState(afterSnap); rebuildEllipse(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); }
+      );
+      renderLayerList();
+    }
+
+    function unrotate(dragLatLng){
+      var p = localXY(shape._ellipse.center, dragLatLng);
+      var rad = -(shape._ellipse.rotation||0) * Math.PI/180;
+      return { x: p.x*Math.cos(rad) - p.y*Math.sin(rad), y: p.x*Math.sin(rad) + p.y*Math.cos(rad) };
+    }
+
+    eastM.on('dragstart', onStart).on('drag', function(){
+      var u = unrotate(eastM.getLatLng());
+      shape._ellipse.radiusX = Math.max(5, Math.abs(u.x));
+      rebuildEllipse(shape);
+    }).on('dragend', onCommit);
+
+    northM.on('dragstart', onStart).on('drag', function(){
+      var u = unrotate(northM.getLatLng());
+      shape._ellipse.radiusY = Math.max(5, Math.abs(u.y));
+      rebuildEllipse(shape);
+    }).on('dragend', onCommit);
+
+    var rotStartAngle;
+    rotateM.on('dragstart', function(){ onStart(); rotStartAngle = angleFromPivot(shape._ellipse.center, rotateM.getLatLng()) - shape._ellipse.rotation; })
+      .on('drag', function(){
+        var curAngle = angleFromPivot(shape._ellipse.center, rotateM.getLatLng());
+        shape._ellipse.rotation = curAngle - rotStartAngle;
+        rebuildEllipse(shape);
+      }).on('dragend', onCommit);
+
+    return function cleanup(){
+      map.removeLayer(eastM); map.removeLayer(northM); map.removeLayer(rotateM); map.removeLayer(stem);
+      shape._ellipseHandles = null;
+    };
+  }
+  function cloneEllipseState(e){
+    return { center: L.latLng(e.center), radiusX: e.radiusX, radiusY: e.radiusY, rotation: e.rotation };
+  }
+
+  function textHandleOffset(t){
+    var mpp = metersPerPixel(t.latlng.lat, map.getZoom());
+    var dist = (t.boxHeight/2 + 22) * mpp;
+    var rad = (t.rotation||0) * Math.PI/180;
+    var cos = Math.cos(rad), sin = Math.sin(rad);
+    return { x: -dist*sin, y: dist*cos };
+  }
+
+  function positionTextHandle(shape){
+    var h = shape._textHandles;
+    if (!h) return;
+    var off = textHandleOffset(shape._text);
+    var handleLatLng = fromLocalXY(shape._text.latlng, off.x, off.y);
+    h.rotate.setLatLng(handleLatLng);
+    h.stem.setLatLngs([shape._text.latlng, handleLatLng]);
+  }
+
+  function createTextRotationHandle(shape){
+    var off = textHandleOffset(shape._text);
+    var handleLatLng = fromLocalXY(shape._text.latlng, off.x, off.y);
+    var marker = L.marker(handleLatLng, { draggable:true, icon: makeHandleIcon('#B8962E',16), zIndexOffset:2000, title:'Arrastre para girar' }).addTo(map);
+    var stem = L.polyline([shape._text.latlng, handleLatLng], { color:'#B8962E', weight:1.5, dashArray:'3 4', interactive:false }).addTo(map);
+    shape._textHandles = { rotate: marker, stem: stem };
+
+    var beforeRot, rotStartAngle;
+    marker.on('dragstart', function(){
+      beforeRot = shape._text.rotation;
+      rotStartAngle = angleFromPivot(shape._text.latlng, marker.getLatLng()) - shape._text.rotation;
+    }).on('drag', function(){
+      var curAngle = angleFromPivot(shape._text.latlng, marker.getLatLng());
+      shape._text.rotation = curAngle - rotStartAngle;
+      shape.setIcon(buildTextIcon(shape._text));
+      positionTextHandle(shape);
+    }).on('dragend', function(){
+      var afterRot = shape._text.rotation;
+      pushAction(
+        function(){ shape._text.rotation = beforeRot; shape.setIcon(buildTextIcon(shape._text)); positionTextHandle(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); },
+        function(){ shape._text.rotation = afterRot; shape.setIcon(buildTextIcon(shape._text)); positionTextHandle(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); }
+      );
+      renderLayerList();
+    });
+
+    return function cleanup(){
+      map.removeLayer(marker); map.removeLayer(stem);
+      shape._textHandles = null;
+    };
+  }
 
   /* ---------------- MOVER (arrastrar objeto completo / editar coordenadas) ---------------- */
   var moveModeShape = null;
@@ -1661,6 +1994,17 @@
       rebuildArrow(shape);
       return;
     }
+    if (shape._isEllipse){
+      shape._ellipse.center = L.latLng(shape._ellipse.center.lat+dLat, shape._ellipse.center.lng+dLng);
+      rebuildEllipse(shape);
+      return;
+    }
+    if (shape._isText){
+      shape._text.latlng = L.latLng(shape._text.latlng.lat+dLat, shape._text.latlng.lng+dLng);
+      shape.setLatLng(shape._text.latlng);
+      if (shape._textHandles) positionTextHandle(shape);
+      return;
+    }
     if (shape instanceof L.Marker || shape instanceof L.Circle){
       var p = shape.getLatLng();
       shape.setLatLng(L.latLng(p.lat+dLat, p.lng+dLng));
@@ -1672,11 +2016,14 @@
         return L.latLng(ll.lat+dLat, ll.lng+dLng);
       })(shape.getLatLngs());
       shape.setLatLngs(shape.getLatLngs());
+      syncDoubleLineCompanion(shape);
     }
   }
 
   function snapshotShapePosition(shape){
     if (shape._isArrow) return cloneArrowState(shape._arrow);
+    if (shape._isEllipse) return cloneEllipseState(shape._ellipse);
+    if (shape._isText) return L.latLng(shape._text.latlng);
     if (shape instanceof L.Marker || shape instanceof L.Circle) return L.latLng(shape.getLatLng());
     if (shape.getLatLngs) return JSON.parse(JSON.stringify(shape.getLatLngs()));
     return null;
@@ -1684,8 +2031,10 @@
 
   function restoreShapePosition(shape, snap){
     if (shape._isArrow){ shape._arrow = cloneArrowState(snap); rebuildArrow(shape); return; }
+    if (shape._isEllipse){ shape._ellipse = cloneEllipseState(snap); rebuildEllipse(shape); return; }
+    if (shape._isText){ shape._text.latlng = L.latLng(snap); shape.setLatLng(snap); if (shape._textHandles) positionTextHandle(shape); return; }
     if (shape instanceof L.Marker || shape instanceof L.Circle){ shape.setLatLng(snap); return; }
-    if (shape.getLatLngs){ shape.setLatLngs(snap); return; }
+    if (shape.getLatLngs){ shape.setLatLngs(snap); syncDoubleLineCompanion(shape); return; }
   }
 
   function pushMoveUndo(shape, beforeSnap){
@@ -1947,7 +2296,8 @@
       else if (tool === 'delete') activateDelete();
       else if (tool === 'freehand') activateFreehand();
       else if (tool === 'arrow') activateArrowTool();
-      else if (tool === 'elements') activateDrawTool('elements');
+      else if (tool === 'elements') activateElementsTool();
+      else if (tool === 'text') activateTextTool();
       else if (tool === 'undo') doUndo();
       else if (tool === 'redo') doRedo();
       else activateDrawTool(tool);
@@ -1971,6 +2321,9 @@
   function defaultShapeName(shape){
     if (shape._isArrow) return 'Flecha ' + shapeCounter;
     if (shape._isMilSymbol) return 'Unidad ' + shapeCounter;
+    if (shape._isEllipse) return 'Elipse ' + shapeCounter;
+    if (shape._isText) return 'Texto ' + shapeCounter;
+    if (shape._isRectangle) return 'Rectángulo ' + shapeCounter;
     if (shape instanceof L.Marker) return 'Punto ' + shapeCounter;
     if (shape instanceof L.Circle) return 'Círculo ' + shapeCounter;
     if (shape instanceof L.Polygon) return 'Polígono ' + shapeCounter;
@@ -1980,6 +2333,8 @@
 
   function shapeKind(shape){
     if (shape._isArrow) return 'arrow';
+    if (shape._isEllipse) return 'ellipse';
+    if (shape._isText) return 'text';
     if (shape instanceof L.Marker) return 'marker';
     if (shape instanceof L.Circle) return 'circle';
     if (shape instanceof L.Polygon) return 'polygon';
@@ -1993,6 +2348,8 @@
       polyline: '<circle cx="4.5" cy="19.5" r="1.8" fill="currentColor" stroke="none"/><circle cx="19.5" cy="4.5" r="1.8" fill="currentColor" stroke="none"/><path d="M4.5 19.5L19.5 4.5"/>',
       polygon: '<polygon points="12,3 21,9.5 17.8,20 6.2,20 3,9.5"/>',
       circle: '<circle cx="12" cy="12" r="8.3"/>',
+      ellipse: '<ellipse cx="12" cy="12" rx="9.5" ry="6.5"/>',
+      text: '<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M8 10h8M8 13h5"/>',
       arrow: '<path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/>'
     };
     return '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (icons[kind]||icons.marker) + '</svg>';
@@ -2012,12 +2369,25 @@
     var active = getActiveLayer();
     if (!active) return;
     var layer = e.layer;
+    if (activeToolName === 'circle'){
+      var center = layer.getLatLng();
+      var r = layer.getRadius();
+      var ellipseShape = L.polygon(computeEllipsePoints({ center:center, radiusX:r, radiusY:r, rotation:0 }), {
+        color: layer.options.color, weight: layer.options.weight,
+        fillColor: layer.options.fillColor, fillOpacity: layer.options.fillOpacity,
+        opacity: layer.options.opacity
+      });
+      ellipseShape._isEllipse = true;
+      ellipseShape._ellipse = { center: center, radiusX: r, radiusY: r, rotation: 0 };
+      layer = ellipseShape;
+    }
     layer._fillColorRaw = active.color;
     layer._fillStyleKey = 'solid';
-    if (activeToolName === 'elements'){
-      layer._isMilSymbol = true;
-      layer._mil = defaultMilParams();
-      applyMilSymbol(layer);
+    if (activeToolName === 'marker'){
+      layer._pointShape = 'target';
+      layer._pointColor = active.color;
+    } else if (activeToolName === 'rectangle'){
+      layer._isRectangle = true;
     }
     active.group.addLayer(layer);
     attachShapeInteractivity(layer, active);
@@ -2085,9 +2455,42 @@
   }
   function applyWeight(shape, val){
     shape.setStyle({ weight: val });
+    syncDoubleLineCompanion(shape);
+  }
+  var doubleLineCompanions = {};
+  function removeDoubleLineCompanion(shape){
+    var comp = doubleLineCompanions[shape._shapeId];
+    if (comp){
+      var owner = findLayerOfShape(shape);
+      if (owner) owner.group.removeLayer(comp); else map.removeLayer(comp);
+      delete doubleLineCompanions[shape._shapeId];
+    }
+  }
+  function syncDoubleLineCompanion(shape){
+    if (!shape || shape._dashStyle !== 'double' || !shape.getLatLngs){ if(shape) removeDoubleLineCompanion(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+    var innerWeight = Math.max(1, (shape.options.weight || 3) - 3);
+    var comp = doubleLineCompanions[shape._shapeId];
+    if (!comp){
+      comp = L.polyline([], { interactive:false, color:'#ffffff', weight:innerWeight, opacity: shape.options.opacity != null ? shape.options.opacity : 1 });
+      owner.group.addLayer(comp);
+      doubleLineCompanions[shape._shapeId] = comp;
+    } else {
+      comp.setStyle({ weight: innerWeight, opacity: shape.options.opacity != null ? shape.options.opacity : 1 });
+    }
+    comp.setLatLngs(shape.getLatLngs());
   }
   function applyDash(shape, dash){
-    shape.setStyle({ dashArray: dash });
+    if (dash === 'double'){
+      shape._dashStyle = 'double';
+      shape.setStyle({ dashArray: null });
+      syncDoubleLineCompanion(shape);
+    } else {
+      shape._dashStyle = dash || '';
+      removeDoubleLineCompanion(shape);
+      shape.setStyle({ dashArray: dash || null });
+    }
   }
 
   /* ---------------- LAYER LIST UI ---------------- */
@@ -2211,6 +2614,12 @@
           if (arrowHandlesShapeRef && node.group.hasLayer(arrowHandlesShapeRef)){
             removeArrowHandles(arrowHandlesShapeRef);
             arrowHandlesShapeRef = null;
+            selectedShape = null;
+            clearProperties();
+          }
+          if (otherHandlesShapeRef && node.group.hasLayer(otherHandlesShapeRef)){
+            if (otherHandlesCleanup) otherHandlesCleanup();
+            otherHandlesShapeRef = null; otherHandlesCleanup = null;
             selectedShape = null;
             clearProperties();
           }
@@ -2385,7 +2794,7 @@
     top.appendChild(delBtn);
     row.appendChild(top);
 
-    if (kind !== 'marker'){
+    if (kind !== 'marker' && kind !== 'text'){
       var controls = document.createElement('div');
       controls.className = 'style-controls';
 
@@ -2417,7 +2826,39 @@
       strokeOpCtrl.appendChild(strokeOp);
       controls.appendChild(strokeOpCtrl);
 
-      if (kind === 'polygon' || kind === 'circle' || kind === 'arrow'){
+      var weightCtrl = document.createElement('div');
+      weightCtrl.className = 'ctrl';
+      var weightMini = document.createElement('input');
+      weightMini.type = 'range'; weightMini.min = 1; weightMini.max = 10; weightMini.step = 1;
+      weightMini.value = shape.options.weight != null ? shape.options.weight : 3;
+      weightMini.title = 'Grosor de línea';
+      weightMini.addEventListener('input', function(ev){
+        applyWeight(shape, parseInt(ev.target.value,10));
+        if (selectedShape === shape) syncPropertiesStyle(shape);
+      });
+      weightCtrl.textContent = 'Grosor ';
+      weightCtrl.appendChild(weightMini);
+      controls.appendChild(weightCtrl);
+
+      var dashCtrl = document.createElement('div');
+      dashCtrl.className = 'ctrl';
+      var dashMini = document.createElement('select');
+      dashMini.title = 'Tipo de línea';
+      dashMini.style.cssText = 'border:1px solid var(--border);border-radius:5px;font-family:inherit;font-size:10px;padding:2px;';
+      [['','Sólida'],['8 6','Discontinua'],['2 5','Punteada'],['double','Doble']].forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        if ((shape._dashStyle || '') === opt[0]) o.selected = true;
+        dashMini.appendChild(o);
+      });
+      dashMini.addEventListener('change', function(ev){
+        applyDash(shape, ev.target.value || '');
+        if (selectedShape === shape) syncPropertiesStyle(shape);
+      });
+      dashCtrl.appendChild(dashMini);
+      controls.appendChild(dashCtrl);
+
+      if (kind === 'polygon' || kind === 'circle' || kind === 'arrow' || kind === 'ellipse'){
         var fillCtrl = document.createElement('div');
         fillCtrl.className = 'ctrl';
         var fillColor = document.createElement('input');
@@ -2483,6 +2924,7 @@
     body.className = 'empty';
     body.innerHTML = 'Seleccione una forma dibujada en el mapa, o desde la lista de capas, para ver y editar sus propiedades.';
     syncArrowHandlesForSelection(null);
+    syncOtherHandlesForSelection(null);
     if (moveModeShape){
       if (moveModeCleanup) moveModeCleanup();
       moveModeCleanup = null;
@@ -2502,6 +2944,13 @@
         stats.tipo = 'Unidad militar';
         var p0 = shape.getLatLng();
         stats.coordenadas = p0.lat.toFixed(5) + ', ' + p0.lng.toFixed(5);
+      } else if (shape._isEllipse){
+        stats.tipo = 'Elipse';
+        stats.área = L.GeometryUtil.readableArea(Math.PI * shape._ellipse.radiusX * shape._ellipse.radiusY, true);
+      } else if (shape._isText){
+        stats.tipo = 'Cuadro de texto';
+        var pt = shape.getLatLng();
+        stats.coordenadas = pt.lat.toFixed(5) + ', ' + pt.lng.toFixed(5);
       } else if (shape instanceof L.Circle){
         stats.tipo = 'Círculo';
         stats.radio = L.GeometryUtil.readableDistance(shape.getRadius(), true, false, false);
@@ -2532,14 +2981,19 @@
     var fillInput = document.getElementById('prop-fill-color');
     var strokeOpInput = document.getElementById('prop-stroke-op');
     var fillOpInput = document.getElementById('prop-fill-op');
+    var weightInputEl = document.getElementById('prop-weight');
+    var dashInputEl = document.getElementById('prop-dash');
     if (strokeInput) strokeInput.value = rgbToHex(shape.options.color);
     if (fillInput) fillInput.value = shape._fillColorRaw || rgbToHex(shape.options.fillColor || shape.options.color);
     if (strokeOpInput){ strokeOpInput.value = shape.options.opacity; document.getElementById('prop-stroke-op-pct').textContent = Math.round(shape.options.opacity*100)+'%'; }
     if (fillOpInput){ fillOpInput.value = shape.options.fillOpacity; document.getElementById('prop-fill-op-pct').textContent = Math.round(shape.options.fillOpacity*100)+'%'; }
+    if (weightInputEl){ weightInputEl.value = shape.options.weight; var wp = document.getElementById('prop-weight-pct'); if (wp) wp.textContent = shape.options.weight + 'px'; }
+    if (dashInputEl) dashInputEl.value = shape._dashStyle || '';
   }
 
   function showProperties(shape, layerObj){
     syncArrowHandlesForSelection(shape);
+    syncOtherHandlesForSelection(shape);
     if (moveModeShape && moveModeShape !== shape) exitMoveMode();
     var body = document.getElementById('properties-body');
     body.className = '';
@@ -2625,7 +3079,167 @@
       body.appendChild(milBlock);
     }
 
-    if (kind !== 'marker'){
+    if (kind === 'marker' && !shape._isMilSymbol){
+      var pointBlock = document.createElement('div');
+      pointBlock.className = 'style-block';
+
+      var pointColorField = document.createElement('div');
+      pointColorField.className = 'style-field';
+      pointColorField.innerHTML = '<span>Color del punto</span>';
+      var pointColorInput = document.createElement('input');
+      pointColorInput.type = 'color';
+      pointColorInput.value = shape._pointColor || '#1F3864';
+      pointColorInput.addEventListener('input', function(ev){
+        shape._pointColor = ev.target.value;
+        shape.setIcon(buildPointIcon(shape._pointColor, shape._pointShape));
+        renderLayerList();
+      });
+      pointColorField.appendChild(pointColorInput);
+      pointBlock.appendChild(pointColorField);
+
+      var pointShapeField = document.createElement('div');
+      pointShapeField.className = 'style-field';
+      pointShapeField.innerHTML = '<span>Forma del punto</span>';
+      var pointShapeSelect = document.createElement('select');
+      pointShapeSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
+      POINT_SHAPES.forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        if ((shape._pointShape || 'target') === opt[0]) o.selected = true;
+        pointShapeSelect.appendChild(o);
+      });
+      pointShapeSelect.addEventListener('change', function(ev){
+        shape._pointShape = ev.target.value;
+        shape.setIcon(buildPointIcon(shape._pointColor, shape._pointShape));
+        renderLayerList();
+      });
+      pointShapeField.appendChild(pointShapeSelect);
+      pointBlock.appendChild(pointShapeField);
+
+      body.appendChild(pointBlock);
+    }
+
+    if (kind === 'text'){
+      var textBlock = document.createElement('div');
+      textBlock.className = 'style-block';
+
+      var textContentField = document.createElement('div');
+      textContentField.className = 'style-field';
+      textContentField.style.flexDirection = 'column';
+      textContentField.style.alignItems = 'stretch';
+      textContentField.innerHTML = '<span>Contenido</span>';
+      var textArea = document.createElement('textarea');
+      textArea.className = 'coa-textarea';
+      textArea.style.minHeight = '70px';
+      textArea.value = shape._text.text;
+      textArea.addEventListener('input', function(ev){
+        shape._text.text = ev.target.value;
+        shape.setIcon(buildTextIcon(shape._text));
+      });
+      textArea.addEventListener('change', function(){ renderLayerList(); });
+      textContentField.appendChild(textArea);
+      textBlock.appendChild(textContentField);
+
+      function textNumberField(label, key, min, max, step, onChange){
+        var field = document.createElement('div');
+        field.className = 'style-field';
+        field.innerHTML = '<span>' + label + '</span>';
+        var input = document.createElement('input');
+        input.type = 'number'; input.min = min; input.max = max; input.step = step;
+        input.style.cssText = 'width:70px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12px;text-align:right;';
+        input.value = shape._text[key];
+        input.addEventListener('change', function(ev){
+          shape._text[key] = parseFloat(ev.target.value) || shape._text[key];
+          onChange();
+          renderLayerList();
+        });
+        field.appendChild(input);
+        return field;
+      }
+      textBlock.appendChild(textNumberField('Tamaño de letra (px)', 'fontSize', 8, 48, 1, function(){ shape.setIcon(buildTextIcon(shape._text)); }));
+      textBlock.appendChild(textNumberField('Ancho del cuadro (px)', 'boxWidth', 40, 600, 5, function(){ shape.setIcon(buildTextIcon(shape._text)); positionTextHandle(shape); }));
+      textBlock.appendChild(textNumberField('Alto del cuadro (px)', 'boxHeight', 24, 400, 5, function(){ shape.setIcon(buildTextIcon(shape._text)); positionTextHandle(shape); }));
+
+      var textColorField = document.createElement('div');
+      textColorField.className = 'style-field';
+      textColorField.innerHTML = '<span>Color del texto</span>';
+      var textColorInput = document.createElement('input');
+      textColorInput.type = 'color';
+      textColorInput.value = shape._text.color;
+      textColorInput.addEventListener('input', function(ev){
+        shape._text.color = ev.target.value;
+        shape.setIcon(buildTextIcon(shape._text));
+      });
+      textColorField.appendChild(textColorInput);
+      textBlock.appendChild(textColorField);
+
+      var borderToggleField = document.createElement('div');
+      borderToggleField.className = 'style-field';
+      borderToggleField.innerHTML = '<span>Marco (borde)</span>';
+      var borderToggle = document.createElement('input');
+      borderToggle.type = 'checkbox';
+      borderToggle.checked = !!shape._text.hasBorder;
+      borderToggle.addEventListener('change', function(ev){
+        shape._text.hasBorder = ev.target.checked;
+        shape.setIcon(buildTextIcon(shape._text));
+        renderLayerList();
+      });
+      borderToggleField.appendChild(borderToggle);
+      textBlock.appendChild(borderToggleField);
+
+      var borderColorField = document.createElement('div');
+      borderColorField.className = 'style-field';
+      borderColorField.innerHTML = '<span>Color del marco</span>';
+      var borderColorInput = document.createElement('input');
+      borderColorInput.type = 'color';
+      borderColorInput.value = shape._text.borderColor;
+      borderColorInput.addEventListener('input', function(ev){
+        shape._text.borderColor = ev.target.value;
+        shape.setIcon(buildTextIcon(shape._text));
+      });
+      borderColorField.appendChild(borderColorInput);
+      textBlock.appendChild(borderColorField);
+
+      var bgColorField = document.createElement('div');
+      bgColorField.className = 'style-field';
+      bgColorField.innerHTML = '<span>Color de fondo</span>';
+      var bgColorInput = document.createElement('input');
+      bgColorInput.type = 'color';
+      bgColorInput.value = shape._text.bgColor;
+      bgColorInput.addEventListener('input', function(ev){
+        shape._text.bgColor = ev.target.value;
+        shape.setIcon(buildTextIcon(shape._text));
+      });
+      bgColorField.appendChild(bgColorInput);
+      textBlock.appendChild(bgColorField);
+
+      var bgOpField = document.createElement('div');
+      bgOpField.className = 'style-field';
+      bgOpField.innerHTML = '<span>Transparencia del fondo</span>';
+      var bgOpInput = document.createElement('input');
+      bgOpInput.type = 'range'; bgOpInput.min = 0; bgOpInput.max = 1; bgOpInput.step = .05;
+      bgOpInput.value = shape._text.bgOpacity;
+      var bgOpPct = document.createElement('span');
+      bgOpPct.className = 'pct';
+      bgOpPct.textContent = Math.round(shape._text.bgOpacity*100) + '%';
+      bgOpInput.addEventListener('input', function(ev){
+        shape._text.bgOpacity = parseFloat(ev.target.value);
+        shape.setIcon(buildTextIcon(shape._text));
+        bgOpPct.textContent = Math.round(shape._text.bgOpacity*100) + '%';
+      });
+      bgOpField.appendChild(bgOpInput);
+      bgOpField.appendChild(bgOpPct);
+      textBlock.appendChild(bgOpField);
+
+      var textHint = document.createElement('div');
+      textHint.className = 'hint';
+      textHint.innerHTML = 'Arrastre el punto <b>dorado</b> junto al texto para girarlo sobre su propio eje.';
+      textBlock.appendChild(textHint);
+
+      body.appendChild(textBlock);
+    }
+
+    if (kind !== 'marker' && kind !== 'text'){
       var styleBlock = document.createElement('div');
       styleBlock.className = 'style-block';
 
@@ -2658,7 +3272,7 @@
       strokeOpField.appendChild(strokeOpPct);
       styleBlock.appendChild(strokeOpField);
 
-      if (kind === 'polygon' || kind === 'circle' || kind === 'arrow'){
+      if (kind === 'polygon' || kind === 'circle' || kind === 'arrow' || kind === 'ellipse'){
         var fillField = document.createElement('div');
         fillField.className = 'style-field';
         fillField.innerHTML = '<span>Color de relleno</span>';
@@ -2698,40 +3312,41 @@
         styleBlock.appendChild(fillOpField);
       }
 
+      var weightField = document.createElement('div');
+      weightField.className = 'style-field';
+      weightField.innerHTML = '<span>Grosor de línea</span>';
+      var weightInput = document.createElement('input');
+      weightInput.type = 'range'; weightInput.min = 1; weightInput.max = 10; weightInput.step = 1; weightInput.id = 'prop-weight';
+      weightInput.value = shape.options.weight != null ? shape.options.weight : 2;
+      var weightPct = document.createElement('span');
+      weightPct.className = 'pct'; weightPct.id = 'prop-weight-pct';
+      weightPct.textContent = (shape.options.weight!=null?shape.options.weight:2) + 'px';
+      weightInput.addEventListener('input', function(ev){
+        var v = parseInt(ev.target.value,10);
+        applyWeight(shape, v);
+        weightPct.textContent = v + 'px';
+      });
+      weightField.appendChild(weightInput);
+      weightField.appendChild(weightPct);
+      styleBlock.appendChild(weightField);
+
+      var dashField = document.createElement('div');
+      dashField.className = 'style-field';
+      dashField.innerHTML = '<span>Tipo de línea</span>';
+      var dashSelect = document.createElement('select');
+      dashSelect.id = 'prop-dash';
+      dashSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
+      [['','Sólida'],['8 6','Discontinua'],['2 5','Punteada'],['double','Doble línea']].forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        if ((shape._dashStyle || '') === opt[0]) o.selected = true;
+        dashSelect.appendChild(o);
+      });
+      dashSelect.addEventListener('change', function(ev){ applyDash(shape, ev.target.value || ''); });
+      dashField.appendChild(dashSelect);
+      styleBlock.appendChild(dashField);
+
       if (kind === 'arrow'){
-        var weightField = document.createElement('div');
-        weightField.className = 'style-field';
-        weightField.innerHTML = '<span>Grosor de línea</span>';
-        var weightInput = document.createElement('input');
-        weightInput.type = 'range'; weightInput.min = 1; weightInput.max = 10; weightInput.step = 1;
-        weightInput.value = shape.options.weight != null ? shape.options.weight : 2;
-        var weightPct = document.createElement('span');
-        weightPct.className = 'pct';
-        weightPct.textContent = (shape.options.weight!=null?shape.options.weight:2) + 'px';
-        weightInput.addEventListener('input', function(ev){
-          var v = parseInt(ev.target.value,10);
-          applyWeight(shape, v);
-          weightPct.textContent = v + 'px';
-        });
-        weightField.appendChild(weightInput);
-        weightField.appendChild(weightPct);
-        styleBlock.appendChild(weightField);
-
-        var dashField = document.createElement('div');
-        dashField.className = 'style-field';
-        dashField.innerHTML = '<span>Tipo de línea</span>';
-        var dashSelect = document.createElement('select');
-        dashSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
-        [['','Sólida'],['8 6','Discontinua'],['2 5','Punteada']].forEach(function(opt){
-          var o = document.createElement('option');
-          o.value = opt[0]; o.textContent = opt[1];
-          if ((shape.options.dashArray||'') === opt[0]) o.selected = true;
-          dashSelect.appendChild(o);
-        });
-        dashSelect.addEventListener('change', function(ev){ applyDash(shape, ev.target.value || null); });
-        dashField.appendChild(dashSelect);
-        styleBlock.appendChild(dashField);
-
         var dimsNote = document.createElement('div');
         dimsNote.style.cssText = 'font-size:10.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;';
         dimsNote.textContent = 'Dimensiones de la flecha (metros)';
@@ -2793,6 +3408,51 @@
         });
         repositionRow.appendChild(resetCurveBtn);
         styleBlock.appendChild(repositionRow);
+      }
+
+      if (kind === 'ellipse'){
+        var ellipseNote = document.createElement('div');
+        ellipseNote.style.cssText = 'font-size:10.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;';
+        ellipseNote.textContent = 'Dimensiones de la elipse (metros)';
+        styleBlock.appendChild(ellipseNote);
+
+        function ellipseDimField(label, key, min){
+          var field = document.createElement('div');
+          field.className = 'style-field';
+          field.innerHTML = '<span>' + label + '</span>';
+          var input = document.createElement('input');
+          input.type = 'number'; input.min = min; input.step = 1;
+          input.style.cssText = 'width:70px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12px;text-align:right;';
+          input.value = Math.round(shape._ellipse[key]);
+          input.addEventListener('change', function(ev){
+            shape._ellipse[key] = Math.max(min, parseFloat(ev.target.value) || min);
+            rebuildEllipse(shape);
+          });
+          field.appendChild(input);
+          return field;
+        }
+        styleBlock.appendChild(ellipseDimField('Radio horizontal (ancho)', 'radiusX', 5));
+        styleBlock.appendChild(ellipseDimField('Radio vertical (alto)', 'radiusY', 5));
+
+        var rotField = document.createElement('div');
+        rotField.className = 'style-field';
+        rotField.innerHTML = '<span>Rotación (grados)</span>';
+        var rotInput = document.createElement('input');
+        rotInput.type = 'number'; rotInput.step = 1;
+        rotInput.style.cssText = 'width:70px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12px;text-align:right;';
+        rotInput.value = Math.round(shape._ellipse.rotation || 0);
+        rotInput.addEventListener('change', function(ev){
+          shape._ellipse.rotation = parseFloat(ev.target.value) || 0;
+          rebuildEllipse(shape);
+        });
+        rotField.appendChild(rotInput);
+        styleBlock.appendChild(rotField);
+
+        var ellipseHint = document.createElement('div');
+        ellipseHint.className = 'hint';
+        ellipseHint.style.marginTop = '2px';
+        ellipseHint.innerHTML = 'Arrastre los puntos <b>azules</b> para ensanchar/estirar la elipse, y el punto <b>dorado</b> para girarla.';
+        styleBlock.appendChild(ellipseHint);
       }
 
       body.appendChild(styleBlock);
@@ -2862,6 +3522,7 @@
         f.properties.opacity = shape.options.opacity;
         f.properties.weight = shape.options.weight;
         f.properties.dashArray = shape.options.dashArray || '';
+        f.properties.dashStyle = shape._dashStyle || '';
         f.properties.fillStyle = shape._fillStyleKey || 'solid';
       }
       if (shape && shape._isArrow){
@@ -2880,6 +3541,29 @@
           unitType: shape._mil.unitType,
           echelon: shape._mil.echelon,
           designation: shape._mil.designation
+        };
+      }
+      if (shape && shape._pointShape){
+        f.properties.pointShape = shape._pointShape;
+        f.properties.pointColor = shape._pointColor;
+      }
+      if (shape && shape._isRectangle){
+        f.properties.isRectangle = true;
+      }
+      if (shape && shape._isEllipse){
+        f.properties.ellipse = {
+          center: [shape._ellipse.center.lat, shape._ellipse.center.lng],
+          radiusX: shape._ellipse.radiusX,
+          radiusY: shape._ellipse.radiusY,
+          rotation: shape._ellipse.rotation
+        };
+      }
+      if (shape && shape._isText){
+        f.properties.text = {
+          text: shape._text.text, fontSize: shape._text.fontSize, color: shape._text.color,
+          bgColor: shape._text.bgColor, bgOpacity: shape._text.bgOpacity,
+          hasBorder: shape._text.hasBorder, borderColor: shape._text.borderColor,
+          rotation: shape._text.rotation, boxWidth: shape._text.boxWidth, boxHeight: shape._text.boxHeight
         };
       }
     });
@@ -2922,7 +3606,19 @@
           updateMilSymbolTooltip(m);
           return m;
         }
-        return L.marker(latlng, { icon: buildPointIcon(p.color || targetLayerObj.color) });
+        if (p.text){
+          var t = { latlng: latlng, text: p.text.text, fontSize: p.text.fontSize, color: p.text.color,
+            bgColor: p.text.bgColor, bgOpacity: p.text.bgOpacity, hasBorder: p.text.hasBorder,
+            borderColor: p.text.borderColor, rotation: p.text.rotation || 0,
+            boxWidth: p.text.boxWidth || 150, boxHeight: p.text.boxHeight || 50 };
+          var tm = L.marker(latlng, { icon: buildTextIcon(t) });
+          tm._isText = true;
+          tm._text = t;
+          return tm;
+        }
+        return L.marker(latlng, {
+          icon: buildPointIcon(p.pointColor || p.color || targetLayerObj.color, p.pointShape || 'target')
+        });
       },
       style: function(feature){
         var p = feature.properties || {};
@@ -2953,10 +3649,25 @@
           };
           rebuildArrow(layer);
         }
+        if (p.pointShape){
+          layer._pointShape = p.pointShape;
+          layer._pointColor = p.pointColor || p.color || targetLayerObj.color;
+        }
+        if (p.isRectangle) layer._isRectangle = true;
+        if (p.ellipse){
+          layer._isEllipse = true;
+          layer._ellipse = {
+            center: L.latLng(p.ellipse.center[0], p.ellipse.center[1]),
+            radiusX: p.ellipse.radiusX, radiusY: p.ellipse.radiusY, rotation: p.ellipse.rotation || 0
+          };
+          rebuildEllipse(layer);
+        }
+        layer._dashStyle = p.dashStyle || '';
         attachShapeInteractivity(layer, targetLayerObj);
         if (layer._fillStyleKey && layer._fillStyleKey !== 'solid' && layer.setStyle){
           applyFillStyle(layer, layer._fillStyleKey, layer._fillColorRaw);
         }
+        if (layer._dashStyle === 'double') syncDoubleLineCompanion(layer);
       }
     };
   }
