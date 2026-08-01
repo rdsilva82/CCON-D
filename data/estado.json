@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T16:21:36.196Z",
+  "savedAt": "2026-08-01T16:21:42.285Z",
   "mapView": {
     "lat": 9.985080889293013,
     "lng": -75.04760742187501,
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.285Z"
         }
       }
     },
@@ -7098,7 +7098,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.285Z"
         }
       }
     },
@@ -13912,7 +13912,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.285Z"
         }
       }
     },
@@ -16748,7 +16748,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.285Z"
         }
       }
     },
@@ -17598,7 +17598,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.285Z"
         }
       }
     },
@@ -17817,7 +17817,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.285Z"
         }
       }
     },
@@ -18286,7 +18286,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.285Z"
         }
       }
     },
@@ -18516,7 +18516,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.285Z"
         }
       }
     },
@@ -18727,7 +18727,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.285Z"
         }
       }
     },
@@ -20735,7 +20735,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.286Z"
         }
       }
     },
@@ -20753,7 +20753,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.286Z"
         }
       }
     },
@@ -20797,7 +20797,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.286Z"
         }
       }
     },
@@ -21211,12 +21211,31 @@
                 8.917634
               ]
             }
-          },
+          }
+        ],
+        "properties": {
+          "capa": "Br 2",
+          "color": "#4C7A57",
+          "generado": "2026-08-01T16:21:42.286Z"
+        }
+      }
+    },
+    {
+      "id": "capa-17",
+      "name": "BR 10",
+      "color": "#8A3A5A",
+      "visible": true,
+      "expanded": true,
+      "parentId": "capa-15",
+      "sortIndex": 1,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [
           {
             "type": "Feature",
             "properties": {
               "nombre": "Unidad 270",
-              "capa": "Br 2",
+              "capa": "BR 10",
               "fillColor": "#4C7A57",
               "opacity": 1,
               "dashArray": "",
@@ -21239,27 +21258,9 @@
           }
         ],
         "properties": {
-          "capa": "Br 2",
-          "color": "#4C7A57",
-          "generado": "2026-08-01T16:21:36.196Z"
-        }
-      }
-    },
-    {
-      "id": "capa-17",
-      "name": "BR 10",
-      "color": "#8A3A5A",
-      "visible": true,
-      "expanded": true,
-      "parentId": "capa-15",
-      "sortIndex": 1,
-      "geojson": {
-        "type": "FeatureCollection",
-        "features": [],
-        "properties": {
           "capa": "BR 10",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T16:21:36.196Z"
+          "generado": "2026-08-01T16:21:42.286Z"
         }
       }
     }
