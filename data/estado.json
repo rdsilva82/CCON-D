@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T15:59:45.002Z",
+  "savedAt": "2026-08-01T15:59:49.162Z",
   "mapView": {
     "lat": 8.162555700160631,
     "lng": -75.58593750000001,
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -7098,7 +7098,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -13912,7 +13912,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -16748,7 +16748,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -17598,7 +17598,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -17817,7 +17817,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -18286,7 +18286,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -18516,7 +18516,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -18727,7 +18727,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -20735,7 +20735,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -20753,7 +20753,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -20771,7 +20771,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     },
@@ -20949,8 +20949,8 @@
               "mil": {
                 "affiliation": "friendly",
                 "unitType": "generic",
-                "echelon": "",
-                "designation": ""
+                "echelon": "battalion",
+                "designation": "2"
               }
             },
             "geometry": {
@@ -20965,7 +20965,7 @@
         "properties": {
           "capa": "Br 2",
           "color": "#4C7A57",
-          "generado": "2026-08-01T15:59:45.002Z"
+          "generado": "2026-08-01T15:59:49.162Z"
         }
       }
     }
