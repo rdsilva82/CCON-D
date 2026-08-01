@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T15:56:19.195Z",
+  "savedAt": "2026-08-01T15:56:24.518Z",
   "mapView": {
     "lat": 7.825289472549634,
-    "lng": -73.21289062500001,
+    "lng": -73.14697265625001,
     "zoom": 7
   },
   "baseLayer": "street",
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:56:19.195Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -7098,7 +7098,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:56:19.195Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -13912,7 +13912,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:56:19.195Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -16748,7 +16748,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:56:19.195Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -17598,7 +17598,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:56:19.195Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -17817,7 +17817,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:56:19.195Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -18286,7 +18286,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T15:56:19.195Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -18516,7 +18516,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T15:56:19.195Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -18727,7 +18727,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:56:19.195Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -20735,7 +20735,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:56:19.196Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -20753,7 +20753,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T15:56:19.196Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -20771,7 +20771,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:56:19.196Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     },
@@ -20839,31 +20839,6 @@
           {
             "type": "Feature",
             "properties": {
-              "nombre": "Unidad 245",
-              "capa": "Br 2",
-              "fillColor": "#4C7A57",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "generic",
-                "echelon": "battalion",
-                "designation": ""
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -77.684326,
-                10.725381
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
               "nombre": "Unidad 246",
               "capa": "Br 2",
               "fillColor": "#4C7A57",
@@ -20890,7 +20865,7 @@
         "properties": {
           "capa": "Br 2",
           "color": "#4C7A57",
-          "generado": "2026-08-01T15:56:19.196Z"
+          "generado": "2026-08-01T15:56:24.518Z"
         }
       }
     }
