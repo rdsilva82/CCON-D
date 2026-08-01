@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T15:31:09.199Z",
+  "savedAt": "2026-08-01T15:31:31.504Z",
   "mapView": {
-    "lat": 8.737658515560693,
-    "lng": -72.50839233398439,
+    "lat": 8.761072118006242,
+    "lng": -72.5636672973633,
     "zoom": 12
   },
   "baseLayer": "street",
   "layerCounter": 14,
-  "shapeCounter": 237,
+  "shapeCounter": 238,
   "paletteIdx": 13,
   "activeLayerId": "capa-1",
   "coaEsfuerzos": "ESFUERZO PRINCIPAL  (E.P.)\nFTC «MARTILLO» — 2ª DIV EJC (+) · CCOES · GE/CIBER · ISR CCFAF\nT1. NEUTRALIZAR el nodo de mando y control del sistema híbrido en el triángulo Tibú–La Gabarra–Pto. Santander (OBJ ARIETE).\nP1. Privar al adversario de su capacidad de sincronización —CoG— y alcanzar PD-1 y PD-3.\nT2. CONDUCIR acción directa sobre los HVT de ELN, EMBF/Fte 33 y EPL con CCOES y fuegos conjuntos.\nP2. Colapsar la cadena de mando e imponer saturación operacional.\nT3. INTERDICTAR los corredores Tibú–El Tarra–Convención y Ocaña–Magdalena Medio y BLOQUEAR el eje fronterizo (EJE YUNQUE).\nP3. Impedir la reconstitución logística y el repliegue al santuario transfronterizo.\n",
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:31:09.199Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -7515,12 +7515,55 @@
                 ]
               ]
             }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Rectángulo 238",
+              "capa": "Operaciones",
+              "color": "#1F3864",
+              "fillColor": "#1F3864",
+              "fillOpacity": 0.25,
+              "opacity": 1,
+              "weight": 3,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid",
+              "isRectangle": true
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72.647781,
+                    8.803315
+                  ],
+                  [
+                    -72.647781,
+                    8.841651
+                  ],
+                  [
+                    -72.554741,
+                    8.841651
+                  ],
+                  [
+                    -72.554741,
+                    8.803315
+                  ],
+                  [
+                    -72.647781,
+                    8.803315
+                  ]
+                ]
+              ]
+            }
           }
         ],
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:31:09.199Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -14334,7 +14377,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:31:09.200Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -17170,7 +17213,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:31:09.200Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -18020,7 +18063,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:31:09.200Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -18239,7 +18282,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:31:09.200Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -18708,7 +18751,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T15:31:09.200Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -18938,7 +18981,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T15:31:09.200Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -19149,7 +19192,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:31:09.200Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -21157,7 +21200,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:31:09.200Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     },
@@ -21175,7 +21218,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T15:31:09.200Z"
+          "generado": "2026-08-01T15:31:31.504Z"
         }
       }
     }
