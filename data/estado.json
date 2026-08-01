@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T15:48:30.831Z",
+  "savedAt": "2026-08-01T15:48:41.298Z",
   "mapView": {
-    "lat": 8.71627959409386,
-    "lng": -72.38651275634767,
+    "lat": 8.632109444017052,
+    "lng": -72.41088867187501,
     "zoom": 12
   },
   "baseLayer": "street",
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:48:30.831Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -7536,24 +7536,24 @@
               "coordinates": [
                 [
                   [
-                    -72.478139,
-                    8.673022
+                    -72.466849,
+                    8.691413
                   ],
                   [
-                    -72.459022,
-                    8.706401
+                    -72.433973,
+                    8.711786
                   ],
                   [
-                    -72.378103,
-                    8.661106
+                    -72.384587,
+                    8.633893
                   ],
                   [
-                    -72.39722,
-                    8.627728
+                    -72.417463,
+                    8.613521
                   ],
                   [
-                    -72.478139,
-                    8.673022
+                    -72.466849,
+                    8.691413
                   ]
                 ]
               ]
@@ -8069,7 +8069,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:48:30.831Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -14883,7 +14883,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:48:30.832Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -17719,7 +17719,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:48:30.832Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -18569,7 +18569,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:48:30.832Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -18788,7 +18788,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:48:30.832Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -19257,7 +19257,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T15:48:30.832Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -19487,7 +19487,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T15:48:30.832Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -19698,7 +19698,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:48:30.832Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -21706,7 +21706,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:48:30.832Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     },
@@ -21724,7 +21724,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T15:48:30.832Z"
+          "generado": "2026-08-01T15:48:41.298Z"
         }
       }
     }
