@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T14:55:06.945Z",
+  "savedAt": "2026-08-01T14:55:28.229Z",
   "mapView": {
-    "lat": 10.013481932215157,
-    "lng": -73.09753417968751,
-    "zoom": 9
+    "lat": 8.649165603755499,
+    "lng": -72.71627426147462,
+    "zoom": 13
   },
   "baseLayer": "street",
   "layerCounter": 14,
-  "shapeCounter": 229,
+  "shapeCounter": 230,
   "paletteIdx": 13,
   "activeLayerId": "capa-1",
   "coaEsfuerzos": "ESFUERZO PRINCIPAL  (E.P.)\nFTC «MARTILLO» — 2ª DIV EJC (+) · CCOES · GE/CIBER · ISR CCFAF\nT1. NEUTRALIZAR el nodo de mando y control del sistema híbrido en el triángulo Tibú–La Gabarra–Pto. Santander (OBJ ARIETE).\nP1. Privar al adversario de su capacidad de sincronización —CoG— y alcanzar PD-1 y PD-3.\nT2. CONDUCIR acción directa sobre los HVT de ELN, EMBF/Fte 33 y EPL con CCOES y fuegos conjuntos.\nP2. Colapsar la cadena de mando e imponer saturación operacional.\nT3. INTERDICTAR los corredores Tibú–El Tarra–Convención y Ocaña–Magdalena Medio y BLOQUEAR el eje fronterizo (EJE YUNQUE).\nP3. Impedir la reconstitución logística y el repliegue al santuario transfronterizo.\n",
@@ -7077,7 +7077,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -7091,11 +7091,30 @@
       "sortIndex": 1,
       "geojson": {
         "type": "FeatureCollection",
-        "features": [],
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Punto 230",
+              "capa": "Operaciones",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.699623,
+                8.64365
+              ]
+            }
+          }
+        ],
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -13849,7 +13868,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -16680,7 +16699,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -17519,7 +17538,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -17732,7 +17751,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -18181,7 +18200,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -18405,7 +18424,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -18612,7 +18631,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -20611,7 +20630,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     },
@@ -20629,7 +20648,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T14:55:06.945Z"
+          "generado": "2026-08-01T14:55:28.229Z"
         }
       }
     }
