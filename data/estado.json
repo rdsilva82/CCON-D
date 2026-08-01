@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T15:31:49.746Z",
+  "savedAt": "2026-08-01T15:32:00.588Z",
   "mapView": {
-    "lat": 8.661469319152852,
-    "lng": -72.54409790039064,
+    "lat": 8.67504536559987,
+    "lng": -72.56057739257814,
     "zoom": 11
   },
   "baseLayer": "street",
   "layerCounter": 14,
-  "shapeCounter": 238,
+  "shapeCounter": 239,
   "paletteIdx": 13,
   "activeLayerId": "capa-1",
   "coaEsfuerzos": "ESFUERZO PRINCIPAL  (E.P.)\nFTC «MARTILLO» — 2ª DIV EJC (+) · CCOES · GE/CIBER · ISR CCFAF\nT1. NEUTRALIZAR el nodo de mando y control del sistema híbrido en el triángulo Tibú–La Gabarra–Pto. Santander (OBJ ARIETE).\nP1. Privar al adversario de su capacidad de sincronización —CoG— y alcanzar PD-1 y PD-3.\nT2. CONDUCIR acción directa sobre los HVT de ELN, EMBF/Fte 33 y EPL con CCOES y fuegos conjuntos.\nP2. Colapsar la cadena de mando e imponer saturación operacional.\nT3. INTERDICTAR los corredores Tibú–El Tarra–Convención y Ocaña–Magdalena Medio y BLOQUEAR el eje fronterizo (EJE YUNQUE).\nP3. Impedir la reconstitución logística y el repliegue al santuario transfronterizo.\n",
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:31:49.746Z"
+          "generado": "2026-08-01T15:32:00.588Z"
         }
       }
     },
@@ -7558,12 +7558,239 @@
                 ]
               ]
             }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Elipse 239",
+              "capa": "Operaciones",
+              "color": "#1F3864",
+              "fillColor": "#1F3864",
+              "fillOpacity": 0.25,
+              "opacity": 1,
+              "weight": 3,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid",
+              "ellipse": {
+                "center": [
+                  8.726973299509979,
+                  -72.3332977294922
+                ],
+                "radiusX": 3627.255051988149,
+                "radiusY": 6499.112886578796,
+                "rotation": 44.10644611703742
+              }
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [
+                [
+                  [
+                    -72.310354,
+                    8.75037
+                  ],
+                  [
+                    -72.305014,
+                    8.744866
+                  ],
+                  [
+                    -72.300158,
+                    8.739056
+                  ],
+                  [
+                    -72.29587,
+                    8.733039
+                  ],
+                  [
+                    -72.292221,
+                    8.726919
+                  ],
+                  [
+                    -72.289276,
+                    8.720799
+                  ],
+                  [
+                    -72.287084,
+                    8.714785
+                  ],
+                  [
+                    -72.285682,
+                    8.708979
+                  ],
+                  [
+                    -72.285095,
+                    8.703482
+                  ],
+                  [
+                    -72.285333,
+                    8.698386
+                  ],
+                  [
+                    -72.286392,
+                    8.69378
+                  ],
+                  [
+                    -72.288253,
+                    8.689741
+                  ],
+                  [
+                    -72.290885,
+                    8.686339
+                  ],
+                  [
+                    -72.294243,
+                    8.683633
+                  ],
+                  [
+                    -72.298269,
+                    8.681668
+                  ],
+                  [
+                    -72.302894,
+                    8.680479
+                  ],
+                  [
+                    -72.308039,
+                    8.680085
+                  ],
+                  [
+                    -72.313617,
+                    8.680493
+                  ],
+                  [
+                    -72.319531,
+                    8.681697
+                  ],
+                  [
+                    -72.325681,
+                    8.683675
+                  ],
+                  [
+                    -72.331962,
+                    8.686394
+                  ],
+                  [
+                    -72.338265,
+                    8.689807
+                  ],
+                  [
+                    -72.344483,
+                    8.693857
+                  ],
+                  [
+                    -72.35051,
+                    8.698473
+                  ],
+                  [
+                    -72.356242,
+                    8.703576
+                  ],
+                  [
+                    -72.361581,
+                    8.70908
+                  ],
+                  [
+                    -72.366437,
+                    8.71489
+                  ],
+                  [
+                    -72.370726,
+                    8.720907
+                  ],
+                  [
+                    -72.374374,
+                    8.727028
+                  ],
+                  [
+                    -72.37732,
+                    8.733148
+                  ],
+                  [
+                    -72.379512,
+                    8.739162
+                  ],
+                  [
+                    -72.380913,
+                    8.744967
+                  ],
+                  [
+                    -72.3815,
+                    8.750465
+                  ],
+                  [
+                    -72.381262,
+                    8.75556
+                  ],
+                  [
+                    -72.380203,
+                    8.760167
+                  ],
+                  [
+                    -72.378342,
+                    8.764206
+                  ],
+                  [
+                    -72.37571,
+                    8.767607
+                  ],
+                  [
+                    -72.372353,
+                    8.770313
+                  ],
+                  [
+                    -72.368327,
+                    8.772278
+                  ],
+                  [
+                    -72.363701,
+                    8.773468
+                  ],
+                  [
+                    -72.358556,
+                    8.773862
+                  ],
+                  [
+                    -72.352978,
+                    8.773454
+                  ],
+                  [
+                    -72.347064,
+                    8.77225
+                  ],
+                  [
+                    -72.340914,
+                    8.770272
+                  ],
+                  [
+                    -72.334634,
+                    8.767553
+                  ],
+                  [
+                    -72.328331,
+                    8.764139
+                  ],
+                  [
+                    -72.322113,
+                    8.76009
+                  ],
+                  [
+                    -72.316086,
+                    8.755474
+                  ],
+                  [
+                    -72.310354,
+                    8.75037
+                  ]
+                ]
+              ]
+            }
           }
         ],
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:31:49.746Z"
+          "generado": "2026-08-01T15:32:00.588Z"
         }
       }
     },
@@ -14377,7 +14604,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:31:49.747Z"
+          "generado": "2026-08-01T15:32:00.588Z"
         }
       }
     },
@@ -17213,7 +17440,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:31:49.747Z"
+          "generado": "2026-08-01T15:32:00.589Z"
         }
       }
     },
@@ -18063,7 +18290,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:31:49.747Z"
+          "generado": "2026-08-01T15:32:00.589Z"
         }
       }
     },
@@ -18282,7 +18509,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:31:49.747Z"
+          "generado": "2026-08-01T15:32:00.589Z"
         }
       }
     },
@@ -18751,7 +18978,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T15:31:49.747Z"
+          "generado": "2026-08-01T15:32:00.589Z"
         }
       }
     },
@@ -18981,7 +19208,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T15:31:49.747Z"
+          "generado": "2026-08-01T15:32:00.589Z"
         }
       }
     },
@@ -19192,7 +19419,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:31:49.747Z"
+          "generado": "2026-08-01T15:32:00.589Z"
         }
       }
     },
@@ -21200,7 +21427,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:31:49.747Z"
+          "generado": "2026-08-01T15:32:00.589Z"
         }
       }
     },
@@ -21218,7 +21445,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T15:31:49.747Z"
+          "generado": "2026-08-01T15:32:00.589Z"
         }
       }
     }
