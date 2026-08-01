@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T16:38:56.192Z",
+  "savedAt": "2026-08-01T16:39:05.160Z",
   "mapView": {
-    "lat": 10.547221495690119,
-    "lng": -76.21215820312501,
-    "zoom": 7
+    "lat": 8.04563211947839,
+    "lng": -76.35498046875001,
+    "zoom": 8
   },
   "baseLayer": "street",
   "layerCounter": 17,
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -7098,7 +7098,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -13912,7 +13912,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -16748,7 +16748,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -17598,7 +17598,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -17817,7 +17817,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -18286,7 +18286,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -18516,7 +18516,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -18727,7 +18727,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -20735,7 +20735,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -20753,7 +20753,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -20797,7 +20797,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -21016,7 +21016,7 @@
         "properties": {
           "capa": "Br 2",
           "color": "#4C7A57",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     },
@@ -21260,7 +21260,7 @@
         "properties": {
           "capa": "BR 10",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T16:38:56.193Z"
+          "generado": "2026-08-01T16:39:05.160Z"
         }
       }
     }
