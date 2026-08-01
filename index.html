@@ -2159,6 +2159,11 @@
     }
   }
 
+  var arrowActive = false;
+  var arrowPointerId = null;
+  var arrowShape = null;
+  var arrowTail = null;
+
   function arrowPointerDown(ev){
     if (ev.button !== undefined && ev.button !== 0) return;
     if (arrowPointerId !== null) return;
