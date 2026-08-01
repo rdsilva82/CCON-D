@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T15:31:31.504Z",
+  "savedAt": "2026-08-01T15:31:41.054Z",
   "mapView": {
-    "lat": 8.761072118006242,
-    "lng": -72.5636672973633,
+    "lat": 8.741051882489563,
+    "lng": -72.58975982666017,
     "zoom": 12
   },
   "baseLayer": "street",
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.054Z"
         }
       }
     },
@@ -7521,7 +7521,7 @@
             "properties": {
               "nombre": "Rectángulo 238",
               "capa": "Operaciones",
-              "color": "#1F3864",
+              "color": "#00ff1e",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -7536,24 +7536,24 @@
               "coordinates": [
                 [
                   [
-                    -72.647781,
-                    8.803315
+                    -72.443352,
+                    8.740198
                   ],
                   [
-                    -72.647781,
-                    8.841651
+                    -72.407806,
+                    8.755558
                   ],
                   [
-                    -72.554741,
-                    8.841651
+                    -72.370529,
+                    8.67132
                   ],
                   [
-                    -72.554741,
-                    8.803315
+                    -72.406075,
+                    8.65596
                   ],
                   [
-                    -72.647781,
-                    8.803315
+                    -72.443352,
+                    8.740198
                   ]
                 ]
               ]
@@ -7563,7 +7563,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.054Z"
         }
       }
     },
@@ -14377,7 +14377,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.054Z"
         }
       }
     },
@@ -17213,7 +17213,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.054Z"
         }
       }
     },
@@ -18063,7 +18063,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.054Z"
         }
       }
     },
@@ -18282,7 +18282,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.054Z"
         }
       }
     },
@@ -18751,7 +18751,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.055Z"
         }
       }
     },
@@ -18981,7 +18981,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.055Z"
         }
       }
     },
@@ -19192,7 +19192,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.055Z"
         }
       }
     },
@@ -21200,7 +21200,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.055Z"
         }
       }
     },
@@ -21218,7 +21218,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T15:31:31.504Z"
+          "generado": "2026-08-01T15:31:41.055Z"
         }
       }
     }
