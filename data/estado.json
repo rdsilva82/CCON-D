@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T16:39:35.697Z",
+  "savedAt": "2026-08-01T16:39:40.043Z",
   "mapView": {
     "lat": 7.005489767292211,
     "lng": -71.80664062500001,
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T16:39:35.697Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -7098,7 +7098,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T16:39:35.697Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -13912,7 +13912,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -16748,7 +16748,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -17598,7 +17598,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -17817,7 +17817,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -18085,31 +18085,6 @@
           {
             "type": "Feature",
             "properties": {
-              "nombre": "Unidad 222",
-              "capa": "calco_terreno",
-              "fillColor": "#4C7A57",
-              "opacity": 1,
-              "dashArray": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "generic",
-                "echelon": "",
-                "designation": ""
-              },
-              "dashStyle": ""
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -73.751221,
-                5.637853
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
               "nombre": "Unidad 223",
               "capa": "calco_terreno",
               "fillColor": "#4C7A57",
@@ -18286,7 +18261,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -18516,7 +18491,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -18727,7 +18702,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -20735,7 +20710,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -20753,7 +20728,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -20797,7 +20772,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -21016,7 +20991,7 @@
         "properties": {
           "capa": "Br 2",
           "color": "#4C7A57",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     },
@@ -21260,7 +21235,7 @@
         "properties": {
           "capa": "BR 10",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T16:39:35.698Z"
+          "generado": "2026-08-01T16:39:40.043Z"
         }
       }
     }
