@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "savedAt": "2026-08-01T14:15:07.765Z",
+  "savedAt": "2026-08-01T14:15:30.044Z",
   "mapView": {
-    "lat": 7.117245472370001,
-    "lng": -74.11376953125001,
-    "zoom": 7
+    "lat": 7.8371937012301,
+    "lng": -72.99058914184572,
+    "zoom": 11
   },
   "baseLayer": "street",
   "layerCounter": 14,
-  "shapeCounter": 222,
+  "shapeCounter": 226,
   "paletteIdx": 13,
   "activeLayerId": "capa-10",
   "coaEsfuerzos": "",
@@ -7077,7 +7077,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.044Z"
         }
       }
     },
@@ -7095,7 +7095,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.044Z"
         }
       }
     },
@@ -13849,7 +13849,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.045Z"
         }
       }
     },
@@ -16680,7 +16680,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.045Z"
         }
       }
     },
@@ -17519,7 +17519,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.045Z"
         }
       }
     },
@@ -17732,7 +17732,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.045Z"
         }
       }
     },
@@ -18008,12 +18008,108 @@
                 5.637853
               ]
             }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Unidad 223",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid",
+              "mil": {
+                "affiliation": "friendly",
+                "unitType": "generic",
+                "echelon": "",
+                "designation": ""
+              }
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.91626,
+                7.830731
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Unidad 224",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid",
+              "mil": {
+                "affiliation": "friendly",
+                "unitType": "generic",
+                "echelon": "",
+                "designation": ""
+              }
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.734985,
+                7.871544
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Unidad 225",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid",
+              "mil": {
+                "affiliation": "friendly",
+                "unitType": "infantry",
+                "echelon": "battalion",
+                "designation": ""
+              }
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.954712,
+                7.876985
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Unidad 226",
+              "capa": "calco_terreno",
+              "fillColor": "#4C7A57",
+              "opacity": 1,
+              "dashArray": "",
+              "fillStyle": "solid",
+              "mil": {
+                "affiliation": "friendly",
+                "unitType": "generic",
+                "echelon": "",
+                "designation": ""
+              }
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.739792,
+                7.893989
+              ]
+            }
           }
         ],
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.045Z"
         }
       }
     },
@@ -18237,7 +18333,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.045Z"
         }
       }
     },
@@ -18444,7 +18540,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.045Z"
         }
       }
     },
@@ -20443,7 +20539,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.045Z"
         }
       }
     },
@@ -20461,7 +20557,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-01T14:15:07.766Z"
+          "generado": "2026-08-01T14:15:30.045Z"
         }
       }
     }
