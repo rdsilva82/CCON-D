@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-08-03T17:53:38.487Z",
+  "savedAt": "2026-08-03T17:53:55.850Z",
   "mapView": {
-    "lat": 12.106466402018581,
-    "lng": -75.93475341796876,
-    "zoom": 9
+    "lat": 10.477008906900293,
+    "lng": -72.59765625000001,
+    "zoom": 7
   },
   "baseLayer": "street",
-  "layerCounter": 31,
-  "shapeCounter": 327,
-  "paletteIdx": 30,
-  "activeLayerId": "capa-teatro-operaciones",
+  "layerCounter": 32,
+  "shapeCounter": 354,
+  "paletteIdx": 31,
+  "activeLayerId": "capa-32",
   "coaEsfuerzos": "ESFUERZO PRINCIPAL  (E.P.)\nFTC «MARTILLO» — 2ª DIV EJC (+) · CCOES · GE/CIBER · ISR CCFAF\nT1. NEUTRALIZAR el nodo de mando y control del sistema híbrido en el triángulo Tibú–La Gabarra–Pto. Santander (OBJ ARIETE).\nP1. Privar al adversario de su capacidad de sincronización —CoG— y alcanzar PD-1 y PD-3.\nT2. CONDUCIR acción directa sobre los HVT de ELN, EMBF/Fte 33 y EPL con CCOES y fuegos conjuntos.\nP2. Colapsar la cadena de mando e imponer saturación operacional.\nT3. INTERDICTAR los corredores Tibú–El Tarra–Convención y Ocaña–Magdalena Medio y BLOQUEAR el eje fronterizo (EJE YUNQUE).\nP3. Impedir la reconstitución logística y el repliegue al santuario transfronterizo.\n",
   "coaFases": "",
   "coaDesarrollo": "",
@@ -7109,7 +7109,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-03T17:53:38.487Z"
+          "generado": "2026-08-03T17:53:55.852Z"
         }
       }
     },
@@ -7127,7 +7127,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-03T17:53:38.487Z"
+          "generado": "2026-08-03T17:53:55.852Z"
         }
       }
     },
@@ -14001,7 +14001,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.853Z"
         }
       }
     },
@@ -16842,7 +16842,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.854Z"
         }
       }
     },
@@ -17703,7 +17703,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.854Z"
         }
       }
     },
@@ -17928,7 +17928,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.854Z"
         }
       }
     },
@@ -18209,7 +18209,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.855Z"
         }
       }
     },
@@ -18445,7 +18445,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.855Z"
         }
       }
     },
@@ -18660,7 +18660,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.855Z"
         }
       }
     },
@@ -20677,7 +20677,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.855Z"
         }
       }
     },
@@ -20695,7 +20695,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.855Z"
         }
       }
     },
@@ -20713,7 +20713,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.855Z"
         }
       }
     },
@@ -20940,7 +20940,7 @@
         "properties": {
           "capa": "Br 2",
           "color": "#4C7A57",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.855Z"
         }
       }
     },
@@ -21193,7 +21193,7 @@
         "properties": {
           "capa": "BR 10",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.856Z"
         }
       }
     },
@@ -29490,7 +29490,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.856Z"
         }
       }
     },
@@ -29508,7 +29508,7 @@
         "properties": {
           "capa": "Accion Integral",
           "color": "#1F3864",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     },
@@ -29526,7 +29526,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#B8962E",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     },
@@ -29544,7 +29544,7 @@
         "properties": {
           "capa": "Subcapa",
           "color": "#4C7A57",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     },
@@ -29562,7 +29562,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     },
@@ -29633,7 +29633,7 @@
         "properties": {
           "capa": "PRUEBA",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     },
@@ -29651,7 +29651,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     },
@@ -29826,7 +29826,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     },
@@ -30079,7 +30079,7 @@
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     },
@@ -30202,7 +30202,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     },
@@ -30220,7 +30220,836 @@
         "properties": {
           "capa": "Subcapa",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T17:53:38.488Z"
+          "generado": "2026-08-03T17:53:55.857Z"
+        }
+      }
+    },
+    {
+      "id": "capa-32",
+      "name": "blancos-pspb",
+      "color": "#1F3864",
+      "visible": true,
+      "expanded": true,
+      "parentId": null,
+      "sortIndex": 8,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.727,
+                10.558
+              ]
+            },
+            "properties": {
+              "nombre": "BL-01",
+              "target": {
+                "number": "BL-01",
+                "blanco": "Radares de vigilancia aérea JYL-1",
+                "unidad": "19 BR DA, Base Aérea Rafael Urdaneta (Maracaibo)",
+                "tipo": "SEAD / Defensa aérea",
+                "mision": "Ceguera radar previa al SEAD",
+                "fase": "0 / II",
+                "medio": "ELINT + ataque de precisión / guerra electrónica",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -70.25,
+                11.83
+              ]
+            },
+            "properties": {
+              "nombre": "BL-02",
+              "target": {
+                "number": "BL-02",
+                "blanco": "Grupos misilísticos Pechora (191–195 GMDAA)",
+                "unidad": "19 BR DA — Los Taques, Puertos de Altagracia, Menemaura",
+                "tipo": "SEAD / Defensa aérea",
+                "mision": "Apertura de corredor aéreo",
+                "fase": "II",
+                "medio": "Fuegos de precisión / SEAD aéreo",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.65,
+                10.7
+              ]
+            },
+            "properties": {
+              "nombre": "BL-03",
+              "target": {
+                "number": "BL-03",
+                "blanco": "Grupos misilísticos Iglas (197–199 GMDAAP)",
+                "unidad": "19 BR DA, dispositivo avanzado ZODI Zulia",
+                "tipo": "SEAD / Defensa aérea",
+                "mision": "Reducción de amenaza a baja altura",
+                "fase": "II",
+                "medio": "Fuegos de precisión",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.6,
+                10.6
+              ]
+            },
+            "properties": {
+              "nombre": "BL-04",
+              "target": {
+                "number": "BL-04",
+                "blanco": "Cañones ZU-23 (196 GADAA)",
+                "unidad": "19 BR DA, posiciones fijas de defensa puntual",
+                "tipo": "SEAD / Defensa aérea",
+                "mision": "Reducción de fuego antiaéreo de corto alcance",
+                "fase": "II",
+                "medio": "Fuegos de precisión / apoyo aéreo cercano",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.73,
+                10.98
+              ]
+            },
+            "properties": {
+              "nombre": "BL-05",
+              "target": {
+                "number": "BL-05",
+                "blanco": "11 Brigada Blindada (COG físico)",
+                "unidad": "Fuerte Mara, estado Zulia",
+                "tipo": "CoG / Maniobra (blindado)",
+                "mision": "Detener la fuerza de explotación enemiga",
+                "fase": "II / III",
+                "medio": "Fuegos de precisión + maniobra",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.74,
+                10.975
+              ]
+            },
+            "properties": {
+              "nombre": "BL-06",
+              "target": {
+                "number": "BL-06",
+                "blanco": "Tanques pesados T-72",
+                "unidad": "11 BR Blindada, Fuerte Mara",
+                "tipo": "CoG / Maniobra (blindado)",
+                "mision": "Degradar capacidad blindada de mayor poder",
+                "fase": "II / III",
+                "medio": "Fuegos antitanque / aéreo",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.72,
+                10.985
+              ]
+            },
+            "properties": {
+              "nombre": "BL-07",
+              "target": {
+                "number": "BL-07",
+                "blanco": "Tanques medianos AMX-30",
+                "unidad": "11 BR Blindada",
+                "tipo": "CoG / Maniobra (blindado)",
+                "mision": "Degradar capacidad blindada",
+                "fase": "II / III",
+                "medio": "Fuegos antitanque",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.735,
+                10.97
+              ]
+            },
+            "properties": {
+              "nombre": "BL-08",
+              "target": {
+                "number": "BL-08",
+                "blanco": "Tanques ligeros AMX-13",
+                "unidad": "11 BR Blindada",
+                "tipo": "CoG / Maniobra (blindado)",
+                "mision": "Degradar capacidad blindada ligera",
+                "fase": "II / III",
+                "medio": "Fuegos antitanque",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.745,
+                10.99
+              ]
+            },
+            "properties": {
+              "nombre": "BL-09",
+              "target": {
+                "number": "BL-09",
+                "blanco": "Grupos de artillería de campaña y antiaérea (115/116)",
+                "unidad": "11 BR Blindada, Fuerte Mara",
+                "tipo": "CoG / Maniobra (blindado)",
+                "mision": "Reducir apoyo de fuegos enemigo",
+                "fase": "II",
+                "medio": "Contrabatería / fuegos de precisión",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.8,
+                11.35
+              ]
+            },
+            "properties": {
+              "nombre": "BL-10",
+              "target": {
+                "number": "BL-10",
+                "blanco": "13 Brigada de Infantería (fuerza de asalto)",
+                "unidad": "Paraguaipoa, Zulia",
+                "tipo": "CoG / Maniobra (blindado)",
+                "mision": "Fijar/degradar la fuerza de asalto",
+                "fase": "II",
+                "medio": "Fuegos + contramovilidad",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -69.32,
+                10.07
+              ]
+            },
+            "properties": {
+              "nombre": "BL-11",
+              "target": {
+                "number": "BL-11",
+                "blanco": "14 Brigada Mecanizada (reserva)",
+                "unidad": "Barquisimeto, Lara",
+                "tipo": "CoG / Maniobra (blindado)",
+                "mision": "Impedir el compromiso oportuno de la reserva",
+                "fase": "III",
+                "medio": "Interdicción de movimiento + fuegos",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.55,
+                10.06
+              ]
+            },
+            "properties": {
+              "nombre": "BL-12",
+              "target": {
+                "number": "BL-12",
+                "blanco": "12 Brigada Caribe (fuerza de fijación)",
+                "unidad": "Machiques, Zulia",
+                "tipo": "CoG / Maniobra (blindado)",
+                "mision": "Degradar la fijación sobre el Perijá",
+                "fase": "II",
+                "medio": "Fuegos de precisión",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.61,
+                10.65
+              ]
+            },
+            "properties": {
+              "nombre": "BL-13",
+              "target": {
+                "number": "BL-13",
+                "blanco": "Puente General Rafael Urdaneta",
+                "unidad": "Paso obligado de la 14 BR (reserva) hacia el eje A/A1",
+                "tipo": "Contramovilidad / Interdicción",
+                "mision": "Canalizar/retardar el compromiso de la reserva",
+                "fase": "II",
+                "medio": "Contramovilidad / demolición selectiva",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72,
+                10.5
+              ]
+            },
+            "properties": {
+              "nombre": "BL-14",
+              "target": {
+                "number": "BL-14",
+                "blanco": "9 puentes de la ruta A/A2",
+                "unidad": "Machiques–Maracaibo–Paraguachón",
+                "tipo": "Contramovilidad / Interdicción",
+                "mision": "Canalizar la maniobra a terreno restringido",
+                "fase": "II",
+                "medio": "Contramovilidad / interdicción",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.9,
+                9.9
+              ]
+            },
+            "properties": {
+              "nombre": "BL-15",
+              "target": {
+                "number": "BL-15",
+                "blanco": "Pasos críticos de la Serranía del Perijá (A/A1, A/A3, A/A4)",
+                "unidad": "Frontera Cesar–Zulia",
+                "tipo": "Contramovilidad / Interdicción",
+                "mision": "Negar rutas alternas de infiltración",
+                "fase": "II",
+                "medio": "Contramovilidad / negación de rutas",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.64,
+                10.64
+              ]
+            },
+            "properties": {
+              "nombre": "BL-16",
+              "target": {
+                "number": "BL-16",
+                "blanco": "Puesto de mando REDI Occidental",
+                "unidad": "Maracaibo, Zulia",
+                "tipo": "Mando y Control (C2)",
+                "mision": "Degradar la coordinación operacional de AEGIS",
+                "fase": "II / III",
+                "medio": "Ataque a información / EW / fuegos de precisión",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -71.62,
+                10.66
+              ]
+            },
+            "properties": {
+              "nombre": "BL-17",
+              "target": {
+                "number": "BL-17",
+                "blanco": "Puesto de mando ZODI Zulia N.º 11",
+                "unidad": "Maracaibo, Zulia",
+                "tipo": "Mando y Control (C2)",
+                "mision": "Fragmentar el control táctico de las brigadas",
+                "fase": "II",
+                "medio": "Ataque a información / EW",
+                "ambito": "AEGIS (externo)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.95,
+                10.3
+              ]
+            },
+            "properties": {
+              "nombre": "BL-18",
+              "target": {
+                "number": "BL-18",
+                "blanco": "«Jaime» — GAO-ELN, F.G. Norte",
+                "unidad": "La Guajira / Cesar (corredor Serranía del Perijá)",
+                "tipo": "HVT amenaza interna",
+                "mision": "Neutralizar/capturar HVT; control del corredor fronterizo (clave X-4)",
+                "fase": "0",
+                "medio": "Captura — acción coordinada inteligencia y Fuerza Pública (judicialización)",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": "ILA-01"
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.73,
+                8.64
+              ]
+            },
+            "properties": {
+              "nombre": "BL-19",
+              "target": {
+                "number": "BL-19",
+                "blanco": "«Martín» — GAO-ELN, F.G. Nororiental",
+                "unidad": "Norte de Santander",
+                "tipo": "HVT amenaza interna",
+                "mision": "Neutralizar/capturar HVT (mayor fuerza estimada ≈1.687)",
+                "fase": "0",
+                "medio": "Captura — acción coordinada inteligencia y Fuerza Pública",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": "ILA-02"
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.75,
+                11.44
+              ]
+            },
+            "properties": {
+              "nombre": "BL-20",
+              "target": {
+                "number": "BL-20",
+                "blanco": "«Marihuano» — Clan del Golfo",
+                "unidad": "La Guajira / Magdalena (Riohacha–Dibulla–Maicao)",
+                "tipo": "HVT amenaza interna",
+                "mision": "Neutralizar/capturar HVT; control del corredor AOR core",
+                "fase": "0",
+                "medio": "Captura — acción coordinada inteligencia y Fuerza Pública",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": "ILA-03"
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -75.4,
+                9.3
+              ]
+            },
+            "properties": {
+              "nombre": "BL-21",
+              "target": {
+                "number": "BL-21",
+                "blanco": "«Felipe» — Clan del Golfo",
+                "unidad": "Sucre / Atlántico / Bolívar",
+                "tipo": "HVT amenaza interna",
+                "mision": "Neutralizar/capturar HVT; corredor bisagra hacia puertos del Caribe",
+                "fase": "0",
+                "medio": "Captura — acción coordinada inteligencia y Fuerza Pública",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": "ILA-04"
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -75.88,
+                8.75
+              ]
+            },
+            "properties": {
+              "nombre": "BL-22",
+              "target": {
+                "number": "BL-22",
+                "blanco": "«Gonzalito» — Clan del Golfo",
+                "unidad": "Córdoba / Sucre / Bolívar",
+                "tipo": "HVT amenaza interna",
+                "mision": "Neutralizar/capturar HVT; nodo de financiamiento del sistema",
+                "fase": "0",
+                "medio": "Captura — acción coordinada inteligencia y Fuerza Pública",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": "ILA-05"
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -74.8,
+                10.98
+              ]
+            },
+            "properties": {
+              "nombre": "BL-23",
+              "target": {
+                "number": "BL-23",
+                "blanco": "Nodos financieros y de lavado de activos del GDOT",
+                "unidad": "Litoral Caribe (Atlántico, Bolívar, Magdalena, Guajira)",
+                "tipo": "Sostenimiento / Financiero",
+                "mision": "Aislar la financiación transnacional",
+                "fase": "0",
+                "medio": "Acción judicial/financiera (UIAF/Fiscalía) — extinción de dominio",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -75.51,
+                10.4
+              ]
+            },
+            "properties": {
+              "nombre": "BL-24",
+              "target": {
+                "number": "BL-24",
+                "blanco": "Infraestructura portuaria usada para economías ilícitas",
+                "unidad": "Barranquilla, Cartagena, Santa Marta",
+                "tipo": "Sostenimiento / Financiero",
+                "mision": "Reducir capacidad de exportación de narcóticos",
+                "fase": "0",
+                "medio": "Interdicción / control portuario interagencial",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.5,
+                12.3
+              ]
+            },
+            "properties": {
+              "nombre": "BL-25",
+              "target": {
+                "number": "BL-25",
+                "blanco": "Rutas de embarque marítimo (semisumergibles, go-fast)",
+                "unidad": "Corredor Caribe / frontera marítima",
+                "tipo": "Sostenimiento / Financiero",
+                "mision": "Interdicción de tráfico marítimo ilícito",
+                "fase": "0 / IV",
+                "medio": "Interdicción marítima (GTM / EVIPE)",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": ""
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -73.31,
+                11.27
+              ]
+            },
+            "properties": {
+              "nombre": "IP-01",
+              "target": {
+                "number": "IP-01",
+                "blanco": "«Bendito Menor» — ACSN / Los Pachenca",
+                "unidad": "La Guajira (Dibulla, Riohacha, Maicao)",
+                "tipo": "Objetivo de inteligencia (HVT)",
+                "mision": "Desarrollo de blanco; máxima intensidad de amenaza actual en La Guajira",
+                "fase": "0",
+                "medio": "Captura / desarrollo de blanco (inteligencia)",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": "ILA-06"
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          },
+          {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.75,
+                8.7
+              ]
+            },
+            "properties": {
+              "nombre": "IP-02",
+              "target": {
+                "number": "IP-02",
+                "blanco": "«Jhon Mechas» — EMBF, Fte. 33",
+                "unidad": "Norte de Santander (Catatumbo)",
+                "tipo": "Objetivo de inteligencia (HVT)",
+                "mision": "Desarrollo de blanco; núcleo geográfico de la hipótesis X-3",
+                "fase": "0",
+                "medio": "Captura / desarrollo de blanco (inteligencia)",
+                "ambito": "Amenaza interna (Colombia)",
+                "ilaRef": "ILA-07"
+              },
+              "capa": "blancos-pspb",
+              "fillColor": "#1F3864",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            }
+          }
+        ],
+        "properties": {
+          "capa": "blancos-pspb",
+          "color": "#1F3864",
+          "generado": "2026-08-03T17:53:55.857Z"
         }
       }
     }
