@@ -648,12 +648,14 @@
     };
   }
 
+  var applyingRemoteState = false;
   function scheduleSave(){
     lastLocalEditTime = Date.now();
+    var skipPush = applyingRemoteState;
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(function(){
       saveStateToStorage();
-      if (githubConfig && githubConfig.token && githubConfig.autoSync) scheduleGithubPush();
+      if (!skipPush && githubConfig && githubConfig.token && githubConfig.autoSync) scheduleGithubPush();
     }, 500);
   }
 
@@ -662,7 +664,9 @@
     catch(err){ /* almacenamiento no disponible; se continúa sin guardar */ }
   }
 
-  function applyRemoteState(state){
+  function applyRemoteState(state, options){
+    options = options || {};
+    var applyView = options.applyView !== false;
     if (!state) return false;
     document.getElementById('coa-esfuerzos-text').value = state.coaEsfuerzos || '';
     document.getElementById('coa-fases-text').value = state.coaFases || '';
@@ -699,7 +703,7 @@
       var radio = document.querySelector('input[name="basemap"][value="' + currentBase + '"]');
       if (radio) radio.checked = true;
     }
-    if (state.mapView) map.setView([state.mapView.lat, state.mapView.lng], state.mapView.zoom);
+    if (applyView && state.mapView) map.setView([state.mapView.lat, state.mapView.lng], state.mapView.zoom);
 
     var restoreActiveId = (state.activeLayerId && getLayer(state.activeLayerId)) ? state.activeLayerId : layers[layers.length-1].id;
     setActiveLayer(restoreActiveId);
@@ -762,8 +766,12 @@
     return url;
   }
 
-  function githubPull(showAlertOnError){
+  var syncInProgress = false;
+
+  function githubPull(showAlertOnError, isBackground){
     if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
+    if (syncInProgress) return Promise.resolve(false);
+    syncInProgress = true;
     updateSyncStatus('syncing','Descargando…');
     return fetch(githubApiUrl(true), {
       headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
@@ -771,25 +779,37 @@
       if (res.status === 404){
         githubFileSha = null;
         updateSyncStatus('ok','Repositorio conectado (sin datos aún)');
+        syncInProgress = false;
         return false;
       }
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json().then(function(data){
+        if (isBackground && data.sha === githubFileSha){
+          updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+          syncInProgress = false;
+          return false;
+        }
         githubFileSha = data.sha;
         var state = JSON.parse(base64ToUtf8(data.content));
-        applyRemoteState(state);
+        applyingRemoteState = true;
+        applyRemoteState(state, { applyView: !isBackground });
+        applyingRemoteState = false;
         updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+        syncInProgress = false;
         return true;
       });
     }).catch(function(err){
       updateSyncStatus('error','Error al descargar: ' + err.message);
       if (showAlertOnError) alert('No se pudo descargar desde GitHub: ' + err.message);
+      syncInProgress = false;
       return false;
     });
   }
 
   function githubPush(){
     if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
+    if (syncInProgress){ scheduleGithubPush(); return Promise.resolve(false); }
+    syncInProgress = true;
     updateSyncStatus('syncing','Subiendo…');
     var content = utf8ToBase64(JSON.stringify(buildStateObject(), null, 2));
     var body = { message:'Actualizar mapa - ' + new Date().toISOString(), content: content, branch: githubConfig.branch || 'main' };
@@ -801,16 +821,19 @@
     }).then(function(res){
       if (res.status === 409){
         updateSyncStatus('error','Alguien más actualizó el mapa; se descargó esa versión');
-        return githubPull(false).then(function(){ return false; });
+        syncInProgress = false;
+        return githubPull(false, true).then(function(){ return false; });
       }
       return res.json().then(function(data){
         if (!res.ok) throw new Error(data.message || ('HTTP ' + res.status));
         githubFileSha = data.content.sha;
         updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+        syncInProgress = false;
         return true;
       });
     }).catch(function(err){
       updateSyncStatus('error','Error al subir: ' + err.message);
+      syncInProgress = false;
       return false;
     });
   }
@@ -3997,10 +4020,12 @@
   });
 
   setInterval(function(){
-    if (githubConfigured() && githubConfig.autoSync && !githubPushTimer && (Date.now()-lastLocalEditTime > 10000)){
-      githubPull(false);
+    if (githubConfigured() && githubConfig.autoSync && !githubPushTimer &&
+        !activeToolName && !moveModeShape &&
+        (Date.now()-lastLocalEditTime > 15000)){
+      githubPull(false, true);
     }
-  }, 25000);
+  }, 30000);
 
 })();
 </script>
