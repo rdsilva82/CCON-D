@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "savedAt": "2026-08-03T12:11:35.905Z",
+  "savedAt": "2026-08-03T12:56:37.549Z",
   "mapView": {
-    "lat": 9.622414142924805,
-    "lng": -75.750732421875,
-    "zoom": 7
+    "lat": 6.6918870231344485,
+    "lng": -73.10852050781251,
+    "zoom": 8
   },
   "baseLayer": "street",
   "layerCounter": 18,
-  "shapeCounter": 275,
+  "shapeCounter": 276,
   "paletteIdx": 17,
   "activeLayerId": "capa-14",
   "coaEsfuerzos": "ESFUERZO PRINCIPAL  (E.P.)\nFTC «MARTILLO» — 2ª DIV EJC (+) · CCOES · GE/CIBER · ISR CCFAF\nT1. NEUTRALIZAR el nodo de mando y control del sistema híbrido en el triángulo Tibú–La Gabarra–Pto. Santander (OBJ ARIETE).\nP1. Privar al adversario de su capacidad de sincronización —CoG— y alcanzar PD-1 y PD-3.\nT2. CONDUCIR acción directa sobre los HVT de ELN, EMBF/Fte 33 y EPL con CCOES y fuegos conjuntos.\nP2. Colapsar la cadena de mando e imponer saturación operacional.\nT3. INTERDICTAR los corredores Tibú–El Tarra–Convención y Ocaña–Magdalena Medio y BLOQUEAR el eje fronterizo (EJE YUNQUE).\nP3. Impedir la reconstitución logística y el repliegue al santuario transfronterizo.\n",
@@ -38,7 +38,8 @@
               "weight": 2,
               "dashArray": "6 4",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -2708,7 +2709,8 @@
               "weight": 2,
               "dashArray": "6 4",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -4554,7 +4556,8 @@
               "weight": 2,
               "dashArray": "6 4",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -7080,7 +7083,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.549Z"
         }
       }
     },
@@ -7088,7 +7091,7 @@
       "id": "capa-1",
       "name": "Operaciones",
       "color": "#1F3864",
-      "visible": true,
+      "visible": false,
       "expanded": false,
       "parentId": null,
       "sortIndex": 3,
@@ -7098,7 +7101,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.549Z"
         }
       }
     },
@@ -7126,7 +7129,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -8065,7 +8069,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -8976,7 +8981,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -9840,7 +9846,8 @@
               "capa": "calcos_terreno_combinado",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -9892,7 +9899,8 @@
               "capa": "calcos_terreno_combinado",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -9945,7 +9953,8 @@
               "capa": "calcos_terreno_combinado",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -10166,7 +10175,8 @@
               "capa": "calcos_terreno_combinado",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -10387,7 +10397,8 @@
               "capa": "calcos_terreno_combinado",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -10604,7 +10615,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -10625,7 +10637,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -10646,7 +10659,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -10667,7 +10681,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -10688,7 +10703,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -10709,7 +10725,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -10730,7 +10747,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -10751,7 +10769,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -10775,7 +10794,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -10817,7 +10837,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -10851,7 +10872,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -10889,7 +10911,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -10939,7 +10962,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -10977,7 +11001,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -11011,7 +11036,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -11055,7 +11081,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -11099,7 +11126,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -11133,7 +11161,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -11167,7 +11196,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -11201,7 +11231,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -11231,7 +11262,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -11265,7 +11297,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -11296,7 +11329,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11317,7 +11351,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11338,7 +11373,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11359,7 +11395,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11380,7 +11417,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11401,7 +11439,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11422,7 +11461,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11443,7 +11483,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11464,7 +11505,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11485,7 +11527,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11506,7 +11549,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11530,7 +11574,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -11582,7 +11627,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -11630,7 +11676,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -11675,7 +11722,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11696,7 +11744,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11717,7 +11766,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -11741,7 +11791,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -11789,7 +11840,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -11837,7 +11889,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -11889,7 +11942,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -11934,7 +11988,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -12155,7 +12210,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -12376,7 +12432,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -12597,7 +12654,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -12818,7 +12876,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -13039,7 +13098,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -13260,7 +13320,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -13481,7 +13542,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -13702,7 +13764,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -13912,7 +13975,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.550Z"
         }
       }
     },
@@ -13940,7 +14003,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -14879,7 +14943,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -15790,7 +15855,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -16654,7 +16720,8 @@
               "capa": "calco_ao",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -16706,7 +16773,8 @@
               "capa": "calco_ao",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -16748,7 +16816,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.550Z"
         }
       }
     },
@@ -16778,7 +16846,8 @@
               "capa": "calco_enemigo",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -16999,7 +17068,8 @@
               "capa": "calco_enemigo",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -17220,7 +17290,8 @@
               "capa": "calco_enemigo",
               "opacity": 1,
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -17437,7 +17508,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17458,7 +17530,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17479,7 +17552,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17500,7 +17574,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17521,7 +17596,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17542,7 +17618,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17563,7 +17640,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17584,7 +17662,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17598,7 +17677,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.550Z"
         }
       }
     },
@@ -17627,7 +17706,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -17661,7 +17741,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -17695,7 +17776,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -17729,7 +17811,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -17759,7 +17842,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -17793,7 +17877,8 @@
               "fillOpacity": 0.25,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "LineString",
@@ -17817,7 +17902,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.550Z"
         }
       }
     },
@@ -17843,7 +17928,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17864,7 +17950,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17885,7 +17972,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17906,7 +17994,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17927,7 +18016,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17948,7 +18038,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17969,7 +18060,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -17990,7 +18082,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -18011,7 +18104,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -18032,7 +18126,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -18053,7 +18148,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -18072,7 +18168,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -18086,7 +18183,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.550Z"
         }
       }
     },
@@ -18115,7 +18212,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -18167,7 +18265,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -18215,7 +18314,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -18260,7 +18360,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -18281,7 +18382,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -18302,7 +18404,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -18316,7 +18419,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.550Z"
         }
       }
     },
@@ -18345,7 +18448,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -18393,7 +18497,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -18441,7 +18546,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -18493,7 +18599,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -18527,7 +18634,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.550Z"
         }
       }
     },
@@ -18557,7 +18664,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -18778,7 +18886,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -18999,7 +19108,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -19220,7 +19330,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -19441,7 +19552,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -19662,7 +19774,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -19883,7 +19996,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -20104,7 +20218,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -20325,7 +20440,8 @@
               "opacity": 1,
               "dashArray": "",
               "fillStyle": "solid",
-              "dashStyle": ""
+              "dashStyle": "",
+              "supply": 100
             },
             "geometry": {
               "type": "Polygon",
@@ -20535,7 +20651,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.550Z"
         }
       }
     },
@@ -20549,11 +20665,38 @@
       "sortIndex": 1,
       "geojson": {
         "type": "FeatureCollection",
-        "features": [],
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Unidad 276",
+              "capa": "PICC",
+              "supply": 100,
+              "fillColor": "#ff0000",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid",
+              "mil": {
+                "affiliation": "friendly",
+                "unitType": "generic",
+                "echelon": "",
+                "designation": ""
+              }
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -73.108521,
+                7.111795
+              ]
+            }
+          }
+        ],
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.551Z"
         }
       }
     },
@@ -20561,7 +20704,7 @@
       "id": "capa-15",
       "name": "DIV 1",
       "color": "#B8962E",
-      "visible": true,
+      "visible": false,
       "expanded": false,
       "parentId": "capa-1",
       "sortIndex": 0,
@@ -20583,7 +20726,8 @@
                 "unitType": "generic",
                 "echelon": "division",
                 "designation": "1"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20597,7 +20741,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.551Z"
         }
       }
     },
@@ -20605,7 +20749,7 @@
       "id": "capa-16",
       "name": "Br 2",
       "color": "#4C7A57",
-      "visible": true,
+      "visible": false,
       "expanded": true,
       "parentId": "capa-15",
       "sortIndex": 0,
@@ -20627,7 +20771,8 @@
                 "unitType": "infantry",
                 "echelon": "battalion",
                 "designation": "2"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20652,7 +20797,8 @@
                 "unitType": "infantry",
                 "echelon": "battalion",
                 "designation": "5"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20677,7 +20823,8 @@
                 "unitType": "engineer",
                 "echelon": "battalion",
                 "designation": "2"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20702,7 +20849,8 @@
                 "unitType": "aspc",
                 "echelon": "battalion",
                 "designation": "2"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20727,7 +20875,8 @@
                 "unitType": "biter",
                 "echelon": "battalion",
                 "designation": "2"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20752,7 +20901,8 @@
                 "unitType": "ggcar",
                 "echelon": "battalion",
                 "designation": "2"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20777,7 +20927,8 @@
                 "unitType": "bapom",
                 "echelon": "battalion",
                 "designation": "2"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20802,7 +20953,8 @@
                 "unitType": "generic",
                 "echelon": "brigade",
                 "designation": "2"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20816,7 +20968,7 @@
         "properties": {
           "capa": "Br 2",
           "color": "#4C7A57",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.551Z"
         }
       }
     },
@@ -20824,7 +20976,7 @@
       "id": "capa-17",
       "name": "BR 10",
       "color": "#8A3A5A",
-      "visible": true,
+      "visible": false,
       "expanded": true,
       "parentId": "capa-15",
       "sortIndex": 1,
@@ -20846,7 +20998,8 @@
                 "unitType": "generic",
                 "echelon": "brigade",
                 "designation": "10"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20871,7 +21024,8 @@
                 "unitType": "infantry",
                 "echelon": "battalion",
                 "designation": "6"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20896,7 +21050,8 @@
                 "unitType": "cavalry",
                 "echelon": "battalion",
                 "designation": "10"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20921,7 +21076,8 @@
                 "unitType": "ggmag",
                 "echelon": "battalion",
                 "designation": "10"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20946,7 +21102,8 @@
                 "unitType": "aspc",
                 "echelon": "battalion",
                 "designation": "10"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20971,7 +21128,8 @@
                 "unitType": "biter",
                 "echelon": "battalion",
                 "designation": "10"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -20996,7 +21154,8 @@
                 "unitType": "cavalry",
                 "echelon": "",
                 "designation": "2"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -21021,7 +21180,8 @@
                 "unitType": "engineer",
                 "echelon": "",
                 "designation": "52"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -21046,7 +21206,8 @@
                 "unitType": "engineer",
                 "echelon": "",
                 "designation": "70"
-              }
+              },
+              "supply": 100
             },
             "geometry": {
               "type": "Point",
@@ -21060,25 +21221,7 @@
         "properties": {
           "capa": "BR 10",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T12:11:35.905Z"
-        }
-      }
-    },
-    {
-      "id": "capa-18",
-      "name": "COA",
-      "color": "#2F6F8F",
-      "visible": true,
-      "expanded": true,
-      "parentId": null,
-      "sortIndex": 4,
-      "geojson": {
-        "type": "FeatureCollection",
-        "features": [],
-        "properties": {
-          "capa": "COA",
-          "color": "#2F6F8F",
-          "generado": "2026-08-03T12:11:35.905Z"
+          "generado": "2026-08-03T12:56:37.551Z"
         }
       }
     }
