@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "savedAt": "2026-08-03T13:06:48.343Z",
+  "savedAt": "2026-08-03T13:06:56.778Z",
   "mapView": {
-    "lat": 8.559293903302025,
-    "lng": -73.52050781250001,
+    "lat": 7.8307314478694625,
+    "lng": -73.76220703125001,
     "zoom": 8
   },
   "baseLayer": "street",
@@ -7083,7 +7083,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-03T13:06:48.344Z"
+          "generado": "2026-08-03T13:06:56.779Z"
         }
       }
     },
@@ -7091,7 +7091,7 @@
       "id": "capa-1",
       "name": "Operaciones",
       "color": "#1F3864",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": null,
       "sortIndex": 3,
@@ -7101,7 +7101,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-03T13:06:48.344Z"
+          "generado": "2026-08-03T13:06:56.779Z"
         }
       }
     },
@@ -13975,7 +13975,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T13:06:48.345Z"
+          "generado": "2026-08-03T13:06:56.780Z"
         }
       }
     },
@@ -16816,7 +16816,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T13:06:48.345Z"
+          "generado": "2026-08-03T13:06:56.781Z"
         }
       }
     },
@@ -17677,7 +17677,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-03T13:06:48.345Z"
+          "generado": "2026-08-03T13:06:56.781Z"
         }
       }
     },
@@ -17902,7 +17902,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-03T13:06:48.346Z"
+          "generado": "2026-08-03T13:06:56.781Z"
         }
       }
     },
@@ -18183,7 +18183,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-03T13:06:48.346Z"
+          "generado": "2026-08-03T13:06:56.781Z"
         }
       }
     },
@@ -18419,7 +18419,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T13:06:48.346Z"
+          "generado": "2026-08-03T13:06:56.781Z"
         }
       }
     },
@@ -18634,7 +18634,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T13:06:48.346Z"
+          "generado": "2026-08-03T13:06:56.781Z"
         }
       }
     },
@@ -20651,7 +20651,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T13:06:48.346Z"
+          "generado": "2026-08-03T13:06:56.782Z"
         }
       }
     },
@@ -20669,7 +20669,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-03T13:06:48.346Z"
+          "generado": "2026-08-03T13:06:56.782Z"
         }
       }
     },
@@ -20677,7 +20677,7 @@
       "id": "capa-15",
       "name": "DIV 1",
       "color": "#B8962E",
-      "visible": false,
+      "visible": true,
       "expanded": false,
       "parentId": "capa-1",
       "sortIndex": 0,
@@ -20714,7 +20714,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-03T13:06:48.346Z"
+          "generado": "2026-08-03T13:06:56.782Z"
         }
       }
     },
@@ -20722,7 +20722,7 @@
       "id": "capa-16",
       "name": "Br 2",
       "color": "#4C7A57",
-      "visible": false,
+      "visible": true,
       "expanded": true,
       "parentId": "capa-15",
       "sortIndex": 0,
@@ -20941,7 +20941,7 @@
         "properties": {
           "capa": "Br 2",
           "color": "#4C7A57",
-          "generado": "2026-08-03T13:06:48.346Z"
+          "generado": "2026-08-03T13:06:56.782Z"
         }
       }
     },
@@ -20949,7 +20949,7 @@
       "id": "capa-17",
       "name": "BR 10",
       "color": "#8A3A5A",
-      "visible": false,
+      "visible": true,
       "expanded": true,
       "parentId": "capa-15",
       "sortIndex": 1,
@@ -21194,7 +21194,7 @@
         "properties": {
           "capa": "BR 10",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T13:06:48.346Z"
+          "generado": "2026-08-03T13:06:56.783Z"
         }
       }
     },
@@ -29491,7 +29491,7 @@
         "properties": {
           "capa": "norte-de-santander-todas-las-capas",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T13:06:48.347Z"
+          "generado": "2026-08-03T13:06:56.783Z"
         }
       }
     }
