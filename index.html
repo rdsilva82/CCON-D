@@ -1148,6 +1148,8 @@
     node.group.eachLayer(function(s){
       var ind = supplyIndicators[s._shapeId];
       if (ind){ if (visible) ind.addTo(map); else map.removeLayer(ind); }
+      var cov = emisoraCoverageLayers[s._shapeId];
+      if (cov){ if (visible) cov.addTo(map); else map.removeLayer(cov); }
     });
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
@@ -1886,7 +1888,9 @@
     ['transporte','Transporte'],
     ['fronterizo','Fronterizo'],
     ['hidrico','Hídrico'],
-    ['institucional','Institucional']
+    ['institucional','Institucional'],
+    ['hospital','Hospital'],
+    ['emisora','Emisora']
   ];
   var INFRA_CRITICIDAD = [
     ['A','CRÍTICA (A)','#C62828'],
@@ -1921,10 +1925,35 @@
         return '<circle cx="12" cy="12" r="3.5" fill="#fff"/>';
     }
   }
-  function defaultInfraParams(){
-    return { tipo:'industrial', codigo:'', activo:'', descripcion:'', criticidad:'B' };
+  function defaultInfraParams(tipo){
+    tipo = tipo || 'industrial';
+    if (tipo === 'hospital'){
+      return { tipo:'hospital', nivel:'', denominacion:'', municipio:'', departamento:'' };
+    }
+    if (tipo === 'emisora'){
+      return { tipo:'emisora', identificacion:'', fuerza:'', unidad:'', herramienta:'', municipio:'', departamento:'', cobertura:'', estado:'', observaciones:'' };
+    }
+    return { tipo:tipo, codigo:'', activo:'', descripcion:'', criticidad:'B' };
   }
   function buildInfraIcon(infra){
+    if (infra.tipo === 'hospital'){
+      var html = '<svg width="34" height="34" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+        '<circle cx="17" cy="17" r="15" fill="#C62828" stroke="#fff" stroke-width="2"/>' +
+        '<line x1="17" y1="9" x2="17" y2="25" stroke="#fff" stroke-width="4.2" stroke-linecap="round"/>' +
+        '<line x1="9" y1="17" x2="25" y2="17" stroke="#fff" stroke-width="4.2" stroke-linecap="round"/>' +
+        '</svg>';
+      return L.divIcon({ className:'', html: html, iconSize:[34,34], iconAnchor:[17,17] });
+    }
+    if (infra.tipo === 'emisora'){
+      var html2 = '<svg width="34" height="34" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+        '<circle cx="17" cy="17" r="15" fill="#1F3864" stroke="#fff" stroke-width="2"/>' +
+        '<line x1="17" y1="24" x2="17" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>' +
+        '<circle cx="17" cy="10" r="1.6" fill="#fff"/>' +
+        '<path d="M11,15 a8,8 0 0 1 12,0" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<path d="M7.5,18.5 a13,13 0 0 1 19,0" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>' +
+        '</svg>';
+      return L.divIcon({ className:'', html: html2, iconSize:[34,34], iconAnchor:[17,17] });
+    }
     var color = infraCriticidadColor(infra.criticidad);
     var html = '<svg width="34" height="34" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
       '<circle cx="17" cy="17" r="15" fill="' + color + '" stroke="#fff" stroke-width="2"/>' +
@@ -1933,11 +1962,62 @@
     return L.divIcon({ className:'', html: html, iconSize:[34,34], iconAnchor:[17,17] });
   }
   function updateInfraTooltip(shape){
-    if (shape._infra.codigo){
-      shape.bindTooltip(String(shape._infra.codigo), { permanent:true, direction:'right', offset:[22,0], className:'mil-symbol-label' });
+    var label = null;
+    if (shape._infra.tipo === 'hospital'){
+      label = shape._infra.nivel ? ('Nivel ' + shape._infra.nivel) : null;
+    } else if (shape._infra.tipo === 'emisora'){
+      label = shape._infra.identificacion || null;
+    } else {
+      label = shape._infra.codigo || null;
+    }
+    if (label){
+      shape.bindTooltip(String(label), { permanent:true, direction:'right', offset:[22,0], className:'mil-symbol-label' });
     } else if (shape.getTooltip()){
       shape.unbindTooltip();
     }
+  }
+
+  function parseCoverageKm(text){
+    if (!text) return null;
+    var m = /(\d+(\.\d+)?)/.exec(String(text));
+    if (!m) return null;
+    var v = parseFloat(m[1]);
+    return (v > 0) ? v : null;
+  }
+  var emisoraCoverageLayers = {};
+  function removeEmisoraCoverage(shape){
+    if (!shape) return;
+    var circle = emisoraCoverageLayers[shape._shapeId];
+    if (circle){ circle.remove(); delete emisoraCoverageLayers[shape._shapeId]; }
+  }
+  function syncEmisoraCoverage(shape){
+    if (!shape || !shape._infra || shape._infra.tipo !== 'emisora'){ removeEmisoraCoverage(shape); return; }
+    var km = parseCoverageKm(shape._infra.cobertura);
+    if (!km){ removeEmisoraCoverage(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+    var center = shape.getLatLng();
+    var circle = emisoraCoverageLayers[shape._shapeId];
+    if (!circle){
+      circle = L.circle(center, { radius: km*1000, color:'#1F3864', weight:1.5, fillColor:'#1F3864', fillOpacity:.07, dashArray:'4 4', interactive:false, keyboard:false });
+      if (owner.visible) circle.addTo(map);
+      emisoraCoverageLayers[shape._shapeId] = circle;
+    } else {
+      circle.setLatLng(center);
+      circle.setRadius(km*1000);
+    }
+  }
+  function syncAllEmisoraCoverage(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){
+        if (s._isInfra && s._infra && s._infra.tipo === 'emisora'){ liveIds[s._shapeId] = s; }
+      });
+    });
+    Object.keys(emisoraCoverageLayers).forEach(function(id){
+      if (!liveIds[id]){ emisoraCoverageLayers[id].remove(); delete emisoraCoverageLayers[id]; }
+    });
+    Object.keys(liveIds).forEach(function(id){ syncEmisoraCoverage(liveIds[id]); });
   }
 
   function defaultTargetParams(){
@@ -2409,6 +2489,8 @@
     if (shape instanceof L.Marker || shape instanceof L.Circle){
       var p = shape.getLatLng();
       shape.setLatLng(L.latLng(p.lat+dLat, p.lng+dLng));
+      syncSupplyIndicator(shape);
+      syncEmisoraCoverage(shape);
       return;
     }
     if (shape.getLatLngs){
@@ -2953,6 +3035,7 @@
     list.innerHTML = '';
     getRootLayers().forEach(function(node){ list.appendChild(buildLayerCard(node, 0)); });
     syncAllSupplyIndicators();
+    syncAllEmisoraCoverage();
     scheduleSave();
   }
 
@@ -3769,31 +3852,17 @@
         infraTipoSelect.appendChild(o);
       });
       infraTipoSelect.addEventListener('change', function(ev){
-        shape._infra.tipo = ev.target.value;
+        var newTipo = ev.target.value;
+        var defaults = defaultInfraParams(newTipo);
+        shape._infra = Object.assign({}, defaults, shape._infra, { tipo: newTipo });
         shape.setIcon(buildInfraIcon(shape._infra));
+        updateInfraTooltip(shape);
+        syncEmisoraCoverage(shape);
         renderLayerList();
+        showProperties(shape, findLayerOfShape(shape));
       });
       infraTipoField.appendChild(infraTipoSelect);
       infraBlock.appendChild(infraTipoField);
-
-      var infraCritField = document.createElement('div');
-      infraCritField.className = 'style-field';
-      infraCritField.innerHTML = '<span>Criticidad</span>';
-      var infraCritSelect = document.createElement('select');
-      infraCritSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
-      INFRA_CRITICIDAD.forEach(function(opt){
-        var o = document.createElement('option');
-        o.value = opt[0]; o.textContent = opt[1];
-        if (shape._infra.criticidad === opt[0]) o.selected = true;
-        infraCritSelect.appendChild(o);
-      });
-      infraCritSelect.addEventListener('change', function(ev){
-        shape._infra.criticidad = ev.target.value;
-        shape.setIcon(buildInfraIcon(shape._infra));
-        renderLayerList();
-      });
-      infraCritField.appendChild(infraCritSelect);
-      infraBlock.appendChild(infraCritField);
 
       function infraTextField(label, key, useTextarea){
         var field = document.createElement('div');
@@ -3809,15 +3878,56 @@
         input.value = shape._infra[key] || '';
         input.addEventListener(useTextarea ? 'input' : 'change', function(ev){
           shape._infra[key] = ev.target.value;
-          if (key === 'codigo'){ updateInfraTooltip(shape); renderLayerList(); }
+          if (key === 'codigo' || key === 'nivel' || key === 'identificacion'){ updateInfraTooltip(shape); renderLayerList(); }
+          if (key === 'cobertura'){ syncEmisoraCoverage(shape); }
         });
         field.appendChild(input);
         return field;
       }
 
-      infraBlock.appendChild(infraTextField('Código', 'codigo', false));
-      infraBlock.appendChild(infraTextField('Activo', 'activo', false));
-      infraBlock.appendChild(infraTextField('Descripción / Relevancia', 'descripcion', true));
+      if (shape._infra.tipo === 'hospital'){
+        infraBlock.appendChild(infraTextField('Denominación', 'denominacion', false));
+        infraBlock.appendChild(infraTextField('Nivel', 'nivel', false));
+        infraBlock.appendChild(infraTextField('Municipio', 'municipio', false));
+        infraBlock.appendChild(infraTextField('Departamento', 'departamento', false));
+      } else if (shape._infra.tipo === 'emisora'){
+        infraBlock.appendChild(infraTextField('Identificación', 'identificacion', false));
+        infraBlock.appendChild(infraTextField('Fuerza', 'fuerza', false));
+        infraBlock.appendChild(infraTextField('Unidad', 'unidad', false));
+        infraBlock.appendChild(infraTextField('Herramienta', 'herramienta', false));
+        infraBlock.appendChild(infraTextField('Municipio', 'municipio', false));
+        infraBlock.appendChild(infraTextField('Departamento', 'departamento', false));
+        infraBlock.appendChild(infraTextField('Cobertura estimada', 'cobertura', false));
+        infraBlock.appendChild(infraTextField('Estado', 'estado', false));
+        infraBlock.appendChild(infraTextField('Observaciones', 'observaciones', true));
+        var covHint = document.createElement('div');
+        covHint.className = 'hint';
+        covHint.innerHTML = 'Si "Cobertura estimada" incluye un número (ej. "15 km"), se dibuja automáticamente el radio de acción alrededor del punto.';
+        infraBlock.appendChild(covHint);
+      } else {
+        var infraCritField = document.createElement('div');
+        infraCritField.className = 'style-field';
+        infraCritField.innerHTML = '<span>Criticidad</span>';
+        var infraCritSelect = document.createElement('select');
+        infraCritSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
+        INFRA_CRITICIDAD.forEach(function(opt){
+          var o = document.createElement('option');
+          o.value = opt[0]; o.textContent = opt[1];
+          if (shape._infra.criticidad === opt[0]) o.selected = true;
+          infraCritSelect.appendChild(o);
+        });
+        infraCritSelect.addEventListener('change', function(ev){
+          shape._infra.criticidad = ev.target.value;
+          shape.setIcon(buildInfraIcon(shape._infra));
+          renderLayerList();
+        });
+        infraCritField.appendChild(infraCritSelect);
+        infraBlock.appendChild(infraCritField);
+
+        infraBlock.appendChild(infraTextField('Código', 'codigo', false));
+        infraBlock.appendChild(infraTextField('Activo', 'activo', false));
+        infraBlock.appendChild(infraTextField('Descripción / Relevancia', 'descripcion', true));
+      }
 
       body.appendChild(infraBlock);
     }
@@ -4214,7 +4324,7 @@
           return tg;
         }
         if (p.infra){
-          var inf = Object.assign(defaultInfraParams(), p.infra);
+          var inf = Object.assign(defaultInfraParams(p.infra.tipo), p.infra);
           var ig = L.marker(latlng, { icon: buildInfraIcon(inf) });
           ig._isInfra = true;
           ig._infra = inf;
