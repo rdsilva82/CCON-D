@@ -1175,6 +1175,35 @@
     return obj;
   }
 
+  function copyLayerRecursive(sourceId, newParentId){
+    var src = getLayer(sourceId);
+    if (!src) return null;
+    layerCounter++;
+    var parentNode = newParentId ? getLayer(newParentId) : null;
+    var startVisible = parentNode ? parentNode.visible : src.visible;
+    var copy = {
+      id: 'capa-' + layerCounter,
+      name: src.name + ' (copia)',
+      color: src.color,
+      group: L.featureGroup(),
+      visible: startVisible,
+      expanded: true,
+      parentId: newParentId || null,
+      sortIndex: nextSortIndex(newParentId || null)
+    };
+    if (startVisible) copy.group.addTo(map);
+    layers.push(copy);
+    if (parentNode) parentNode.expanded = true;
+    var fc = layerToGeoJSON(src);
+    if (fc.features && fc.features.length){
+      L.geoJSON(fc, buildGeoJSONReconstructOptions(copy));
+    }
+    getChildren(sourceId).forEach(function(child){
+      copyLayerRecursive(child.id, copy.id);
+    });
+    return copy;
+  }
+
   function createTeatroOperacionesLayer(){
     var obj = {
       id: 'capa-teatro-operaciones',
@@ -1327,7 +1356,8 @@
     ['armor','Blindada / Tanques'],
     ['artillery','Artillería'],
     ['cavalry','Caballería / Reconocimiento'],
-    ['aviation','Aviación'],
+    ['aviation','Ala Fija (Aviación)'],
+    ['rotarywing','Ala Rotatoria'],
     ['airdefense','Defensa aérea'],
     ['engineer','Ingenieros'],
     ['commandpost','Puesto de mando'],
@@ -1416,9 +1446,11 @@
       case 'artillery':
         return '<circle cx="30" cy="30" r="6.5" fill="'+g+'"/>';
       case 'cavalry':
-        return '<line x1="16" y1="20" x2="44" y2="40" stroke="'+g+'" stroke-width="2.6"/>';
+        return '<ellipse cx="30" cy="30" rx="15" ry="9" fill="none" stroke="'+g+'" stroke-width="2.2"/><line x1="17" y1="39" x2="43" y2="21" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>';
       case 'aviation':
-        return '<path d="M16,36 L30,18 L44,36" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+        return '<path d="M30,30 C30,25 27,22 22,22 C17,22 14,26 14,30 C14,34 17,38 22,38 C27,38 30,35 30,30 C30,25 33,22 38,22 C43,22 46,26 46,30 C46,34 43,38 38,38 C33,38 30,35 30,30 Z" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linejoin="round"/>';
+      case 'rotarywing':
+        return '<polygon points="14,20 30,30 14,40" fill="'+g+'"/><polygon points="46,20 30,30 46,40" fill="'+g+'"/>';
       case 'airdefense':
         return '<path d="M14,38 A16,16 0 0 1 46,38" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/><circle cx="30" cy="34" r="2" fill="'+g+'"/>';
       case 'engineer':
@@ -1857,9 +1889,9 @@
     ['institucional','Institucional']
   ];
   var INFRA_CRITICIDAD = [
-    ['A','CRÍTICA (A)','#1B5E20'],
-    ['B','ALTA (B)','#66BB6A'],
-    ['C','MEDIA (C)','#26A69A']
+    ['A','CRÍTICA (A)','#C62828'],
+    ['B','ALTA (B)','#E8871E'],
+    ['C','MEDIA (C)','#F2C230']
   ];
   function infraCriticidadColor(c){
     var m = INFRA_CRITICIDAD.find(function(x){ return x[0] === c; });
@@ -3046,9 +3078,20 @@
         createLayer('Subcapa', nextColor(), l.id);
       });
 
+      var copyLayerBtn = document.createElement('button');
+      copyLayerBtn.className = 'outline-btn';
+      copyLayerBtn.title = 'Copiar esta capa (y sus subcapas y objetos) manteniendo sus propiedades';
+      copyLayerBtn.textContent = '⧉ Copiar';
+      copyLayerBtn.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        var copy = copyLayerRecursive(l.id, l.parentId);
+        if (copy) setActiveLayer(copy.id);
+      });
+
       var moveSelect = buildMoveToSelect(l.id, function(newParentId){ reparentLayer(l.id, newParentId); });
 
       toolsRow.appendChild(addSubBtn);
+      toolsRow.appendChild(copyLayerBtn);
       toolsRow.appendChild(moveSelect);
       card.appendChild(toolsRow);
 
