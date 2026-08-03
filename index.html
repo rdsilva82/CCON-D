@@ -522,6 +522,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2.5" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="21.5" y2="12"/></svg>
         <span>Blancos</span>
       </button>
+      <button class="tool-btn" data-tool="infra" title="Infraestructura: punto con tipo e información asociada">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 19h16M6 19v-6l4 3v-3l4 3v-3l4 3v6" stroke-linecap="round"/></svg>
+        <span>Infraestruct.</span>
+      </button>
       <hr>
       <button class="tool-btn" data-tool="edit" title="Editar elementos de la capa activa">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4.2L15.8 4.9a1.7 1.7 0 012.4 0l.9.9a1.7 1.7 0 010 2.4L8.2 19 4 20z"/><path d="M13.5 6.5l4 4"/></svg>
@@ -730,6 +734,27 @@
   var githubFileSha = null;
   var githubPushTimer = null;
   var lastLocalEditTime = 0;
+  var editingFieldFocused = false;
+  document.addEventListener('focusin', function(ev){
+    var tag = ev.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'){
+      editingFieldFocused = true;
+      lastLocalEditTime = Date.now();
+    }
+  });
+  document.addEventListener('focusout', function(ev){
+    var tag = ev.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'){
+      editingFieldFocused = false;
+      lastLocalEditTime = Date.now();
+    }
+  });
+  document.addEventListener('input', function(ev){
+    var tag = ev.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'){
+      lastLocalEditTime = Date.now();
+    }
+  });
 
   function utf8ToBase64(str){
     var bytes = new TextEncoder().encode(str);
@@ -793,6 +818,13 @@
           syncInProgress = false;
           return false;
         }
+        if (isBackground && (editingFieldFocused || selectedShape || activeToolName || moveModeShape)){
+          // El usuario empezó a trabajar mientras esta descarga estaba en curso.
+          // No aplicamos ahora para no interrumpirlo; se reintentará en el próximo ciclo.
+          updateSyncStatus('ok','Sincronizado (pendiente de aplicar)');
+          syncInProgress = false;
+          return false;
+        }
         githubFileSha = data.sha;
         var state = JSON.parse(base64ToUtf8(data.content));
         applyingRemoteState = true;
@@ -810,7 +842,8 @@
     });
   }
 
-  function githubPush(){
+  function githubPush(retriesLeft){
+    if (retriesLeft == null) retriesLeft = 3;
     if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
     if (syncInProgress){ scheduleGithubPush(); return Promise.resolve(false); }
     syncInProgress = true;
@@ -824,9 +857,27 @@
       body: JSON.stringify(body)
     }).then(function(res){
       if (res.status === 409){
-        updateSyncStatus('error','Alguien más actualizó el mapa; se descargó esa versión');
         syncInProgress = false;
-        return githubPull(false, true).then(function(){ return false; });
+        if (retriesLeft > 0){
+          // Alguien más subió cambios primero. En vez de descartar el trabajo local
+          // (que borraría lo que el usuario acaba de crear/editar), solo tomamos el
+          // SHA más reciente y reintentamos subir nuestro propio contenido sobre él.
+          updateSyncStatus('syncing','Reintentando subir…');
+          return fetch(githubApiUrl(true), {
+            headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
+          }).then(function(res2){
+            if (!res2.ok) throw new Error('HTTP ' + res2.status);
+            return res2.json().then(function(data2){
+              githubFileSha = data2.sha;
+              return githubPush(retriesLeft - 1);
+            });
+          }).catch(function(){
+            updateSyncStatus('error','No se pudo sincronizar; reintente manualmente con "Subir cambios"');
+            return false;
+          });
+        }
+        updateSyncStatus('error','No se pudo sincronizar (conflicto persistente); reintente manualmente con "Subir cambios"');
+        return false;
       }
       return res.json().then(function(data){
         if (!res.ok) throw new Error(data.message || ('HTTP ' + res.status));
@@ -1549,6 +1600,37 @@
     map.on('click', targetClickHandler);
   }
 
+  var infraClickHandler = null;
+  function stopInfraTool(){
+    if (infraClickHandler){ map.off('click', infraClickHandler); infraClickHandler = null; }
+    mapContainer.style.cursor = '';
+  }
+  function activateInfraTool(){
+    if (activeToolName === 'infra'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar una infraestructura.'); return; }
+    disableAllTools();
+    activeToolName = 'infra';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    infraClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var inf = defaultInfraParams();
+      var layer = L.marker(e.latlng, { icon: buildInfraIcon(inf) });
+      layer._isInfra = true;
+      layer._infra = inf;
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', infraClickHandler);
+  }
+
   function disableAllTools(){
     ['marker','polyline','polygon','rectangle','circle'].forEach(function(k){
       if (drawHandlers[k] && drawHandlers[k].enabled()) drawHandlers[k].disable();
@@ -1560,6 +1642,7 @@
     stopElementsTool();
     stopTextTool();
     stopTargetTool();
+    stopInfraTool();
     activeToolName = null;
     updateToolbarUI();
   }
@@ -1762,6 +1845,69 @@
   function metersPerPixel(lat, zoom){
     return 156543.03392 * Math.cos(lat * Math.PI/180) / Math.pow(2, zoom);
   }
+  var INFRA_TYPES = [
+    ['minero','Minero'],
+    ['industrial','Industrial'],
+    ['hidrocarburos','Hidrocarburos'],
+    ['portuario','Portuario'],
+    ['energetico','Energético'],
+    ['transporte','Transporte'],
+    ['fronterizo','Fronterizo'],
+    ['hidrico','Hídrico'],
+    ['institucional','Institucional']
+  ];
+  var INFRA_CRITICIDAD = [
+    ['A','CRÍTICA (A)','#1B5E20'],
+    ['B','ALTA (B)','#66BB6A'],
+    ['C','MEDIA (C)','#26A69A']
+  ];
+  function infraCriticidadColor(c){
+    var m = INFRA_CRITICIDAD.find(function(x){ return x[0] === c; });
+    return m ? m[2] : INFRA_CRITICIDAD[1][2];
+  }
+  function infraTypeGlyph(tipo){
+    switch(tipo){
+      case 'minero':
+        return '<path d="M4 18 L12 6 L20 18 Z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><rect x="10" y="14" width="4" height="4" fill="#fff"/>';
+      case 'industrial':
+        return '<path d="M4 19h16M6 19v-6l4 3v-3l4 3v-3l4 3v6" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>';
+      case 'hidrocarburos':
+        return '<path d="M12 4c4 5 6 8 6 11a6 6 0 01-12 0c0-3 2-6 6-11z" fill="#fff"/>';
+      case 'portuario':
+        return '<circle cx="12" cy="6" r="2" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M12 8v12M7 15a5 5 0 0010 0M4 11h4m8 0h4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>';
+      case 'energetico':
+        return '<path d="M13 3L5 14h5l-1 8 9-12h-5l1-7z" fill="#fff"/>';
+      case 'transporte':
+        return '<path d="M3 16V9h9v7M12 12h4l3 3v1" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="7" cy="17" r="1.6" fill="#fff"/><circle cx="16" cy="17" r="1.6" fill="#fff"/>';
+      case 'fronterizo':
+        return '<line x1="6" y1="4" x2="6" y2="20" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><line x1="18" y1="4" x2="18" y2="20" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><line x1="6" y1="9" x2="18" y2="9" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>';
+      case 'hidrico':
+        return '<path d="M3 10c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>';
+      case 'institucional':
+        return '<path d="M12 3l9 5H3l9-5z" fill="#fff"/><rect x="5" y="9" width="2.5" height="9" fill="#fff"/><rect x="10.7" y="9" width="2.5" height="9" fill="#fff"/><rect x="16.5" y="9" width="2.5" height="9" fill="#fff"/><rect x="3" y="19" width="18" height="2" fill="#fff"/>';
+      default:
+        return '<circle cx="12" cy="12" r="3.5" fill="#fff"/>';
+    }
+  }
+  function defaultInfraParams(){
+    return { tipo:'industrial', codigo:'', activo:'', descripcion:'', criticidad:'B' };
+  }
+  function buildInfraIcon(infra){
+    var color = infraCriticidadColor(infra.criticidad);
+    var html = '<svg width="34" height="34" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+      '<circle cx="17" cy="17" r="15" fill="' + color + '" stroke="#fff" stroke-width="2"/>' +
+      '<g transform="translate(6,6) scale(0.92)">' + infraTypeGlyph(infra.tipo) + '</g>' +
+      '</svg>';
+    return L.divIcon({ className:'', html: html, iconSize:[34,34], iconAnchor:[17,17] });
+  }
+  function updateInfraTooltip(shape){
+    if (shape._infra.codigo){
+      shape.bindTooltip(String(shape._infra.codigo), { permanent:true, direction:'right', offset:[22,0], className:'mil-symbol-label' });
+    } else if (shape.getTooltip()){
+      shape.unbindTooltip();
+    }
+  }
+
   function defaultTargetParams(){
     return { number:'', blanco:'', unidad:'', tipo:'', mision:'', fase:'', medio:'', ambito:'', ilaRef:'' };
   }
@@ -2528,6 +2674,7 @@
       else if (tool === 'elements') activateElementsTool();
       else if (tool === 'text') activateTextTool();
       else if (tool === 'target') activateTargetTool();
+      else if (tool === 'infra') activateInfraTool();
       else if (tool === 'undo') doUndo();
       else if (tool === 'redo') doRedo();
       else activateDrawTool(tool);
@@ -2555,6 +2702,7 @@
     if (shape._isEllipse) return 'Elipse ' + shapeCounter;
     if (shape._isText) return 'Texto ' + shapeCounter;
     if (shape._isTarget) return 'Blanco ' + shapeCounter;
+    if (shape._isInfra) return 'Infraestructura ' + shapeCounter;
     if (shape._isRectangle) return 'Rectángulo ' + shapeCounter;
     if (shape instanceof L.Marker) return 'Punto ' + shapeCounter;
     if (shape instanceof L.Circle) return 'Círculo ' + shapeCounter;
@@ -2568,6 +2716,7 @@
     if (shape._isEllipse) return 'ellipse';
     if (shape._isText) return 'text';
     if (shape._isTarget) return 'target';
+    if (shape._isInfra) return 'infra';
     if (shape instanceof L.Marker) return 'marker';
     if (shape instanceof L.Circle) return 'circle';
     if (shape instanceof L.Polygon) return 'polygon';
@@ -2584,6 +2733,7 @@
       ellipse: '<ellipse cx="12" cy="12" rx="9.5" ry="6.5"/>',
       text: '<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M8 10h8M8 13h5"/>',
       target: '<line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/>',
+      infra: '<path d="M4 19h16M6 19v-6l4 3v-3l4 3v-3l4 3v6" stroke-linecap="round"/>',
       arrow: '<path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/>'
     };
     return '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (icons[kind]||icons.marker) + '</svg>';
@@ -3031,7 +3181,7 @@
     top.appendChild(delBtn);
     row.appendChild(top);
 
-    if (kind !== 'marker' && kind !== 'text' && kind !== 'target'){
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra'){
       var controls = document.createElement('div');
       controls.className = 'style-controls';
 
@@ -3190,6 +3340,8 @@
         stats.coordenadas = pt.lat.toFixed(5) + ', ' + pt.lng.toFixed(5);
       } else if (shape._isTarget){
         stats.tipo = 'Blanco';
+      } else if (shape._isInfra){
+        stats.tipo = 'Infraestructura';
       } else if (shape instanceof L.Circle){
         stats.tipo = 'Círculo';
         stats.radio = L.GeometryUtil.readableDistance(shape.getRadius(), true, false, false);
@@ -3552,7 +3704,82 @@
       body.appendChild(targetBlock);
     }
 
-    if (kind !== 'marker' && kind !== 'text' && kind !== 'target'){
+    if (kind === 'infra'){
+      var infraBlock = document.createElement('div');
+      infraBlock.className = 'style-block';
+
+      var iPos = shape.getLatLng();
+      var iCoordField = document.createElement('div');
+      iCoordField.className = 'style-field';
+      iCoordField.innerHTML = '<span>Coordenadas</span><span style="font-weight:700;color:var(--navy);font-size:12px;">' + iPos.lat.toFixed(5) + ', ' + iPos.lng.toFixed(5) + '</span>';
+      infraBlock.appendChild(iCoordField);
+
+      var infraTipoField = document.createElement('div');
+      infraTipoField.className = 'style-field';
+      infraTipoField.innerHTML = '<span>Tipo</span>';
+      var infraTipoSelect = document.createElement('select');
+      infraTipoSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
+      INFRA_TYPES.forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        if (shape._infra.tipo === opt[0]) o.selected = true;
+        infraTipoSelect.appendChild(o);
+      });
+      infraTipoSelect.addEventListener('change', function(ev){
+        shape._infra.tipo = ev.target.value;
+        shape.setIcon(buildInfraIcon(shape._infra));
+        renderLayerList();
+      });
+      infraTipoField.appendChild(infraTipoSelect);
+      infraBlock.appendChild(infraTipoField);
+
+      var infraCritField = document.createElement('div');
+      infraCritField.className = 'style-field';
+      infraCritField.innerHTML = '<span>Criticidad</span>';
+      var infraCritSelect = document.createElement('select');
+      infraCritSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
+      INFRA_CRITICIDAD.forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        if (shape._infra.criticidad === opt[0]) o.selected = true;
+        infraCritSelect.appendChild(o);
+      });
+      infraCritSelect.addEventListener('change', function(ev){
+        shape._infra.criticidad = ev.target.value;
+        shape.setIcon(buildInfraIcon(shape._infra));
+        renderLayerList();
+      });
+      infraCritField.appendChild(infraCritSelect);
+      infraBlock.appendChild(infraCritField);
+
+      function infraTextField(label, key, useTextarea){
+        var field = document.createElement('div');
+        field.className = 'style-field';
+        field.style.flexDirection = 'column';
+        field.style.alignItems = 'stretch';
+        field.innerHTML = '<span>' + label + '</span>';
+        var input = document.createElement(useTextarea ? 'textarea' : 'input');
+        if (!useTextarea) input.type = 'text';
+        else { input.className = 'coa-textarea'; input.style.minHeight = '56px'; }
+        input.style.marginTop = '3px';
+        if (!useTextarea) input.style.cssText += 'width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:inherit;font-size:12.5px;box-sizing:border-box;';
+        input.value = shape._infra[key] || '';
+        input.addEventListener(useTextarea ? 'input' : 'change', function(ev){
+          shape._infra[key] = ev.target.value;
+          if (key === 'codigo'){ updateInfraTooltip(shape); renderLayerList(); }
+        });
+        field.appendChild(input);
+        return field;
+      }
+
+      infraBlock.appendChild(infraTextField('Código', 'codigo', false));
+      infraBlock.appendChild(infraTextField('Activo', 'activo', false));
+      infraBlock.appendChild(infraTextField('Descripción / Relevancia', 'descripcion', true));
+
+      body.appendChild(infraBlock);
+    }
+
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra'){
       var styleBlock = document.createElement('div');
       styleBlock.className = 'style-block';
 
@@ -3883,6 +4110,9 @@
       if (shape && shape._isTarget){
         f.properties.target = shape._target;
       }
+      if (shape && shape._isInfra){
+        f.properties.infra = shape._infra;
+      }
     });
     fc.properties = { capa: layerObj.name, color: layerObj.color, generado: new Date().toISOString() };
     return fc;
@@ -3939,6 +4169,14 @@
           tg._target = Object.assign(defaultTargetParams(), p.target);
           updateTargetTooltip(tg);
           return tg;
+        }
+        if (p.infra){
+          var inf = Object.assign(defaultInfraParams(), p.infra);
+          var ig = L.marker(latlng, { icon: buildInfraIcon(inf) });
+          ig._isInfra = true;
+          ig._infra = inf;
+          updateInfraTooltip(ig);
+          return ig;
         }
         return L.marker(latlng, {
           icon: buildPointIcon(p.pointColor || p.color || targetLayerObj.color, p.pointShape || 'target')
@@ -4140,7 +4378,7 @@
 
   setInterval(function(){
     if (githubConfigured() && githubConfig.autoSync && !githubPushTimer &&
-        !activeToolName && !moveModeShape &&
+        !activeToolName && !moveModeShape && !editingFieldFocused && !selectedShape &&
         (Date.now()-lastLocalEditTime > 15000)){
       githubPull(false, true);
     }
