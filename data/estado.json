@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-08-03T18:32:57.617Z",
+  "savedAt": "2026-08-03T18:33:33.242Z",
   "mapView": {
-    "lat": 10.888602342396485,
-    "lng": -76.79992675781251,
-    "zoom": 9
+    "lat": 7.885147283424331,
+    "lng": -73.91601562500001,
+    "zoom": 6
   },
   "baseLayer": "street",
-  "layerCounter": 34,
+  "layerCounter": 35,
   "shapeCounter": 374,
-  "paletteIdx": 33,
-  "activeLayerId": "capa-21",
+  "paletteIdx": 34,
+  "activeLayerId": "capa-35",
   "coaEsfuerzos": "ESFUERZO PRINCIPAL  (E.P.)\nFTC «MARTILLO» — 2ª DIV EJC (+) · CCOES · GE/CIBER · ISR CCFAF\nT1. NEUTRALIZAR el nodo de mando y control del sistema híbrido en el triángulo Tibú–La Gabarra–Pto. Santander (OBJ ARIETE).\nP1. Privar al adversario de su capacidad de sincronización —CoG— y alcanzar PD-1 y PD-3.\nT2. CONDUCIR acción directa sobre los HVT de ELN, EMBF/Fte 33 y EPL con CCOES y fuegos conjuntos.\nP2. Colapsar la cadena de mando e imponer saturación operacional.\nT3. INTERDICTAR los corredores Tibú–El Tarra–Convención y Ocaña–Magdalena Medio y BLOQUEAR el eje fronterizo (EJE YUNQUE).\nP3. Impedir la reconstitución logística y el repliegue al santuario transfronterizo.\n",
   "coaFases": "",
   "coaDesarrollo": "",
@@ -7109,7 +7109,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-03T18:32:57.617Z"
+          "generado": "2026-08-03T18:33:33.248Z"
         }
       }
     },
@@ -7127,7 +7127,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-03T18:32:57.617Z"
+          "generado": "2026-08-03T18:33:33.248Z"
         }
       }
     },
@@ -14001,7 +14001,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T18:32:57.618Z"
+          "generado": "2026-08-03T18:33:33.248Z"
         }
       }
     },
@@ -16842,7 +16842,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T18:32:57.618Z"
+          "generado": "2026-08-03T18:33:33.248Z"
         }
       }
     },
@@ -17703,7 +17703,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-03T18:32:57.618Z"
+          "generado": "2026-08-03T18:33:33.248Z"
         }
       }
     },
@@ -17928,7 +17928,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-03T18:32:57.618Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -18209,7 +18209,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-03T18:32:57.618Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -18445,7 +18445,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T18:32:57.618Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -18660,7 +18660,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T18:32:57.618Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -20677,7 +20677,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -20695,7 +20695,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -20713,7 +20713,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -20940,7 +20940,7 @@
         "properties": {
           "capa": "Br 2",
           "color": "#4C7A57",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -21193,7 +21193,7 @@
         "properties": {
           "capa": "BR 10",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -29490,7 +29490,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -29508,7 +29508,7 @@
         "properties": {
           "capa": "Accion Integral",
           "color": "#1F3864",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -29526,7 +29526,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#B8962E",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -29544,7 +29544,7 @@
         "properties": {
           "capa": "Subcapa",
           "color": "#4C7A57",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -29553,7 +29553,7 @@
       "name": "AEREO",
       "color": "#8A3A5A",
       "visible": true,
-      "expanded": false,
+      "expanded": true,
       "parentId": null,
       "sortIndex": 6,
       "geojson": {
@@ -29562,7 +29562,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -29580,7 +29580,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -29781,7 +29781,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -30060,7 +30060,7 @@
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -30209,7 +30209,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -30358,7 +30358,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T18:32:57.619Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -31214,7 +31214,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-03T18:32:57.620Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -31363,7 +31363,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-03T18:32:57.620Z"
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     },
@@ -31564,7 +31564,25 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-03T18:32:57.620Z"
+          "generado": "2026-08-03T18:33:33.249Z"
+        }
+      }
+    },
+    {
+      "id": "capa-35",
+      "name": "Subcapa",
+      "color": "#8A3A5A",
+      "visible": true,
+      "expanded": true,
+      "parentId": "capa-23",
+      "sortIndex": 0,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [],
+        "properties": {
+          "capa": "Subcapa",
+          "color": "#8A3A5A",
+          "generado": "2026-08-03T18:33:33.249Z"
         }
       }
     }
