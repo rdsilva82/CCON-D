@@ -1067,6 +1067,10 @@
     if (!node) return;
     node.visible = visible;
     if (visible) map.addLayer(node.group); else map.removeLayer(node.group);
+    node.group.eachLayer(function(s){
+      var ind = supplyIndicators[s._shapeId];
+      if (ind){ if (visible) ind.addTo(map); else map.removeLayer(ind); }
+    });
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
 
@@ -1640,6 +1644,57 @@
   function escapeHtmlText(s){
     return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
+  function supplyColor(v){
+    v = Math.max(0, Math.min(100, v == null ? 100 : v));
+    function hx(h){ var m=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h); return [parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)]; }
+    function lerp(a,b,t){ return Math.round(a+(b-a)*t); }
+    var GREEN=hx('#2E7D32'), YELLOW=hx('#F2C230'), ORANGE=hx('#E8871E'), RED=hx('#C62828');
+    var c0,c1,t;
+    if (v >= 75){ c0=YELLOW; c1=GREEN; t=(v-75)/25; }
+    else if (v >= 50){ c0=ORANGE; c1=YELLOW; t=(v-50)/25; }
+    else if (v >= 25){ c0=RED; c1=ORANGE; t=(v-25)/25; }
+    else { c0=RED; c1=RED; t=0; }
+    var rgb = [lerp(c0[0],c1[0],t), lerp(c0[1],c1[1],t), lerp(c0[2],c1[2],t)];
+    return '#' + rgb.map(function(c){ return ('0'+c.toString(16)).slice(-2); }).join('');
+  }
+
+  var supplyIndicators = {};
+  function syncSupplyIndicator(shape){
+    if (!shape || shape._supply == null){ removeSupplyIndicator(shape); return; }
+    var center = getShapeCenter(shape);
+    if (!center){ removeSupplyIndicator(shape); return; }
+    var color = supplyColor(shape._supply);
+    var html = '<div style="width:6px;height:22px;background:' + color + ';border:1px solid rgba(0,0,0,.45);border-radius:2px;box-shadow:0 0 3px rgba(0,0,0,.5);"></div>';
+    var icon = L.divIcon({ className:'', html: html, iconSize:[6,22], iconAnchor:[40,11] });
+    var ind = supplyIndicators[shape._shapeId];
+    if (!ind){
+      ind = L.marker(center, { icon: icon, interactive:false, keyboard:false, zIndexOffset:400 });
+      var owner = findLayerOfShape(shape);
+      if (owner && owner.visible) ind.addTo(map);
+      supplyIndicators[shape._shapeId] = ind;
+    } else {
+      ind.setLatLng(center);
+      ind.setIcon(icon);
+    }
+  }
+  function removeSupplyIndicator(shape){
+    if (!shape) return;
+    var ind = supplyIndicators[shape._shapeId];
+    if (ind){ map.removeLayer(ind); delete supplyIndicators[shape._shapeId]; }
+  }
+  function syncAllSupplyIndicators(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){
+        if (s._shapeId && s._supply != null){ liveIds[s._shapeId] = s; }
+      });
+    });
+    Object.keys(supplyIndicators).forEach(function(id){
+      if (!liveIds[id]){ map.removeLayer(supplyIndicators[id]); delete supplyIndicators[id]; }
+    });
+    Object.keys(liveIds).forEach(function(id){ syncSupplyIndicator(liveIds[id]); });
+  }
+
   function hexToRgba(hex, alpha){
     var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '#ffffff');
     if (!m) return 'rgba(255,255,255,' + alpha + ')';
@@ -1766,11 +1821,27 @@
     });
   }
 
+  function arrowSizeHandlePositions(arrow){
+    var totalLen = Math.max(distanceMeters(arrow.tail, arrow.head), 0.01);
+    var vec = localXY(arrow.tail, arrow.head);
+    var ux = vec.x/totalLen, uy = vec.y/totalLen;
+    var nx = -uy, ny = ux;
+    var mid = midLocal(arrow.tail, arrow.head);
+    var widthPt = fromLocalXY(mid, nx*arrow.shaftWidth/2, ny*arrow.shaftWidth/2);
+    var headBaseDist = Math.min(Math.max(totalLen - arrow.headLength, 0), totalLen);
+    var headBasePt = fromLocalXY(arrow.tail, ux*headBaseDist, uy*headBaseDist);
+    var headWidthPt = fromLocalXY(headBasePt, nx*arrow.headWidth/2, ny*arrow.headWidth/2);
+    return { width: widthPt, headWidth: headWidthPt, headBase: headBasePt, nx: nx, ny: ny };
+  }
+
   function createArrowHandles(shape){
     if (shape._arrowHandles) return;
     var tailM = L.marker(shape._arrow.tail, { draggable:true, icon: makeHandleIcon('#1F3864',16), zIndexOffset:2000, title:'Cola de la flecha' }).addTo(map);
     var headM = L.marker(shape._arrow.head, { draggable:true, icon: makeHandleIcon('#1F3864',16), zIndexOffset:2000, title:'Punta de la flecha' }).addTo(map);
     var curveM = L.marker(shape._arrow.curve || midLocal(shape._arrow.tail, shape._arrow.head), { draggable:true, icon: makeHandleIcon('#B8962E',15), zIndexOffset:2000, title:'Punto de curvatura — arrástrelo para curvar la flecha' }).addTo(map);
+    var sizePos = arrowSizeHandlePositions(shape._arrow);
+    var widthM = L.marker(sizePos.width, { draggable:true, icon: makeHandleIcon('#4C7A57',14), zIndexOffset:2000, title:'Ancho del asta — arrastre para ensanchar/angostar' }).addTo(map);
+    var headWidthM = L.marker(sizePos.headWidth, { draggable:true, icon: makeHandleIcon('#4C7A57',14), zIndexOffset:2000, title:'Tamaño de la punta — arrastre para agrandar/achicar' }).addTo(map);
 
     var beforeState = null;
     function onDragStart(){ beforeState = cloneArrowState(shape._arrow); }
@@ -1786,7 +1857,31 @@
     headM.on('dragstart', onDragStart).on('drag', function(){ shape._arrow.head = headM.getLatLng(); rebuildArrow(shape); }).on('dragend', onDragEnd);
     curveM.on('dragstart', onDragStart).on('drag', function(){ shape._arrow.curve = curveM.getLatLng(); rebuildArrow(shape); }).on('dragend', onDragEnd);
 
-    shape._arrowHandles = { tail: tailM, head: headM, curve: curveM };
+    widthM.on('dragstart', onDragStart).on('drag', function(){
+      var totalLen = Math.max(distanceMeters(shape._arrow.tail, shape._arrow.head), 0.01);
+      var vec = localXY(shape._arrow.tail, shape._arrow.head);
+      var nx = -(vec.y/totalLen), ny = vec.x/totalLen;
+      var mid = midLocal(shape._arrow.tail, shape._arrow.head);
+      var dragLocal = localXY(mid, widthM.getLatLng());
+      var perp = dragLocal.x*nx + dragLocal.y*ny;
+      shape._arrow.shaftWidth = Math.max(2, Math.abs(perp)*2);
+      rebuildArrow(shape);
+    }).on('dragend', onDragEnd);
+
+    headWidthM.on('dragstart', onDragStart).on('drag', function(){
+      var totalLen = Math.max(distanceMeters(shape._arrow.tail, shape._arrow.head), 0.01);
+      var vec = localXY(shape._arrow.tail, shape._arrow.head);
+      var ux = vec.x/totalLen, uy = vec.y/totalLen;
+      var nx = -uy, ny = ux;
+      var headBaseDist = Math.min(Math.max(totalLen - shape._arrow.headLength, 0), totalLen);
+      var headBasePt = fromLocalXY(shape._arrow.tail, ux*headBaseDist, uy*headBaseDist);
+      var dragLocal = localXY(headBasePt, headWidthM.getLatLng());
+      var perp = dragLocal.x*nx + dragLocal.y*ny;
+      shape._arrow.headWidth = Math.max(2, Math.abs(perp)*2);
+      rebuildArrow(shape);
+    }).on('dragend', onDragEnd);
+
+    shape._arrowHandles = { tail: tailM, head: headM, curve: curveM, width: widthM, headWidth: headWidthM };
   }
 
   function positionArrowHandles(shape){
@@ -1795,6 +1890,9 @@
     h.tail.setLatLng(shape._arrow.tail);
     h.head.setLatLng(shape._arrow.head);
     h.curve.setLatLng(shape._arrow.curve || midLocal(shape._arrow.tail, shape._arrow.head));
+    var sizePos = arrowSizeHandlePositions(shape._arrow);
+    h.width.setLatLng(sizePos.width);
+    h.headWidth.setLatLng(sizePos.headWidth);
   }
 
   function removeArrowHandles(shape){
@@ -1802,6 +1900,8 @@
     map.removeLayer(shape._arrowHandles.tail);
     map.removeLayer(shape._arrowHandles.head);
     map.removeLayer(shape._arrowHandles.curve);
+    map.removeLayer(shape._arrowHandles.width);
+    map.removeLayer(shape._arrowHandles.headWidth);
     shape._arrowHandles = null;
   }
 
@@ -2359,6 +2459,7 @@
       shape._shapeId = 'forma-' + shapeCounter;
       shape._customName = shape._customName || defaultShapeName(shape);
     }
+    if (shape._supply == null) shape._supply = 100;
     shape.on('click', function(e){
       L.DomEvent.stopPropagation(e);
       selectedShape = shape;
@@ -2585,6 +2686,7 @@
     var list = document.getElementById('layer-list');
     list.innerHTML = '';
     getRootLayers().forEach(function(node){ list.appendChild(buildLayerCard(node, 0)); });
+    syncAllSupplyIndicators();
     scheduleSave();
   }
 
@@ -3061,6 +3163,35 @@
     });
     body.appendChild(nameLabel);
     body.appendChild(nameInput);
+
+    var supplyField = document.createElement('div');
+    supplyField.className = 'style-field';
+    supplyField.style.marginTop = '4px';
+    supplyField.innerHTML = '<span>Abastecimiento</span>';
+    var supplyRow = document.createElement('div');
+    supplyRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;';
+    var supplySwatch = document.createElement('span');
+    supplySwatch.style.cssText = 'width:14px;height:14px;border-radius:3px;flex-shrink:0;border:1px solid rgba(0,0,0,.3);';
+    supplySwatch.style.background = supplyColor(shape._supply);
+    var supplyInput = document.createElement('input');
+    supplyInput.type = 'range'; supplyInput.min = 0; supplyInput.max = 100; supplyInput.step = 1;
+    supplyInput.value = shape._supply != null ? shape._supply : 100;
+    supplyInput.style.width = '90px';
+    var supplyPct = document.createElement('span');
+    supplyPct.className = 'pct';
+    supplyPct.textContent = (shape._supply != null ? shape._supply : 100) + '%';
+    supplyInput.addEventListener('input', function(ev){
+      shape._supply = parseInt(ev.target.value, 10);
+      supplyPct.textContent = shape._supply + '%';
+      supplySwatch.style.background = supplyColor(shape._supply);
+      syncSupplyIndicator(shape);
+    });
+    supplyInput.addEventListener('change', function(){ renderLayerList(); });
+    supplyRow.appendChild(supplySwatch);
+    supplyRow.appendChild(supplyInput);
+    supplyRow.appendChild(supplyPct);
+    supplyField.appendChild(supplyRow);
+    body.appendChild(supplyField);
 
     var stats = geometryStats(shape);
     Object.keys(stats).forEach(function(k){
@@ -3566,6 +3697,7 @@
       f.properties = f.properties || {};
       f.properties.nombre = (shape && shape._customName) || f.properties.nombre || '';
       f.properties.capa = layerObj.name;
+      if (shape && shape._supply != null) f.properties.supply = shape._supply;
       if (shape && shape.options){
         f.properties.color = shape.options.color;
         f.properties.fillColor = shape._fillColorRaw || shape.options.fillColor;
@@ -3686,6 +3818,7 @@
         var p = feature.properties || {};
         targetLayerObj.group.addLayer(layer);
         if (p.nombre) layer._customName = p.nombre;
+        if (p.supply != null) layer._supply = p.supply;
         layer._fillColorRaw = p.fillColor || targetLayerObj.color;
         layer._fillStyleKey = p.fillStyle || 'solid';
         if (p.arrow){
