@@ -518,6 +518,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M8 11h8M8 14h5"/></svg>
         <span>Texto</span>
       </button>
+      <button class="tool-btn" data-tool="target" title="Blanco: punto de objetivo con ficha de datos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2.5" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="21.5" y2="12"/></svg>
+        <span>Blancos</span>
+      </button>
       <hr>
       <button class="tool-btn" data-tool="edit" title="Editar elementos de la capa activa">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4.2L15.8 4.9a1.7 1.7 0 012.4 0l.9.9a1.7 1.7 0 010 2.4L8.2 19 4 20z"/><path d="M13.5 6.5l4 4"/></svg>
@@ -1514,6 +1518,37 @@
     map.on('click', textClickHandler);
   }
 
+  var targetClickHandler = null;
+  function stopTargetTool(){
+    if (targetClickHandler){ map.off('click', targetClickHandler); targetClickHandler = null; }
+    mapContainer.style.cursor = '';
+  }
+  function activateTargetTool(){
+    if (activeToolName === 'target'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar un blanco.'); return; }
+    disableAllTools();
+    activeToolName = 'target';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    targetClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var t = defaultTargetParams();
+      var layer = L.marker(e.latlng, { icon: buildTargetIcon() });
+      layer._isTarget = true;
+      layer._target = t;
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', targetClickHandler);
+  }
+
   function disableAllTools(){
     ['marker','polyline','polygon','rectangle','circle'].forEach(function(k){
       if (drawHandlers[k] && drawHandlers[k].enabled()) drawHandlers[k].disable();
@@ -1524,6 +1559,7 @@
     if (arrowActive) stopArrowTool();
     stopElementsTool();
     stopTextTool();
+    stopTargetTool();
     activeToolName = null;
     updateToolbarUI();
   }
@@ -1726,6 +1762,27 @@
   function metersPerPixel(lat, zoom){
     return 156543.03392 * Math.cos(lat * Math.PI/180) / Math.pow(2, zoom);
   }
+  function defaultTargetParams(){
+    return { number:'', blanco:'', unidad:'', tipo:'', mision:'', fase:'', medio:'', ambito:'', ilaRef:'' };
+  }
+  function buildTargetIcon(){
+    var c = '#A33A3A';
+    var html =
+      '<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+        '<line x1="15" y1="3" x2="15" y2="27" stroke="' + c + '" stroke-width="2.6" stroke-linecap="round"/>' +
+        '<line x1="3" y1="15" x2="27" y2="15" stroke="' + c + '" stroke-width="2.6" stroke-linecap="round"/>' +
+        '<circle cx="15" cy="15" r="2.1" fill="' + c + '"/>' +
+      '</svg>';
+    return L.divIcon({ className:'', html: html, iconSize:[30,30], iconAnchor:[15,15] });
+  }
+  function updateTargetTooltip(shape){
+    if (shape._target.number){
+      shape.bindTooltip(String(shape._target.number), { permanent:true, direction:'right', offset:[18,0], className:'mil-symbol-label' });
+    } else if (shape.getTooltip()){
+      shape.unbindTooltip();
+    }
+  }
+
   function defaultTextParams(latlng){
     return { latlng: latlng, text:'Texto', fontSize:14, color:'#1A1A1A', bgColor:'#ffffff', bgOpacity:.85, hasBorder:true, borderColor:'#1F3864', rotation:0, boxWidth:150, boxHeight:50 };
   }
@@ -2470,6 +2527,7 @@
       else if (tool === 'arrow') activateArrowTool();
       else if (tool === 'elements') activateElementsTool();
       else if (tool === 'text') activateTextTool();
+      else if (tool === 'target') activateTargetTool();
       else if (tool === 'undo') doUndo();
       else if (tool === 'redo') doRedo();
       else activateDrawTool(tool);
@@ -2482,7 +2540,7 @@
       shape._shapeId = 'forma-' + shapeCounter;
       shape._customName = shape._customName || defaultShapeName(shape);
     }
-    if (shape._supply == null) shape._supply = 100;
+    if (shape._isMilSymbol && shape._supply == null) shape._supply = 100;
     shape.on('click', function(e){
       L.DomEvent.stopPropagation(e);
       selectedShape = shape;
@@ -2496,6 +2554,7 @@
     if (shape._isMilSymbol) return 'Unidad ' + shapeCounter;
     if (shape._isEllipse) return 'Elipse ' + shapeCounter;
     if (shape._isText) return 'Texto ' + shapeCounter;
+    if (shape._isTarget) return 'Blanco ' + shapeCounter;
     if (shape._isRectangle) return 'Rectángulo ' + shapeCounter;
     if (shape instanceof L.Marker) return 'Punto ' + shapeCounter;
     if (shape instanceof L.Circle) return 'Círculo ' + shapeCounter;
@@ -2508,6 +2567,7 @@
     if (shape._isArrow) return 'arrow';
     if (shape._isEllipse) return 'ellipse';
     if (shape._isText) return 'text';
+    if (shape._isTarget) return 'target';
     if (shape instanceof L.Marker) return 'marker';
     if (shape instanceof L.Circle) return 'circle';
     if (shape instanceof L.Polygon) return 'polygon';
@@ -2523,6 +2583,7 @@
       circle: '<circle cx="12" cy="12" r="8.3"/>',
       ellipse: '<ellipse cx="12" cy="12" rx="9.5" ry="6.5"/>',
       text: '<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M8 10h8M8 13h5"/>',
+      target: '<line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/>',
       arrow: '<path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/>'
     };
     return '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (icons[kind]||icons.marker) + '</svg>';
@@ -2970,7 +3031,7 @@
     top.appendChild(delBtn);
     row.appendChild(top);
 
-    if (kind !== 'marker' && kind !== 'text'){
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target'){
       var controls = document.createElement('div');
       controls.className = 'style-controls';
 
@@ -3127,6 +3188,8 @@
         stats.tipo = 'Cuadro de texto';
         var pt = shape.getLatLng();
         stats.coordenadas = pt.lat.toFixed(5) + ', ' + pt.lng.toFixed(5);
+      } else if (shape._isTarget){
+        stats.tipo = 'Blanco';
       } else if (shape instanceof L.Circle){
         stats.tipo = 'Círculo';
         stats.radio = L.GeometryUtil.readableDistance(shape.getRadius(), true, false, false);
@@ -3187,34 +3250,36 @@
     body.appendChild(nameLabel);
     body.appendChild(nameInput);
 
-    var supplyField = document.createElement('div');
-    supplyField.className = 'style-field';
-    supplyField.style.marginTop = '4px';
-    supplyField.innerHTML = '<span>Abastecimiento</span>';
-    var supplyRow = document.createElement('div');
-    supplyRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;';
-    var supplySwatch = document.createElement('span');
-    supplySwatch.style.cssText = 'width:14px;height:14px;border-radius:3px;flex-shrink:0;border:1px solid rgba(0,0,0,.3);';
-    supplySwatch.style.background = supplyColor(shape._supply);
-    var supplyInput = document.createElement('input');
-    supplyInput.type = 'range'; supplyInput.min = 0; supplyInput.max = 100; supplyInput.step = 1;
-    supplyInput.value = shape._supply != null ? shape._supply : 100;
-    supplyInput.style.width = '90px';
-    var supplyPct = document.createElement('span');
-    supplyPct.className = 'pct';
-    supplyPct.textContent = (shape._supply != null ? shape._supply : 100) + '%';
-    supplyInput.addEventListener('input', function(ev){
-      shape._supply = parseInt(ev.target.value, 10);
-      supplyPct.textContent = shape._supply + '%';
+    if (shape._isMilSymbol){
+      var supplyField = document.createElement('div');
+      supplyField.className = 'style-field';
+      supplyField.style.marginTop = '4px';
+      supplyField.innerHTML = '<span>Abastecimiento</span>';
+      var supplyRow = document.createElement('div');
+      supplyRow.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;';
+      var supplySwatch = document.createElement('span');
+      supplySwatch.style.cssText = 'width:14px;height:14px;border-radius:3px;flex-shrink:0;border:1px solid rgba(0,0,0,.3);';
       supplySwatch.style.background = supplyColor(shape._supply);
-      syncSupplyIndicator(shape);
-    });
-    supplyInput.addEventListener('change', function(){ renderLayerList(); });
-    supplyRow.appendChild(supplySwatch);
-    supplyRow.appendChild(supplyInput);
-    supplyRow.appendChild(supplyPct);
-    supplyField.appendChild(supplyRow);
-    body.appendChild(supplyField);
+      var supplyInput = document.createElement('input');
+      supplyInput.type = 'range'; supplyInput.min = 0; supplyInput.max = 100; supplyInput.step = 1;
+      supplyInput.value = shape._supply != null ? shape._supply : 100;
+      supplyInput.style.width = '90px';
+      var supplyPct = document.createElement('span');
+      supplyPct.className = 'pct';
+      supplyPct.textContent = (shape._supply != null ? shape._supply : 100) + '%';
+      supplyInput.addEventListener('input', function(ev){
+        shape._supply = parseInt(ev.target.value, 10);
+        supplyPct.textContent = shape._supply + '%';
+        supplySwatch.style.background = supplyColor(shape._supply);
+        syncSupplyIndicator(shape);
+      });
+      supplyInput.addEventListener('change', function(){ renderLayerList(); });
+      supplyRow.appendChild(supplySwatch);
+      supplyRow.appendChild(supplyInput);
+      supplyRow.appendChild(supplyPct);
+      supplyField.appendChild(supplyRow);
+      body.appendChild(supplyField);
+    }
 
     var stats = geometryStats(shape);
     Object.keys(stats).forEach(function(k){
@@ -3444,7 +3509,50 @@
       body.appendChild(textBlock);
     }
 
-    if (kind !== 'marker' && kind !== 'text'){
+    if (kind === 'target'){
+      var targetBlock = document.createElement('div');
+      targetBlock.className = 'style-block';
+
+      var tPos = shape.getLatLng();
+      var coordField = document.createElement('div');
+      coordField.className = 'style-field';
+      coordField.innerHTML = '<span>Latitud y longitud</span><span style="font-weight:700;color:var(--navy);font-size:12px;">' + tPos.lat.toFixed(5) + ', ' + tPos.lng.toFixed(5) + '</span>';
+      targetBlock.appendChild(coordField);
+
+      function targetTextField(label, key, useTextarea){
+        var field = document.createElement('div');
+        field.className = 'style-field';
+        field.style.flexDirection = 'column';
+        field.style.alignItems = 'stretch';
+        field.innerHTML = '<span>' + label + '</span>';
+        var input = document.createElement(useTextarea ? 'textarea' : 'input');
+        if (!useTextarea) input.type = 'text';
+        else { input.className = 'coa-textarea'; input.style.minHeight = '56px'; }
+        input.style.marginTop = '3px';
+        if (!useTextarea) input.style.cssText += 'width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:inherit;font-size:12.5px;box-sizing:border-box;';
+        input.value = shape._target[key] || '';
+        input.addEventListener(useTextarea ? 'input' : 'change', function(ev){
+          shape._target[key] = ev.target.value;
+          if (key === 'number'){ updateTargetTooltip(shape); renderLayerList(); }
+        });
+        field.appendChild(input);
+        return field;
+      }
+
+      targetBlock.appendChild(targetTextField('Número', 'number', false));
+      targetBlock.appendChild(targetTextField('Blanco', 'blanco', false));
+      targetBlock.appendChild(targetTextField('Unidad / Ubicación', 'unidad', false));
+      targetBlock.appendChild(targetTextField('Tipo', 'tipo', false));
+      targetBlock.appendChild(targetTextField('Misión / Efecto deseado', 'mision', true));
+      targetBlock.appendChild(targetTextField('Fase', 'fase', false));
+      targetBlock.appendChild(targetTextField('Medio recomendado', 'medio', false));
+      targetBlock.appendChild(targetTextField('Ámbito', 'ambito', false));
+      targetBlock.appendChild(targetTextField('ILA ref', 'ilaRef', false));
+
+      body.appendChild(targetBlock);
+    }
+
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target'){
       var styleBlock = document.createElement('div');
       styleBlock.className = 'style-block';
 
@@ -3772,6 +3880,9 @@
           rotation: shape._text.rotation, boxWidth: shape._text.boxWidth, boxHeight: shape._text.boxHeight
         };
       }
+      if (shape && shape._isTarget){
+        f.properties.target = shape._target;
+      }
     });
     fc.properties = { capa: layerObj.name, color: layerObj.color, generado: new Date().toISOString() };
     return fc;
@@ -3822,6 +3933,13 @@
           tm._text = t;
           return tm;
         }
+        if (p.target){
+          var tg = L.marker(latlng, { icon: buildTargetIcon() });
+          tg._isTarget = true;
+          tg._target = Object.assign(defaultTargetParams(), p.target);
+          updateTargetTooltip(tg);
+          return tg;
+        }
         return L.marker(latlng, {
           icon: buildPointIcon(p.pointColor || p.color || targetLayerObj.color, p.pointShape || 'target')
         });
@@ -3841,7 +3959,8 @@
         var p = feature.properties || {};
         targetLayerObj.group.addLayer(layer);
         if (p.nombre) layer._customName = p.nombre;
-        if (p.supply != null) layer._supply = p.supply;
+        if (p.supply != null && layer._isMilSymbol) layer._supply = p.supply;
+        else delete layer._supply;
         layer._fillColorRaw = p.fillColor || targetLayerObj.color;
         layer._fillStyleKey = p.fillStyle || 'solid';
         if (p.arrow){
