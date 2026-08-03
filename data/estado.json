@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-03T11:58:34.533Z",
+  "savedAt": "2026-08-03T11:58:45.006Z",
   "mapView": {
     "lat": 8.995635069762864,
     "lng": -73.5143280026419,
@@ -8,7 +8,7 @@
   },
   "baseLayer": "street",
   "layerCounter": 17,
-  "shapeCounter": 270,
+  "shapeCounter": 271,
   "paletteIdx": 16,
   "activeLayerId": "capa-1",
   "coaEsfuerzos": "ESFUERZO PRINCIPAL  (E.P.)\nFTC «MARTILLO» — 2ª DIV EJC (+) · CCOES · GE/CIBER · ISR CCFAF\nT1. NEUTRALIZAR el nodo de mando y control del sistema híbrido en el triángulo Tibú–La Gabarra–Pto. Santander (OBJ ARIETE).\nP1. Privar al adversario de su capacidad de sincronización —CoG— y alcanzar PD-1 y PD-3.\nT2. CONDUCIR acción directa sobre los HVT de ELN, EMBF/Fte 33 y EPL con CCOES y fuegos conjuntos.\nP2. Colapsar la cadena de mando e imponer saturación operacional.\nT3. INTERDICTAR los corredores Tibú–El Tarra–Convención y Ocaña–Magdalena Medio y BLOQUEAR el eje fronterizo (EJE YUNQUE).\nP3. Impedir la reconstitución logística y el repliegue al santuario transfronterizo.\n",
@@ -7080,7 +7080,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-03T11:58:34.534Z"
+          "generado": "2026-08-03T11:58:45.006Z"
         }
       }
     },
@@ -7094,11 +7094,212 @@
       "sortIndex": 3,
       "geojson": {
         "type": "FeatureCollection",
-        "features": [],
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Línea 271",
+              "capa": "Operaciones",
+              "color": "#1F3864",
+              "fillColor": null,
+              "fillOpacity": 0.2,
+              "opacity": 1,
+              "weight": 3,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid"
+            },
+            "geometry": {
+              "type": "LineString",
+              "coordinates": [
+                [
+                  -73.620071,
+                  8.982071
+                ],
+                [
+                  -73.620071,
+                  8.982749
+                ],
+                [
+                  -73.619385,
+                  8.982749
+                ],
+                [
+                  -73.617325,
+                  8.982071
+                ],
+                [
+                  -73.613205,
+                  8.980714
+                ],
+                [
+                  -73.605652,
+                  8.97868
+                ],
+                [
+                  -73.599472,
+                  8.975967
+                ],
+                [
+                  -73.595352,
+                  8.973254
+                ],
+                [
+                  -73.591919,
+                  8.968506
+                ],
+                [
+                  -73.589172,
+                  8.962402
+                ],
+                [
+                  -73.587799,
+                  8.956297
+                ],
+                [
+                  -73.587799,
+                  8.950193
+                ],
+                [
+                  -73.587799,
+                  8.950193
+                ],
+                [
+                  -73.589859,
+                  8.945445
+                ],
+                [
+                  -73.589859,
+                  8.945445
+                ],
+                [
+                  -73.593292,
+                  8.941375
+                ],
+                [
+                  -73.593292,
+                  8.941375
+                ],
+                [
+                  -73.597412,
+                  8.937305
+                ],
+                [
+                  -73.597412,
+                  8.937305
+                ],
+                [
+                  -73.602219,
+                  8.932557
+                ],
+                [
+                  -73.602219,
+                  8.932557
+                ],
+                [
+                  -73.609085,
+                  8.929844
+                ],
+                [
+                  -73.609085,
+                  8.929844
+                ],
+                [
+                  -73.617325,
+                  8.927809
+                ],
+                [
+                  -73.617325,
+                  8.927809
+                ],
+                [
+                  -73.623505,
+                  8.927809
+                ],
+                [
+                  -73.623505,
+                  8.927809
+                ],
+                [
+                  -73.630371,
+                  8.928487
+                ],
+                [
+                  -73.630371,
+                  8.928487
+                ],
+                [
+                  -73.637238,
+                  8.929844
+                ],
+                [
+                  -73.643417,
+                  8.931879
+                ],
+                [
+                  -73.650284,
+                  8.93527
+                ],
+                [
+                  -73.65509,
+                  8.93934
+                ],
+                [
+                  -73.658524,
+                  8.944088
+                ],
+                [
+                  -73.660583,
+                  8.949515
+                ],
+                [
+                  -73.661957,
+                  8.954941
+                ],
+                [
+                  -73.66333,
+                  8.959689
+                ],
+                [
+                  -73.66333,
+                  8.962402
+                ],
+                [
+                  -73.661957,
+                  8.964437
+                ],
+                [
+                  -73.660583,
+                  8.966471
+                ],
+                [
+                  -73.658524,
+                  8.96715
+                ],
+                [
+                  -73.655777,
+                  8.968506
+                ],
+                [
+                  -73.655777,
+                  8.968506
+                ],
+                [
+                  -73.651657,
+                  8.970541
+                ],
+                [
+                  -73.651657,
+                  8.970541
+                ]
+              ]
+            }
+          }
+        ],
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-03T11:58:34.534Z"
+          "generado": "2026-08-03T11:58:45.006Z"
         }
       }
     },
@@ -13912,7 +14113,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T11:58:34.535Z"
+          "generado": "2026-08-03T11:58:45.006Z"
         }
       }
     },
@@ -16748,7 +16949,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T11:58:34.536Z"
+          "generado": "2026-08-03T11:58:45.006Z"
         }
       }
     },
@@ -17598,7 +17799,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-03T11:58:34.536Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     },
@@ -17817,7 +18018,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-03T11:58:34.536Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     },
@@ -18086,7 +18287,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-03T11:58:34.536Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     },
@@ -18316,7 +18517,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T11:58:34.536Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     },
@@ -18527,7 +18728,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-03T11:58:34.536Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     },
@@ -20535,7 +20736,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-03T11:58:34.537Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     },
@@ -20553,7 +20754,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-03T11:58:34.537Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     },
@@ -20597,7 +20798,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-03T11:58:34.537Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     },
@@ -20816,7 +21017,7 @@
         "properties": {
           "capa": "Br 2",
           "color": "#4C7A57",
-          "generado": "2026-08-03T11:58:34.537Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     },
@@ -21060,7 +21261,7 @@
         "properties": {
           "capa": "BR 10",
           "color": "#8A3A5A",
-          "generado": "2026-08-03T11:58:34.537Z"
+          "generado": "2026-08-03T11:58:45.007Z"
         }
       }
     }
