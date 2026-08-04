@@ -453,6 +453,16 @@
   .gh-status.syncing{ background:#FBF4E1; color:var(--navy); }
   .gh-status.ok{ background:#E3F3E5; color:#1F6B1F; }
   .gh-status.error{ background:#FBEDED; color:var(--danger); }
+
+  .history-item{
+    border:1px solid var(--border); border-radius:8px; padding:9px 11px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px; background:#FBFAF7;
+  }
+  .history-item-text{ min-width:0; }
+  .history-item-date{ font-size:12.5px; font-weight:700; color:var(--navy); }
+  .history-item-msg{ font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .history-item button{ flex-shrink:0; font-size:11px; padding:6px 10px; }
+  .history-empty{ font-size:12.5px; color:var(--muted); text-align:center; padding:20px 10px; }
 </style>
 </head>
 <body>
@@ -484,6 +494,16 @@
     <div class="confirm-actions">
       <button class="outline-btn" id="confirm-no-btn">No</button>
       <button class="primary-btn" id="confirm-yes-btn">Sí</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-scrim" id="history-scrim">
+  <div class="confirm-box" role="dialog" aria-modal="true" style="width:min(480px,92vw); max-height:80vh; display:flex; flex-direction:column;">
+    <div class="confirm-message" id="history-title" style="font-weight:700; margin-bottom:2px;">Historial</div>
+    <div id="history-list" style="overflow-y:auto; flex:1; margin:8px 0; display:flex; flex-direction:column; gap:8px;"></div>
+    <div class="confirm-actions">
+      <button class="outline-btn" id="history-close-btn">Cerrar</button>
     </div>
   </div>
 </div>
@@ -552,8 +572,15 @@
         <button class="outline-btn" id="gh-push-btn">⇧ Subir cambios</button>
         <button class="outline-btn" id="gh-pull-btn">⇩ Descargar última versión</button>
       </div>
+      <button class="outline-btn" id="gh-history-btn">🕐 Ver historial y restaurar versión anterior</button>
       <div id="gh-status" class="gh-status off">Sin configurar</div>
       <div class="hint">⚠️ El token queda guardado solo en este navegador (nunca en el archivo público). Use un token <b>de tipo fine-grained, limitado a este único repositorio</b>, con permiso de "Contents: Read and write" únicamente — no un token clásico con acceso a toda su cuenta.</div>
+    </section>
+
+    <section class="block">
+      <h2>Copias de seguridad locales</h2>
+      <div class="hint">Antes de aplicar cualquier cambio recibido de otro dispositivo, este navegador guarda automáticamente una copia de lo que usted tenía. Sirven como respaldo instantáneo, incluso sin conexión.</div>
+      <button class="outline-btn" id="local-backups-btn">🕐 Ver copias de seguridad locales</button>
     </section>
    </div>
 
@@ -944,6 +971,7 @@
         }
         githubFileSha = data.sha;
         var state = JSON.parse(base64ToUtf8(data.content));
+        saveLocalBackup();
         applyingRemoteState = true;
         applyRemoteState(state, { applyView: !isBackground });
         applyingRemoteState = false;
@@ -1013,6 +1041,148 @@
   function scheduleGithubPush(){
     if (githubPushTimer) clearTimeout(githubPushTimer);
     githubPushTimer = setTimeout(function(){ githubPushTimer = null; githubPush(); }, 3000);
+  }
+
+  /* ---------------- COPIAS DE SEGURIDAD LOCALES ---------------- */
+  var LOCAL_BACKUPS_KEY = 'map_local_backups_v1';
+  var LOCAL_BACKUPS_MAX = 8;
+
+  function saveLocalBackup(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var backups;
+      try{ backups = JSON.parse(localStorage.getItem(LOCAL_BACKUPS_KEY) || '[]'); }
+      catch(e){ backups = []; }
+      backups.unshift({ at: new Date().toISOString(), data: raw });
+      backups = backups.slice(0, LOCAL_BACKUPS_MAX);
+      localStorage.setItem(LOCAL_BACKUPS_KEY, JSON.stringify(backups));
+    } catch(err){ /* almacenamiento no disponible */ }
+  }
+
+  function formatHistoryDate(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) + ', ' +
+             d.toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
+    } catch(e){ return iso; }
+  }
+
+  var historyScrim = document.getElementById('history-scrim');
+  function openHistoryScrim(title){
+    document.getElementById('history-title').textContent = title;
+    document.getElementById('history-list').innerHTML = '<div class="history-empty">Cargando…</div>';
+    historyScrim.classList.add('show');
+  }
+  function closeHistoryScrim(){ historyScrim.classList.remove('show'); }
+  document.getElementById('history-close-btn').addEventListener('click', closeHistoryScrim);
+  historyScrim.addEventListener('click', function(ev){ if (ev.target === historyScrim) closeHistoryScrim(); });
+
+  function showLocalBackups(){
+    openHistoryScrim('Copias de seguridad locales (este navegador)');
+    var backups = [];
+    try{ backups = JSON.parse(localStorage.getItem(LOCAL_BACKUPS_KEY) || '[]'); } catch(e){}
+    var list = document.getElementById('history-list');
+    list.innerHTML = '';
+    if (!backups.length){
+      list.innerHTML = '<div class="history-empty">Todavía no hay copias de seguridad guardadas en este navegador. Se crean automáticamente cada vez que se recibe una sincronización desde la nube.</div>';
+      return;
+    }
+    backups.forEach(function(b, idx){
+      var item = document.createElement('div');
+      item.className = 'history-item';
+      var text = document.createElement('div');
+      text.className = 'history-item-text';
+      text.innerHTML = '<div class="history-item-date">' + formatHistoryDate(b.at) + '</div><div class="history-item-msg">Copia automática previa a una sincronización</div>';
+      var btn = document.createElement('button');
+      btn.className = 'outline-btn';
+      btn.textContent = 'Restaurar';
+      btn.addEventListener('click', function(){
+        showConfirm('¿Reemplazar el mapa actual por esta copia local del ' + formatHistoryDate(b.at) + '?', function(){
+          try{
+            var state = JSON.parse(b.data);
+            applyingRemoteState = true;
+            applyRemoteState(state, { applyView:true });
+            applyingRemoteState = false;
+            closeHistoryScrim();
+            if (githubConfigured() && githubConfig.autoSync) scheduleGithubPush();
+          } catch(err){
+            alert('No se pudo restaurar esta copia: ' + err.message);
+          }
+        });
+      });
+      item.appendChild(text);
+      item.appendChild(btn);
+      list.appendChild(item);
+    });
+  }
+  document.getElementById('local-backups-btn').addEventListener('click', showLocalBackups);
+
+  /* ---------------- HISTORIAL DE GITHUB Y RESTAURACIÓN ---------------- */
+  function githubFetchHistory(){
+    if (!githubConfigured()){ alert('Configure primero la sincronización con GitHub.'); return; }
+    openHistoryScrim('Historial en GitHub');
+    fetch('https://api.github.com/repos/' + githubConfig.repo + '/commits?path=' + encodeURIComponent(githubConfig.path) + '&per_page=30', {
+      headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
+    }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).then(function(commits){
+      var list = document.getElementById('history-list');
+      list.innerHTML = '';
+      if (!commits.length){
+        list.innerHTML = '<div class="history-empty">Todavía no hay sincronizaciones guardadas en GitHub.</div>';
+        return;
+      }
+      commits.forEach(function(c){
+        var item = document.createElement('div');
+        item.className = 'history-item';
+        var text = document.createElement('div');
+        text.className = 'history-item-text';
+        text.innerHTML = '<div class="history-item-date">' + formatHistoryDate(c.commit.author.date) + '</div><div class="history-item-msg">' + escapeHtmlText(c.commit.message) + '</div>';
+        var btn = document.createElement('button');
+        btn.className = 'outline-btn';
+        btn.textContent = 'Restaurar';
+        btn.addEventListener('click', function(){ githubRestoreCommit(c.sha, formatHistoryDate(c.commit.author.date)); });
+        item.appendChild(text);
+        item.appendChild(btn);
+        list.appendChild(item);
+      });
+    }).catch(function(err){
+      document.getElementById('history-list').innerHTML = '<div class="history-empty">No se pudo cargar el historial: ' + escapeHtmlText(err.message) + '</div>';
+    });
+  }
+  document.getElementById('gh-history-btn').addEventListener('click', githubFetchHistory);
+
+  function githubRestoreCommit(sha, dateLabel){
+    showConfirm('¿Reemplazar el mapa actual por la versión del ' + dateLabel + '? Quedará guardada como la versión más reciente para todos los que sincronicen.', function(){
+      updateSyncStatus('syncing','Restaurando…');
+      fetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + encodeURIComponent(githubConfig.path) + '?ref=' + sha, {
+        headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
+      }).then(function(res){
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      }).then(function(data){
+        var state = JSON.parse(base64ToUtf8(data.content));
+        saveLocalBackup();
+        applyingRemoteState = true;
+        applyRemoteState(state, { applyView:true });
+        applyingRemoteState = false;
+        closeHistoryScrim();
+        updateSyncStatus('ok','Versión restaurada, subiendo…');
+        return fetch(githubApiUrl(true), {
+          headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
+        });
+      }).then(function(res2){
+        return res2.json();
+      }).then(function(data2){
+        githubFileSha = data2.sha;
+        githubPush();
+      }).catch(function(err){
+        updateSyncStatus('error','No se pudo restaurar: ' + err.message);
+        alert('No se pudo restaurar esa versión: ' + err.message);
+      });
+    });
   }
 
   function fillGithubConfigInputs(){
