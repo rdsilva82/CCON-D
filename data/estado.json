@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-04T14:21:47.948Z",
+  "savedAt": "2026-08-04T14:21:52.403Z",
   "mapView": {
     "lat": 9.66032316825502,
     "lng": -72.63061523437501,
@@ -7113,7 +7113,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:21:47.948Z"
+          "generado": "2026-08-04T14:21:52.403Z"
         }
       }
     },
@@ -7131,7 +7131,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:21:47.948Z"
+          "generado": "2026-08-04T14:21:52.403Z"
         }
       }
     },
@@ -14005,7 +14005,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -16846,7 +16846,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -17707,7 +17707,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -17932,7 +17932,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -18213,7 +18213,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -18449,7 +18449,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -18664,7 +18664,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -20681,7 +20681,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -20699,7 +20699,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -20717,7 +20717,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -20944,7 +20944,7 @@
         "properties": {
           "capa": "BR-2",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -21197,7 +21197,7 @@
         "properties": {
           "capa": "BR-10",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -29494,7 +29494,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -29512,7 +29512,7 @@
         "properties": {
           "capa": "ACCIÓN INTEGRAL",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.404Z"
         }
       }
     },
@@ -29635,7 +29635,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -29653,7 +29653,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -29854,7 +29854,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -30159,7 +30159,7 @@
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -30308,7 +30308,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -30457,7 +30457,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -31313,7 +31313,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -31462,7 +31462,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -31663,7 +31663,7 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -31681,7 +31681,7 @@
         "properties": {
           "capa": "RADARES",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -31699,7 +31699,7 @@
         "properties": {
           "capa": "SOSTENIMIENTO",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:21:47.949Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -35363,7 +35363,7 @@
         "properties": {
           "capa": "INFRA CRITICA",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:21:47.950Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -35769,7 +35769,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:21:47.950Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -36058,7 +36058,7 @@
         "properties": {
           "capa": "Hospitales",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:21:47.950Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -36103,7 +36103,7 @@
         "properties": {
           "capa": "FNC",
           "color": "#06e8f9",
-          "generado": "2026-08-04T14:21:47.950Z"
+          "generado": "2026-08-04T14:21:52.405Z"
         }
       }
     },
@@ -43122,7 +43122,7 @@
         "properties": {
           "capa": "wom-Señal",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:21:47.950Z"
+          "generado": "2026-08-04T14:21:52.406Z"
         }
       }
     },
@@ -50141,7 +50141,7 @@
         "properties": {
           "capa": "tigo-señal",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:21:47.950Z"
+          "generado": "2026-08-04T14:21:52.406Z"
         }
       }
     },
@@ -57160,13 +57160,13 @@
         "properties": {
           "capa": "movistar-señal",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:21:47.951Z"
+          "generado": "2026-08-04T14:21:52.407Z"
         }
       }
     },
     {
       "id": "capa-50",
-      "name": "cobertura_claro",
+      "name": "claro-señal",
       "color": "#7A4A2F",
       "visible": true,
       "expanded": false,
@@ -57191,7 +57191,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 787",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -57356,7 +57356,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 788",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -57461,7 +57461,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 789",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -57562,7 +57562,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 790",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -57635,7 +57635,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 791",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -57740,7 +57740,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 792",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -57813,7 +57813,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 793",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -57950,7 +57950,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 794",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58063,7 +58063,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 795",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58144,7 +58144,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 796",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58229,7 +58229,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 797",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58334,7 +58334,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 798",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58403,7 +58403,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 799",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58464,7 +58464,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 800",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58561,7 +58561,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 801",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58654,7 +58654,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 802",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58715,7 +58715,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 803",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58796,7 +58796,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 804",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58881,7 +58881,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 805",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58970,7 +58970,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 806",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59055,7 +59055,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 807",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59184,7 +59184,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 808",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59265,7 +59265,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 809",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59366,7 +59366,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 810",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59463,7 +59463,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 811",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59536,7 +59536,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 812",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59661,7 +59661,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 813",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59742,7 +59742,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 814",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59831,7 +59831,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 815",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59928,7 +59928,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 816",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59989,7 +59989,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 817",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60046,7 +60046,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 818",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60127,7 +60127,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 819",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60210,7 +60210,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 820",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60283,7 +60283,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 821",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60388,7 +60388,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 822",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60493,7 +60493,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 823",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60606,7 +60606,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 824",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60767,7 +60767,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 825",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60836,7 +60836,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 826",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60901,7 +60901,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 827",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61026,7 +61026,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 828",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61139,7 +61139,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 829",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61228,7 +61228,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 830",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61305,7 +61305,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 831",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61374,7 +61374,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 832",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61435,7 +61435,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 833",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61524,7 +61524,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 834",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61589,7 +61589,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 835",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61690,7 +61690,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 836",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61827,7 +61827,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 837",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61908,7 +61908,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 838",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -61969,7 +61969,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 839",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62110,7 +62110,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 840",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62191,7 +62191,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 841",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62280,7 +62280,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 842",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62349,7 +62349,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 843",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62426,7 +62426,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 844",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62487,7 +62487,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 845",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62556,7 +62556,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 846",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62637,7 +62637,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 847",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62702,7 +62702,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 848",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62767,7 +62767,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 849",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62824,7 +62824,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 850",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62885,7 +62885,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 851",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63000,7 +63000,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 852",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63077,7 +63077,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 853",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63142,7 +63142,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 854",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63195,7 +63195,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 855",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63252,7 +63252,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 856",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63329,7 +63329,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 857",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63418,7 +63418,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 858",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63479,7 +63479,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 859",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63540,7 +63540,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 860",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63645,7 +63645,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 861",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63714,7 +63714,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 862",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63835,7 +63835,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 863",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63952,7 +63952,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 864",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -64061,7 +64061,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 865",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -64134,7 +64134,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 866",
-              "capa": "cobertura_claro",
+              "capa": "claro-señal",
               "fillColor": "#7A4A2F",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -64177,9 +64177,9 @@
           }
         ],
         "properties": {
-          "capa": "cobertura_claro",
+          "capa": "claro-señal",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:21:47.951Z"
+          "generado": "2026-08-04T14:21:52.407Z"
         }
       }
     }
