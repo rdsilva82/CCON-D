@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-08-04T14:02:40.767Z",
+  "savedAt": "2026-08-04T14:02:38.588Z",
   "mapView": {
-    "lat": 6.470880104310449,
-    "lng": -74.04235839843751,
-    "zoom": 8
+    "lat": 7.895859559385199,
+    "lng": -72.54924774169923,
+    "zoom": 12
   },
   "baseLayer": "street",
-  "layerCounter": 45,
-  "shapeCounter": 556,
-  "paletteIdx": 43,
-  "activeLayerId": "capa-17",
+  "layerCounter": 47,
+  "shapeCounter": 545,
+  "paletteIdx": 45,
+  "activeLayerId": "capa-47",
   "coaEsfuerzoPrincipal": "",
   "coaEsfuerzoApoyo": "",
   "coaReserva": "",
@@ -7113,7 +7113,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -7122,7 +7122,7 @@
       "name": "Operaciones",
       "color": "#1F3864",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": null,
       "sortIndex": 3,
       "geojson": {
@@ -7131,7 +7131,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -14005,7 +14005,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -16846,7 +16846,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -17707,7 +17707,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -17932,7 +17932,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -18213,7 +18213,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -18449,7 +18449,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -18664,7 +18664,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -20681,7 +20681,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -20699,7 +20699,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -20708,16 +20708,16 @@
       "name": "DIV 1",
       "color": "#B8962E",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": "capa-1",
-      "sortIndex": 1,
+      "sortIndex": 0,
       "geojson": {
         "type": "FeatureCollection",
         "features": [],
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -20944,7 +20944,7 @@
         "properties": {
           "capa": "BR-2",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -20953,7 +20953,7 @@
       "name": "BR-10",
       "color": "#8A3A5A",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": "capa-15",
       "sortIndex": 1,
       "geojson": {
@@ -21192,168 +21192,12 @@
                 8.450639
               ]
             }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "B-1",
-              "capa": "BR-10",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "B1"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -73.249476,
-                10.045747
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "B-2",
-              "capa": "BR-10",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "B2"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -73.365326,
-                9.553355
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "B-3",
-              "capa": "BR-10",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "B3"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -73.271856,
-                10.46553
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "F-1",
-              "capa": "BR-10",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "F1"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -72.24884,
-                11.727546
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "F-2",
-              "capa": "BR-10",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "F2"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -72.607012,
-                11.159372
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "F-3",
-              "capa": "BR-10",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "F3"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -72.906089,
-                10.886959
-              ]
-            }
           }
         ],
         "properties": {
           "capa": "BR-10",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.588Z"
         }
       }
     },
@@ -29650,7 +29494,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -29659,7 +29503,7 @@
       "name": "ACCIÓN INTEGRAL",
       "color": "#1F3864",
       "visible": true,
-      "expanded": false,
+      "expanded": true,
       "parentId": null,
       "sortIndex": 10,
       "geojson": {
@@ -29668,7 +29512,7 @@
         "properties": {
           "capa": "ACCIÓN INTEGRAL",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -29677,7 +29521,7 @@
       "name": "AEREO",
       "color": "#8A3A5A",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": null,
       "sortIndex": 5,
       "geojson": {
@@ -29791,7 +29635,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -29802,14 +29646,14 @@
       "visible": true,
       "expanded": true,
       "parentId": "capa-1",
-      "sortIndex": 0,
+      "sortIndex": 1,
       "geojson": {
         "type": "FeatureCollection",
         "features": [],
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -29818,7 +29662,7 @@
       "name": "BR-5",
       "color": "#4C7A57",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": "capa-27",
       "sortIndex": 0,
       "geojson": {
@@ -30005,90 +29849,12 @@
                 7.147905
               ]
             }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "A-1",
-              "capa": "BR-5",
-              "supply": 100,
-              "fillColor": "#4C7A57",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "A1"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -73.624535,
-                8.949896
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "A-2",
-              "capa": "BR-5",
-              "supply": 100,
-              "fillColor": "#4C7A57",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "A2"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -73.901253,
-                7.115883
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "A-3",
-              "capa": "BR-5",
-              "supply": 100,
-              "fillColor": "#4C7A57",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "A3"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -74.040341,
-                7.961785
-              ]
-            }
           }
         ],
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -30097,7 +29863,7 @@
       "name": "BR-30",
       "color": "#8A3A5A",
       "visible": true,
-      "expanded": false,
+      "expanded": true,
       "parentId": "capa-27",
       "sortIndex": 1,
       "geojson": {
@@ -30362,90 +30128,12 @@
                 7.923234
               ]
             }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "E-1",
-              "capa": "BR-30",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "E-1"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -72.650013,
-                7.386811
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "E-2",
-              "capa": "BR-30",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "E-2"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -72.714643,
-                8.641359
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "E-3",
-              "capa": "BR-30",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": "E-3"
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -73.323655,
-                8.219348
-              ]
-            }
           }
         ],
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -30594,7 +30282,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -30743,7 +30431,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -31599,7 +31287,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -31748,7 +31436,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -31949,7 +31637,7 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -31967,7 +31655,7 @@
         "properties": {
           "capa": "RADARES",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -31975,7 +31663,7 @@
       "id": "capa-40",
       "name": "SOSTENIMIENTO",
       "color": "#4C7A57",
-      "visible": true,
+      "visible": false,
       "expanded": false,
       "parentId": null,
       "sortIndex": 11,
@@ -31985,7 +31673,7 @@
         "properties": {
           "capa": "SOSTENIMIENTO",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.589Z"
         }
       }
     },
@@ -35649,7 +35337,7 @@
         "properties": {
           "capa": "INFRA CRITICA",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.590Z"
         }
       }
     },
@@ -35658,7 +35346,7 @@
       "name": "Emisoras",
       "color": "#7A4A2F",
       "visible": true,
-      "expanded": false,
+      "expanded": true,
       "parentId": "capa-20",
       "sortIndex": 13,
       "geojson": {
@@ -36055,7 +35743,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.590Z"
         }
       }
     },
@@ -36063,7 +35751,7 @@
       "id": "capa-45",
       "name": "Hospitales",
       "color": "#1F3864",
-      "visible": true,
+      "visible": false,
       "expanded": false,
       "parentId": "capa-40",
       "sortIndex": 13,
@@ -36344,7 +36032,70 @@
         "properties": {
           "capa": "Hospitales",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:02:40.767Z"
+          "generado": "2026-08-04T14:02:38.590Z"
+        }
+      }
+    },
+    {
+      "id": "capa-46",
+      "name": "BRAID 1",
+      "color": "#B8962E",
+      "visible": true,
+      "expanded": true,
+      "parentId": "capa-20",
+      "sortIndex": 14,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Brigada de Accion Integral y Desarrollo N°1",
+              "capa": "BRAID 1",
+              "supply": 100,
+              "fillColor": "#B8962E",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid",
+              "mil": {
+                "affiliation": "friendly",
+                "unitType": "generic",
+                "echelon": "brigade",
+                "designation": "BRAID 1"
+              }
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.518005,
+                7.907507
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "capa": "BRAID 1",
+          "color": "#B8962E",
+          "generado": "2026-08-04T14:02:38.590Z"
+        }
+      }
+    },
+    {
+      "id": "capa-47",
+      "name": "BAAID 1",
+      "color": "#7a4d74",
+      "visible": true,
+      "expanded": true,
+      "parentId": "capa-46",
+      "sortIndex": 0,
+      "geojson": {
+        "type": "FeatureCollection",
+        "features": [],
+        "properties": {
+          "capa": "BAAID 1",
+          "color": "#7a4d74",
+          "generado": "2026-08-04T14:02:38.590Z"
         }
       }
     }
