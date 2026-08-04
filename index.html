@@ -369,6 +369,59 @@
   }
   #coa-bottom-panel .coa-richbox{ flex:1; min-height:0; }
 
+  /* ---------- PANEL PERSONAL ---------- */
+  #personal-panel{
+    display:none; position:fixed; inset:56px 0 0 0; z-index:900;
+    background:var(--bg); overflow-y:auto; padding:18px 22px 40px 22px;
+  }
+  body.mode-personal #personal-panel{ display:block; }
+  #personal-panel-inner{
+    max-width:1400px; margin:0 auto; display:flex; flex-direction:column; gap:18px;
+  }
+  .personal-section{
+    background:var(--panel-bg); border:1px solid var(--border); border-radius:12px;
+    padding:16px 18px; box-shadow:0 1px 3px rgba(21,42,76,.08);
+  }
+  .personal-section > h2{
+    font-size:15px; font-weight:700; color:var(--navy); margin:0 0 12px 0;
+    padding-bottom:8px; border-bottom:2px solid var(--gold-light);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .personal-group{ margin-bottom:14px; }
+  .personal-group:last-child{ margin-bottom:0; }
+  .personal-group-title{
+    font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase;
+    letter-spacing:.5px; margin-bottom:8px;
+  }
+  .personal-metrics-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:10px;
+  }
+  .personal-metric{
+    border:1px solid var(--border); border-radius:8px; padding:10px 11px; background:#FBFAF7;
+    display:flex; align-items:center; gap:12px;
+  }
+  .personal-ring-wrap{ flex-shrink:0; position:relative; width:64px; height:64px; }
+  .personal-ring-fill{ transition: stroke-dashoffset .25s ease, stroke .25s ease; }
+  .personal-ring-pct{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:800; pointer-events:none;
+  }
+  .personal-metric-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+  .personal-metric-label{ font-size:12px; font-weight:600; color:var(--text); }
+  .personal-metric-inputs{
+    display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--muted); flex-wrap:wrap;
+  }
+  .personal-metric-inputs label{ display:flex; align-items:center; gap:4px; }
+  .personal-metric-inputs input{
+    width:68px; border:1px solid var(--border); border-radius:5px; padding:3px 5px;
+    font-family:inherit; font-size:11px; text-align:right;
+  }
+  .personal-reset-btn{
+    font-size:10.5px; padding:4px 9px; border:1px solid var(--border); border-radius:6px;
+    background:#fff; color:var(--navy); cursor:pointer; font-family:inherit; font-weight:600;
+  }
+  .personal-reset-btn:hover{ background:#EEF1F6; }
+
   /* ---------- COLAPSO DE PANELES LATERALES (escritorio) ---------- */
   .app-grid.left-collapsed{ grid-template-columns: 0px 1fr 300px; }
   .app-grid.right-collapsed{ grid-template-columns: 280px 1fr 0px; }
@@ -415,6 +468,7 @@
   <div class="mode-switcher">
     <button class="mode-btn active" id="mode-edicion-btn">✎ Edición</button>
     <button class="mode-btn" id="mode-coa-btn">◎ COA</button>
+    <button class="mode-btn" id="mode-personal-btn">👤 Personal</button>
   </div>
   <div class="panel-toggles">
     <button class="toggle-btn" id="toggle-left">☰</button>
@@ -644,6 +698,10 @@
   <div class="coa-richbox" data-coa-box style="flex:1;"><div class="coa-rich-inner" id="coa-desarrollo-text" contenteditable="true" data-placeholder="Escriba aquí el desarrollo del curso de acción…"></div></div>
 </div>
 
+<div id="personal-panel">
+  <div id="personal-panel-inner"></div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script>
@@ -699,6 +757,7 @@
       coaFases: document.getElementById('coa-fases-text').innerHTML,
       coaLooLoe: document.getElementById('coa-loo-loe-text').innerHTML,
       coaDesarrollo: document.getElementById('coa-desarrollo-text').innerHTML,
+      personalData: personalData,
       layers: layers.map(function(l){
         return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, parentId: l.parentId, sortIndex: l.sortIndex, geojson: layerToGeoJSON(l) };
       })
@@ -732,6 +791,11 @@
     document.getElementById('coa-loo-loe-text').innerHTML = state.coaLooLoe || '';
     document.getElementById('coa-desarrollo-text').innerHTML = state.coaDesarrollo || '';
     fitAllCoaBoxes();
+    if (state.personalData){
+      personalData = state.personalData;
+      ensurePersonalData();
+      if (document.body.classList.contains('mode-personal')) renderPersonalPanel();
+    }
     if (!state.layers || !state.layers.length) return false;
     layers.forEach(function(l){ map.removeLayer(l.group); });
     layers = [];
@@ -1437,13 +1501,20 @@
     ['badre','BADRE'],
     ['badra','BADRA'],
     ['gtm','GTM'],
-    ['evipe','EVIPE']
+    ['evipe','EVIPE'],
+    ['accionintegral','Acción Integral'],
+    ['circo','Circo'],
+    ['buque','Buque'],
+    ['navalelement','Elemento Naval'],
+    ['baseaerea','Base Aérea'],
+    ['ammodepot','Depósito de municiones'],
+    ['radar','Radar']
   ];
   var MIL_TEXT_UNIT_CODES = {
     aspc:'ASPC', biter:'BITER', ggcar:'GGCAR', ggmag:'GGMAG', bapom:'BAPOM',
     biacm:'BIACM', futam:'FUTAM', udiv:'U/DIV', gmar:'GMAR', imi:'IMI',
     bafur:'BAFUR', ev:'EV', ggsan:'GGSAN', ggmmag:'GGMMAG', badre:'BADRE',
-    badra:'BADRA', gtm:'GTM', evipe:'EVIPE'
+    badra:'BADRA', gtm:'GTM', evipe:'EVIPE', accionintegral:'AI'
   };
   var MIL_ECHELONS = [
     ['','Sin especificar'],
@@ -1523,6 +1594,31 @@
         return '<path d="M17,38 L27,20 L31,32 L41,16" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
       case 'specialforces':
         return '<line x1="16" y1="40" x2="42" y2="16" stroke="'+g+'" stroke-width="2.6" stroke-linecap="round"/><polygon points="42,16 34,18 40,24" fill="'+g+'"/>';
+      case 'circo':
+        return '<path d="M18,19 v13 a4,4 0 004,4 h9" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+               '<path d="M21,19 l9,10 -4,4 10,-10" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+      case 'buque':
+        return '<circle cx="30" cy="17" r="3" fill="none" stroke="'+g+'" stroke-width="1.6"/>' +
+               '<path d="M30,20 v18" stroke="'+g+'" stroke-width="1.6" stroke-linecap="round"/>' +
+               '<path d="M23,32 a7,7 0 0014,0" fill="none" stroke="'+g+'" stroke-width="1.6" stroke-linecap="round"/>' +
+               '<path d="M17,26 h7m12,0h7" stroke="'+g+'" stroke-width="1.6" stroke-linecap="round"/>';
+      case 'navalelement':
+        return '<path d="M15,31 h22 l-5,9 h-12 z" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linejoin="round"/>' +
+               '<line x1="26" y1="31" x2="26" y2="16" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round"/>' +
+               '<path d="M26,16 l9,4 -9,3z" fill="'+g+'"/>';
+      case 'baseaerea':
+        return '<circle cx="30" cy="33" r="10" fill="none" stroke="'+g+'" stroke-width="1.6"/>' +
+               '<line x1="30" y1="23" x2="30" y2="43" stroke="'+g+'" stroke-width="1.4"/>' +
+               '<line x1="21.3" y1="28" x2="38.7" y2="38" stroke="'+g+'" stroke-width="1.4"/>' +
+               '<line x1="21.3" y1="38" x2="38.7" y2="28" stroke="'+g+'" stroke-width="1.4"/>' +
+               '<line x1="15" y1="21" x2="37" y2="21" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round"/>' +
+               '<line x1="35" y1="10" x2="15" y2="35" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round"/>';
+      case 'ammodepot':
+        return '<path d="M22,39 v-9 a8,8 0 0116,0 v9" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linejoin="round"/>' +
+               '<line x1="19.5" y1="39" x2="40.5" y2="39" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round"/>';
+      case 'radar':
+        return '<path d="M18,19 v13 a4,4 0 004,4 h9" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+               '<path d="M21,19 l9,10 -4,4 10,-10" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
       default:
         return '';
     }
@@ -4510,25 +4606,206 @@
   });
   scrim.addEventListener('click', closePanels);
 
-  /* ---------------- MODOS: EDICIÓN / COA ---------------- */
+  /* ---------------- MODOS: EDICIÓN / COA / PERSONAL ---------------- */
   var modeEdicionBtn = document.getElementById('mode-edicion-btn');
   var modeCoaBtn = document.getElementById('mode-coa-btn');
+  var modePersonalBtn = document.getElementById('mode-personal-btn');
 
   function setMode(mode){
-    document.body.classList.remove('mode-edicion','mode-coa');
+    document.body.classList.remove('mode-edicion','mode-coa','mode-personal');
     document.body.classList.add('mode-' + mode);
     modeEdicionBtn.classList.toggle('active', mode === 'edicion');
     modeCoaBtn.classList.toggle('active', mode === 'coa');
+    modePersonalBtn.classList.toggle('active', mode === 'personal');
     if (mode === 'coa'){
       disableAllTools();
       exitMoveMode();
       selectedShape = null;
       setTimeout(fitAllCoaBoxes, 50);
     }
+    if (mode === 'personal'){
+      disableAllTools();
+      exitMoveMode();
+      selectedShape = null;
+      renderPersonalPanel();
+    }
     map.invalidateSize();
   }
   modeEdicionBtn.addEventListener('click', function(){ setMode('edicion'); });
   modeCoaBtn.addEventListener('click', function(){ setMode('coa'); });
+  modePersonalBtn.addEventListener('click', function(){ setMode('personal'); });
+
+  /* ---------------- PANEL PERSONAL (datos de personal, editable 100% / actual) ---------------- */
+var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","groups":[{"label":"Total nacional","metrics":[{"key":"cap_ffmm","label":"FFMM Total (nacional)","target":220000}]},{"label":"Capacidad en área — EJC","metrics":[{"key":"cap_ejc_total","label":"Total EJC","target":26400},{"key":"cap_ejc_of","label":"Oficiales","target":1680},{"key":"cap_ejc_sof","label":"Suboficiales","target":4320},{"key":"cap_ejc_slp","label":"SL Profesionales","target":13200},{"key":"cap_ejc_slr","label":"SL Regulares","target":7200}]},{"label":"Capacidad en área — ARC","metrics":[{"key":"cap_arc_total","label":"Total ARC","target":4050},{"key":"cap_arc_of","label":"Oficiales","target":300},{"key":"cap_arc_sof","label":"Suboficiales","target":825},{"key":"cap_arc_slp","label":"SL Profesionales","target":1875},{"key":"cap_arc_slr","label":"SL Regulares","target":1050}]},{"label":"Capacidad en área — FAC","metrics":[{"key":"cap_fac_total","label":"Total FAC","target":484},{"key":"cap_fac_of","label":"Oficiales","target":65},{"key":"cap_fac_sof","label":"Suboficiales","target":322},{"key":"cap_fac_slp","label":"SL Profesionales","target":20},{"key":"cap_fac_slr","label":"SL Regulares","target":77}]},{"label":"Total área CCOND-D","metrics":[{"key":"cap_area_total","label":"Total EJC+ARC+FAC","target":30934}]}]},{"key":"reservistas","label":"Reservistas","groups":[{"label":"General","metrics":[{"key":"res_efectivos","label":"Militares efectivos (nacional)","target":269000},{"key":"res_total_2026","label":"Reservistas FFMM nacional (2026)","target":34919}]},{"label":"Por componente","metrics":[{"key":"res_ejc","label":"EJC","target":28628},{"key":"res_ejc_zona","label":"EJC — Ubicación en la zona","target":3273},{"key":"res_arc","label":"ARC","target":4788},{"key":"res_fac","label":"FAC","target":1503}]},{"label":"Distribución geográfica","metrics":[{"key":"res_deptos_col","label":"Departamentos Colombia","target":32},{"key":"res_deptos_ccond","label":"Departamentos área CCOND-D","target":3},{"key":"res_prom_col","label":"Promedio reservistas / depto (Colombia)","target":1091},{"key":"res_prom_ccond","label":"Promedio reservistas / depto (área CCOND-D)","target":3274}]}]},{"key":"desastres","label":"Desastres","groups":[{"label":"Por componente","metrics":[{"key":"des_ejc_bat","label":"EJC — Batallones","target":2},{"key":"des_ejc_ef","label":"EJC — Efectivos (Tolemaida / 2ª División)","target":1272},{"key":"des_arc_bat","label":"ARC — Batallones","target":1},{"key":"des_arc_ef","label":"ARC — Efectivos (Bogotá)","target":1010},{"key":"des_fac_bat","label":"FAC — Batallones","target":0},{"key":"des_fac_ef","label":"FAC — Efectivos (Apoyo TX)","target":0},{"key":"des_total","label":"Total efectivos disponibles","target":2282}]},{"label":"Detalle EJC — BRIAD80","metrics":[{"key":"des_ejc80_of","label":"Oficiales","target":48},{"key":"des_ejc80_sof","label":"Suboficiales","target":132},{"key":"des_ejc80_slp","label":"SL Profesionales","target":456}]},{"label":"Detalle EJC — BRIAD81","metrics":[{"key":"des_ejc81_of","label":"Oficiales","target":48},{"key":"des_ejc81_sof","label":"Suboficiales","target":132},{"key":"des_ejc81_slp","label":"SL Profesionales","target":456}]},{"label":"Detalle ARC","metrics":[{"key":"des_arc_of","label":"Oficiales","target":60},{"key":"des_arc_sof","label":"Suboficiales","target":250},{"key":"des_arc_slp","label":"SL Profesionales","target":700}]}]},{"key":"reclutamiento","label":"Reclutamiento","groups":[{"label":"Asignación","metrics":[{"key":"rec_depto","label":"Asignación por departamento","target":32},{"key":"rec_zona","label":"Asignación zona asignada","target":3}]},{"label":"Contingentes anuales — total incorporado","metrics":[{"key":"rec_ejc_total","label":"EJC (4 contingentes)","target":60000},{"key":"rec_arc_total","label":"ARC (2 contingentes)","target":12050},{"key":"rec_fac_total","label":"FAC (2 contingentes)","target":2590},{"key":"rec_gran_total","label":"Total incorporado","target":74640}]},{"label":"Detalle incorporación — EJC","metrics":[{"key":"rec_ejc_of","label":"Oficiales","target":400},{"key":"rec_ejc_sof","label":"Suboficiales","target":1200},{"key":"rec_ejc_slp","label":"SL Profesionales","target":8400},{"key":"rec_ejc_slr","label":"SL Regulares","target":50000}]},{"label":"Detalle incorporación — ARC","metrics":[{"key":"rec_arc_of","label":"Oficiales","target":250},{"key":"rec_arc_sof","label":"Suboficiales","target":700},{"key":"rec_arc_slp","label":"SL Profesionales","target":900},{"key":"rec_arc_slr","label":"SL Regulares","target":10200}]},{"label":"Detalle incorporación — FAC","metrics":[{"key":"rec_fac_of","label":"Oficiales","target":230},{"key":"rec_fac_sof","label":"Suboficiales","target":500},{"key":"rec_fac_slp","label":"SL Profesionales","target":400},{"key":"rec_fac_slr","label":"SL Regulares","target":1460}]}]},{"key":"ciclo_ode","label":"Ciclo ODE","groups":[{"label":"EJC","metrics":[{"key":"ode_ejc_entren","label":"Entrenamiento (20%)","target":5280},{"key":"ode_ejc_oper","label":"Operaciones (60%)","target":15840},{"key":"ode_ejc_desc","label":"Descanso (20%)","target":5280}]},{"label":"ARC","metrics":[{"key":"ode_arc_entren","label":"Entrenamiento (20%)","target":810},{"key":"ode_arc_oper","label":"Operaciones (60%)","target":2430},{"key":"ode_arc_desc","label":"Descanso (20%)","target":810}]}]}];
+
+  var personalData = {};
+  function defaultPersonalData(){
+    var d = {};
+    PERSONAL_SECTIONS.forEach(function(sec){
+      sec.groups.forEach(function(g){
+        g.metrics.forEach(function(m){ d[m.key] = { target: m.target, actual: m.target }; });
+      });
+    });
+    return d;
+  }
+  function ensurePersonalData(){
+    var defaults = defaultPersonalData();
+    Object.keys(defaults).forEach(function(k){
+      if (!personalData[k]) personalData[k] = defaults[k];
+    });
+  }
+
+  var PERSONAL_RING_R = 26;
+  var PERSONAL_RING_CIRC = 2 * Math.PI * PERSONAL_RING_R;
+
+  function updatePersonalMetricDOM(key){
+    var d = personalData[key];
+    if (!d) return;
+    var pct = d.target > 0 ? Math.round((d.actual / d.target) * 100) : 0;
+    var pctClamped = Math.max(0, Math.min(999, pct));
+    var color = supplyColor(Math.min(pct, 100));
+    var ringFill = document.querySelector('.personal-ring-fill[data-key="' + key + '"]');
+    var pctLabel = document.querySelector('.personal-ring-pct[data-key="' + key + '"]');
+    if (ringFill){
+      var frac = Math.max(0, Math.min(1, pct / 100));
+      ringFill.setAttribute('stroke-dashoffset', PERSONAL_RING_CIRC * (1 - frac));
+      ringFill.setAttribute('stroke', color);
+    }
+    if (pctLabel){ pctLabel.textContent = pctClamped + '%'; pctLabel.style.color = color; }
+  }
+
+  function renderPersonalPanel(){
+    ensurePersonalData();
+    var root = document.getElementById('personal-panel-inner');
+    root.innerHTML = '';
+    PERSONAL_SECTIONS.forEach(function(sec){
+      var secEl = document.createElement('div');
+      secEl.className = 'personal-section';
+      var h2 = document.createElement('h2');
+      h2.innerHTML = '<span>' + sec.label + '</span>';
+      var resetBtn = document.createElement('button');
+      resetBtn.className = 'personal-reset-btn';
+      resetBtn.textContent = 'Restablecer al 100%';
+      resetBtn.title = 'Poner el estado actual igual al 100% en toda esta sección';
+      resetBtn.addEventListener('click', function(){
+        sec.groups.forEach(function(g){
+          g.metrics.forEach(function(m){
+            personalData[m.key].actual = personalData[m.key].target;
+            updatePersonalMetricDOM(m.key);
+            var actualInput = document.querySelector('input[data-actual-key="' + m.key + '"]');
+            if (actualInput) actualInput.value = personalData[m.key].actual;
+          });
+        });
+        scheduleSave();
+      });
+      h2.appendChild(resetBtn);
+      secEl.appendChild(h2);
+
+      sec.groups.forEach(function(g){
+        var groupEl = document.createElement('div');
+        groupEl.className = 'personal-group';
+        var gt = document.createElement('div');
+        gt.className = 'personal-group-title';
+        gt.textContent = g.label;
+        groupEl.appendChild(gt);
+
+        var grid = document.createElement('div');
+        grid.className = 'personal-metrics-grid';
+
+        g.metrics.forEach(function(m){
+          var d = personalData[m.key];
+          var pct = d.target > 0 ? Math.round((d.actual / d.target) * 100) : 0;
+          var color = supplyColor(Math.min(pct, 100));
+
+          var metricEl = document.createElement('div');
+          metricEl.className = 'personal-metric';
+
+          var ringWrap = document.createElement('div');
+          ringWrap.className = 'personal-ring-wrap';
+          var frac = Math.max(0, Math.min(1, pct / 100));
+          var svgNS = 'http://www.w3.org/2000/svg';
+          var svg = document.createElementNS(svgNS, 'svg');
+          svg.setAttribute('viewBox', '0 0 64 64');
+          svg.setAttribute('width', '64'); svg.setAttribute('height', '64');
+          var track = document.createElementNS(svgNS, 'circle');
+          track.setAttribute('cx', '32'); track.setAttribute('cy', '32'); track.setAttribute('r', String(PERSONAL_RING_R));
+          track.setAttribute('fill', 'none'); track.setAttribute('stroke', '#E7E3D6'); track.setAttribute('stroke-width', '7');
+          var ringFill = document.createElementNS(svgNS, 'circle');
+          ringFill.setAttribute('class', 'personal-ring-fill');
+          ringFill.setAttribute('data-key', m.key);
+          ringFill.setAttribute('cx', '32'); ringFill.setAttribute('cy', '32'); ringFill.setAttribute('r', String(PERSONAL_RING_R));
+          ringFill.setAttribute('fill', 'none'); ringFill.setAttribute('stroke', color); ringFill.setAttribute('stroke-width', '7');
+          ringFill.setAttribute('stroke-linecap', 'round');
+          ringFill.setAttribute('stroke-dasharray', String(PERSONAL_RING_CIRC));
+          ringFill.setAttribute('stroke-dashoffset', String(PERSONAL_RING_CIRC * (1 - frac)));
+          ringFill.setAttribute('transform', 'rotate(-90 32 32)');
+          svg.appendChild(track);
+          svg.appendChild(ringFill);
+          var pctEl = document.createElement('div');
+          pctEl.className = 'personal-ring-pct';
+          pctEl.setAttribute('data-key', m.key);
+          pctEl.style.color = color;
+          pctEl.textContent = pct + '%';
+          ringWrap.appendChild(svg);
+          ringWrap.appendChild(pctEl);
+
+          var bodyEl = document.createElement('div');
+          bodyEl.className = 'personal-metric-body';
+
+          var label = document.createElement('div');
+          label.className = 'personal-metric-label';
+          label.textContent = m.label;
+
+          var inputsRow = document.createElement('div');
+          inputsRow.className = 'personal-metric-inputs';
+
+          var targetLabel = document.createElement('label');
+          targetLabel.textContent = '100%:';
+          var targetInput = document.createElement('input');
+          targetInput.type = 'number'; targetInput.min = 0; targetInput.step = 1;
+          targetInput.value = d.target;
+          targetInput.setAttribute('data-target-key', m.key);
+          targetInput.addEventListener('input', function(ev){
+            var v = parseFloat(ev.target.value);
+            personalData[m.key].target = isNaN(v) ? 0 : v;
+            updatePersonalMetricDOM(m.key);
+            scheduleSave();
+          });
+          targetLabel.appendChild(targetInput);
+
+          var actualLabel = document.createElement('label');
+          actualLabel.textContent = 'Actual:';
+          var actualInput = document.createElement('input');
+          actualInput.type = 'number'; actualInput.min = 0; actualInput.step = 1;
+          actualInput.value = d.actual;
+          actualInput.setAttribute('data-actual-key', m.key);
+          actualInput.addEventListener('input', function(ev){
+            var v = parseFloat(ev.target.value);
+            personalData[m.key].actual = isNaN(v) ? 0 : v;
+            updatePersonalMetricDOM(m.key);
+            scheduleSave();
+          });
+          actualLabel.appendChild(actualInput);
+
+          inputsRow.appendChild(targetLabel);
+          inputsRow.appendChild(actualLabel);
+
+          bodyEl.appendChild(label);
+          bodyEl.appendChild(inputsRow);
+
+          metricEl.appendChild(ringWrap);
+          metricEl.appendChild(bodyEl);
+          grid.appendChild(metricEl);
+        });
+
+        groupEl.appendChild(grid);
+        secEl.appendChild(groupEl);
+      });
+
+      root.appendChild(secEl);
+    });
+  }
+
 
   /* ---------------- COLAPSO DE PANELES (escritorio) ---------------- */
   var appGrid = document.querySelector('.app-grid');
