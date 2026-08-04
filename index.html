@@ -970,14 +970,27 @@
           return false;
         }
         githubFileSha = data.sha;
-        var state = JSON.parse(base64ToUtf8(data.content));
-        saveLocalBackup();
-        applyingRemoteState = true;
-        applyRemoteState(state, { applyView: !isBackground });
-        applyingRemoteState = false;
-        updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
-        syncInProgress = false;
-        return true;
+        var contentPromise = data.content
+          ? Promise.resolve(base64ToUtf8(data.content))
+          : fetch('https://api.github.com/repos/' + githubConfig.repo + '/git/blobs/' + data.sha, {
+              headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
+            }).then(function(res2){
+              if (!res2.ok) throw new Error('HTTP ' + res2.status);
+              return res2.json();
+            }).then(function(blob){
+              if (!blob || !blob.content) throw new Error('El archivo remoto no tiene contenido.');
+              return base64ToUtf8(blob.content);
+            });
+        return contentPromise.then(function(rawText){
+          var state = JSON.parse(rawText);
+          saveLocalBackup();
+          applyingRemoteState = true;
+          applyRemoteState(state, { applyView: !isBackground });
+          applyingRemoteState = false;
+          updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+          syncInProgress = false;
+          return true;
+        });
       });
     }).catch(function(err){
       updateSyncStatus('error','Error al descargar: ' + err.message);
@@ -1119,18 +1132,50 @@
   document.getElementById('local-backups-btn').addEventListener('click', showLocalBackups);
 
   /* ---------------- HISTORIAL DE GITHUB Y RESTAURACIÓN ---------------- */
-  function githubFetchHistory(){
-    if (!githubConfigured()){ alert('Configure primero la sincronización con GitHub.'); return; }
-    openHistoryScrim('Historial en GitHub');
-    fetch('https://api.github.com/repos/' + githubConfig.repo + '/commits?path=' + encodeURIComponent(githubConfig.path) + '&per_page=30', {
+  function githubFetchTextAtRef(refOrSha){
+    return fetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + encodeURIComponent(githubConfig.path) + '?ref=' + refOrSha, {
       headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
     }).then(function(res){
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
-    }).then(function(commits){
-      var list = document.getElementById('history-list');
-      list.innerHTML = '';
-      if (!commits.length){
+    }).then(function(data){
+      if (data && data.content){
+        return base64ToUtf8(data.content);
+      }
+      if (data && data.sha){
+        // Contents API omite "content" para archivos grandes (>1MB); recurrimos al API de Blobs, que sí lo soporta.
+        return fetch('https://api.github.com/repos/' + githubConfig.repo + '/git/blobs/' + data.sha, {
+          headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
+        }).then(function(res2){
+          if (!res2.ok) throw new Error('HTTP ' + res2.status);
+          return res2.json();
+        }).then(function(blob){
+          if (!blob || !blob.content) throw new Error('El archivo no tiene contenido en esa versión.');
+          return base64ToUtf8(blob.content);
+        });
+      }
+      throw new Error('No se encontró contenido para esa versión.');
+    });
+  }
+
+  function githubFetchHistory(page){
+    page = page || 1;
+    if (!githubConfigured()){ alert('Configure primero la sincronización con GitHub.'); return; }
+    if (page === 1) openHistoryScrim('Historial en GitHub');
+    var list = document.getElementById('history-list');
+    var loadMoreBtn = document.getElementById('history-load-more-btn');
+    if (loadMoreBtn) loadMoreBtn.remove();
+    if (page === 1) list.innerHTML = '<div class="history-empty">Cargando…</div>';
+    fetch('https://api.github.com/repos/' + githubConfig.repo + '/commits?path=' + encodeURIComponent(githubConfig.path) + '&per_page=100&page=' + page, {
+      headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
+    }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var hasMore = (res.headers.get('Link') || '').indexOf('rel="next"') !== -1;
+      return res.json().then(function(commits){ return { commits: commits, hasMore: hasMore }; });
+    }).then(function(result){
+      var commits = result.commits;
+      if (page === 1) list.innerHTML = '';
+      if (page === 1 && !commits.length){
         list.innerHTML = '<div class="history-empty">Todavía no hay sincronizaciones guardadas en GitHub.</div>';
         return;
       }
@@ -1148,22 +1193,26 @@
         item.appendChild(btn);
         list.appendChild(item);
       });
+      if (result.hasMore){
+        var more = document.createElement('button');
+        more.className = 'outline-btn';
+        more.id = 'history-load-more-btn';
+        more.style.cssText = 'width:100%;margin-top:4px;';
+        more.textContent = 'Cargar sincronizaciones más antiguas…';
+        more.addEventListener('click', function(){ githubFetchHistory(page + 1); });
+        list.appendChild(more);
+      }
     }).catch(function(err){
-      document.getElementById('history-list').innerHTML = '<div class="history-empty">No se pudo cargar el historial: ' + escapeHtmlText(err.message) + '</div>';
+      list.innerHTML = '<div class="history-empty">No se pudo cargar el historial: ' + escapeHtmlText(err.message) + '</div>';
     });
   }
-  document.getElementById('gh-history-btn').addEventListener('click', githubFetchHistory);
+  document.getElementById('gh-history-btn').addEventListener('click', function(){ githubFetchHistory(1); });
 
   function githubRestoreCommit(sha, dateLabel){
     showConfirm('¿Reemplazar el mapa actual por la versión del ' + dateLabel + '? Quedará guardada como la versión más reciente para todos los que sincronicen.', function(){
       updateSyncStatus('syncing','Restaurando…');
-      fetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + encodeURIComponent(githubConfig.path) + '?ref=' + sha, {
-        headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
-      }).then(function(res){
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      }).then(function(data){
-        var state = JSON.parse(base64ToUtf8(data.content));
+      githubFetchTextAtRef(sha).then(function(rawText){
+        var state = JSON.parse(rawText);
         saveLocalBackup();
         applyingRemoteState = true;
         applyRemoteState(state, { applyView:true });
