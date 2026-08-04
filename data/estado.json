@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-04T12:12:17.075Z",
+  "savedAt": "2026-08-04T12:12:49.744Z",
   "mapView": {
     "lat": 8.307982567027828,
     "lng": -73.64118576049806,
@@ -11,8 +11,11 @@
   "shapeCounter": 544,
   "paletteIdx": 43,
   "activeLayerId": "capa-23",
-  "coaEsfuerzos": "",
+  "coaEsfuerzoPrincipal": "",
+  "coaEsfuerzoApoyo": "",
+  "coaReserva": "",
   "coaFases": "<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><span style=\"font-size:11.0pt;\nfont-family:Arial;mso-ascii-font-family:Arial;mso-fareast-font-family:+mn-ea;\nmso-bidi-font-family:Arial;mso-fareast-theme-font:minor-fareast;color:black;\nmso-color-index:1;mso-font-kerning:12.0pt;language:en-US;font-weight:bold;\nmso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:text1;\nmso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">FASE\n1: </span><span style=\"font-size:11.0pt;font-family:Arial;mso-ascii-font-family:\nArial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nen-US;font-style:italic;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">CONFIGURAR\nY DISUADIR </span></p><p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><span style=\"font-size:11.0pt;font-family:Arial;mso-ascii-font-family:\nArial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nen-US;font-style:italic;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\"><br></span></p>\n\n<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"></p>\n\n<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><span style=\"font-size:11.0pt;\nfont-family:Arial;mso-ascii-font-family:Arial;mso-fareast-font-family:+mn-ea;\nmso-bidi-font-family:Arial;mso-fareast-theme-font:minor-fareast;color:black;\nmso-color-index:1;mso-font-kerning:12.0pt;language:en-US;font-weight:bold;\nmso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:text1;\nmso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">FASE\n2: </span><span style=\"font-size:11.0pt;font-family:Arial;mso-ascii-font-family:\nArial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nen-US;font-style:italic;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">CAPTURAR\nLA INICIATIVA</span></p><p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><span style=\"font-size:11.0pt;font-family:Arial;mso-ascii-font-family:\nArial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nen-US;font-style:italic;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\"><br></span></p>\n\n<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"></p>\n\n<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><span style=\"font-size:11.0pt;\nfont-family:Arial;mso-ascii-font-family:Arial;mso-fareast-font-family:+mn-ea;\nmso-bidi-font-family:Arial;mso-fareast-theme-font:minor-fareast;color:black;\nmso-color-index:1;mso-font-kerning:12.0pt;language:en-US;font-weight:bold;\nmso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:text1;\nmso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">FASE\n3: </span><span style=\"font-size:11.0pt;font-family:Arial;mso-ascii-font-family:\nArial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nen-US;font-style:italic;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">DOMINAR\n</span></p><p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><span style=\"font-size:11.0pt;font-family:Arial;mso-ascii-font-family:\nArial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nen-US;font-style:italic;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\"><br></span></p>\n\n<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"></p>\n\n<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><span style=\"font-size:11.0pt;\nfont-family:Arial;mso-ascii-font-family:Arial;mso-fareast-font-family:+mn-ea;\nmso-bidi-font-family:Arial;mso-fareast-theme-font:minor-fareast;color:black;\nmso-color-index:1;mso-font-kerning:12.0pt;language:en-US;font-weight:bold;\nmso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:text1;\nmso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">FASE\n4: </span><span style=\"font-size:11.0pt;font-family:Arial;mso-ascii-font-family:\nArial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nen-US;font-style:italic;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">ESTABILIZAR\n</span></p><p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><span style=\"font-size:11.0pt;font-family:Arial;mso-ascii-font-family:\nArial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nen-US;font-style:italic;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\"><br></span></p>\n\n<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"></p>\n\n<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><span style=\"font-size:11.0pt;\nfont-family:Arial;mso-ascii-font-family:Arial;mso-fareast-font-family:+mn-ea;\nmso-bidi-font-family:Arial;mso-fareast-theme-font:minor-fareast;color:black;\nmso-color-index:1;mso-font-kerning:12.0pt;language:en-US;font-weight:bold;\nmso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:text1;\nmso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">FASE\n5: </span><span style=\"font-size:11.0pt;font-family:Arial;mso-ascii-font-family:\nArial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nen-US;font-style:italic;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">HABILITAR\nAUTORIDAD CIVIL&nbsp;</span></p>",
+  "coaLooLoe": "",
   "coaDesarrollo": "<p style=\"margin-top: 0pt; margin-bottom: 0pt; margin-left: 0in; direction: ltr; unicode-bidi: embed; word-break: normal;\"><u><span style=\"font-size:12.0pt;font-family:Arial;mso-ascii-font-family:Arial;\nmso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nes-CO;font-weight:bold;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">Desarrollo\ndel Curso de Acción:</span></u><span style=\"font-size:12.0pt;font-family:Arial;\nmso-ascii-font-family:Arial;mso-fareast-font-family:+mn-ea;mso-bidi-font-family:\nArial;mso-fareast-theme-font:minor-fareast;color:black;mso-color-index:1;\nmso-font-kerning:12.0pt;language:es-CO;font-weight:bold;mso-style-textfill-type:\nsolid;mso-style-textfill-fill-themecolor:text1;mso-style-textfill-fill-color:\nblack;mso-style-textfill-fill-alpha:100.0%\"> </span><span style=\"font-size:\n12.0pt;font-family:Arial;mso-ascii-font-family:Arial;mso-fareast-font-family:\n+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:minor-fareast;\ncolor:black;mso-color-index:1;mso-font-kerning:12.0pt;language:en-US;\nfont-weight:bold;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">&nbsp;</span></p>\n\n<p style=\"language:es-AR;margin-top:0pt;margin-bottom:0pt;margin-left:0in;\ntext-align:justify;text-justify:inter-ideograph;direction:ltr;unicode-bidi:\nembed;mso-line-break-override:none;word-break:normal;punctuation-wrap:hanging\"><span style=\"font-size:12.0pt;font-family:Arial;mso-ascii-font-family:Arial;\nmso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nes-CO;font-weight:bold;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\"><br></span></p><p style=\"language:es-AR;margin-top:0pt;margin-bottom:0pt;margin-left:0in;\ntext-align:justify;text-justify:inter-ideograph;direction:ltr;unicode-bidi:\nembed;mso-line-break-override:none;word-break:normal;punctuation-wrap:hanging\"><span style=\"font-size:12.0pt;font-family:Arial;mso-ascii-font-family:Arial;\nmso-fareast-font-family:+mn-ea;mso-bidi-font-family:Arial;mso-fareast-theme-font:\nminor-fareast;color:black;mso-color-index:1;mso-font-kerning:12.0pt;language:\nes-CO;font-weight:bold;mso-style-textfill-type:solid;mso-style-textfill-fill-themecolor:\ntext1;mso-style-textfill-fill-color:black;mso-style-textfill-fill-alpha:100.0%\">El\nCCON-D con sus unidades orgánicas conjuntas DIV-II como E.P, la DIV-I como\nE.A-1, la FNC como E.A-1, la BR-5 Y BR-2 como reserva y CACOM-3 como apoyo\ngeneral, desarrolla tareas ofensivas, defensivas, estabilidad y COMAC con el\nfin de neutralizar el sistema de control y coordinación del adversario, a\npartir del di D hora H, en el área general WAYUU comprendida por los\ndepartamentos de Norte de Santander, Cesar y La Guajira, además de contener los\nposibles eventos y tensiones derivados de la frontera con AEGIS, con el fin de\nalcanzar el estado final deseado, mantener el orden constitucional y\ngobernabilidad, proporcionando paz, tranquilidad y soberanía del territorio\nZIPA, mediante el empleo de las capacidades conjuntas del CCON-D, en\ncoordinación con los Comando Funcionales y de Coordinación, con los recursos\norgánicos de la DIV-I, DIV-II, FNC y CACOM-3 que se encuentran al 100% de sus\ncapacidades para iniciar la campaña.</span></p>",
   "layers": [
     {
@@ -7110,7 +7113,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-04T12:12:17.075Z"
+          "generado": "2026-08-04T12:12:49.746Z"
         }
       }
     },
@@ -7128,7 +7131,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-04T12:12:17.075Z"
+          "generado": "2026-08-04T12:12:49.746Z"
         }
       }
     },
@@ -14002,7 +14005,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T12:12:17.075Z"
+          "generado": "2026-08-04T12:12:49.747Z"
         }
       }
     },
@@ -16843,7 +16846,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.748Z"
         }
       }
     },
@@ -17704,7 +17707,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.748Z"
         }
       }
     },
@@ -17929,7 +17932,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.748Z"
         }
       }
     },
@@ -18210,7 +18213,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.748Z"
         }
       }
     },
@@ -18446,7 +18449,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.748Z"
         }
       }
     },
@@ -18661,7 +18664,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.749Z"
         }
       }
     },
@@ -20678,7 +20681,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.749Z"
         }
       }
     },
@@ -20696,7 +20699,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.749Z"
         }
       }
     },
@@ -20714,7 +20717,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.749Z"
         }
       }
     },
@@ -20941,7 +20944,7 @@
         "properties": {
           "capa": "BR-2",
           "color": "#4C7A57",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.749Z"
         }
       }
     },
@@ -21194,7 +21197,7 @@
         "properties": {
           "capa": "BR-10",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.749Z"
         }
       }
     },
@@ -29491,7 +29494,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.750Z"
         }
       }
     },
@@ -29509,7 +29512,7 @@
         "properties": {
           "capa": "ACCIÓN INTEGRAL",
           "color": "#1F3864",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.751Z"
         }
       }
     },
@@ -29632,7 +29635,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.751Z"
         }
       }
     },
@@ -29650,7 +29653,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.751Z"
         }
       }
     },
@@ -29851,7 +29854,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-04T12:12:17.076Z"
+          "generado": "2026-08-04T12:12:49.751Z"
         }
       }
     },
@@ -30130,7 +30133,7 @@
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.751Z"
         }
       }
     },
@@ -30279,7 +30282,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.751Z"
         }
       }
     },
@@ -30428,7 +30431,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.751Z"
         }
       }
     },
@@ -31284,7 +31287,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.751Z"
         }
       }
     },
@@ -31433,7 +31436,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.751Z"
         }
       }
     },
@@ -31634,7 +31637,7 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.752Z"
         }
       }
     },
@@ -31652,7 +31655,7 @@
         "properties": {
           "capa": "RADARES",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.752Z"
         }
       }
     },
@@ -31670,7 +31673,7 @@
         "properties": {
           "capa": "SOSTENIMIENTO",
           "color": "#4C7A57",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.752Z"
         }
       }
     },
@@ -35334,7 +35337,7 @@
         "properties": {
           "capa": "INFRA CRITICA",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.753Z"
         }
       }
     },
@@ -35740,7 +35743,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.754Z"
         }
       }
     },
@@ -36029,7 +36032,7 @@
         "properties": {
           "capa": "Hospitales",
           "color": "#1F3864",
-          "generado": "2026-08-04T12:12:17.077Z"
+          "generado": "2026-08-04T12:12:49.754Z"
         }
       }
     }
