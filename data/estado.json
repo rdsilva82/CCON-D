@@ -1,16 +1,16 @@
 {
   "version": 1,
-  "savedAt": "2026-08-04T13:38:42.039Z",
+  "savedAt": "2026-08-04T13:38:38.502Z",
   "mapView": {
-    "lat": 8.647935210101386,
-    "lng": -72.7683734893799,
-    "zoom": 14
+    "lat": 10.879162225881394,
+    "lng": -74.77934360504152,
+    "zoom": 15
   },
   "baseLayer": "street",
   "layerCounter": 45,
-  "shapeCounter": 546,
+  "shapeCounter": 547,
   "paletteIdx": 43,
-  "activeLayerId": "capa-29",
+  "activeLayerId": "capa-23",
   "coaEsfuerzoPrincipal": "",
   "coaEsfuerzoApoyo": "",
   "coaReserva": "",
@@ -7113,7 +7113,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -7122,7 +7122,7 @@
       "name": "Operaciones",
       "color": "#1F3864",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": null,
       "sortIndex": 3,
       "geojson": {
@@ -7131,7 +7131,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -14005,7 +14005,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -16846,7 +16846,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -17707,7 +17707,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -17932,7 +17932,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -18213,7 +18213,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -18449,7 +18449,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -18664,7 +18664,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -20681,7 +20681,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -20699,7 +20699,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -20717,7 +20717,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -20944,7 +20944,7 @@
         "properties": {
           "capa": "BR-2",
           "color": "#4C7A57",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -21197,7 +21197,7 @@
         "properties": {
           "capa": "BR-10",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T13:38:42.040Z"
+          "generado": "2026-08-04T13:38:38.502Z"
         }
       }
     },
@@ -29494,7 +29494,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -29503,7 +29503,7 @@
       "name": "ACCIÓN INTEGRAL",
       "color": "#1F3864",
       "visible": true,
-      "expanded": false,
+      "expanded": true,
       "parentId": null,
       "sortIndex": 10,
       "geojson": {
@@ -29512,7 +29512,7 @@
         "properties": {
           "capa": "ACCIÓN INTEGRAL",
           "color": "#1F3864",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -29521,7 +29521,7 @@
       "name": "AEREO",
       "color": "#8A3A5A",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": null,
       "sortIndex": 5,
       "geojson": {
@@ -29592,7 +29592,7 @@
               "fillStyle": "solid",
               "mil": {
                 "affiliation": "friendly",
-                "unitType": "rotarywing",
+                "unitType": "generic",
                 "echelon": "squad",
                 "designation": ""
               }
@@ -29630,12 +29630,90 @@
                 8.233609
               ]
             }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "AH-60 III",
+              "capa": "AEREO",
+              "supply": 100,
+              "fillColor": "#8A3A5A",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid",
+              "mil": {
+                "affiliation": "friendly",
+                "unitType": "rotarywing",
+                "echelon": "team",
+                "designation": ""
+              }
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.448826,
+                7.928845
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "UH-60",
+              "capa": "AEREO",
+              "supply": 100,
+              "fillColor": "#8A3A5A",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid",
+              "mil": {
+                "affiliation": "friendly",
+                "unitType": "rotarywing",
+                "echelon": "team",
+                "designation": ""
+              }
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -72.445221,
+                7.919664
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "nombre": "Unidad 547",
+              "capa": "AEREO",
+              "supply": 100,
+              "fillColor": "#8A3A5A",
+              "opacity": 1,
+              "dashArray": "",
+              "dashStyle": "",
+              "fillStyle": "solid",
+              "mil": {
+                "affiliation": "friendly",
+                "unitType": "generic",
+                "echelon": "",
+                "designation": ""
+              }
+            },
+            "geometry": {
+              "type": "Point",
+              "coordinates": [
+                -74.778657,
+                10.877982
+              ]
+            }
           }
         ],
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -29653,7 +29731,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -29854,7 +29932,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -30128,64 +30206,12 @@
                 7.923234
               ]
             }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "E-1",
-              "capa": "BR-30",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "artillery",
-                "echelon": "section",
-                "designation": ""
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -72.650013,
-                7.386811
-              ]
-            }
-          },
-          {
-            "type": "Feature",
-            "properties": {
-              "nombre": "Unidad 546",
-              "capa": "BR-30",
-              "supply": 100,
-              "fillColor": "#8A3A5A",
-              "opacity": 1,
-              "dashArray": "",
-              "dashStyle": "",
-              "fillStyle": "solid",
-              "mil": {
-                "affiliation": "friendly",
-                "unitType": "generic",
-                "echelon": "",
-                "designation": ""
-              }
-            },
-            "geometry": {
-              "type": "Point",
-              "coordinates": [
-                -72.714643,
-                8.641359
-              ]
-            }
           }
         ],
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -30334,7 +30360,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -30483,7 +30509,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -31339,7 +31365,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -31488,7 +31514,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -31689,7 +31715,7 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -31707,7 +31733,7 @@
         "properties": {
           "capa": "RADARES",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -31725,7 +31751,7 @@
         "properties": {
           "capa": "SOSTENIMIENTO",
           "color": "#4C7A57",
-          "generado": "2026-08-04T13:38:42.041Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -35389,7 +35415,7 @@
         "properties": {
           "capa": "INFRA CRITICA",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T13:38:42.042Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -35398,7 +35424,7 @@
       "name": "Emisoras",
       "color": "#7A4A2F",
       "visible": true,
-      "expanded": false,
+      "expanded": true,
       "parentId": "capa-20",
       "sortIndex": 13,
       "geojson": {
@@ -35795,7 +35821,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T13:38:42.042Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     },
@@ -36084,7 +36110,7 @@
         "properties": {
           "capa": "Hospitales",
           "color": "#1F3864",
-          "generado": "2026-08-04T13:38:42.042Z"
+          "generado": "2026-08-04T13:38:38.503Z"
         }
       }
     }
