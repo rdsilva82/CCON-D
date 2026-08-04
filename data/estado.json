@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-04T15:53:24.993Z",
+  "savedAt": "2026-08-04T15:53:38.527Z",
   "mapView": {
     "lat": 9.67656858750112,
     "lng": -72.63061523437501,
@@ -7356,7 +7356,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.529Z"
         }
       }
     },
@@ -7374,7 +7374,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -14248,7 +14248,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -17089,7 +17089,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -17950,7 +17950,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -18175,7 +18175,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -18456,7 +18456,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -18692,7 +18692,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -18907,7 +18907,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -20924,7 +20924,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -20942,7 +20942,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -20960,7 +20960,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -21213,7 +21213,7 @@
         "properties": {
           "capa": "BR-2",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.530Z"
         }
       }
     },
@@ -21752,7 +21752,7 @@
         "properties": {
           "capa": "BR-10",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:53:24.994Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -30049,7 +30049,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -30067,7 +30067,7 @@
         "properties": {
           "capa": "ACCIÓN INTEGRAL",
           "color": "#1F3864",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -30294,7 +30294,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -30312,7 +30312,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -30591,7 +30591,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -31026,7 +31026,7 @@
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -31149,7 +31149,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -31298,7 +31298,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -32154,7 +32154,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -32277,7 +32277,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -32426,7 +32426,7 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -32444,7 +32444,7 @@
         "properties": {
           "capa": "RADARES",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -32462,7 +32462,7 @@
         "properties": {
           "capa": "SOSTENIMIENTO",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -36126,7 +36126,7 @@
         "properties": {
           "capa": "INFRA CRITICA",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -36532,7 +36532,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -36821,7 +36821,7 @@
         "properties": {
           "capa": "Hospitales",
           "color": "#1F3864",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -36944,7 +36944,7 @@
         "properties": {
           "capa": "BRCNA2",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -37041,7 +37041,7 @@
         "properties": {
           "capa": "BRAID1",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.540Z"
         }
       }
     },
@@ -37190,7 +37190,7 @@
         "properties": {
           "capa": "FUDRA3",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.541Z"
         }
       }
     },
@@ -37313,7 +37313,7 @@
         "properties": {
           "capa": "BRILOG3",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.541Z"
         }
       }
     },
@@ -37592,7 +37592,7 @@
         "properties": {
           "capa": "FNC",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.541Z"
         }
       }
     },
@@ -37610,14 +37610,14 @@
         "properties": {
           "capa": "INTELIGENCIA",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T15:53:24.995Z"
+          "generado": "2026-08-04T15:53:38.541Z"
         }
       }
     },
     {
       "id": "capa-54",
-      "name": "presencia_estructuras",
-      "color": "#8A3A5A",
+      "name": "ESTRUCTURAS",
+      "color": "#ff3a2f",
       "visible": true,
       "expanded": true,
       "parentId": "capa-53",
@@ -37641,7 +37641,7 @@
               "lat": 9.5078,
               "lon": -73.95186,
               "nombre": "Polígono 599",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -38830,7 +38830,7 @@
               "lat": 9.92935,
               "lon": -73.84831,
               "nombre": "Polígono 600",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -39791,7 +39791,7 @@
               "lat": 9.23772,
               "lon": -73.81802,
               "nombre": "Polígono 601",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -41876,7 +41876,7 @@
               "lat": 9.42535,
               "lon": -73.48171,
               "nombre": "Polígono 602",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -44089,7 +44089,7 @@
               "lat": 9.24079,
               "lon": -73.50127,
               "nombre": "Polígono 603",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -45562,7 +45562,7 @@
               "lat": 10.20343,
               "lon": -73.91617,
               "nombre": "Polígono 604",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -47155,7 +47155,7 @@
               "lat": 10.20343,
               "lon": -73.91617,
               "nombre": "Polígono 605",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -48748,7 +48748,7 @@
               "lat": 9.70441,
               "lon": -73.72245,
               "nombre": "Polígono 606",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -50441,7 +50441,7 @@
               "lat": 8.32177,
               "lon": -73.7151,
               "nombre": "Polígono 607",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -51070,7 +51070,7 @@
               "lat": 8.3946,
               "lon": -73.37323,
               "nombre": "Polígono 608",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -51491,7 +51491,7 @@
               "lat": 8.63671,
               "lon": -73.67012,
               "nombre": "Polígono 609",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -53172,7 +53172,7 @@
               "lat": 9.56004,
               "lon": -73.29265,
               "nombre": "Polígono 610",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -54937,7 +54937,7 @@
               "lat": 9.56004,
               "lon": -73.29265,
               "nombre": "Polígono 611",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -56702,7 +56702,7 @@
               "lat": 10.3939,
               "lon": -72.99256,
               "nombre": "Polígono 612",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -57355,7 +57355,7 @@
               "lat": 8.94839,
               "lon": -73.56373,
               "nombre": "Polígono 613",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -58308,7 +58308,7 @@
               "lat": 8.76921,
               "lon": -73.643,
               "nombre": "Polígono 614",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -59557,7 +59557,7 @@
               "lat": 8.2148,
               "lon": -73.48187,
               "nombre": "Polígono 615",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -60734,7 +60734,7 @@
               "lat": 7.834,
               "lon": -73.41374,
               "nombre": "Polígono 616",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -62135,7 +62135,7 @@
               "lat": 7.834,
               "lon": -73.41374,
               "nombre": "Polígono 617",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -63536,7 +63536,7 @@
               "lat": 10.11174,
               "lon": -73.35565,
               "nombre": "Polígono 618",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -65237,7 +65237,7 @@
               "lat": 8.89812,
               "lon": -73.78327,
               "nombre": "Polígono 619",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -65970,7 +65970,7 @@
               "lat": 10.34319,
               "lon": -73.36667,
               "nombre": "Polígono 620",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -70235,7 +70235,7 @@
               "lat": 10.34319,
               "lon": -73.36667,
               "nombre": "Polígono 621",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -74500,7 +74500,7 @@
               "lat": 10.34319,
               "lon": -73.36667,
               "nombre": "Polígono 622",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -78765,7 +78765,7 @@
               "lat": 9.99412,
               "lon": -73.20233,
               "nombre": "Polígono 623",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -81358,7 +81358,7 @@
               "lat": 9.99412,
               "lon": -73.20233,
               "nombre": "Polígono 624",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -83951,7 +83951,7 @@
               "lat": 9.75361,
               "lon": -73.24364,
               "nombre": "Polígono 625",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -86252,7 +86252,7 @@
               "lat": 10.10952,
               "lon": -73.20934,
               "nombre": "Polígono 626",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -89085,7 +89085,7 @@
               "lat": 10.10952,
               "lon": -73.20934,
               "nombre": "Polígono 627",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -91918,7 +91918,7 @@
               "lat": 10.52804,
               "lon": -73.53384,
               "nombre": "Polígono 628",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -93471,7 +93471,7 @@
               "lat": 10.52804,
               "lon": -73.53384,
               "nombre": "Polígono 629",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -95024,7 +95024,7 @@
               "lat": 7.93092,
               "lon": -73.5599,
               "nombre": "Polígono 630",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -96873,7 +96873,7 @@
               "lat": 8.24893,
               "lon": -73.62137,
               "nombre": "Polígono 631",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -98366,7 +98366,7 @@
               "lat": 8.24893,
               "lon": -73.62137,
               "nombre": "Polígono 632",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -99859,7 +99859,7 @@
               "lat": 10.9765,
               "lon": -72.69583,
               "nombre": "Polígono 633",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -101216,7 +101216,7 @@
               "lat": 10.9765,
               "lon": -72.69583,
               "nombre": "Polígono 634",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -102573,7 +102573,7 @@
               "lat": 10.91112,
               "lon": -72.94575,
               "nombre": "Polígono 635",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -103446,7 +103446,7 @@
               "lat": 10.62881,
               "lon": -72.87367,
               "nombre": "Polígono 636",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -104103,7 +104103,7 @@
               "lat": 10.84409,
               "lon": -72.78493,
               "nombre": "Polígono 637",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -105280,7 +105280,7 @@
               "lat": 10.84409,
               "lon": -72.78493,
               "nombre": "Polígono 638",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -106457,7 +106457,7 @@
               "lat": 11.09482,
               "lon": -72.76234,
               "nombre": "Polígono 639",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -107508,7 +107508,7 @@
               "lat": 11.09482,
               "lon": -72.76234,
               "nombre": "Polígono 640",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -108559,7 +108559,7 @@
               "lat": 10.46421,
               "lon": -73.10349,
               "nombre": "Polígono 641",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -109208,7 +109208,7 @@
               "lat": 10.49486,
               "lon": -72.93627,
               "nombre": "Polígono 642",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -109873,7 +109873,7 @@
               "lat": 10.58641,
               "lon": -72.99192,
               "nombre": "Polígono 643",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -110638,7 +110638,7 @@
               "lat": 11.23469,
               "lon": -72.88318,
               "nombre": "Polígono 644",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -113271,7 +113271,7 @@
               "lat": 11.23469,
               "lon": -72.88318,
               "nombre": "Polígono 645",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -115904,7 +115904,7 @@
               "lat": 11.24399,
               "lon": -72.51582,
               "nombre": "Polígono 646",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -117309,7 +117309,7 @@
               "lat": 11.08349,
               "lon": -73.45398,
               "nombre": "Polígono 647",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -119082,7 +119082,7 @@
               "lat": 11.08349,
               "lon": -73.45398,
               "nombre": "Polígono 648",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -120855,7 +120855,7 @@
               "lat": 10.81267,
               "lon": -73.08495,
               "nombre": "Polígono 649",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -123152,7 +123152,7 @@
               "lat": 10.81267,
               "lon": -73.08495,
               "nombre": "Polígono 650",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -125449,7 +125449,7 @@
               "lat": 11.99093,
               "lon": -71.67705,
               "nombre": "Polígono 651",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -129778,7 +129778,7 @@
               "lat": 11.40562,
               "lon": -72.31326,
               "nombre": "Polígono 652",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -131491,7 +131491,7 @@
               "lat": 11.40562,
               "lon": -72.31326,
               "nombre": "Polígono 653",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -133204,7 +133204,7 @@
               "lat": 11.62509,
               "lon": -72.6044,
               "nombre": "Polígono 654",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -134617,7 +134617,7 @@
               "lat": 8.07673,
               "lon": -72.46864,
               "nombre": "Polígono 655",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -137326,7 +137326,7 @@
               "lat": 8.07673,
               "lon": -72.46864,
               "nombre": "Polígono 656",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -140035,7 +140035,7 @@
               "lat": 8.07673,
               "lon": -72.46864,
               "nombre": "Polígono 657",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -142744,7 +142744,7 @@
               "lat": 8.02962,
               "lon": -73.19504,
               "nombre": "Polígono 658",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -144861,7 +144861,7 @@
               "lat": 8.02962,
               "lon": -73.19504,
               "nombre": "Polígono 659",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -146978,7 +146978,7 @@
               "lat": 7.60533,
               "lon": -72.9059,
               "nombre": "Polígono 660",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -148079,7 +148079,7 @@
               "lat": 8.08396,
               "lon": -72.91429,
               "nombre": "Polígono 661",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -148920,7 +148920,7 @@
               "lat": 7.69821,
               "lon": -73.12261,
               "nombre": "Polígono 662",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -150457,7 +150457,7 @@
               "lat": 7.49771,
               "lon": -72.7766,
               "nombre": "Polígono 663",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -151302,7 +151302,7 @@
               "lat": 8.09545,
               "lon": -72.63881,
               "nombre": "Polígono 664",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -152723,7 +152723,7 @@
               "lat": 8.09545,
               "lon": -72.63881,
               "nombre": "Polígono 665",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -154144,7 +154144,7 @@
               "lat": 7.92217,
               "lon": -72.79898,
               "nombre": "Polígono 666",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -154789,7 +154789,7 @@
               "lat": 8.36769,
               "lon": -73.08516,
               "nombre": "Polígono 667",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -155726,7 +155726,7 @@
               "lat": 8.36769,
               "lon": -73.08516,
               "nombre": "Polígono 668",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -156663,7 +156663,7 @@
               "lat": 7.27812,
               "lon": -72.51036,
               "nombre": "Polígono 669",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -157536,7 +157536,7 @@
               "lat": 8.27025,
               "lon": -73.2058,
               "nombre": "Polígono 670",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -158641,7 +158641,7 @@
               "lat": 8.27025,
               "lon": -73.2058,
               "nombre": "Polígono 671",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -159746,7 +159746,7 @@
               "lat": 7.75177,
               "lon": -72.51349,
               "nombre": "Polígono 672",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -160399,7 +160399,7 @@
               "lat": 7.96539,
               "lon": -72.84911,
               "nombre": "Polígono 673",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -160844,7 +160844,7 @@
               "lat": 8.20876,
               "lon": -73.33694,
               "nombre": "Polígono 674",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -162547,7 +162547,7 @@
               "lat": 8.20876,
               "lon": -73.33694,
               "nombre": "Polígono 675",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -164250,7 +164250,7 @@
               "lat": 8.32602,
               "lon": -72.41599,
               "nombre": "Polígono 676",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -164771,7 +164771,7 @@
               "lat": 8.32602,
               "lon": -72.41599,
               "nombre": "Polígono 677",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -165292,7 +165292,7 @@
               "lat": 7.78446,
               "lon": -72.84459,
               "nombre": "Polígono 678",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -166405,7 +166405,7 @@
               "lat": 8.44652,
               "lon": -73.17838,
               "nombre": "Polígono 679",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -167750,7 +167750,7 @@
               "lat": 8.44652,
               "lon": -73.17838,
               "nombre": "Polígono 680",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -169095,7 +169095,7 @@
               "lat": 7.8367,
               "lon": -72.61087,
               "nombre": "Polígono 681",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -169796,7 +169796,7 @@
               "lat": 7.8367,
               "lon": -72.61087,
               "nombre": "Polígono 682",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -170497,7 +170497,7 @@
               "lat": 8.25888,
               "lon": -72.86186,
               "nombre": "Polígono 683",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -172966,7 +172966,7 @@
               "lat": 8.25888,
               "lon": -72.86186,
               "nombre": "Polígono 684",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -175435,7 +175435,7 @@
               "lat": 7.77269,
               "lon": -72.48644,
               "nombre": "Polígono 685",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -176172,7 +176172,7 @@
               "lat": 7.77269,
               "lon": -72.48644,
               "nombre": "Polígono 686",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -176909,7 +176909,7 @@
               "lat": 7.06824,
               "lon": -72.53828,
               "nombre": "Polígono 687",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -178746,7 +178746,7 @@
               "lat": 8.8336,
               "lon": -73.23082,
               "nombre": "Polígono 688",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -181491,7 +181491,7 @@
               "lat": 8.8336,
               "lon": -73.23082,
               "nombre": "Polígono 689",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -184236,7 +184236,7 @@
               "lat": 8.8457,
               "lon": -73.34346,
               "nombre": "Polígono 690",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -187309,7 +187309,7 @@
               "lat": 8.8457,
               "lon": -73.34346,
               "nombre": "Polígono 691",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -190382,7 +190382,7 @@
               "lat": 8.75836,
               "lon": -73.1527,
               "nombre": "Polígono 692",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -192787,7 +192787,7 @@
               "lat": 8.75836,
               "lon": -73.1527,
               "nombre": "Polígono 693",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -195192,7 +195192,7 @@
               "lat": 8.69828,
               "lon": -72.79717,
               "nombre": "Polígono 694",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -198361,7 +198361,7 @@
               "lat": 8.69828,
               "lon": -72.79717,
               "nombre": "Polígono 695",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -201530,7 +201530,7 @@
               "lat": 8.69828,
               "lon": -72.79717,
               "nombre": "Polígono 696",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -204699,7 +204699,7 @@
               "lat": 7.23301,
               "lon": -72.30454,
               "nombre": "Polígono 697",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -206388,7 +206388,7 @@
               "lat": 8.69398,
               "lon": -73.02477,
               "nombre": "Polígono 698",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -207765,7 +207765,7 @@
               "lat": 8.69398,
               "lon": -73.02477,
               "nombre": "Polígono 699",
-              "capa": "presencia_estructuras",
+              "capa": "ESTRUCTURAS",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -209128,9 +209128,9 @@
           }
         ],
         "properties": {
-          "capa": "presencia_estructuras",
-          "color": "#8A3A5A",
-          "generado": "2026-08-04T15:53:24.998Z"
+          "capa": "ESTRUCTURAS",
+          "color": "#ff3a2f",
+          "generado": "2026-08-04T15:53:38.544Z"
         }
       }
     }
