@@ -341,6 +341,17 @@
     padding:10px 12px; font-family:inherit; font-size:14px; line-height:1.4; color:var(--text);
     outline:none; box-sizing:border-box; min-height:100%;
     transform-origin: top left;
+    width:100%; max-width:100%;
+    word-wrap:break-word; overflow-wrap:anywhere; white-space:normal;
+  }
+  .coa-rich-inner *{
+    max-width:100% !important; white-space:normal !important;
+  }
+  .coa-rich-inner table{
+    width:auto !important; table-layout:fixed !important;
+  }
+  .coa-rich-inner img{
+    height:auto !important;
   }
   .coa-rich-inner:empty:before{
     content:attr(data-placeholder); color:var(--muted); pointer-events:none;
