@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-04T14:12:52.006Z",
+  "savedAt": "2026-08-04T14:13:06.259Z",
   "mapView": {
     "lat": 9.671153534953039,
     "lng": -72.63061523437501,
@@ -7113,7 +7113,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:12:52.006Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -7131,7 +7131,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:12:52.006Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -14005,7 +14005,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -16846,7 +16846,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -17707,7 +17707,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -17932,7 +17932,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -18213,7 +18213,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -18449,7 +18449,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -18664,7 +18664,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -20681,7 +20681,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -20699,7 +20699,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -20717,7 +20717,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -20944,7 +20944,7 @@
         "properties": {
           "capa": "BR-2",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -21431,7 +21431,7 @@
         "properties": {
           "capa": "BR-10",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -29728,7 +29728,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -29746,7 +29746,7 @@
         "properties": {
           "capa": "ACCIÓN INTEGRAL",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -29869,7 +29869,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -29887,7 +29887,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -30166,7 +30166,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -30523,7 +30523,7 @@
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -30672,7 +30672,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -30821,7 +30821,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -31677,7 +31677,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -31826,7 +31826,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.259Z"
         }
       }
     },
@@ -32027,7 +32027,7 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.260Z"
         }
       }
     },
@@ -32045,7 +32045,7 @@
         "properties": {
           "capa": "RADARES",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.260Z"
         }
       }
     },
@@ -32063,7 +32063,7 @@
         "properties": {
           "capa": "SOSTENIMIENTO",
           "color": "#4C7A57",
-          "generado": "2026-08-04T14:12:52.007Z"
+          "generado": "2026-08-04T14:13:06.260Z"
         }
       }
     },
@@ -35727,7 +35727,7 @@
         "properties": {
           "capa": "INFRA CRITICA",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T14:12:52.008Z"
+          "generado": "2026-08-04T14:13:06.260Z"
         }
       }
     },
@@ -36133,7 +36133,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T14:12:52.008Z"
+          "generado": "2026-08-04T14:13:06.260Z"
         }
       }
     },
@@ -36422,13 +36422,13 @@
         "properties": {
           "capa": "Hospitales",
           "color": "#1F3864",
-          "generado": "2026-08-04T14:12:52.008Z"
+          "generado": "2026-08-04T14:13:06.260Z"
         }
       }
     },
     {
       "id": "capa-46",
-      "name": "cobertura_movil_heatmap",
+      "name": "COBERTURA CELULAR",
       "color": "#B8962E",
       "visible": true,
       "expanded": false,
@@ -36454,7 +36454,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 560",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -36529,7 +36529,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 561",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -36604,7 +36604,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 562",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -36743,7 +36743,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 563",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -36858,7 +36858,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 564",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -36941,7 +36941,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 3,
               "nombre": "Polígono 565",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37028,7 +37028,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 566",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37135,7 +37135,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 567",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37206,7 +37206,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 568",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37269,7 +37269,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 569",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37368,7 +37368,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 570",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37463,7 +37463,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 571",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37526,7 +37526,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 572",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37609,7 +37609,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 573",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37696,7 +37696,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 574",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37783,7 +37783,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 575",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37866,7 +37866,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 576",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -37969,7 +37969,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 577",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -38044,7 +38044,7 @@
               "wom_nivel": "Medio",
               "cob_max": 3,
               "nombre": "Polígono 578",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -38211,7 +38211,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 579",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -38314,7 +38314,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 580",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -38421,7 +38421,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 581",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -38552,7 +38552,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 582",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -38643,7 +38643,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 2,
               "nombre": "Polígono 583",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -38742,7 +38742,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 584",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -38849,7 +38849,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 585",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -38940,7 +38940,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 586",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39003,7 +39003,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 587",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39062,7 +39062,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 588",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39145,7 +39145,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 589",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39230,7 +39230,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 590",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39305,7 +39305,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 591",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39376,7 +39376,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 592",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39443,7 +39443,7 @@
               "wom_nivel": "Medio",
               "cob_max": 3,
               "nombre": "Polígono 593",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39570,7 +39570,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 594",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39653,7 +39653,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 595",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39752,7 +39752,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 596",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -39867,7 +39867,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 597",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40030,7 +40030,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 598",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40137,7 +40137,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 599",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40244,7 +40244,7 @@
               "wom_nivel": "Alto",
               "cob_max": 3,
               "nombre": "Polígono 600",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40371,7 +40371,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 2,
               "nombre": "Polígono 601",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40486,7 +40486,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 602",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40577,7 +40577,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 603",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40656,7 +40656,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 604",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40727,7 +40727,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 605",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40790,7 +40790,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 606",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40881,7 +40881,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 607",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -40948,7 +40948,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 608",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41031,7 +41031,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 609",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41094,7 +41094,7 @@
               "wom_nivel": "Medio",
               "cob_max": 3,
               "nombre": "Polígono 610",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41185,7 +41185,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 611",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41256,7 +41256,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 612",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41335,7 +41335,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 613",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41398,7 +41398,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 614",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41469,7 +41469,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 615",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41552,7 +41552,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 616",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41619,7 +41619,7 @@
               "wom_nivel": "Medio",
               "cob_max": 3,
               "nombre": "Polígono 617",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41686,7 +41686,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 618",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41745,7 +41745,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 619",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41808,7 +41808,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 620",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -41925,7 +41925,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 3,
               "nombre": "Polígono 621",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42004,7 +42004,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 622",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42071,7 +42071,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 2,
               "nombre": "Polígono 623",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42126,7 +42126,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 624",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42185,7 +42185,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 625",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42264,7 +42264,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 626",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42355,7 +42355,7 @@
               "wom_nivel": "Bajo",
               "cob_max": 2,
               "nombre": "Polígono 627",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42418,7 +42418,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 628",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42481,7 +42481,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 629",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42588,7 +42588,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 630",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42659,7 +42659,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 631",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42734,7 +42734,7 @@
               "wom_nivel": "Medio",
               "cob_max": 3,
               "nombre": "Polígono 632",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42793,7 +42793,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 633",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -42896,7 +42896,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 634",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -43035,7 +43035,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 635",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -43178,7 +43178,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 636",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -43301,7 +43301,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 637",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -43420,7 +43420,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 2,
               "nombre": "Polígono 638",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -43531,7 +43531,7 @@
               "wom_nivel": "Nulo",
               "cob_max": 1,
               "nombre": "Polígono 639",
-              "capa": "cobertura_movil_heatmap",
+              "capa": "COBERTURA CELULAR",
               "color": "#B8962E",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
@@ -43599,9 +43599,9 @@
           }
         ],
         "properties": {
-          "capa": "cobertura_movil_heatmap",
+          "capa": "COBERTURA CELULAR",
           "color": "#B8962E",
-          "generado": "2026-08-04T14:12:52.008Z"
+          "generado": "2026-08-04T14:13:06.260Z"
         }
       }
     }
