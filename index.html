@@ -316,12 +316,31 @@
   body.mode-coa #move-box{ display:none !important; }
 
   .coa-textarea{
-    flex:1; width:100%; min-height:220px; resize:vertical;
+    width:100%; min-height:70px; resize:vertical;
     border:1px solid var(--border); border-radius:8px; padding:10px 12px;
     font-family:inherit; font-size:13px; line-height:1.5; color:var(--text);
-    background:#FBFAF7;
+    background:#FBFAF7; box-sizing:border-box;
   }
   .coa-textarea:focus{ outline:1.5px solid var(--gold); background:#fff; }
+
+  .coa-panel-content{ height:100%; }
+  .coa-block{ flex-shrink:0; }
+
+  .coa-richbox{
+    width:100%; height:24vh; box-sizing:border-box;
+    border:1px solid var(--border); border-radius:8px;
+    background:#FBFAF7; overflow:hidden; position:relative;
+  }
+  #right-coa-content .coa-richbox{ height:32vh; }
+  .coa-richbox:focus-within{ outline:1.5px solid var(--gold); background:#fff; overflow:auto; }
+  .coa-rich-inner{
+    padding:10px 12px; font-family:inherit; font-size:14px; line-height:1.4; color:var(--text);
+    outline:none; box-sizing:border-box; min-height:100%;
+    transform-origin: top left;
+  }
+  .coa-rich-inner:empty:before{
+    content:attr(data-placeholder); color:var(--muted); pointer-events:none;
+  }
 
   #coa-bottom-panel{
     display:none; position:fixed; left:0; right:0; bottom:0; z-index:1600;
@@ -333,7 +352,7 @@
     font-size:12px; text-transform:uppercase; letter-spacing:.6px; color:var(--navy); margin:0;
     font-weight:700; flex-shrink:0;
   }
-  #coa-bottom-panel .coa-textarea{ min-height:0; }
+  #coa-bottom-panel .coa-richbox{ height:auto; flex:1; min-height:0; }
 
   /* ---------- COLAPSO DE PANELES LATERALES (escritorio) ---------- */
   .app-grid.left-collapsed{ grid-template-columns: 0px 1fr 300px; }
@@ -469,10 +488,18 @@
     </section>
    </div>
 
-   <div id="left-coa-content" class="mode-content">
-    <section class="block">
-      <h2>Esfuerzos</h2>
-      <textarea id="coa-esfuerzos-text" class="coa-textarea" placeholder="Escriba aquí los esfuerzos…"></textarea>
+   <div id="left-coa-content" class="mode-content coa-panel-content">
+    <section class="block coa-block">
+      <h2>Esfuerzo Principal</h2>
+      <div class="coa-richbox" data-coa-box><div class="coa-rich-inner" id="coa-esfuerzo-principal-text" contenteditable="true" data-placeholder="Escriba aquí el esfuerzo principal…"></div></div>
+    </section>
+    <section class="block coa-block">
+      <h2>Esfuerzo de Apoyo</h2>
+      <div class="coa-richbox" data-coa-box><div class="coa-rich-inner" id="coa-esfuerzo-apoyo-text" contenteditable="true" data-placeholder="Escriba aquí el esfuerzo de apoyo…"></div></div>
+    </section>
+    <section class="block coa-block">
+      <h2>Unidad de Reserva</h2>
+      <div class="coa-richbox" data-coa-box><div class="coa-rich-inner" id="coa-reserva-text" contenteditable="true" data-placeholder="Escriba aquí la unidad de reserva…"></div></div>
     </section>
    </div>
   </aside>
@@ -581,10 +608,14 @@
         <div id="properties-body" class="empty">Seleccione una forma dibujada en el mapa, o desde la lista de capas, para ver y editar sus propiedades.</div>
       </section>
     </div>
-    <div id="right-coa-content" class="mode-content">
-      <section class="block">
+    <div id="right-coa-content" class="mode-content coa-panel-content">
+      <section class="block coa-block">
         <h2>Fases</h2>
-        <textarea id="coa-fases-text" class="coa-textarea" placeholder="Describa aquí las fases del curso de acción…"></textarea>
+        <div class="coa-richbox" data-coa-box><div class="coa-rich-inner" id="coa-fases-text" contenteditable="true" data-placeholder="Describa aquí las fases del curso de acción…"></div></div>
+      </section>
+      <section class="block coa-block">
+        <h2>LOO/LOE</h2>
+        <div class="coa-richbox" data-coa-box><div class="coa-rich-inner" id="coa-loo-loe-text" contenteditable="true" data-placeholder="Escriba aquí las LOO/LOE…"></div></div>
       </section>
     </div>
   </aside>
@@ -595,7 +626,7 @@
 
 <div id="coa-bottom-panel">
   <h2>Desarrollo del Curso de Acción</h2>
-  <textarea id="coa-desarrollo-text" class="coa-textarea" placeholder="Escriba aquí el desarrollo del curso de acción…"></textarea>
+  <div class="coa-richbox" data-coa-box style="flex:1;"><div class="coa-rich-inner" id="coa-desarrollo-text" contenteditable="true" data-placeholder="Escriba aquí el desarrollo del curso de acción…"></div></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -647,9 +678,12 @@
       shapeCounter: shapeCounter,
       paletteIdx: paletteIdx,
       activeLayerId: activeLayerId,
-      coaEsfuerzos: document.getElementById('coa-esfuerzos-text').value,
-      coaFases: document.getElementById('coa-fases-text').value,
-      coaDesarrollo: document.getElementById('coa-desarrollo-text').value,
+      coaEsfuerzoPrincipal: document.getElementById('coa-esfuerzo-principal-text').innerHTML,
+      coaEsfuerzoApoyo: document.getElementById('coa-esfuerzo-apoyo-text').innerHTML,
+      coaReserva: document.getElementById('coa-reserva-text').innerHTML,
+      coaFases: document.getElementById('coa-fases-text').innerHTML,
+      coaLooLoe: document.getElementById('coa-loo-loe-text').innerHTML,
+      coaDesarrollo: document.getElementById('coa-desarrollo-text').innerHTML,
       layers: layers.map(function(l){
         return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, parentId: l.parentId, sortIndex: l.sortIndex, geojson: layerToGeoJSON(l) };
       })
@@ -676,9 +710,13 @@
     options = options || {};
     var applyView = options.applyView !== false;
     if (!state) return false;
-    document.getElementById('coa-esfuerzos-text').value = state.coaEsfuerzos || '';
-    document.getElementById('coa-fases-text').value = state.coaFases || '';
-    document.getElementById('coa-desarrollo-text').value = state.coaDesarrollo || '';
+    document.getElementById('coa-esfuerzo-principal-text').innerHTML = state.coaEsfuerzoPrincipal || '';
+    document.getElementById('coa-esfuerzo-apoyo-text').innerHTML = state.coaEsfuerzoApoyo || '';
+    document.getElementById('coa-reserva-text').innerHTML = state.coaReserva || '';
+    document.getElementById('coa-fases-text').innerHTML = state.coaFases || '';
+    document.getElementById('coa-loo-loe-text').innerHTML = state.coaLooLoe || '';
+    document.getElementById('coa-desarrollo-text').innerHTML = state.coaDesarrollo || '';
+    fitAllCoaBoxes();
     if (!state.layers || !state.layers.length) return false;
     layers.forEach(function(l){ map.removeLayer(l.group); });
     layers = [];
@@ -4470,6 +4508,7 @@
       disableAllTools();
       exitMoveMode();
       selectedShape = null;
+      setTimeout(fitAllCoaBoxes, 50);
     }
     map.invalidateSize();
   }
@@ -4489,9 +4528,48 @@
     setTimeout(function(){ map.invalidateSize(); }, 220);
   });
 
-  /* ---------------- CAMPOS DE TEXTO COA (persistentes) ---------------- */
-  ['coa-esfuerzos-text','coa-fases-text','coa-desarrollo-text'].forEach(function(id){
-    document.getElementById(id).addEventListener('input', scheduleSave);
+  /* ---------------- CAMPOS DE TEXTO COA (persistentes, con formato y auto-ajuste) ---------------- */
+  var COA_BOX_IDS = ['coa-esfuerzo-principal-text','coa-esfuerzo-apoyo-text','coa-reserva-text','coa-fases-text','coa-loo-loe-text','coa-desarrollo-text'];
+
+  function fitCoaBox(inner){
+    if (!inner) return;
+    var box = inner.parentElement;
+    if (!box) return;
+    inner.style.transform = 'scale(1)';
+    var naturalW = inner.scrollWidth;
+    var naturalH = inner.scrollHeight;
+    var availW = box.clientWidth;
+    var availH = box.clientHeight;
+    if (!naturalW || !naturalH || !availW || !availH) return;
+    var scale = Math.min(availW / naturalW, availH / naturalH);
+    scale = Math.min(scale, 3);
+    scale = Math.max(scale, 0.15);
+    inner.style.transform = 'scale(' + scale + ')';
+  }
+
+  function fitAllCoaBoxes(){
+    COA_BOX_IDS.forEach(function(id){
+      var el = document.getElementById(id);
+      if (el && document.activeElement !== el) fitCoaBox(el);
+    });
+  }
+
+  COA_BOX_IDS.forEach(function(id){
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', scheduleSave);
+    el.addEventListener('focus', function(){
+      el.style.transform = 'scale(1)';
+    });
+    el.addEventListener('blur', function(){
+      fitCoaBox(el);
+      scheduleSave();
+    });
+  });
+
+  window.addEventListener('resize', function(){
+    clearTimeout(window._coaResizeTimer);
+    window._coaResizeTimer = setTimeout(fitAllCoaBoxes, 200);
   });
 
   document.getElementById('reset-storage-btn').addEventListener('click', function(){
