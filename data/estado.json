@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-04T15:56:00.236Z",
+  "savedAt": "2026-08-04T15:56:19.930Z",
   "mapView": {
     "lat": 9.784851250750604,
     "lng": -72.54272460937501,
@@ -7356,7 +7356,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:56:00.236Z"
+          "generado": "2026-08-04T15:56:19.931Z"
         }
       }
     },
@@ -7374,7 +7374,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-04T15:56:00.236Z"
+          "generado": "2026-08-04T15:56:19.931Z"
         }
       }
     },
@@ -14248,7 +14248,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.932Z"
         }
       }
     },
@@ -17089,7 +17089,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -17950,7 +17950,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -18175,7 +18175,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -18456,7 +18456,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -18692,7 +18692,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -18907,7 +18907,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -20924,7 +20924,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -20942,7 +20942,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -20960,7 +20960,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -21213,7 +21213,7 @@
         "properties": {
           "capa": "BR-2",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.933Z"
         }
       }
     },
@@ -21752,7 +21752,7 @@
         "properties": {
           "capa": "BR-10",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.934Z"
         }
       }
     },
@@ -30049,7 +30049,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.934Z"
         }
       }
     },
@@ -30067,7 +30067,7 @@
         "properties": {
           "capa": "ACCIÓN INTEGRAL",
           "color": "#1F3864",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.934Z"
         }
       }
     },
@@ -30294,7 +30294,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.934Z"
         }
       }
     },
@@ -30312,7 +30312,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.934Z"
         }
       }
     },
@@ -30591,7 +30591,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.935Z"
         }
       }
     },
@@ -31026,7 +31026,7 @@
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.935Z"
         }
       }
     },
@@ -31149,7 +31149,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.935Z"
         }
       }
     },
@@ -31298,7 +31298,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:56:00.237Z"
+          "generado": "2026-08-04T15:56:19.935Z"
         }
       }
     },
@@ -32154,7 +32154,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.935Z"
         }
       }
     },
@@ -32277,7 +32277,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.935Z"
         }
       }
     },
@@ -32426,7 +32426,7 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.935Z"
         }
       }
     },
@@ -32444,7 +32444,7 @@
         "properties": {
           "capa": "RADARES",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.935Z"
         }
       }
     },
@@ -32462,7 +32462,7 @@
         "properties": {
           "capa": "SOSTENIMIENTO",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.935Z"
         }
       }
     },
@@ -36126,7 +36126,7 @@
         "properties": {
           "capa": "INFRA CRITICA",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.937Z"
         }
       }
     },
@@ -36532,7 +36532,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.937Z"
         }
       }
     },
@@ -36821,7 +36821,7 @@
         "properties": {
           "capa": "Hospitales",
           "color": "#1F3864",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.937Z"
         }
       }
     },
@@ -36944,7 +36944,7 @@
         "properties": {
           "capa": "BRCNA2",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.937Z"
         }
       }
     },
@@ -37041,7 +37041,7 @@
         "properties": {
           "capa": "BRAID1",
           "color": "#4C7A57",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.937Z"
         }
       }
     },
@@ -37190,7 +37190,7 @@
         "properties": {
           "capa": "FUDRA3",
           "color": "#8A3A5A",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.937Z"
         }
       }
     },
@@ -37313,7 +37313,7 @@
         "properties": {
           "capa": "BRILOG3",
           "color": "#2F6F8F",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.937Z"
         }
       }
     },
@@ -37592,7 +37592,7 @@
         "properties": {
           "capa": "FNC",
           "color": "#B8962E",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.937Z"
         }
       }
     },
@@ -37610,7 +37610,7 @@
         "properties": {
           "capa": "INTELIGENCIA",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T15:56:00.238Z"
+          "generado": "2026-08-04T15:56:19.937Z"
         }
       }
     },
@@ -209130,7 +209130,7 @@
         "properties": {
           "capa": "ESTRUCTURAS",
           "color": "#ff3a2f",
-          "generado": "2026-08-04T15:56:00.241Z"
+          "generado": "2026-08-04T15:56:19.948Z"
         }
       }
     },
@@ -209148,13 +209148,13 @@
         "properties": {
           "capa": "INFRAESTRUCTURA",
           "color": "#7A4A2F",
-          "generado": "2026-08-04T15:56:00.241Z"
+          "generado": "2026-08-04T15:56:19.948Z"
         }
       }
     },
     {
       "id": "capa-57",
-      "name": "Resguardos_Guajira_Cesar_NorteSantander",
+      "name": "RESGUARDOS",
       "color": "#1F3864",
       "visible": true,
       "expanded": true,
@@ -209180,7 +209180,7 @@
               "MUNICIPIO": "44078",
               "GlobalID": "{6BF90E72-ADC3-4BCD-B899-02D2A2ED3DA6}",
               "nombre": "Polígono 700",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -212848,7 +212848,7 @@
               "MUNICIPIO": "44098",
               "GlobalID": "{7928F934-484A-48D1-8003-E34DE1F9FD14}",
               "nombre": "Polígono 701",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -213323,7 +213323,7 @@
               "MUNICIPIO": "20001",
               "GlobalID": "{990AE138-4E6B-48D4-B6A5-CAC6BB09931B}",
               "nombre": "Polígono 702",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -244884,7 +244884,7 @@
               "MUNICIPIO": "20621",
               "GlobalID": "{B41890C3-DB53-4B9A-8787-7FF73323CA4D}",
               "nombre": "Polígono 703",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -245370,7 +245370,7 @@
               "MUNICIPIO": "44078",
               "GlobalID": "{D756CAA9-F4D7-469D-8C86-7CFCC2F4E611}",
               "nombre": "Polígono 704",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -245985,7 +245985,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{2D438205-6F4A-4FAD-B8F2-A82C6E6FB11A}",
               "nombre": "Polígono 705",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -246480,7 +246480,7 @@
               "MUNICIPIO": "20045",
               "GlobalID": "{0B6F83A0-0A74-41F0-891E-99B5306E4904}",
               "nombre": "Polígono 706",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -270570,7 +270570,7 @@
               "MUNICIPIO": "20001",
               "GlobalID": "{BAF90EC8-0F1B-4F0A-9070-6827CCF3B54B}",
               "nombre": "Polígono 707",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -271215,7 +271215,7 @@
               "MUNICIPIO": "20001",
               "GlobalID": "{8231D4A5-EBC1-46BA-98DF-832DDBAE0556}",
               "nombre": "Polígono 708",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -320736,7 +320736,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{28CD2E79-2B7B-4AFD-8989-51CAAB67E024}",
               "nombre": "Polígono 709",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -321126,7 +321126,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{BFFB4437-A2C0-4CED-80D7-6AFCDC51D289}",
               "nombre": "Polígono 710",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -321236,7 +321236,7 @@
               "MUNICIPIO": "20621",
               "GlobalID": "{399EEB56-8D29-4B28-8C39-F40A509D251B}",
               "nombre": "Polígono 711",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -321941,7 +321941,7 @@
               "MUNICIPIO": "44279",
               "GlobalID": "{451732DD-3D8F-4C9A-A023-3AE93415EF05}",
               "nombre": "Polígono 712",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -323754,7 +323754,7 @@
               "MUNICIPIO": "54245",
               "GlobalID": "{0E2BD7C8-362A-40BA-A013-4BC340A43209}",
               "nombre": "Polígono 713",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -339709,7 +339709,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{DBDABC3D-328F-444D-8C82-B3C52FA9A2DD}",
               "nombre": "Polígono 714",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -340791,7 +340791,7 @@
               "MUNICIPIO": "44378",
               "GlobalID": "{922CDABF-A4AC-4C2D-9902-0B822246AAEB}",
               "nombre": "Polígono 715",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -341650,7 +341650,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{BBEBF14A-AF6E-48D1-A941-189863AC4B46}",
               "nombre": "Polígono 716",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -414271,7 +414271,7 @@
               "MUNICIPIO": "44001",
               "GlobalID": "{B2B9C07E-5CB9-4C47-A884-4B91E9994807}",
               "nombre": "Polígono 717",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -414901,7 +414901,7 @@
               "MUNICIPIO": "44078",
               "GlobalID": "{00291427-6EA0-480B-A1E7-5468170AD65F}",
               "nombre": "Polígono 718",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -416546,7 +416546,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{124B19F6-A483-4CEE-B7BA-10D42231013D}",
               "nombre": "Polígono 719",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -417071,7 +417071,7 @@
               "MUNICIPIO": "44001",
               "GlobalID": "{BD9F6123-4B59-4E9A-907F-0D2F19916AE4}",
               "nombre": "Polígono 720",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -417216,7 +417216,7 @@
               "MUNICIPIO": "20621",
               "GlobalID": "{465912CB-3469-4C3A-8A87-87D0BD3A22BB}",
               "nombre": "Polígono 721",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -417771,7 +417771,7 @@
               "MUNICIPIO": "44001",
               "GlobalID": "{AD6BDBB3-D28F-4932-AFC3-DEDF8F84D5E9}",
               "nombre": "Polígono 722",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -417846,7 +417846,7 @@
               "MUNICIPIO": "44078",
               "GlobalID": "{687B1378-4C4E-41CD-AC0F-0FE8B8121CDF}",
               "nombre": "Polígono 723",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -418651,7 +418651,7 @@
               "MUNICIPIO": "44035",
               "GlobalID": "{459A3568-8985-4C11-A6D9-AC6920A431AD}",
               "nombre": "Polígono 724",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -419036,7 +419036,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{568FB054-7C6A-402D-8631-082585ED9D96}",
               "nombre": "Polígono 725",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -420704,7 +420704,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{1E0718DA-8900-4A20-A473-78AE7A36ACA0}",
               "nombre": "Polígono 726",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -421004,7 +421004,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{C965A152-F05F-442F-8CDD-BD2EBD6EC4CC}",
               "nombre": "Polígono 727",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -421144,7 +421144,7 @@
               "MUNICIPIO": "44001",
               "GlobalID": "{9B5215AF-E27A-4B8D-A8BD-D848FCE18B1D}",
               "nombre": "Polígono 728",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -421889,7 +421889,7 @@
               "MUNICIPIO": "20013",
               "GlobalID": "{64562729-EEC0-41E4-B6AB-219B2141526B}",
               "nombre": "Polígono 729",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -423975,7 +423975,7 @@
               "MUNICIPIO": "44078",
               "GlobalID": "{B1B15DEB-AA54-47DB-82FD-B3F8BB6486B8}",
               "nombre": "Polígono 730",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -425230,7 +425230,7 @@
               "MUNICIPIO": "44001",
               "GlobalID": "{E9B462BE-3266-4FC7-A14D-C97B9B158977}",
               "nombre": "Polígono 731",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -425530,7 +425530,7 @@
               "MUNICIPIO": "20238",
               "GlobalID": "{18808827-AF3E-496C-94ED-6E37E2E675B4}",
               "nombre": "Polígono 732",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -426355,7 +426355,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{B9B01AE8-A4B1-4C6F-ADC8-A8F59C6B6075}",
               "nombre": "Polígono 733",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -426575,7 +426575,7 @@
               "MUNICIPIO": "54820",
               "GlobalID": "{CE29C5B8-F0FE-47D0-AC15-C1E5E92E6FE0}",
               "nombre": "Polígono 734",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -427130,7 +427130,7 @@
               "MUNICIPIO": "44078",
               "GlobalID": "{F791A7C9-EBE7-4534-B772-AE9863B8156C}",
               "nombre": "Polígono 735",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -427570,7 +427570,7 @@
               "MUNICIPIO": "44078",
               "GlobalID": "{33A90746-F9A6-43C3-BF53-8986211C679B}",
               "nombre": "Polígono 736",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -429515,7 +429515,7 @@
               "MUNICIPIO": "44378",
               "GlobalID": "{1C015FE1-B997-4BB0-A71B-6178111A2C09}",
               "nombre": "Polígono 737",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -430110,7 +430110,7 @@
               "MUNICIPIO": "44001",
               "GlobalID": "{6556B89F-3116-4B6D-B657-94279A6E2288}",
               "nombre": "Polígono 738",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -430405,7 +430405,7 @@
               "MUNICIPIO": "54250",
               "GlobalID": "{48AA421A-4113-4602-8E07-BBBC7F56F90A}",
               "nombre": "Polígono 739",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -431110,7 +431110,7 @@
               "MUNICIPIO": "20013",
               "GlobalID": "{4A85EBAF-3A59-4061-AE66-058F06560910}",
               "nombre": "Polígono 740",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -443120,7 +443120,7 @@
               "MUNICIPIO": "44078",
               "GlobalID": "{9353A57E-00E9-438F-BAFD-09C47168EAFF}",
               "nombre": "Polígono 741",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -443390,7 +443390,7 @@
               "MUNICIPIO": "44078",
               "GlobalID": "{13415447-204C-49E5-B011-5DBD891EB1BB}",
               "nombre": "Polígono 742",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -443635,7 +443635,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{50DEEC4E-F944-4795-B9AB-56C9F22F8CD5}",
               "nombre": "Polígono 743",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -443815,7 +443815,7 @@
               "MUNICIPIO": "44001",
               "GlobalID": "{462DDBE2-CB5C-4E9B-A297-A932A07472BD}",
               "nombre": "Polígono 744",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -444045,7 +444045,7 @@
               "MUNICIPIO": "44378",
               "GlobalID": "{E3C671E3-DE1C-4B75-8571-2E8BAF4921B5}",
               "nombre": "Polígono 745",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -444180,7 +444180,7 @@
               "MUNICIPIO": "54810",
               "GlobalID": "{6AD9DAE2-FE51-4A15-830E-5CECF02819D2}",
               "nombre": "Polígono 746",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -464800,7 +464800,7 @@
               "MUNICIPIO": "44279",
               "GlobalID": "{43BB5E48-30E8-4234-BA7F-F888A4052F4E}",
               "nombre": "Polígono 747",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -466795,7 +466795,7 @@
               "MUNICIPIO": "20045",
               "GlobalID": "{44924D48-9521-4FB4-BD31-D7D51AF5392F}",
               "nombre": "Polígono 748",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -467240,7 +467240,7 @@
               "MUNICIPIO": "44430",
               "GlobalID": "{5205C0D5-A0F0-49FE-B74A-1669C9E7419D}",
               "nombre": "Polígono 749",
-              "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+              "capa": "RESGUARDOS",
               "color": "#1F3864",
               "fillColor": "#1F3864",
               "fillOpacity": 0.25,
@@ -467430,9 +467430,9 @@
           }
         ],
         "properties": {
-          "capa": "Resguardos_Guajira_Cesar_NorteSantander",
+          "capa": "RESGUARDOS",
           "color": "#1F3864",
-          "generado": "2026-08-04T15:56:00.245Z"
+          "generado": "2026-08-04T15:56:19.958Z"
         }
       }
     }
