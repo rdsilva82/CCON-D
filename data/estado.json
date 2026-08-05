@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-05T01:11:29.627Z",
+  "savedAt": "2026-08-05T01:11:41.171Z",
   "mapView": {
     "lat": 9.671153534953039,
     "lng": -72.63061523437501,
@@ -7383,7 +7383,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.171Z"
         }
       }
     },
@@ -7401,7 +7401,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.171Z"
         }
       }
     },
@@ -14275,7 +14275,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.171Z"
         }
       }
     },
@@ -17116,7 +17116,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.171Z"
         }
       }
     },
@@ -17977,7 +17977,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.171Z"
         }
       }
     },
@@ -18202,7 +18202,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -18483,7 +18483,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -18719,7 +18719,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -18934,7 +18934,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -20951,7 +20951,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -20969,7 +20969,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -20987,7 +20987,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -21240,7 +21240,7 @@
         "properties": {
           "capa": "BR-2",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -21779,7 +21779,7 @@
         "properties": {
           "capa": "BR-10",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:29.627Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -30076,7 +30076,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -30094,7 +30094,7 @@
         "properties": {
           "capa": "ACCIÓN INTEGRAL",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -30217,7 +30217,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -30235,7 +30235,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -30514,7 +30514,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -30949,7 +30949,7 @@
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -31072,7 +31072,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -31221,7 +31221,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -32077,7 +32077,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -32200,7 +32200,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -32349,7 +32349,7 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -32367,7 +32367,7 @@
         "properties": {
           "capa": "RADARES",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -32385,7 +32385,7 @@
         "properties": {
           "capa": "SOSTENIMIENTO",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -36049,7 +36049,7 @@
         "properties": {
           "capa": "INFRA CRITICA",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -36455,7 +36455,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -36744,7 +36744,7 @@
         "properties": {
           "capa": "Hospitales",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -36867,7 +36867,7 @@
         "properties": {
           "capa": "BRCNA2",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -36964,7 +36964,7 @@
         "properties": {
           "capa": "BRAID1",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -37113,7 +37113,7 @@
         "properties": {
           "capa": "FUDRA3",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -37236,7 +37236,7 @@
         "properties": {
           "capa": "BRILOG3",
           "color": "#2F6F8F",
-          "generado": "2026-08-05T01:11:29.628Z"
+          "generado": "2026-08-05T01:11:41.172Z"
         }
       }
     },
@@ -295624,7 +295624,7 @@
         "properties": {
           "capa": "Resguardos_Guajira_Cesar_NorteSantander",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:29.632Z"
+          "generado": "2026-08-05T01:11:41.176Z"
         }
       }
     },
@@ -295642,7 +295642,7 @@
         "properties": {
           "capa": "FNC",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:29.632Z"
+          "generado": "2026-08-05T01:11:41.176Z"
         }
       }
     },
@@ -295660,7 +295660,7 @@
         "properties": {
           "capa": "INTELIGENCIA",
           "color": "#ff0000",
-          "generado": "2026-08-05T01:11:29.632Z"
+          "generado": "2026-08-05T01:11:41.176Z"
         }
       }
     },
@@ -467180,7 +467180,7 @@
         "properties": {
           "capa": "ESTRUCTURAS",
           "color": "#ff0000",
-          "generado": "2026-08-05T01:11:29.634Z"
+          "generado": "2026-08-05T01:11:41.179Z"
         }
       }
     },
@@ -467198,7 +467198,7 @@
         "properties": {
           "capa": "INFRAESTRUCTURA",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:29.634Z"
+          "generado": "2026-08-05T01:11:41.179Z"
         }
       }
     },
@@ -474217,7 +474217,7 @@
         "properties": {
           "capa": "cobertura_claro",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:29.635Z"
+          "generado": "2026-08-05T01:11:41.179Z"
         }
       }
     },
@@ -481236,7 +481236,7 @@
         "properties": {
           "capa": "cobertura_movistar",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:29.635Z"
+          "generado": "2026-08-05T01:11:41.179Z"
         }
       }
     },
@@ -488255,16 +488255,16 @@
         "properties": {
           "capa": "cobertura_tigo",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:29.635Z"
+          "generado": "2026-08-05T01:11:41.179Z"
         }
       }
     },
     {
       "id": "capa-60",
-      "name": "cobertura_wom",
+      "name": "WOM",
       "color": "#8A3A5A",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": null,
       "sortIndex": 17,
       "geojson": {
@@ -488286,7 +488286,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1030",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488451,7 +488451,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1031",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488556,7 +488556,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1032",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488657,7 +488657,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1033",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488730,7 +488730,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1034",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488835,7 +488835,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1035",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488908,7 +488908,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1036",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489045,7 +489045,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1037",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489158,7 +489158,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1038",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489239,7 +489239,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1039",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489324,7 +489324,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1040",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489429,7 +489429,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1041",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489498,7 +489498,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1042",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489559,7 +489559,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1043",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489656,7 +489656,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1044",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489749,7 +489749,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1045",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489810,7 +489810,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1046",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489891,7 +489891,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1047",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -489976,7 +489976,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1048",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490065,7 +490065,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1049",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490150,7 +490150,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1050",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490279,7 +490279,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1051",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490360,7 +490360,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1052",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490461,7 +490461,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1053",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490558,7 +490558,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1054",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490631,7 +490631,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1055",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490756,7 +490756,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1056",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490837,7 +490837,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1057",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -490926,7 +490926,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1058",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491023,7 +491023,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1059",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491084,7 +491084,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1060",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491141,7 +491141,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1061",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491222,7 +491222,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1062",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491305,7 +491305,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1063",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491378,7 +491378,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1064",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491483,7 +491483,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1065",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491588,7 +491588,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1066",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491701,7 +491701,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1067",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491862,7 +491862,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1068",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491931,7 +491931,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1069",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -491996,7 +491996,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1070",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492121,7 +492121,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1071",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492234,7 +492234,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1072",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492323,7 +492323,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1073",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492400,7 +492400,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1074",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492469,7 +492469,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1075",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492530,7 +492530,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1076",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492619,7 +492619,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1077",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492684,7 +492684,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1078",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492785,7 +492785,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1079",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -492922,7 +492922,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1080",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493003,7 +493003,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1081",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493064,7 +493064,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1082",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493205,7 +493205,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1083",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493286,7 +493286,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1084",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493375,7 +493375,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1085",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493444,7 +493444,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1086",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493521,7 +493521,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1087",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493582,7 +493582,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1088",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493651,7 +493651,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1089",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493732,7 +493732,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1090",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493797,7 +493797,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1091",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493862,7 +493862,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1092",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493919,7 +493919,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1093",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -493980,7 +493980,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1094",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494095,7 +494095,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1095",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494172,7 +494172,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1096",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494237,7 +494237,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1097",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494290,7 +494290,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1098",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494347,7 +494347,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1099",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494424,7 +494424,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1100",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494513,7 +494513,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1101",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494574,7 +494574,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1102",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494635,7 +494635,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1103",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494740,7 +494740,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1104",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494809,7 +494809,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1105",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -494930,7 +494930,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1106",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -495047,7 +495047,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1107",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -495156,7 +495156,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1108",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -495229,7 +495229,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1109",
-              "capa": "cobertura_wom",
+              "capa": "WOM",
               "fillColor": "#8A3A5A",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -495272,9 +495272,9 @@
           }
         ],
         "properties": {
-          "capa": "cobertura_wom",
+          "capa": "WOM",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:29.635Z"
+          "generado": "2026-08-05T01:11:41.179Z"
         }
       }
     }
