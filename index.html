@@ -546,7 +546,7 @@
 
     <section class="block">
       <h2>Nube compartida (GitHub)</h2>
-      <div class="hint">Sincroniza el mapa entre todos sus dispositivos guardando un archivo en un repositorio de GitHub. Requiere un token de acceso personal con permiso de escritura sobre ese repositorio. Por seguridad, el token <b>nunca</b> viene incluido en esta página — se pega una sola vez por dispositivo y queda guardado solo en su navegador.</div>
+      <div class="hint">Sincroniza el mapa entre todos sus dispositivos guardando la información en un repositorio de GitHub. Para no interrumpirse entre usuarios, <b>cada capa se sincroniza por separado</b>: si dos personas trabajan en capas distintas al mismo tiempo, cada una sube/baja solo lo suyo, sin pisar el trabajo de la otra. Requiere un token de acceso personal con permiso de escritura sobre ese repositorio. Por seguridad, el token <b>nunca</b> viene incluido en esta página — se pega una sola vez por dispositivo y queda guardado solo en su navegador.</div>
       <div class="gh-field">
         <label for="gh-repo-input">Repositorio (usuario/repo)</label>
         <input type="text" id="gh-repo-input" placeholder="usuario/mapa-norte-santander" value="rdsilva82/CCON-D">
@@ -556,7 +556,7 @@
         <input type="text" id="gh-branch-input" placeholder="main" value="main">
       </div>
       <div class="gh-field">
-        <label for="gh-path-input">Ruta del archivo</label>
+        <label for="gh-path-input">Carpeta de datos (se crea un archivo por capa dentro)</label>
         <input type="text" id="gh-path-input" placeholder="data/estado.json" value="data/estado.json">
       </div>
       <div class="gh-field">
@@ -872,10 +872,13 @@
     try{ return applyRemoteState(state); } catch(err){ return false; }
   }
 
-  /* ---------------- NUBE COMPARTIDA (sincronización vía GitHub) ---------------- */
+  /* ---------------- NUBE COMPARTIDA (sincronización vía GitHub, granular por capa) ---------------- */
   var GITHUB_CONFIG_KEY = 'github_sync_config_v1';
   var githubConfig = null;
-  var githubFileSha = null;
+  var githubFileSha = null; // sha del archivo único legacy (solo para "Ver historial" y migración)
+  var githubShas = { index: null, layers: {} }; // sha conocido de cada archivo dividido
+  var lastPushedIndexSig = null;
+  var lastPushedLayerSig = {}; // layerId -> firma del último contenido subido con éxito
   var githubPushTimer = null;
   var lastLocalEditTime = 0;
   var editingFieldFocused = false;
@@ -938,122 +941,257 @@
     if (withRef) url += '?ref=' + encodeURIComponent(githubConfig.branch || 'main');
     return url;
   }
+  function githubBasePath(){
+    return githubConfig.path.replace(/\.json$/i, '');
+  }
+  function githubIndexPath(){ return githubBasePath() + '/index.json'; }
+  function githubLayerFilePath(id){ return githubBasePath() + '/layers/' + id + '.json'; }
+  function githubContentsUrl(path, withRef){
+    var url = 'https://api.github.com/repos/' + githubConfig.repo + '/contents/' + path;
+    if (withRef) url += '?ref=' + encodeURIComponent(githubConfig.branch || 'main');
+    return url;
+  }
+  function githubAuthHeaders(){
+    return { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' };
+  }
+  function resolveFileText(data){
+    if (data.content) return Promise.resolve(base64ToUtf8(data.content));
+    if (data.sha){
+      return fetch('https://api.github.com/repos/' + githubConfig.repo + '/git/blobs/' + data.sha, { headers: githubAuthHeaders() })
+        .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(blob){ if (!blob || !blob.content) throw new Error('Sin contenido.'); return base64ToUtf8(blob.content); });
+    }
+    return Promise.reject(new Error('No se encontró contenido.'));
+  }
 
   var syncInProgress = false;
+
+  /* ---- Construcción de archivos (índice liviano + un archivo por capa raíz) ---- */
+  function buildIndexObject(){
+    var state = buildStateObject();
+    state.layers.forEach(function(l){ delete l.geojson; });
+    return state;
+  }
+  function indexContentSignature(){
+    var obj = buildIndexObject();
+    delete obj.savedAt;
+    return JSON.stringify(obj);
+  }
+  function buildLayerFileObject(topLayerObj){
+    function pack(l){
+      return { id: l.id, geojson: layerToGeoJSON(l), children: getChildren(l.id).map(pack) };
+    }
+    return pack(topLayerObj);
+  }
+  function layerContentSignature(topLayerObj){
+    function pack(l){
+      var fc = layerToGeoJSON(l);
+      return { id: l.id, features: fc.features, children: getChildren(l.id).map(pack) };
+    }
+    return JSON.stringify(pack(topLayerObj));
+  }
+  function applyLayerFileObject(node){
+    var layerObj = getLayer(node.id);
+    if (layerObj){
+      layerObj.group.clearLayers();
+      if (node.geojson && node.geojson.features && node.geojson.features.length){
+        L.geoJSON(node.geojson, buildGeoJSONReconstructOptions(layerObj));
+      }
+    }
+    (node.children || []).forEach(applyLayerFileObject);
+  }
 
   function githubPull(showAlertOnError, isBackground){
     if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
     if (syncInProgress) return Promise.resolve(false);
     syncInProgress = true;
     updateSyncStatus('syncing','Descargando…');
-    return fetch(githubApiUrl(true), {
-      headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
-    }).then(function(res){
+    return fetch(githubContentsUrl(githubIndexPath(), true), { headers: githubAuthHeaders() })
+      .then(function(res){
+        if (res.status === 404) return githubMigrateLegacy(isBackground);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json().then(function(data){
+          if (isBackground && data.sha === githubShas.index){
+            updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+            syncInProgress = false;
+            return false;
+          }
+          if (isBackground && (editingFieldFocused || selectedShape || activeToolName || moveModeShape)){
+            updateSyncStatus('ok','Sincronizado (pendiente de aplicar)');
+            syncInProgress = false;
+            return false;
+          }
+          return resolveFileText(data).then(function(rawText){
+            var indexState = JSON.parse(rawText);
+            saveLocalBackup();
+            applyingRemoteState = true;
+            applyRemoteState(indexState, { applyView: !isBackground });
+            applyingRemoteState = false;
+            githubShas.index = data.sha;
+            lastPushedIndexSig = indexContentSignature();
+            var rootIds = getRootLayers().map(function(l){ return l.id; });
+            var chain = Promise.resolve();
+            rootIds.forEach(function(id){ chain = chain.then(function(){ return githubPullLayerFile(id); }); });
+            return chain.then(function(){
+              renderLayerList();
+              updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+              syncInProgress = false;
+              return true;
+            });
+          });
+        });
+      }).catch(function(err){
+        updateSyncStatus('error','Error al descargar: ' + err.message);
+        if (showAlertOnError) alert('No se pudo descargar desde GitHub: ' + err.message);
+        syncInProgress = false;
+        return false;
+      });
+  }
+
+  function githubPullLayerFile(id){
+    return fetch(githubContentsUrl(githubLayerFilePath(id), true), { headers: githubAuthHeaders() })
+      .then(function(res){
+        if (res.status === 404) return;
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json().then(function(data){
+          if (githubShas.layers[id] === data.sha) return;
+          return resolveFileText(data).then(function(rawText){
+            var node = JSON.parse(rawText);
+            githubShas.layers[id] = data.sha;
+            applyLayerFileObject(node);
+            var layerObj = getLayer(id);
+            if (layerObj) lastPushedLayerSig[id] = layerContentSignature(layerObj);
+          });
+        });
+      });
+  }
+
+  function githubMigrateLegacy(isBackground){
+    return fetch(githubApiUrl(true), { headers: githubAuthHeaders() }).then(function(res){
       if (res.status === 404){
-        githubFileSha = null;
         updateSyncStatus('ok','Repositorio conectado (sin datos aún)');
         syncInProgress = false;
         return false;
       }
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json().then(function(data){
-        if (isBackground && data.sha === githubFileSha){
-          updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
-          syncInProgress = false;
-          return false;
-        }
-        if (isBackground && (editingFieldFocused || selectedShape || activeToolName || moveModeShape)){
-          // El usuario empezó a trabajar mientras esta descarga estaba en curso.
-          // No aplicamos ahora para no interrumpirlo; se reintentará en el próximo ciclo.
-          updateSyncStatus('ok','Sincronizado (pendiente de aplicar)');
-          syncInProgress = false;
-          return false;
-        }
-        githubFileSha = data.sha;
-        var contentPromise = data.content
-          ? Promise.resolve(base64ToUtf8(data.content))
-          : fetch('https://api.github.com/repos/' + githubConfig.repo + '/git/blobs/' + data.sha, {
-              headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
-            }).then(function(res2){
-              if (!res2.ok) throw new Error('HTTP ' + res2.status);
-              return res2.json();
-            }).then(function(blob){
-              if (!blob || !blob.content) throw new Error('El archivo remoto no tiene contenido.');
-              return base64ToUtf8(blob.content);
-            });
-        return contentPromise.then(function(rawText){
+        return resolveFileText(data).then(function(rawText){
           var state = JSON.parse(rawText);
+          githubFileSha = data.sha;
           saveLocalBackup();
           applyingRemoteState = true;
           applyRemoteState(state, { applyView: !isBackground });
           applyingRemoteState = false;
-          updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+          updateSyncStatus('syncing','Migrando a formato por capas…');
           syncInProgress = false;
-          return true;
+          return githubPush();
         });
       });
-    }).catch(function(err){
-      updateSyncStatus('error','Error al descargar: ' + err.message);
-      if (showAlertOnError) alert('No se pudo descargar desde GitHub: ' + err.message);
-      syncInProgress = false;
-      return false;
     });
   }
 
-  function githubPush(retriesLeft){
-    if (retriesLeft == null) retriesLeft = 3;
+  function githubPush(){
     if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
     if (syncInProgress){ scheduleGithubPush(); return Promise.resolve(false); }
     syncInProgress = true;
     updateSyncStatus('syncing','Subiendo…');
-    var content = utf8ToBase64(JSON.stringify(buildStateObject(), null, 2));
-    var body = { message:'Actualizar mapa - ' + new Date().toISOString(), content: content, branch: githubConfig.branch || 'main' };
-    if (githubFileSha) body.sha = githubFileSha;
-    return fetch(githubApiUrl(false), {
+
+    var indexObj = buildIndexObject();
+    var indexSig = indexContentSignature();
+    var topLevelIds = getRootLayers().map(function(l){ return l.id; });
+
+    var tasks = [];
+    if (indexSig !== lastPushedIndexSig){
+      tasks.push({ kind:'index', path: githubIndexPath(), content: indexObj, sig: indexSig });
+    }
+    getRootLayers().forEach(function(l){
+      var sig = layerContentSignature(l);
+      if (lastPushedLayerSig[l.id] !== sig){
+        tasks.push({ kind:'layer', id:l.id, path: githubLayerFilePath(l.id), content: buildLayerFileObject(l), sig: sig });
+      }
+    });
+    Object.keys(lastPushedLayerSig).forEach(function(id){
+      if (topLevelIds.indexOf(id) === -1 && githubShas.layers[id]){
+        tasks.push({ kind:'deleteLayer', id:id, path: githubLayerFilePath(id) });
+      }
+    });
+
+    if (!tasks.length){
+      syncInProgress = false;
+      updateSyncStatus('ok','Sin cambios pendientes');
+      return Promise.resolve(true);
+    }
+
+    function runNext(i){
+      if (i >= tasks.length) return Promise.resolve(true);
+      return githubPushOneFile(tasks[i]).then(function(){ return runNext(i + 1); });
+    }
+    return runNext(0).then(function(){
+      syncInProgress = false;
+      updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+      return true;
+    }).catch(function(err){
+      syncInProgress = false;
+      updateSyncStatus('error','Error al subir: ' + err.message);
+      return false;
+    });
+  }
+
+  function githubRefreshSha(path){
+    return fetch(githubContentsUrl(path, true), { headers: githubAuthHeaders() }).then(function(res){
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json().then(function(data){ return data.sha; });
+    });
+  }
+
+  function githubPushOneFile(task, retriesLeft){
+    if (retriesLeft == null) retriesLeft = 3;
+    var knownSha = task.kind === 'index' ? githubShas.index : githubShas.layers[task.id];
+
+    if (task.kind === 'deleteLayer'){
+      if (!knownSha){ delete lastPushedLayerSig[task.id]; return Promise.resolve(); }
+      return fetch(githubContentsUrl(task.path), {
+        method:'DELETE',
+        headers: Object.assign({ 'Content-Type':'application/json' }, githubAuthHeaders()),
+        body: JSON.stringify({ message:'Eliminar capa - ' + new Date().toISOString(), sha: knownSha, branch: githubConfig.branch || 'main' })
+      }).then(function(res){
+        if (res.status === 409 && retriesLeft > 0){
+          return githubRefreshSha(task.path).then(function(sha){ githubShas.layers[task.id] = sha; return githubPushOneFile(task, retriesLeft - 1); });
+        }
+        delete githubShas.layers[task.id];
+        delete lastPushedLayerSig[task.id];
+      });
+    }
+
+    var body = {
+      message: (task.kind === 'index' ? 'Actualizar índice' : 'Actualizar capa') + ' - ' + new Date().toISOString(),
+      content: utf8ToBase64(JSON.stringify(task.content)),
+      branch: githubConfig.branch || 'main'
+    };
+    if (knownSha) body.sha = knownSha;
+    return fetch(githubContentsUrl(task.path), {
       method:'PUT',
-      headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' },
+      headers: Object.assign({ 'Content-Type':'application/json' }, githubAuthHeaders()),
       body: JSON.stringify(body)
     }).then(function(res){
-      if (res.status === 409){
-        syncInProgress = false;
-        if (retriesLeft > 0){
-          // Alguien más subió cambios primero. En vez de descartar el trabajo local
-          // (que borraría lo que el usuario acaba de crear/editar), solo tomamos el
-          // SHA más reciente y reintentamos subir nuestro propio contenido sobre él.
-          updateSyncStatus('syncing','Reintentando subir…');
-          return fetch(githubApiUrl(true), {
-            headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
-          }).then(function(res2){
-            if (!res2.ok) throw new Error('HTTP ' + res2.status);
-            return res2.json().then(function(data2){
-              githubFileSha = data2.sha;
-              return githubPush(retriesLeft - 1);
-            });
-          }).catch(function(){
-            updateSyncStatus('error','No se pudo sincronizar; reintente manualmente con "Subir cambios"');
-            return false;
-          });
-        }
-        updateSyncStatus('error','No se pudo sincronizar (conflicto persistente); reintente manualmente con "Subir cambios"');
-        return false;
+      if (res.status === 409 && retriesLeft > 0){
+        return githubRefreshSha(task.path).then(function(sha){
+          if (task.kind === 'index') githubShas.index = sha; else githubShas.layers[task.id] = sha;
+          return githubPushOneFile(task, retriesLeft - 1);
+        });
       }
       return res.json().then(function(data){
         if (!res.ok) throw new Error(data.message || ('HTTP ' + res.status));
-        githubFileSha = data.content.sha;
-        updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
-        syncInProgress = false;
-        return true;
+        if (task.kind === 'index'){ githubShas.index = data.content.sha; lastPushedIndexSig = task.sig; }
+        else { githubShas.layers[task.id] = data.content.sha; lastPushedLayerSig[task.id] = task.sig; }
       });
-    }).catch(function(err){
-      updateSyncStatus('error','Error al subir: ' + err.message);
-      syncInProgress = false;
-      return false;
     });
   }
 
   function scheduleGithubPush(){
     if (githubPushTimer) clearTimeout(githubPushTimer);
-    githubPushTimer = setTimeout(function(){ githubPushTimer = null; githubPush(); }, 3000);
+    githubPushTimer = setTimeout(function(){ githubPushTimer = null; githubPush(); }, 12000);
   }
 
   /* ---------------- COPIAS DE SEGURIDAD LOCALES ---------------- */
@@ -1132,41 +1270,24 @@
   document.getElementById('local-backups-btn').addEventListener('click', showLocalBackups);
 
   /* ---------------- HISTORIAL DE GITHUB Y RESTAURACIÓN ---------------- */
-  function githubFetchTextAtRef(refOrSha){
-    return fetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + encodeURIComponent(githubConfig.path) + '?ref=' + refOrSha, {
+  function githubFetchTextAtRef(path, refOrSha){
+    return fetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + path + '?ref=' + refOrSha, {
       headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
     }).then(function(res){
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
-    }).then(function(data){
-      if (data && data.content){
-        return base64ToUtf8(data.content);
-      }
-      if (data && data.sha){
-        // Contents API omite "content" para archivos grandes (>1MB); recurrimos al API de Blobs, que sí lo soporta.
-        return fetch('https://api.github.com/repos/' + githubConfig.repo + '/git/blobs/' + data.sha, {
-          headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
-        }).then(function(res2){
-          if (!res2.ok) throw new Error('HTTP ' + res2.status);
-          return res2.json();
-        }).then(function(blob){
-          if (!blob || !blob.content) throw new Error('El archivo no tiene contenido en esa versión.');
-          return base64ToUtf8(blob.content);
-        });
-      }
-      throw new Error('No se encontró contenido para esa versión.');
-    });
+    }).then(function(data){ return resolveFileText(data); });
   }
 
   function githubFetchHistory(page){
     page = page || 1;
     if (!githubConfigured()){ alert('Configure primero la sincronización con GitHub.'); return; }
-    if (page === 1) openHistoryScrim('Historial en GitHub');
+    if (page === 1) openHistoryScrim('Historial de la estructura (capas, nombres, orden, vista)');
     var list = document.getElementById('history-list');
     var loadMoreBtn = document.getElementById('history-load-more-btn');
     if (loadMoreBtn) loadMoreBtn.remove();
     if (page === 1) list.innerHTML = '<div class="history-empty">Cargando…</div>';
-    fetch('https://api.github.com/repos/' + githubConfig.repo + '/commits?path=' + encodeURIComponent(githubConfig.path) + '&per_page=100&page=' + page, {
+    fetch('https://api.github.com/repos/' + githubConfig.repo + '/commits?path=' + encodeURIComponent(githubIndexPath()) + '&per_page=100&page=' + page, {
       headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
     }).then(function(res){
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1209,23 +1330,25 @@
   document.getElementById('gh-history-btn').addEventListener('click', function(){ githubFetchHistory(1); });
 
   function githubRestoreCommit(sha, dateLabel){
-    showConfirm('¿Reemplazar el mapa actual por la versión del ' + dateLabel + '? Quedará guardada como la versión más reciente para todos los que sincronicen.', function(){
+    showConfirm('¿Restaurar la estructura de capas (nombres, orden, visibilidad, vista) tal como estaba el ' + dateLabel + '? El contenido de cada capa se completa con su versión más reciente — esto no revierte los objetos dibujados dentro de las capas, solo su organización.', function(){
       updateSyncStatus('syncing','Restaurando…');
-      githubFetchTextAtRef(sha).then(function(rawText){
-        var state = JSON.parse(rawText);
+      githubFetchTextAtRef(githubIndexPath(), sha).then(function(rawText){
+        var indexState = JSON.parse(rawText);
         saveLocalBackup();
         applyingRemoteState = true;
-        applyRemoteState(state, { applyView:true });
+        applyRemoteState(indexState, { applyView:true });
         applyingRemoteState = false;
+        var rootIds = getRootLayers().map(function(l){ return l.id; });
+        var chain = Promise.resolve();
+        rootIds.forEach(function(id){ chain = chain.then(function(){ return githubPullLayerFile(id); }); });
+        return chain;
+      }).then(function(){
+        renderLayerList();
         closeHistoryScrim();
-        updateSyncStatus('ok','Versión restaurada, subiendo…');
-        return fetch(githubApiUrl(true), {
-          headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
-        });
-      }).then(function(res2){
-        return res2.json();
-      }).then(function(data2){
-        githubFileSha = data2.sha;
+        updateSyncStatus('ok','Estructura restaurada, subiendo…');
+        return githubRefreshSha(githubIndexPath());
+      }).then(function(sha2){
+        githubShas.index = sha2;
         githubPush();
       }).catch(function(err){
         updateSyncStatus('error','No se pudo restaurar: ' + err.message);
@@ -5121,10 +5244,10 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   setInterval(function(){
     if (githubConfigured() && githubConfig.autoSync && !githubPushTimer &&
         !activeToolName && !moveModeShape && !editingFieldFocused && !selectedShape &&
-        (Date.now()-lastLocalEditTime > 15000)){
+        (Date.now()-lastLocalEditTime > 20000)){
       githubPull(false, true);
     }
-  }, 30000);
+  }, 60000);
 
 })();
 </script>
