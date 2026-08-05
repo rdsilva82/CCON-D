@@ -1666,6 +1666,8 @@
       if (ind){ if (visible) ind.addTo(map); else map.removeLayer(ind); }
       var cov = emisoraCoverageLayers[s._shapeId];
       if (cov){ if (visible) cov.addTo(map); else map.removeLayer(cov); }
+      var milR = milRadiusLayers[s._shapeId];
+      if (milR){ if (visible) milR.addTo(map); else map.removeLayer(milR); }
     });
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
@@ -1907,7 +1909,9 @@
     ['navalelement','Elemento Naval'],
     ['baseaerea','Base Aérea'],
     ['ammodepot','Depósito de municiones'],
-    ['radar','Radar']
+    ['radar','Radar'],
+    ['obus','OBUS'],
+    ['radarmilitar','Radar Militar']
   ];
   var MIL_TEXT_UNIT_CODES = {
     aspc:'ASPC', biter:'BITER', ggcar:'GGCAR', ggmag:'GGMAG', bapom:'BAPOM',
@@ -1938,6 +1942,56 @@
 
   function defaultMilParams(){
     return { affiliation:'friendly', unitType:'generic', echelon:'', designation:'' };
+  }
+  function ensureMilTypeExtras(mil){
+    if (mil.unitType === 'obus' && !mil.obus) mil.obus = { radioAccionKm: 50, alturaMaximaKm: 15 };
+    if (mil.unitType === 'radarmilitar' && !mil.radarMilitar) mil.radarMilitar = { radioDeteccionNm: 200 };
+  }
+
+  var milRadiusLayers = {};
+  function removeMilRadius(shape){
+    if (!shape) return;
+    var c = milRadiusLayers[shape._shapeId];
+    if (c){ c.remove(); delete milRadiusLayers[shape._shapeId]; }
+  }
+  function syncMilRadius(shape){
+    if (!shape || !shape._isMilSymbol){ removeMilRadius(shape); return; }
+    var km = null, style = null;
+    if (shape._mil.unitType === 'obus' && shape._mil.obus){
+      km = parseFloat(shape._mil.obus.radioAccionKm);
+      style = { color:'#C62828', weight:1.5, fillColor:'#C62828', fillOpacity:.25 };
+    } else if (shape._mil.unitType === 'radarmilitar' && shape._mil.radarMilitar){
+      var nm = parseFloat(shape._mil.radarMilitar.radioDeteccionNm);
+      km = (nm > 0) ? nm * 1.852 : null;
+      style = { color:'#1F3864', weight:1.5, fillColor:'#1F3864', fillOpacity:.08 };
+    }
+    if (!km || km <= 0){ removeMilRadius(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+    var center = shape.getLatLng();
+    var radiusMeters = km * 1000;
+    var circle = milRadiusLayers[shape._shapeId];
+    if (!circle){
+      circle = L.circle(center, Object.assign({ radius: radiusMeters, dashArray:'4 4', interactive:false, keyboard:false }, style));
+      if (owner.visible) circle.addTo(map);
+      milRadiusLayers[shape._shapeId] = circle;
+    } else {
+      circle.setLatLng(center);
+      circle.setRadius(radiusMeters);
+      circle.setStyle(style);
+    }
+  }
+  function syncAllMilRadius(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){
+        if (s._isMilSymbol && s._mil && (s._mil.unitType === 'obus' || s._mil.unitType === 'radarmilitar')) liveIds[s._shapeId] = s;
+      });
+    });
+    Object.keys(milRadiusLayers).forEach(function(id){
+      if (!liveIds[id]){ milRadiusLayers[id].remove(); delete milRadiusLayers[id]; }
+    });
+    Object.keys(liveIds).forEach(function(id){ syncMilRadius(liveIds[id]); });
   }
 
   function milFrameSVG(affiliation){
@@ -2018,6 +2072,17 @@
       case 'radar':
         return '<path d="M18,19 v13 a4,4 0 004,4 h9" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
                '<path d="M21,19 l9,10 -4,4 10,-10" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+      case 'obus':
+        return '<line x1="30" y1="12" x2="30" y2="40" stroke="'+g+'" stroke-width="2" stroke-linecap="round"/>' +
+               '<line x1="23" y1="18" x2="23" y2="34" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round"/>' +
+               '<line x1="37" y1="18" x2="37" y2="34" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round"/>' +
+               '<circle cx="30" cy="43" r="5.5" fill="none" stroke="'+g+'" stroke-width="2"/>';
+      case 'radarmilitar':
+        return '<path d="M18,40 L27,20 L38,40 Z" fill="'+g+'"/>' +
+               '<path d="M13,17 A13,9.5 0 00,26,26 L37,10 A13,9.5 0 00,13,17 Z" fill="'+g+'"/>' +
+               '<circle cx="37" cy="10" r="2.6" fill="'+g+'"/>' +
+               '<line x1="37" y1="10" x2="18" y2="18" stroke="'+g+'" stroke-width="1.4"/>' +
+               '<line x1="37" y1="10" x2="27" y2="25" stroke="'+g+'" stroke-width="1.4"/>';
       default:
         return '';
     }
@@ -3039,6 +3104,7 @@
       shape.setLatLng(L.latLng(p.lat+dLat, p.lng+dLng));
       syncSupplyIndicator(shape);
       syncEmisoraCoverage(shape);
+      syncMilRadius(shape);
       return;
     }
     if (shape.getLatLngs){
@@ -3584,6 +3650,7 @@
     getRootLayers().forEach(function(node){ list.appendChild(buildLayerCard(node, 0)); });
     syncAllSupplyIndicators();
     syncAllEmisoraCoverage();
+    syncAllMilRadius();
     scheduleSave();
   }
 
@@ -4145,6 +4212,10 @@
         });
         select.addEventListener('change', function(ev){
           shape._mil[key] = ev.target.value;
+          if (key === 'unitType'){
+            ensureMilTypeExtras(shape._mil);
+            syncMilRadius(shape);
+          }
           applyMilSymbol(shape);
           renderLayerList();
           showProperties(shape, layerObj);
@@ -4171,6 +4242,49 @@
       });
       designField.appendChild(designInput);
       milBlock.appendChild(designField);
+
+      function milNumberField(label, unit, getVal, setVal){
+        var field = document.createElement('div');
+        field.className = 'style-field';
+        field.innerHTML = '<span>' + label + '</span>';
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'display:flex;align-items:center;gap:5px;';
+        var input = document.createElement('input');
+        input.type = 'number'; input.min = 0; input.step = 'any';
+        input.value = getVal();
+        input.style.cssText = 'width:70px;border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-family:inherit;font-size:12px;text-align:right;';
+        input.addEventListener('input', function(ev){
+          setVal(parseFloat(ev.target.value) || 0);
+          syncMilRadius(shape);
+        });
+        var unitSpan = document.createElement('span');
+        unitSpan.style.cssText = 'font-size:11px;color:var(--muted);';
+        unitSpan.textContent = unit;
+        wrap.appendChild(input);
+        wrap.appendChild(unitSpan);
+        field.appendChild(wrap);
+        return field;
+      }
+
+      if (shape._mil.unitType === 'obus'){
+        ensureMilTypeExtras(shape._mil);
+        milBlock.appendChild(milNumberField('Radio de acción', 'km',
+          function(){ return shape._mil.obus.radioAccionKm; },
+          function(v){ shape._mil.obus.radioAccionKm = v; }));
+        milBlock.appendChild(milNumberField('Altura máxima', 'km',
+          function(){ return shape._mil.obus.alturaMaximaKm; },
+          function(v){ shape._mil.obus.alturaMaximaKm = v; }));
+        var obusHint = document.createElement('div');
+        obusHint.className = 'hint';
+        obusHint.textContent = 'El radio de acción se dibuja en rojo alrededor del elemento. La altura máxima es un dato de referencia (no se grafica).';
+        milBlock.appendChild(obusHint);
+      }
+      if (shape._mil.unitType === 'radarmilitar'){
+        ensureMilTypeExtras(shape._mil);
+        milBlock.appendChild(milNumberField('Radio de detección', 'millas náuticas',
+          function(){ return shape._mil.radarMilitar.radioDeteccionNm; },
+          function(v){ shape._mil.radarMilitar.radioDeteccionNm = v; }));
+      }
 
       body.appendChild(milBlock);
     }
@@ -4782,7 +4896,9 @@
           affiliation: shape._mil.affiliation,
           unitType: shape._mil.unitType,
           echelon: shape._mil.echelon,
-          designation: shape._mil.designation
+          designation: shape._mil.designation,
+          obus: shape._mil.obus,
+          radarMilitar: shape._mil.radarMilitar
         };
       }
       if (shape && shape._pointShape){
@@ -4848,6 +4964,9 @@
         var p = feature.properties || {};
         if (p.mil){
           var mil = { affiliation: p.mil.affiliation || 'friendly', unitType: p.mil.unitType || 'generic', echelon: p.mil.echelon || '', designation: p.mil.designation || '' };
+          if (p.mil.obus) mil.obus = p.mil.obus;
+          if (p.mil.radarMilitar) mil.radarMilitar = p.mil.radarMilitar;
+          ensureMilTypeExtras(mil);
           var m = L.marker(latlng, { icon: buildMilSymbolIcon(mil) });
           m._isMilSymbol = true;
           m._mil = mil;
