@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "savedAt": "2026-08-05T01:11:51.394Z",
+  "savedAt": "2026-08-05T01:12:03.992Z",
   "mapView": {
     "lat": 9.671153534953039,
     "lng": -72.63061523437501,
@@ -7383,7 +7383,7 @@
         "properties": {
           "capa": "Teatro de Operaciones",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:51.394Z"
+          "generado": "2026-08-05T01:12:03.992Z"
         }
       }
     },
@@ -7401,7 +7401,7 @@
         "properties": {
           "capa": "Operaciones",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:51.394Z"
+          "generado": "2026-08-05T01:12:03.992Z"
         }
       }
     },
@@ -14275,7 +14275,7 @@
         "properties": {
           "capa": "calcos_terreno_combinado",
           "color": "#2F6F8F",
-          "generado": "2026-08-05T01:11:51.394Z"
+          "generado": "2026-08-05T01:12:03.992Z"
         }
       }
     },
@@ -17116,7 +17116,7 @@
         "properties": {
           "capa": "calco_ao",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:51.394Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -17977,7 +17977,7 @@
         "properties": {
           "capa": "calco_enemigo",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -18202,7 +18202,7 @@
         "properties": {
           "capa": "calco_avenidas",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -18483,7 +18483,7 @@
         "properties": {
           "capa": "calco_terreno",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -18719,7 +18719,7 @@
         "properties": {
           "capa": "calco_observacion",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -18934,7 +18934,7 @@
         "properties": {
           "capa": "calco_cubierta",
           "color": "#2F6F8F",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -20951,7 +20951,7 @@
         "properties": {
           "capa": "calco_civiles",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -20969,7 +20969,7 @@
         "properties": {
           "capa": "PICC",
           "color": "#ff0000",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -20987,7 +20987,7 @@
         "properties": {
           "capa": "DIV 1",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -21240,7 +21240,7 @@
         "properties": {
           "capa": "BR-2",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -21779,7 +21779,7 @@
         "properties": {
           "capa": "BR-10",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -30076,7 +30076,7 @@
         "properties": {
           "capa": "COA",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -30094,7 +30094,7 @@
         "properties": {
           "capa": "ACCIÓN INTEGRAL",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -30217,7 +30217,7 @@
         "properties": {
           "capa": "AEREO",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -30235,7 +30235,7 @@
         "properties": {
           "capa": "DIV 2",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -30514,7 +30514,7 @@
         "properties": {
           "capa": "BR-5",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -30949,7 +30949,7 @@
         "properties": {
           "capa": "BR-30",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -31072,7 +31072,7 @@
         "properties": {
           "capa": "BR-19",
           "color": "#2F6F8F",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -31221,7 +31221,7 @@
         "properties": {
           "capa": "FUDRA-9",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -32077,7 +32077,7 @@
         "properties": {
           "capa": "BLANCOS",
           "color": "#ff3a2f",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -32200,7 +32200,7 @@
         "properties": {
           "capa": "FUTAM",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -32349,7 +32349,7 @@
         "properties": {
           "capa": "U/DIV",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -32367,7 +32367,7 @@
         "properties": {
           "capa": "RADARES",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -32385,7 +32385,7 @@
         "properties": {
           "capa": "SOSTENIMIENTO",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -36049,7 +36049,7 @@
         "properties": {
           "capa": "INFRA CRITICA",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -36455,7 +36455,7 @@
         "properties": {
           "capa": "Emisoras",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -36744,7 +36744,7 @@
         "properties": {
           "capa": "Hospitales",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -36867,7 +36867,7 @@
         "properties": {
           "capa": "BRCNA2",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -36964,7 +36964,7 @@
         "properties": {
           "capa": "BRAID1",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -37113,7 +37113,7 @@
         "properties": {
           "capa": "FUDRA3",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -37236,7 +37236,7 @@
         "properties": {
           "capa": "BRILOG3",
           "color": "#2F6F8F",
-          "generado": "2026-08-05T01:11:51.395Z"
+          "generado": "2026-08-05T01:12:03.993Z"
         }
       }
     },
@@ -295624,7 +295624,7 @@
         "properties": {
           "capa": "Resguardos_Guajira_Cesar_NorteSantander",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:51.399Z"
+          "generado": "2026-08-05T01:12:03.997Z"
         }
       }
     },
@@ -295642,7 +295642,7 @@
         "properties": {
           "capa": "FNC",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:51.399Z"
+          "generado": "2026-08-05T01:12:03.997Z"
         }
       }
     },
@@ -295660,7 +295660,7 @@
         "properties": {
           "capa": "INTELIGENCIA",
           "color": "#ff0000",
-          "generado": "2026-08-05T01:11:51.399Z"
+          "generado": "2026-08-05T01:12:03.997Z"
         }
       }
     },
@@ -467180,7 +467180,7 @@
         "properties": {
           "capa": "ESTRUCTURAS",
           "color": "#ff0000",
-          "generado": "2026-08-05T01:11:51.402Z"
+          "generado": "2026-08-05T01:12:04.000Z"
         }
       }
     },
@@ -467198,7 +467198,7 @@
         "properties": {
           "capa": "INFRAESTRUCTURA",
           "color": "#7A4A2F",
-          "generado": "2026-08-05T01:11:51.402Z"
+          "generado": "2026-08-05T01:12:04.000Z"
         }
       }
     },
@@ -474217,16 +474217,16 @@
         "properties": {
           "capa": "CLARO",
           "color": "#1F3864",
-          "generado": "2026-08-05T01:11:51.402Z"
+          "generado": "2026-08-05T01:12:04.000Z"
         }
       }
     },
     {
       "id": "capa-58",
-      "name": "cobertura_movistar",
+      "name": "MOVISTAR",
       "color": "#B8962E",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": null,
       "sortIndex": 15,
       "geojson": {
@@ -474248,7 +474248,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 870",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -474413,7 +474413,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 871",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -474518,7 +474518,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 872",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -474619,7 +474619,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 873",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -474692,7 +474692,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 874",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -474797,7 +474797,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 875",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -474870,7 +474870,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 876",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475007,7 +475007,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 877",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475120,7 +475120,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 878",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475201,7 +475201,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 879",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475286,7 +475286,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 880",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475391,7 +475391,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 881",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475460,7 +475460,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 882",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475521,7 +475521,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 883",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475618,7 +475618,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 884",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475711,7 +475711,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 885",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475772,7 +475772,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 886",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475853,7 +475853,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 887",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -475938,7 +475938,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 888",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476027,7 +476027,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 889",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476112,7 +476112,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 890",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476241,7 +476241,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 891",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476322,7 +476322,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 892",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476423,7 +476423,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 893",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476520,7 +476520,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 894",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476593,7 +476593,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 895",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476718,7 +476718,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 896",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476799,7 +476799,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 897",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476888,7 +476888,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 898",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -476985,7 +476985,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 899",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477046,7 +477046,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 900",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477103,7 +477103,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 901",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477184,7 +477184,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 902",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477267,7 +477267,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 903",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477340,7 +477340,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 904",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477445,7 +477445,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 905",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477550,7 +477550,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 906",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477663,7 +477663,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 907",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477824,7 +477824,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 908",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477893,7 +477893,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 909",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -477958,7 +477958,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 910",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478083,7 +478083,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 911",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478196,7 +478196,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 912",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478285,7 +478285,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 913",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478362,7 +478362,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 914",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478431,7 +478431,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 915",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478492,7 +478492,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 916",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478581,7 +478581,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 917",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478646,7 +478646,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 918",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478747,7 +478747,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 919",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478884,7 +478884,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 920",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -478965,7 +478965,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 921",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479026,7 +479026,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 922",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479167,7 +479167,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 923",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479248,7 +479248,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 924",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479337,7 +479337,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 925",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479406,7 +479406,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 926",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479483,7 +479483,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 927",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479544,7 +479544,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 928",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479613,7 +479613,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 929",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479694,7 +479694,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 930",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479759,7 +479759,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 931",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479824,7 +479824,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 932",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479881,7 +479881,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 933",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -479942,7 +479942,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 934",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480057,7 +480057,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 935",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480134,7 +480134,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 936",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480199,7 +480199,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 937",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480252,7 +480252,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 938",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480309,7 +480309,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 939",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480386,7 +480386,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 940",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480475,7 +480475,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 941",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480536,7 +480536,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 942",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480597,7 +480597,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 943",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480702,7 +480702,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 944",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480771,7 +480771,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 945",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -480892,7 +480892,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 946",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481009,7 +481009,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 947",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481118,7 +481118,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 948",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481191,7 +481191,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 949",
-              "capa": "cobertura_movistar",
+              "capa": "MOVISTAR",
               "fillColor": "#B8962E",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481234,18 +481234,18 @@
           }
         ],
         "properties": {
-          "capa": "cobertura_movistar",
+          "capa": "MOVISTAR",
           "color": "#B8962E",
-          "generado": "2026-08-05T01:11:51.402Z"
+          "generado": "2026-08-05T01:12:04.000Z"
         }
       }
     },
     {
       "id": "capa-59",
-      "name": "cobertura_tigo",
+      "name": "TIGO",
       "color": "#4C7A57",
       "visible": true,
-      "expanded": true,
+      "expanded": false,
       "parentId": null,
       "sortIndex": 16,
       "geojson": {
@@ -481267,7 +481267,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 950",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481432,7 +481432,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 951",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481537,7 +481537,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 952",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481638,7 +481638,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 953",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481711,7 +481711,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 954",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481816,7 +481816,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 955",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -481889,7 +481889,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 956",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482026,7 +482026,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 957",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482139,7 +482139,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 958",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482220,7 +482220,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 959",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482305,7 +482305,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 960",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482410,7 +482410,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 961",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482479,7 +482479,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 962",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482540,7 +482540,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 963",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482637,7 +482637,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 964",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482730,7 +482730,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 965",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482791,7 +482791,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 966",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482872,7 +482872,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 967",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -482957,7 +482957,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 968",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483046,7 +483046,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 969",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483131,7 +483131,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 970",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483260,7 +483260,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 971",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483341,7 +483341,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 972",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483442,7 +483442,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 973",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483539,7 +483539,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 974",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483612,7 +483612,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 975",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483737,7 +483737,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 976",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483818,7 +483818,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 977",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -483907,7 +483907,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 978",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484004,7 +484004,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 979",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484065,7 +484065,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 980",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484122,7 +484122,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 981",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484203,7 +484203,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 982",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484286,7 +484286,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 983",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484359,7 +484359,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 984",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484464,7 +484464,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 985",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484569,7 +484569,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 986",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484682,7 +484682,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 987",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484843,7 +484843,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 988",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484912,7 +484912,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 989",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -484977,7 +484977,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 990",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485102,7 +485102,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 991",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485215,7 +485215,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 992",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485304,7 +485304,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 993",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485381,7 +485381,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 994",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485450,7 +485450,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 995",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485511,7 +485511,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 996",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485600,7 +485600,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 997",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485665,7 +485665,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 998",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485766,7 +485766,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 999",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485903,7 +485903,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1000",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -485984,7 +485984,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1001",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486045,7 +486045,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1002",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486186,7 +486186,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1003",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486267,7 +486267,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1004",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486356,7 +486356,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1005",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486425,7 +486425,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1006",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486502,7 +486502,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1007",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486563,7 +486563,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1008",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486632,7 +486632,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1009",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486713,7 +486713,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1010",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486778,7 +486778,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1011",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486843,7 +486843,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1012",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486900,7 +486900,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1013",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -486961,7 +486961,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1014",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487076,7 +487076,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1015",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487153,7 +487153,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1016",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487218,7 +487218,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1017",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487271,7 +487271,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1018",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487328,7 +487328,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1019",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487405,7 +487405,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1020",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487494,7 +487494,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1021",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487555,7 +487555,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1022",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487616,7 +487616,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1023",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487721,7 +487721,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1024",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487790,7 +487790,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1025",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -487911,7 +487911,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1026",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488028,7 +488028,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1027",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488137,7 +488137,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1028",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488210,7 +488210,7 @@
               "stroke-width": 0.4,
               "stroke-opacity": 0.8,
               "nombre": "Polígono 1029",
-              "capa": "cobertura_tigo",
+              "capa": "TIGO",
               "fillColor": "#4C7A57",
               "fillOpacity": 0.25,
               "opacity": 1,
@@ -488253,9 +488253,9 @@
           }
         ],
         "properties": {
-          "capa": "cobertura_tigo",
+          "capa": "TIGO",
           "color": "#4C7A57",
-          "generado": "2026-08-05T01:11:51.402Z"
+          "generado": "2026-08-05T01:12:04.000Z"
         }
       }
     },
@@ -495274,7 +495274,7 @@
         "properties": {
           "capa": "WOM",
           "color": "#8A3A5A",
-          "generado": "2026-08-05T01:11:51.402Z"
+          "generado": "2026-08-05T01:12:04.000Z"
         }
       }
     }
