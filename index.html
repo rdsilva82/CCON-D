@@ -1098,16 +1098,28 @@
       });
   }
 
+  var githubLayerRawCache = {}; // id -> último texto JSON de capa aplicado con éxito
+
   function githubPullLayerFile(id){
     return fetch(githubContentsUrl(githubLayerFilePath(id), true), { headers: githubAuthHeaders() })
       .then(function(res){
         if (res.status === 404) return;
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json().then(function(data){
-          if (githubShas.layers[id] === data.sha) return;
+          if (githubShas.layers[id] === data.sha && githubLayerRawCache[id]){
+            // El contenido remoto no cambió, pero el grupo local de esta capa se
+            // vació al reconstruir la estructura desde el índice — hay que
+            // volver a aplicarlo igual, sin necesidad de descargarlo de nuevo.
+            var cachedNode = JSON.parse(githubLayerRawCache[id]);
+            applyLayerFileObject(cachedNode);
+            var cachedLayerObj = getLayer(id);
+            if (cachedLayerObj) lastPushedLayerSig[id] = layerContentSignature(cachedLayerObj);
+            return;
+          }
           return resolveFileText(data).then(function(rawText){
             var node = JSON.parse(rawText);
             githubShas.layers[id] = data.sha;
+            githubLayerRawCache[id] = rawText;
             applyLayerFileObject(node);
             var layerObj = getLayer(id);
             if (layerObj) lastPushedLayerSig[id] = layerContentSignature(layerObj);
@@ -1410,6 +1422,80 @@
       }).catch(function(err){
         updateSyncStatus('error','No se pudo restaurar: ' + err.message);
         alert('No se pudo restaurar esa versión: ' + err.message);
+      });
+    });
+  }
+
+  function githubFetchLayerHistory(layerId, layerName, page){
+    page = page || 1;
+    if (!githubConfigured()){ alert('Configure primero la sincronización con GitHub.'); return; }
+    var path = githubLayerFilePath(layerId);
+    if (page === 1) openHistoryScrim('Historial de la capa "' + layerName + '"');
+    var list = document.getElementById('history-list');
+    var loadMoreBtn = document.getElementById('history-load-more-btn');
+    if (loadMoreBtn) loadMoreBtn.remove();
+    if (page === 1) list.innerHTML = '<div class="history-empty">Cargando…</div>';
+    fetch('https://api.github.com/repos/' + githubConfig.repo + '/commits?path=' + encodeURIComponent(path) + '&per_page=100&page=' + page, {
+      headers: githubAuthHeaders()
+    }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var hasMore = (res.headers.get('Link') || '').indexOf('rel="next"') !== -1;
+      return res.json().then(function(commits){ return { commits: commits, hasMore: hasMore }; });
+    }).then(function(result){
+      var commits = result.commits;
+      if (page === 1) list.innerHTML = '';
+      if (page === 1 && !commits.length){
+        list.innerHTML = '<div class="history-empty">Todavía no hay sincronizaciones guardadas para esta capa.</div>';
+        return;
+      }
+      commits.forEach(function(c){
+        var item = document.createElement('div');
+        item.className = 'history-item';
+        var text = document.createElement('div');
+        text.className = 'history-item-text';
+        text.innerHTML = '<div class="history-item-date">' + formatHistoryDate(c.commit.author.date) + '</div><div class="history-item-msg">' + escapeHtmlText(c.commit.message) + '</div>';
+        var btn = document.createElement('button');
+        btn.className = 'outline-btn';
+        btn.textContent = 'Restaurar';
+        btn.addEventListener('click', function(){ githubRestoreLayerCommit(layerId, layerName, c.sha, formatHistoryDate(c.commit.author.date)); });
+        item.appendChild(text);
+        item.appendChild(btn);
+        list.appendChild(item);
+      });
+      if (result.hasMore){
+        var more = document.createElement('button');
+        more.className = 'outline-btn';
+        more.id = 'history-load-more-btn';
+        more.style.cssText = 'width:100%;margin-top:4px;';
+        more.textContent = 'Cargar sincronizaciones más antiguas…';
+        more.addEventListener('click', function(){ githubFetchLayerHistory(layerId, layerName, page + 1); });
+        list.appendChild(more);
+      }
+    }).catch(function(err){
+      list.innerHTML = '<div class="history-empty">No se pudo cargar el historial: ' + escapeHtmlText(err.message) + '</div>';
+    });
+  }
+
+  function githubRestoreLayerCommit(layerId, layerName, sha, dateLabel){
+    showConfirm('¿Reemplazar el contenido de la capa "' + layerName + '" por la versión del ' + dateLabel + '? Las demás capas no se ven afectadas.', function(){
+      updateSyncStatus('syncing','Restaurando capa…');
+      githubFetchTextAtRef(githubLayerFilePath(layerId), sha).then(function(rawText){
+        var node = JSON.parse(rawText);
+        saveLocalBackup();
+        applyingRemoteState = true;
+        applyLayerFileObject(node);
+        applyingRemoteState = false;
+        githubLayerRawCache[layerId] = rawText;
+        renderLayerList();
+        closeHistoryScrim();
+        updateSyncStatus('ok','Capa restaurada, subiendo…');
+        return githubRefreshSha(githubLayerFilePath(layerId));
+      }).then(function(sha2){
+        githubShas.layers[layerId] = sha2;
+        githubPush();
+      }).catch(function(err){
+        updateSyncStatus('error','No se pudo restaurar la capa: ' + err.message);
+        alert('No se pudo restaurar esa versión de la capa: ' + err.message);
       });
     });
   }
@@ -3790,6 +3876,17 @@
 
       toolsRow.appendChild(addSubBtn);
       toolsRow.appendChild(copyLayerBtn);
+      if (!l.parentId){
+        var layerHistoryBtn = document.createElement('button');
+        layerHistoryBtn.className = 'outline-btn';
+        layerHistoryBtn.title = 'Ver historial de esta capa en GitHub y restaurar una versión anterior de su contenido';
+        layerHistoryBtn.textContent = '🕐 Historial';
+        layerHistoryBtn.addEventListener('click', function(ev){
+          ev.stopPropagation();
+          githubFetchLayerHistory(l.id, l.name);
+        });
+        toolsRow.appendChild(layerHistoryBtn);
+      }
       toolsRow.appendChild(moveSelect);
       card.appendChild(toolsRow);
 
