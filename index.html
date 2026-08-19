@@ -194,6 +194,44 @@
   #map-wrapper{ position:relative; height:100%; width:100%; }
   #map{ height:100%; width:100%; background:#DCE3EA; }
 
+  /* ---------- BÚSQUEDA Y RUTAS ---------- */
+  #map-search-control{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%); z-index:800;
+    width:min(400px, 88vw);
+  }
+  #map-search-box{
+    display:flex; background:#fff; border-radius:9px; box-shadow:0 2px 12px rgba(0,0,0,.28); overflow:hidden;
+  }
+  #map-search-input{
+    flex:1; border:none; padding:10px 12px; font-family:inherit; font-size:13px; outline:none; min-width:0;
+  }
+  #map-search-btn{
+    border:none; background:var(--navy); color:#fff; padding:0 15px; cursor:pointer; font-size:14px; flex-shrink:0;
+  }
+  #map-search-results{
+    margin-top:6px; background:#fff; border-radius:9px; box-shadow:0 2px 12px rgba(0,0,0,.28);
+    max-height:280px; overflow-y:auto; display:none;
+  }
+  #map-search-results.show{ display:block; }
+  .map-search-result{ padding:9px 12px; cursor:pointer; border-bottom:1px solid #EEE; }
+  .map-search-result:last-child{ border-bottom:none; }
+  .map-search-result:hover{ background:#F0F1F5; }
+  .map-search-result .name{ font-weight:700; color:var(--navy); font-size:12.5px; }
+  .map-search-result .detail{ color:var(--muted); font-size:11px; margin-top:1px; }
+  #map-search-actions{
+    display:none; margin-top:6px; gap:6px; background:#fff; padding:8px; border-radius:9px; box-shadow:0 2px 12px rgba(0,0,0,.28);
+  }
+  #map-search-actions.show{ display:flex; }
+  #map-search-actions button{ flex:1; font-size:11.5px; padding:7px 6px; white-space:nowrap; }
+  #search-clear-btn{ flex:0 0 auto !important; padding:7px 10px !important; }
+  #route-pick-hint{
+    display:none; position:absolute; top:14px; left:50%; transform:translateX(-50%); z-index:800;
+    background:var(--navy); color:#fff; padding:9px 16px; border-radius:9px; font-size:12.5px;
+    box-shadow:0 2px 12px rgba(0,0,0,.3);
+  }
+  #route-pick-hint.show{ display:block; }
+  #route-pick-cancel{ text-decoration:underline; cursor:pointer; opacity:.85; }
+
   /* ---------- CUSTOM DRAW TOOLBAR ---------- */
   #draw-toolbar{
     position:absolute; top:14px; left:14px; z-index:900;
@@ -621,6 +659,20 @@
   <!-- CENTER: MAP -->
   <div id="map-wrapper">
     <div id="map"></div>
+
+    <div id="map-search-control">
+      <div id="map-search-box">
+        <input type="text" id="map-search-input" placeholder="Buscar localidad o punto de interés…" autocomplete="off">
+        <button id="map-search-btn" title="Buscar">🔍</button>
+      </div>
+      <div id="map-search-results"></div>
+      <div id="map-search-actions">
+        <button class="outline-btn" id="search-mark-btn">📍 Marcar aquí</button>
+        <button class="outline-btn" id="search-route-btn">🛣 Trazar ruta desde…</button>
+        <button class="outline-btn" id="search-clear-btn" title="Cancelar búsqueda">✕</button>
+      </div>
+    </div>
+    <div id="route-pick-hint">Haga clic en el mapa para elegir el punto de <b>origen</b> de la ruta — <span id="route-pick-cancel">Esc para cancelar</span></div>
 
     <div id="draw-toolbar">
       <button class="tool-btn" data-tool="marker" title="Punto">
@@ -5553,6 +5605,165 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
   /* ---------------- INIT ---------------- */
   setMode('edicion');
+  /* ---------------- BÚSQUEDA DE LOCALIDADES Y TRAZADO DE RUTAS ---------------- */
+  var searchMarker = null;
+  var searchSelectedLatLng = null;
+  var searchSelectedLabel = '';
+  var routeOriginClickHandler = null;
+
+  function debounce(fn, wait){
+    var t;
+    return function(){
+      var args = arguments, ctx = this;
+      clearTimeout(t);
+      t = setTimeout(function(){ fn.apply(ctx, args); }, wait);
+    };
+  }
+
+  function performSearch(query){
+    query = (query || '').trim();
+    if (query.length < 2){ hideSearchResults(); return; }
+    var b = map.getBounds();
+    var viewbox = [b.getWest(), b.getNorth(), b.getEast(), b.getSouth()].join(',');
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&limit=7&viewbox=' + viewbox + '&q=' + encodeURIComponent(query);
+    fetch(url, { headers: { 'Accept':'application/json' } })
+      .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+      .then(function(results){ renderSearchResults(results || []); })
+      .catch(function(){ renderSearchResults([]); });
+  }
+  var debouncedSearch = debounce(performSearch, 450);
+
+  function renderSearchResults(results){
+    var box = document.getElementById('map-search-results');
+    box.innerHTML = '';
+    if (!results.length){ box.classList.remove('show'); return; }
+    results.forEach(function(r){
+      var item = document.createElement('div');
+      item.className = 'map-search-result';
+      var name = r.display_name.split(',')[0];
+      item.innerHTML = '<div class="name">' + escapeHtmlText(name) + '</div><div class="detail">' + escapeHtmlText(r.display_name) + '</div>';
+      item.addEventListener('click', function(){ selectSearchResult(r); });
+      box.appendChild(item);
+    });
+    box.classList.add('show');
+  }
+  function hideSearchResults(){ document.getElementById('map-search-results').classList.remove('show'); }
+
+  function selectSearchResult(r){
+    hideSearchResults();
+    var label = r.display_name.split(',')[0];
+    document.getElementById('map-search-input').value = label;
+    var lat = parseFloat(r.lat), lon = parseFloat(r.lon);
+    searchSelectedLatLng = L.latLng(lat, lon);
+    searchSelectedLabel = label;
+    map.setView(searchSelectedLatLng, 14);
+    if (searchMarker) map.removeLayer(searchMarker);
+    searchMarker = L.marker(searchSelectedLatLng, {
+      icon: L.divIcon({
+        className:'', iconSize:[30,38], iconAnchor:[15,36],
+        html:'<svg width="30" height="38" viewBox="0 0 30 38" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M15,2 C7,2 2,8 2,15 C2,25 15,36 15,36 C15,36 28,25 28,15 C28,8 23,2 15,2 Z" fill="#C62828" stroke="#fff" stroke-width="2"/>' +
+          '<circle cx="15" cy="15" r="5" fill="#fff"/></svg>'
+      }),
+      keyboard:false
+    }).addTo(map);
+    document.getElementById('map-search-actions').classList.add('show');
+  }
+
+  function clearSearchUI(){
+    if (searchMarker){ map.removeLayer(searchMarker); searchMarker = null; }
+    searchSelectedLatLng = null;
+    searchSelectedLabel = '';
+    document.getElementById('map-search-actions').classList.remove('show');
+    document.getElementById('map-search-input').value = '';
+    hideSearchResults();
+  }
+
+  document.getElementById('map-search-input').addEventListener('input', function(ev){ debouncedSearch(ev.target.value); });
+  document.getElementById('map-search-btn').addEventListener('click', function(){ performSearch(document.getElementById('map-search-input').value); });
+  document.getElementById('map-search-input').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter') performSearch(ev.target.value);
+    if (ev.key === 'Escape') hideSearchResults();
+  });
+  document.getElementById('search-clear-btn').addEventListener('click', clearSearchUI);
+  document.addEventListener('click', function(ev){
+    var ctrl = document.getElementById('map-search-control');
+    if (ctrl && !ctrl.contains(ev.target)) hideSearchResults();
+  });
+
+  document.getElementById('search-mark-btn').addEventListener('click', function(){
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de marcar un punto.'); return; }
+    var layer = L.marker(searchSelectedLatLng, { icon: buildPointIcon(active.color, 'target') });
+    layer._customName = searchSelectedLabel;
+    active.group.addLayer(layer);
+    attachShapeInteractivity(layer, active);
+    recordAddShape(active, layer);
+    renderLayerList();
+    selectedShape = layer;
+    showProperties(layer, active);
+    clearSearchUI();
+  });
+
+  function stopRouteOriginPick(){
+    if (routeOriginClickHandler){ map.off('click', routeOriginClickHandler); routeOriginClickHandler = null; }
+    mapContainer.style.cursor = '';
+    document.getElementById('route-pick-hint').classList.remove('show');
+    document.removeEventListener('keydown', routeOriginEscHandler);
+  }
+  function routeOriginEscHandler(ev){ if (ev.key === 'Escape') stopRouteOriginPick(); }
+
+  document.getElementById('search-route-btn').addEventListener('click', function(){
+    if (!searchSelectedLatLng) return;
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de trazar una ruta.'); return; }
+    disableAllTools();
+    mapContainer.style.cursor = 'crosshair';
+    document.getElementById('route-pick-hint').classList.add('show');
+    document.addEventListener('keydown', routeOriginEscHandler);
+    var destLatLng = searchSelectedLatLng, destLabel = searchSelectedLabel;
+    routeOriginClickHandler = function(e){
+      stopRouteOriginPick();
+      traceRoute(e.latlng, destLatLng, destLabel);
+    };
+    map.on('click', routeOriginClickHandler);
+  });
+  document.getElementById('route-pick-cancel').addEventListener('click', stopRouteOriginPick);
+
+  function traceRoute(origin, destination, destLabel){
+    updateSyncStatus('syncing','Calculando ruta…');
+    var url = 'https://router.project-osrm.org/route/v1/driving/' + origin.lng + ',' + origin.lat + ';' + destination.lng + ',' + destination.lat + '?overview=full&geometries=geojson';
+    fetch(url).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).then(function(data){
+      if (!data.routes || !data.routes.length) throw new Error('sin ruta');
+      var coords = data.routes[0].geometry.coordinates.map(function(c){ return [c[1], c[0]]; });
+      createRouteShape(coords, destLabel, false);
+    }).catch(function(){
+      createRouteShape([[origin.lat, origin.lng], [destination.lat, destination.lng]], destLabel, true);
+    });
+  }
+
+  function createRouteShape(latlngs, destLabel, isStraightFallback){
+    var active = getActiveLayer();
+    if (!active) return;
+    var layer = L.polyline(latlngs, {
+      color:'#1F3864', weight:4, opacity:.85,
+      dashArray: isStraightFallback ? '8 6' : null
+    });
+    active.group.addLayer(layer);
+    attachShapeInteractivity(layer, active);
+    layer._customName = 'Ruta a ' + destLabel + (isStraightFallback ? ' (línea recta — sin datos de ruta)' : '');
+    recordAddShape(active, layer);
+    renderLayerList();
+    selectedShape = layer;
+    showProperties(layer, active);
+    updateSyncStatus('ok', isStraightFallback ? 'Ruta trazada (línea recta, sin servicio de ruteo disponible)' : 'Ruta trazada');
+    clearSearchUI();
+  }
+
+
   loadGithubConfig();
   loadEnfoqueLocal();
   fillGithubConfigInputs();
