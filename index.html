@@ -1806,6 +1806,8 @@
       if (cov){ if (visible) cov.addTo(map); else map.removeLayer(cov); }
       var milR = milRadiusLayers[s._shapeId];
       if (milR){ if (visible) milR.addTo(map); else map.removeLayer(milR); }
+      var lenL = lengthLabelLayers[s._shapeId];
+      if (lenL){ if (visible) lenL.addTo(map); else map.removeLayer(lenL); }
     });
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
@@ -2084,6 +2086,93 @@
   function ensureMilTypeExtras(mil){
     if (mil.unitType === 'obus' && !mil.obus) mil.obus = { radioAccionKm: 50, alturaMaximaKm: 15 };
     if (mil.unitType === 'radarmilitar' && !mil.radarMilitar) mil.radarMilitar = { radioDeteccionNm: 200 };
+  }
+
+  /* ---------------- ETIQUETA DE DISTANCIA SOBRE LÍNEAS Y RUTAS ---------------- */
+  function polylineMidpointAndBearing(latlngs){
+    var segLengths = [], total = 0;
+    for (var i = 0; i < latlngs.length - 1; i++){
+      var d = latlngs[i].distanceTo(latlngs[i+1]);
+      segLengths.push(d);
+      total += d;
+    }
+    if (total === 0) return { point: latlngs[0], bearing: 0, total: 0 };
+    var half = total / 2, acc = 0;
+    for (var j = 0; j < segLengths.length; j++){
+      if (acc + segLengths[j] >= half){
+        var frac = segLengths[j] > 0 ? (half - acc) / segLengths[j] : 0;
+        var p1 = latlngs[j], p2 = latlngs[j+1];
+        var midLat = p1.lat + (p2.lat - p1.lat) * frac;
+        var midLng = p1.lng + (p2.lng - p1.lng) * frac;
+        var dLng = (p2.lng - p1.lng) * Math.cos(p1.lat * Math.PI / 180);
+        var dLat = p2.lat - p1.lat;
+        var bearing = Math.atan2(dLng, dLat) * 180 / Math.PI;
+        return { point: L.latLng(midLat, midLng), bearing: bearing, total: total };
+      }
+      acc += segLengths[j];
+    }
+    return { point: latlngs[latlngs.length - 1], bearing: 0, total: total };
+  }
+  function labelRotationForBearing(bearing){
+    var rot = bearing - 90;
+    while (rot > 180) rot -= 360;
+    while (rot < -180) rot += 360;
+    if (rot > 90 || rot < -90) rot += 180;
+    while (rot > 180) rot -= 360;
+    while (rot < -180) rot += 360;
+    return rot;
+  }
+  function formatLineLength(meters, unit){
+    if (unit === 'nm'){
+      var nm = meters / 1852;
+      return (nm >= 10 ? nm.toFixed(1) : nm.toFixed(2)) + ' MN';
+    }
+    var km = meters / 1000;
+    return (km >= 10 ? km.toFixed(1) : km.toFixed(2)) + ' km';
+  }
+  function buildLengthLabelIcon(text, rotationDeg){
+    var html = '<div style="position:relative;"><div style="position:absolute; left:0; top:0; transform:translate(-50%,-50%) rotate(' + rotationDeg + 'deg); white-space:nowrap; background:rgba(255,255,255,.9); border:1px solid rgba(31,56,100,.35); border-radius:4px; padding:2px 7px; font-family:Calibri,Arial,sans-serif; font-size:12px; font-weight:700; color:#1F3864; box-shadow:0 1px 3px rgba(0,0,0,.25);">' + text + '</div></div>';
+    return L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] });
+  }
+
+  var lengthLabelLayers = {};
+  function removeLengthLabel(shape){
+    if (!shape) return;
+    var m = lengthLabelLayers[shape._shapeId];
+    if (m){ m.remove(); delete lengthLabelLayers[shape._shapeId]; }
+  }
+  function syncLengthLabel(shape){
+    if (!shape || shapeKind(shape) !== 'polyline' || !shape._showLength){ removeLengthLabel(shape); return; }
+    var latlngs = shape.getLatLngs();
+    if (latlngs.length && Array.isArray(latlngs[0])) latlngs = latlngs[0];
+    if (!latlngs || latlngs.length < 2){ removeLengthLabel(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+    var info = polylineMidpointAndBearing(latlngs);
+    var text = formatLineLength(info.total, shape._lengthUnit || 'km');
+    var rot = labelRotationForBearing(info.bearing);
+    var marker = lengthLabelLayers[shape._shapeId];
+    var icon = buildLengthLabelIcon(text, rot);
+    if (!marker){
+      marker = L.marker(info.point, { icon: icon, interactive:false, keyboard:false, zIndexOffset:600 });
+      if (owner.visible) marker.addTo(map);
+      lengthLabelLayers[shape._shapeId] = marker;
+    } else {
+      marker.setLatLng(info.point);
+      marker.setIcon(icon);
+    }
+  }
+  function syncAllLengthLabels(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){
+        if (s._showLength && shapeKind(s) === 'polyline') liveIds[s._shapeId] = s;
+      });
+    });
+    Object.keys(lengthLabelLayers).forEach(function(id){
+      if (!liveIds[id]){ lengthLabelLayers[id].remove(); delete lengthLabelLayers[id]; }
+    });
+    Object.keys(liveIds).forEach(function(id){ syncLengthLabel(liveIds[id]); });
   }
 
   var milRadiusLayers = {};
@@ -2428,6 +2517,7 @@
     stopTextTool();
     stopTargetTool();
     stopInfraTool();
+    stopRouteOriginPick();
     activeToolName = null;
     updateToolbarUI();
   }
@@ -3253,6 +3343,7 @@
       shape.setLatLngs(shape.getLatLngs());
       syncDoubleLineCompanion(shape);
       if (shape._rectHandles) positionRectangleHandle(shape);
+      syncLengthLabel(shape);
     }
   }
 
@@ -3270,7 +3361,7 @@
     if (shape._isEllipse){ shape._ellipse = cloneEllipseState(snap); rebuildEllipse(shape); return; }
     if (shape._isText){ shape._text.latlng = L.latLng(snap); shape.setLatLng(snap); if (shape._textHandles) positionTextHandle(shape); return; }
     if (shape instanceof L.Marker || shape instanceof L.Circle){ shape.setLatLng(snap); return; }
-    if (shape.getLatLngs){ shape.setLatLngs(snap); syncDoubleLineCompanion(shape); if (shape._rectHandles) positionRectangleHandle(shape); return; }
+    if (shape.getLatLngs){ shape.setLatLngs(snap); syncDoubleLineCompanion(shape); if (shape._rectHandles) positionRectangleHandle(shape); syncLengthLabel(shape); return; }
   }
 
   function pushMoveUndo(shape, beforeSnap){
@@ -3676,6 +3767,7 @@
       }
       syncDoubleLineCompanion(l);
       if (l._rectHandles) positionRectangleHandle(l);
+      syncLengthLabel(l);
       if (selectedShape === l) showProperties(l, findLayerOfShape(l));
     });
     editSnapshots = {};
@@ -3789,6 +3881,7 @@
     syncAllSupplyIndicators();
     syncAllEmisoraCoverage();
     syncAllMilRadius();
+    syncAllLengthLabels();
     scheduleSave();
   }
 
@@ -4743,6 +4836,45 @@
       body.appendChild(infraBlock);
     }
 
+    if (kind === 'polyline'){
+      var lengthBlock = document.createElement('div');
+      lengthBlock.className = 'style-block';
+
+      var showLenField = document.createElement('div');
+      showLenField.className = 'style-field';
+      showLenField.innerHTML = '<span>Mostrar distancia</span>';
+      var showLenInput = document.createElement('input');
+      showLenInput.type = 'checkbox';
+      showLenInput.checked = !!shape._showLength;
+      showLenField.appendChild(showLenInput);
+      lengthBlock.appendChild(showLenField);
+
+      var lenUnitField = document.createElement('div');
+      lenUnitField.className = 'style-field';
+      lenUnitField.innerHTML = '<span>Unidad</span>';
+      var lenUnitSelect = document.createElement('select');
+      lenUnitSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
+      [['km','Kilómetros'], ['nm','Millas náuticas']].forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        if ((shape._lengthUnit || 'km') === opt[0]) o.selected = true;
+        lenUnitSelect.appendChild(o);
+      });
+      lenUnitField.appendChild(lenUnitSelect);
+      lengthBlock.appendChild(lenUnitField);
+
+      showLenInput.addEventListener('change', function(ev){
+        shape._showLength = ev.target.checked;
+        syncLengthLabel(shape);
+      });
+      lenUnitSelect.addEventListener('change', function(ev){
+        shape._lengthUnit = ev.target.value;
+        syncLengthLabel(shape);
+      });
+
+      body.appendChild(lengthBlock);
+    }
+
     if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra'){
       var styleBlock = document.createElement('div');
       styleBlock.className = 'style-block';
@@ -5020,6 +5152,10 @@
       f.properties.nombre = (shape && shape._customName) || f.properties.nombre || '';
       f.properties.capa = layerObj.name;
       if (shape && shape._supply != null) f.properties.supply = shape._supply;
+      if (shape && shape._showLength != null){
+        f.properties.showLength = shape._showLength;
+        f.properties.lengthUnit = shape._lengthUnit || 'km';
+      }
       if (shape && shape.options){
         f.properties.color = shape.options.color;
         f.properties.fillColor = shape._fillColorRaw || shape.options.fillColor;
@@ -5168,6 +5304,7 @@
         if (p.nombre) layer._customName = p.nombre;
         if (p.supply != null && layer._isMilSymbol) layer._supply = p.supply;
         else delete layer._supply;
+        if (p.showLength != null){ layer._showLength = p.showLength; layer._lengthUnit = p.lengthUnit || 'km'; }
         layer._fillColorRaw = p.fillColor || targetLayerObj.color;
         layer._fillStyleKey = p.fillStyle || 'solid';
         if (p.arrow){
@@ -5755,6 +5892,8 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     active.group.addLayer(layer);
     attachShapeInteractivity(layer, active);
     layer._customName = 'Ruta a ' + destLabel + (isStraightFallback ? ' (línea recta — sin datos de ruta)' : '');
+    layer._showLength = true;
+    layer._lengthUnit = 'km';
     recordAddShape(active, layer);
     renderLayerList();
     selectedShape = layer;
