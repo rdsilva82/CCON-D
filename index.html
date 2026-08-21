@@ -194,6 +194,37 @@
   #map-wrapper{ position:relative; height:100%; width:100%; }
   #map{ height:100%; width:100%; background:#DCE3EA; }
 
+  /* ---------- BÚSQUEDA DE OBJETOS PROPIOS (panel de capas) ---------- */
+  #object-search-wrap{ position:relative; margin-bottom:10px; }
+  #object-search-input{
+    width:100%; box-sizing:border-box; border:1px solid var(--border); border-radius:8px;
+    padding:9px 11px; font-family:inherit; font-size:12.5px; background:#FBFAF7;
+  }
+  #object-search-input:focus{ outline:1.5px solid var(--gold); background:#fff; }
+  #object-search-results{
+    display:none; position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:50;
+    background:#fff; border:1px solid var(--border); border-radius:8px;
+    box-shadow:0 4px 16px rgba(0,0,0,.18); max-height:280px; overflow-y:auto;
+  }
+  #object-search-results.show{ display:block; }
+  .object-search-result{
+    padding:8px 11px; cursor:pointer; border-bottom:1px solid #EEE; display:flex; align-items:center; gap:8px;
+  }
+  .object-search-result:last-child{ border-bottom:none; }
+  .object-search-result:hover{ background:#F0F1F5; }
+  .object-search-result .icon{ flex-shrink:0; color:var(--navy); }
+  .object-search-result .info{ min-width:0; }
+  .object-search-result .name{ font-weight:700; color:var(--navy); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .object-search-result .layer{ color:var(--muted); font-size:10.5px; }
+  @keyframes searchHighlightPulse{
+    0%{ filter:drop-shadow(0 0 0px #B8962E); }
+    25%{ filter:drop-shadow(0 0 14px #B8962E); }
+    50%{ filter:drop-shadow(0 0 0px #B8962E); }
+    75%{ filter:drop-shadow(0 0 14px #B8962E); }
+    100%{ filter:drop-shadow(0 0 0px #B8962E); }
+  }
+  .search-highlight-pulse{ animation: searchHighlightPulse 0.8s ease-in-out 2; }
+
   /* ---------- BÚSQUEDA Y RUTAS ---------- */
   #map-search-control{
     position:absolute; top:14px; left:50%; transform:translateX(-50%); z-index:800;
@@ -571,6 +602,10 @@
    <div id="left-edicion-content" class="mode-content">
     <section class="block">
       <h2>Capas de dibujo</h2>
+      <div id="object-search-wrap">
+        <input type="text" id="object-search-input" placeholder="🔎 Buscar objeto por nombre…" autocomplete="off">
+        <div id="object-search-results"></div>
+      </div>
       <div id="layer-list"></div>
       <button class="primary-btn" id="add-layer-btn">＋ Nueva capa</button>
       <div class="hint">Las formas nuevas se dibujan sobre la <b>capa activa</b> (resaltada en dorado). Despliegue una capa con la flecha ▸ para ver, editar o eliminar cada objeto individualmente: color de línea, relleno y transparencia.</div>
@@ -5904,6 +5939,83 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
 
   loadGithubConfig();
+  /* ---------------- BÚSQUEDA DE OBJETOS PROPIOS EN EL MAPA ---------------- */
+  function collectAllShapes(){
+    var result = [];
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){
+        if (s._shapeId) result.push({ shape: s, layer: l });
+      });
+    });
+    return result;
+  }
+
+  function shapeSearchText(shape){
+    var parts = [shape._customName || ''];
+    if (shape._isMilSymbol && shape._mil) parts.push(shape._mil.designation || '');
+    if (shape._isTarget && shape._target) parts.push(shape._target.blanco || '', shape._target.number || '', shape._target.unidad || '');
+    if (shape._isInfra && shape._infra){
+      parts.push(shape._infra.activo || '', shape._infra.codigo || '', shape._infra.denominacion || '', shape._infra.identificacion || '');
+    }
+    if (shape._isText && shape._text) parts.push(String(shape._text.text || '').replace(/<[^>]+>/g, ' '));
+    return parts.join(' ').toLowerCase();
+  }
+
+  function performObjectSearch(query){
+    query = (query || '').trim().toLowerCase();
+    var box = document.getElementById('object-search-results');
+    if (query.length < 1){ box.classList.remove('show'); box.innerHTML = ''; return; }
+    var matches = collectAllShapes().filter(function(entry){
+      return shapeSearchText(entry.shape).indexOf(query) !== -1;
+    }).slice(0, 25);
+    box.innerHTML = '';
+    if (!matches.length){
+      box.innerHTML = '<div class="object-search-result"><div class="info"><div class="layer">Sin resultados</div></div></div>';
+      box.classList.add('show');
+      return;
+    }
+    matches.forEach(function(entry){
+      var item = document.createElement('div');
+      item.className = 'object-search-result';
+      var kind = shapeKind(entry.shape);
+      item.innerHTML = '<span class="icon">' + shapeIconSVG(kind) + '</span>' +
+        '<div class="info"><div class="name">' + escapeHtmlText(entry.shape._customName || defaultShapeName(entry.shape)) + '</div>' +
+        '<div class="layer">' + escapeHtmlText(entry.layer.name) + '</div></div>';
+      item.addEventListener('click', function(){ goToSearchedObject(entry.shape, entry.layer); });
+      box.appendChild(item);
+    });
+    box.classList.add('show');
+  }
+  var debouncedObjectSearch = debounce(performObjectSearch, 200);
+
+  function goToSearchedObject(shape, layerObj){
+    document.getElementById('object-search-results').classList.remove('show');
+    document.getElementById('object-search-input').value = '';
+    if (!layerObj.visible) setLayerVisibilityRecursive(layerObj.id, true);
+    var node = layerObj;
+    while (node){
+      node.expanded = true;
+      node = node.parentId ? getLayer(node.parentId) : null;
+    }
+    renderLayerList();
+    var center = getShapeCenter(shape);
+    if (center) map.setView(center, Math.max(map.getZoom(), 15));
+    selectedShape = shape;
+    showProperties(shape, layerObj);
+    var el = shape.getElement ? shape.getElement() : (shape._path || (shape._icon || null));
+    if (el){
+      el.classList.add('search-highlight-pulse');
+      setTimeout(function(){ el.classList.remove('search-highlight-pulse'); }, 1600);
+    }
+  }
+
+  document.getElementById('object-search-input').addEventListener('input', function(ev){ debouncedObjectSearch(ev.target.value); });
+  document.getElementById('object-search-input').addEventListener('keydown', function(ev){ if (ev.key === 'Escape'){ ev.target.value=''; performObjectSearch(''); } });
+  document.addEventListener('click', function(ev){
+    var wrap = document.getElementById('object-search-wrap');
+    if (wrap && !wrap.contains(ev.target)) document.getElementById('object-search-results').classList.remove('show');
+  });
+
   loadEnfoqueLocal();
   fillGithubConfigInputs();
 
