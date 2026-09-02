@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Sistema de Anotación Cartográfica · Norte de Santander</title>
+<title>Sistema de Anotación Cartográfica · División de Ejército III</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
@@ -626,7 +626,7 @@
     <div class="crest">NS</div>
     <div>
       <h1>Sistema de Anotación Cartográfica</h1>
-      <div class="subtitle">Norte de Santander, Colombia</div>
+      <div class="subtitle">División de Ejército III, Colombia</div>
     </div>
   </div>
   <div class="mode-switcher">
@@ -637,6 +637,7 @@
   </div>
   <div class="panel-toggles">
     <div id="current-user-badge"></div>
+    <button class="toggle-btn" id="go-home-btn" title="Volver al inicio y elegir otra aula o dirección">🏠 Inicio</button>
     <button class="toggle-btn" id="toggle-left">☰</button>
     <button class="toggle-btn" id="toggle-right">▤</button>
   </div>
@@ -711,7 +712,7 @@
       <div class="hint">Sincroniza el mapa entre todos sus dispositivos guardando la información en un repositorio de GitHub. Para no interrumpirse entre usuarios, <b>cada capa se sincroniza por separado</b>: si dos personas trabajan en capas distintas al mismo tiempo, cada una sube/baja solo lo suyo, sin pisar el trabajo de la otra. Requiere un token de acceso personal con permiso de escritura sobre ese repositorio. Por seguridad, el token <b>nunca</b> viene incluido en esta página — se pega una sola vez por dispositivo y queda guardado solo en su navegador.</div>
       <div class="gh-field">
         <label for="gh-repo-input">Repositorio (usuario/repo)</label>
-        <input type="text" id="gh-repo-input" placeholder="usuario/mapa-norte-santander" value="rdsilva82/CCON-D">
+        <input type="text" id="gh-repo-input" placeholder="usuario/mapa-division-ejercito-iii" value="rdsilva82/CCON-D">
       </div>
       <div class="gh-field">
         <label for="gh-branch-input">Rama</label>
@@ -1023,18 +1024,20 @@
     screen.classList.remove('hide');
   }
 
+  function goToHome(){
+    showConfirm('¿Volver al inicio para elegir otra aula o dirección? Se recargará la página.', function(){
+      try{ localStorage.removeItem(USER_CONTEXT_KEY); }catch(err){}
+      location.reload();
+    });
+  }
+
   function activateUserContext(onReady){
     document.getElementById('user-select-screen').classList.add('hide');
     document.body.classList.toggle('read-only-mode', isReadOnlyMode());
     var badge = document.getElementById('current-user-badge');
-    badge.innerHTML = '<b>' + escapeHtmlText(currentUserLabel()) + '</b> · cambiar';
-    badge.title = 'Cambiar de usuario';
-    badge.onclick = function(){
-      showConfirm('¿Cambiar de usuario? Se recargará la página.', function(){
-        try{ localStorage.removeItem(USER_CONTEXT_KEY); }catch(err){}
-        location.reload();
-      });
-    };
+    badge.innerHTML = '<b>' + escapeHtmlText(currentUserLabel()) + '</b>';
+    badge.title = currentUserLabel();
+    document.getElementById('go-home-btn').addEventListener('click', goToHome);
     onReady();
   }
 
@@ -5456,7 +5459,7 @@
       allFeatures = allFeatures.concat(fc.features);
     });
     if (allFeatures.length === 0){ alert('No hay elementos dibujados para exportar.'); return; }
-    var combined = { type:'FeatureCollection', features: allFeatures, properties:{ generado: new Date().toISOString(), fuente:'Sistema de Anotación Cartográfica - Norte de Santander' } };
+    var combined = { type:'FeatureCollection', features: allFeatures, properties:{ generado: new Date().toISOString(), fuente:'Sistema de Anotación Cartográfica - División de Ejército III' } };
     download(JSON.stringify(combined, null, 2), 'norte-de-santander-todas-las-capas.geojson', 'application/geo+json');
   });
 
