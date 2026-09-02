@@ -33,6 +33,60 @@
     overflow:hidden;
   }
 
+  /* ---------- PANTALLA DE SELECCIÓN DE USUARIO ---------- */
+  #user-select-screen{
+    position:fixed; inset:0; z-index:5000; background:linear-gradient(135deg,var(--navy-deep),var(--navy));
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  #user-select-screen.hide{ display:none; }
+  #user-select-card{
+    background:#fff; border-radius:16px; padding:36px 40px; max-width:560px; width:100%;
+    text-align:center; box-shadow:0 12px 40px rgba(0,0,0,.4);
+  }
+  #user-select-card h1{ font-size:19px; color:var(--navy); margin:0 0 4px 0; }
+  #user-select-card p{ font-size:13px; color:var(--muted); margin:0 0 20px 0; }
+  #aula-grid, #direccion-aula-grid{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;
+  }
+  .aula-btn{
+    border:2px solid var(--border); border-radius:10px; background:#FBFAF7; color:var(--navy);
+    font-family:inherit; font-weight:700; font-size:13px; padding:16px 8px; cursor:pointer;
+    transition:.15s;
+  }
+  .aula-btn:hover{ border-color:var(--gold); background:#FBF4E1; transform:translateY(-1px); }
+  .aula-btn.direccion-btn{
+    grid-column:1 / -1; background:var(--navy); color:#fff; border-color:var(--navy);
+  }
+  .aula-btn.direccion-btn:hover{ background:var(--navy-deep); }
+  #direccion-aula-picker{ margin-top:6px; }
+  #direccion-back-btn{ margin-top:14px; }
+
+  #current-user-badge{
+    font-size:11px; color:#fff; background:rgba(255,255,255,.14); border-radius:7px;
+    padding:5px 10px; margin-right:8px; cursor:pointer; white-space:nowrap;
+  }
+  #current-user-badge:hover{ background:rgba(255,255,255,.24); }
+  #current-user-badge b{ font-weight:800; }
+
+  body.read-only-mode #draw-toolbar{ display:none !important; }
+  body.read-only-mode #add-layer-btn,
+  body.read-only-mode .layer-tools-row,
+  body.read-only-mode #enfoque-toolbar,
+  body.read-only-mode #reset-storage-btn,
+  body.read-only-mode #gh-push-btn,
+  body.read-only-mode #gh-history-btn,
+  body.read-only-mode #local-backups-btn,
+  body.read-only-mode #map-search-actions button#search-mark-btn,
+  body.read-only-mode #map-search-actions button#search-route-btn{
+    display:none !important;
+  }
+  #read-only-banner{
+    display:none; position:fixed; top:56px; left:0; right:0; z-index:850;
+    background:#7A5B00; color:#fff; text-align:center; font-size:12px; font-weight:700;
+    padding:6px; letter-spacing:.3px;
+  }
+  body.read-only-mode #read-only-banner{ display:block; }
+
   /* ---------- HEADER ---------- */
   header{
     height:56px;
@@ -553,6 +607,20 @@
 </head>
 <body>
 
+<div id="user-select-screen">
+  <div id="user-select-card">
+    <div class="crest" style="margin:0 auto 14px auto;">NS</div>
+    <h1>Sistema de Anotación Cartográfica</h1>
+    <p id="user-select-subtitle">Seleccione el usuario que va a operar esta sesión</p>
+    <div id="aula-grid"></div>
+    <div id="direccion-aula-picker" style="display:none;">
+      <p>¿Qué aula desea visualizar? <span style="opacity:.7;">(solo lectura — no podrá editar)</span></p>
+      <div id="direccion-aula-grid"></div>
+      <button class="outline-btn" id="direccion-back-btn">‹ Volver</button>
+    </div>
+  </div>
+</div>
+
 <header>
   <div class="brand">
     <div class="crest">NS</div>
@@ -568,10 +636,13 @@
     <button class="mode-btn" id="mode-personal-btn">👤 Personal</button>
   </div>
   <div class="panel-toggles">
+    <div id="current-user-badge"></div>
     <button class="toggle-btn" id="toggle-left">☰</button>
     <button class="toggle-btn" id="toggle-right">▤</button>
   </div>
 </header>
+
+<div id="read-only-banner">🔒 MODO SOLO LECTURA — está viendo el mapa de otra aula y no puede editarlo</div>
 
 <div class="scrim" id="scrim"></div>
 
@@ -873,6 +944,100 @@
   var paletteIdx = 0;
   function nextColor(){ var c = PALETTE[paletteIdx % PALETTE.length]; paletteIdx++; return c; }
 
+  /* ---------------- USUARIO / AULA ACTIVA ---------------- */
+  var AULAS = ['A','B','C','D','E','F','G'];
+  var USER_CONTEXT_KEY = 'active_user_context_v1';
+  var userContext = null; // { role:'aula', aula:'A' } o { role:'direccion', viewingAula:'A'|null }
+
+  function loadUserContext(){
+    try{ return JSON.parse(localStorage.getItem(USER_CONTEXT_KEY) || 'null'); } catch(err){ return null; }
+  }
+  function saveUserContext(ctx){
+    try{ localStorage.setItem(USER_CONTEXT_KEY, JSON.stringify(ctx)); } catch(err){}
+  }
+  function currentAulaSlug(){
+    if (!userContext) return 'aulaA';
+    if (userContext.role === 'aula') return 'aula' + userContext.aula;
+    if (userContext.role === 'direccion' && userContext.viewingAula) return 'aula' + userContext.viewingAula;
+    return 'aulaA';
+  }
+  function isReadOnlyMode(){ return !!(userContext && userContext.role === 'direccion'); }
+  function currentUserLabel(){
+    if (!userContext) return '';
+    if (userContext.role === 'aula') return 'AULA ' + userContext.aula;
+    if (userContext.role === 'direccion') return 'DIRECCIÓN — viendo AULA ' + (userContext.viewingAula || '?');
+    return '';
+  }
+
+  function initUserSelector(onReady){
+    var screen = document.getElementById('user-select-screen');
+    var aulaGrid = document.getElementById('aula-grid');
+    var direccionPicker = document.getElementById('direccion-aula-picker');
+    var direccionGrid = document.getElementById('direccion-aula-grid');
+    var subtitle = document.getElementById('user-select-subtitle');
+
+    AULAS.forEach(function(letra){
+      var btn = document.createElement('button');
+      btn.className = 'aula-btn';
+      btn.textContent = 'AULA ' + letra;
+      btn.addEventListener('click', function(){
+        userContext = { role:'aula', aula: letra };
+        saveUserContext(userContext);
+        activateUserContext(onReady);
+      });
+      aulaGrid.appendChild(btn);
+    });
+    var direccionBtn = document.createElement('button');
+    direccionBtn.className = 'aula-btn direccion-btn';
+    direccionBtn.textContent = 'DIRECCIÓN';
+    direccionBtn.addEventListener('click', function(){
+      aulaGrid.style.display = 'none';
+      subtitle.style.display = 'none';
+      direccionPicker.style.display = 'block';
+    });
+    aulaGrid.appendChild(direccionBtn);
+
+    AULAS.forEach(function(letra){
+      var btn = document.createElement('button');
+      btn.className = 'aula-btn';
+      btn.textContent = 'AULA ' + letra;
+      btn.addEventListener('click', function(){
+        userContext = { role:'direccion', viewingAula: letra };
+        saveUserContext(userContext);
+        activateUserContext(onReady);
+      });
+      direccionGrid.appendChild(btn);
+    });
+    document.getElementById('direccion-back-btn').addEventListener('click', function(){
+      direccionPicker.style.display = 'none';
+      aulaGrid.style.display = 'grid';
+      subtitle.style.display = 'block';
+    });
+
+    var saved = loadUserContext();
+    if (saved){
+      userContext = saved;
+      activateUserContext(onReady);
+      return;
+    }
+    screen.classList.remove('hide');
+  }
+
+  function activateUserContext(onReady){
+    document.getElementById('user-select-screen').classList.add('hide');
+    document.body.classList.toggle('read-only-mode', isReadOnlyMode());
+    var badge = document.getElementById('current-user-badge');
+    badge.innerHTML = '<b>' + escapeHtmlText(currentUserLabel()) + '</b> · cambiar';
+    badge.title = 'Cambiar de usuario';
+    badge.onclick = function(){
+      showConfirm('¿Cambiar de usuario? Se recargará la página.', function(){
+        try{ localStorage.removeItem(USER_CONTEXT_KEY); }catch(err){}
+        location.reload();
+      });
+    };
+    onReady();
+  }
+
   /* ---------------- CONFIRMACIÓN PERSONALIZADA (Sí / No) ---------------- */
   var confirmScrim = document.getElementById('confirm-scrim');
   var confirmMessage = document.getElementById('confirm-message');
@@ -881,8 +1046,8 @@
   var confirmActiveCleanup = null;
 
   /* ---------------- GUARDADO AUTOMÁTICO (localStorage) ---------------- */
-  var STORAGE_KEY = 'mapa_teatro_operaciones_state_v1';
   var saveTimer = null;
+  function STORAGE_KEY_FN(){ return 'mapa_teatro_operaciones_state_v1__' + currentAulaSlug(); }
 
   function buildStateObject(){
     return {
@@ -919,7 +1084,7 @@
   }
 
   function saveStateToStorage(){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(buildStateObject())); }
+    try{ localStorage.setItem(STORAGE_KEY_FN(), JSON.stringify(buildStateObject())); }
     catch(err){ /* almacenamiento no disponible; se continúa sin guardar */ }
   }
 
@@ -981,7 +1146,7 @@
 
   function loadStateFromStorage(){
     var raw;
-    try{ raw = localStorage.getItem(STORAGE_KEY); } catch(err){ return false; }
+    try{ raw = localStorage.getItem(STORAGE_KEY_FN()); } catch(err){ return false; }
     if (!raw) return false;
     var state;
     try{ state = JSON.parse(raw); } catch(err){ return false; }
@@ -1058,7 +1223,7 @@
     return url;
   }
   function githubBasePath(){
-    return githubConfig.path.replace(/\.json$/i, '');
+    return githubConfig.path.replace(/\.json$/i, '') + '/' + currentAulaSlug();
   }
   function githubIndexPath(){ return githubBasePath() + '/index.json'; }
   function githubLayerFilePath(id){ return githubBasePath() + '/layers/' + id + '.json'; }
@@ -1240,6 +1405,7 @@
   }
 
   function githubPush(){
+    if (isReadOnlyMode()) return Promise.resolve(false);
     if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
     if (syncInProgress){ scheduleGithubPush(); return Promise.resolve(false); }
     syncInProgress = true;
@@ -1346,24 +1512,25 @@
   }
 
   function scheduleGithubPush(){
+    if (isReadOnlyMode()) return;
     if (githubPushTimer) clearTimeout(githubPushTimer);
     githubPushTimer = setTimeout(function(){ githubPushTimer = null; githubPush(); }, 12000);
   }
 
   /* ---------------- COPIAS DE SEGURIDAD LOCALES ---------------- */
-  var LOCAL_BACKUPS_KEY = 'map_local_backups_v1';
+  function LOCAL_BACKUPS_KEY_FN(){ return 'map_local_backups_v1__' + currentAulaSlug(); }
   var LOCAL_BACKUPS_MAX = 8;
 
   function saveLocalBackup(){
     try{
-      var raw = localStorage.getItem(STORAGE_KEY);
+      var raw = localStorage.getItem(STORAGE_KEY_FN());
       if (!raw) return;
       var backups;
-      try{ backups = JSON.parse(localStorage.getItem(LOCAL_BACKUPS_KEY) || '[]'); }
+      try{ backups = JSON.parse(localStorage.getItem(LOCAL_BACKUPS_KEY_FN()) || '[]'); }
       catch(e){ backups = []; }
       backups.unshift({ at: new Date().toISOString(), data: raw });
       backups = backups.slice(0, LOCAL_BACKUPS_MAX);
-      localStorage.setItem(LOCAL_BACKUPS_KEY, JSON.stringify(backups));
+      localStorage.setItem(LOCAL_BACKUPS_KEY_FN(), JSON.stringify(backups));
     } catch(err){ /* almacenamiento no disponible */ }
   }
 
@@ -1388,7 +1555,7 @@
   function showLocalBackups(){
     openHistoryScrim('Copias de seguridad locales (este navegador)');
     var backups = [];
-    try{ backups = JSON.parse(localStorage.getItem(LOCAL_BACKUPS_KEY) || '[]'); } catch(e){}
+    try{ backups = JSON.parse(localStorage.getItem(LOCAL_BACKUPS_KEY_FN()) || '[]'); } catch(e){}
     var list = document.getElementById('history-list');
     list.innerHTML = '';
     if (!backups.length){
@@ -3917,6 +4084,14 @@
     syncAllEmisoraCoverage();
     syncAllMilRadius();
     syncAllLengthLabels();
+    if (isReadOnlyMode()){
+      list.querySelectorAll('input, select, button').forEach(function(el){
+        if (el.type === 'checkbox') { el.disabled = true; return; }
+        if (/^(▲|▼|＋|⧉|🕐|⇄|✕)/.test(el.textContent || '')) { el.disabled = true; return; }
+        el.disabled = true;
+      });
+      list.querySelectorAll('.shape-name, .layer-name').forEach(function(el){ el.readOnly = true; });
+    }
     scheduleSave();
   }
 
@@ -5165,6 +5340,16 @@
     actions.appendChild(moveBtn);
     actions.appendChild(delBtn);
     body.appendChild(actions);
+
+    if (isReadOnlyMode()){
+      body.querySelectorAll('input, select, textarea, button').forEach(function(el){
+        if (el.id === 'shape-name-input' || el.tagName === 'BUTTON') { el.disabled = true; }
+        else { el.disabled = true; }
+      });
+      body.querySelectorAll('.prop-actions button').forEach(function(btn){
+        if (/centrar/i.test(btn.textContent)) btn.disabled = false;
+      });
+    }
   }
 
   /* ---------------- EXPORT ---------------- */
@@ -5484,17 +5669,17 @@
   modePersonalBtn.addEventListener('click', function(){ setMode('personal'); });
 
   /* ---------------- PANEL ENFOQUE OPERACIONAL (imagen a pantalla completa) ---------------- */
-  var ENFOQUE_LOCAL_KEY = 'enfoque_operacional_image_v1';
+  function ENFOQUE_LOCAL_KEY_FN(){ return 'enfoque_operacional_image_v1__' + currentAulaSlug(); }
   var enfoqueImageDataUrl = null;
   var lastPushedEnfoqueSig = null;
 
   function loadEnfoqueLocal(){
-    try{ enfoqueImageDataUrl = localStorage.getItem(ENFOQUE_LOCAL_KEY) || null; } catch(err){ enfoqueImageDataUrl = null; }
+    try{ enfoqueImageDataUrl = localStorage.getItem(ENFOQUE_LOCAL_KEY_FN()) || null; } catch(err){ enfoqueImageDataUrl = null; }
   }
   function saveEnfoqueLocal(){
     try{
-      if (enfoqueImageDataUrl) localStorage.setItem(ENFOQUE_LOCAL_KEY, enfoqueImageDataUrl);
-      else localStorage.removeItem(ENFOQUE_LOCAL_KEY);
+      if (enfoqueImageDataUrl) localStorage.setItem(ENFOQUE_LOCAL_KEY_FN(), enfoqueImageDataUrl);
+      else localStorage.removeItem(ENFOQUE_LOCAL_KEY_FN());
     } catch(err){ /* almacenamiento no disponible */ }
   }
   function renderEnfoquePanel(){
@@ -5708,6 +5893,9 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
       root.appendChild(secEl);
     });
+    if (isReadOnlyMode()){
+      root.querySelectorAll('input, button').forEach(function(el){ el.disabled = true; });
+    }
   }
 
 
@@ -5753,6 +5941,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   COA_BOX_IDS.forEach(function(id){
     var el = document.getElementById(id);
     if (!el) return;
+    if (isReadOnlyMode()){ el.contentEditable = 'false'; return; }
     el.addEventListener('input', scheduleSave);
     el.addEventListener('focus', function(){
       el.style.transform = 'scale(1)';
@@ -5770,7 +5959,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
   document.getElementById('reset-storage-btn').addEventListener('click', function(){
     showConfirm('¿Borrar todos los datos guardados en este navegador y reiniciar el mapa? Esta acción no se puede deshacer (considere exportar antes).', function(){
-      try{ localStorage.removeItem(STORAGE_KEY); }catch(err){}
+      try{ localStorage.removeItem(STORAGE_KEY_FN()); }catch(err){}
       location.reload();
     });
   });
@@ -5938,117 +6127,122 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
 
 
-  loadGithubConfig();
-  /* ---------------- BÚSQUEDA DE OBJETOS PROPIOS EN EL MAPA ---------------- */
-  function collectAllShapes(){
-    var result = [];
-    layers.forEach(function(l){
-      l.group.eachLayer(function(s){
-        if (s._shapeId) result.push({ shape: s, layer: l });
+  function startApp(){
+    loadGithubConfig();
+    /* ---------------- BÚSQUEDA DE OBJETOS PROPIOS EN EL MAPA ---------------- */
+    function collectAllShapes(){
+      var result = [];
+      layers.forEach(function(l){
+        l.group.eachLayer(function(s){
+          if (s._shapeId) result.push({ shape: s, layer: l });
+        });
       });
-    });
-    return result;
-  }
-
-  function shapeSearchText(shape){
-    var parts = [shape._customName || ''];
-    if (shape._isMilSymbol && shape._mil) parts.push(shape._mil.designation || '');
-    if (shape._isTarget && shape._target) parts.push(shape._target.blanco || '', shape._target.number || '', shape._target.unidad || '');
-    if (shape._isInfra && shape._infra){
-      parts.push(shape._infra.activo || '', shape._infra.codigo || '', shape._infra.denominacion || '', shape._infra.identificacion || '');
+      return result;
     }
-    if (shape._isText && shape._text) parts.push(String(shape._text.text || '').replace(/<[^>]+>/g, ' '));
-    return parts.join(' ').toLowerCase();
-  }
 
-  function performObjectSearch(query){
-    query = (query || '').trim().toLowerCase();
-    var box = document.getElementById('object-search-results');
-    if (query.length < 1){ box.classList.remove('show'); box.innerHTML = ''; return; }
-    var matches = collectAllShapes().filter(function(entry){
-      return shapeSearchText(entry.shape).indexOf(query) !== -1;
-    }).slice(0, 25);
-    box.innerHTML = '';
-    if (!matches.length){
-      box.innerHTML = '<div class="object-search-result"><div class="info"><div class="layer">Sin resultados</div></div></div>';
+    function shapeSearchText(shape){
+      var parts = [shape._customName || ''];
+      if (shape._isMilSymbol && shape._mil) parts.push(shape._mil.designation || '');
+      if (shape._isTarget && shape._target) parts.push(shape._target.blanco || '', shape._target.number || '', shape._target.unidad || '');
+      if (shape._isInfra && shape._infra){
+        parts.push(shape._infra.activo || '', shape._infra.codigo || '', shape._infra.denominacion || '', shape._infra.identificacion || '');
+      }
+      if (shape._isText && shape._text) parts.push(String(shape._text.text || '').replace(/<[^>]+>/g, ' '));
+      return parts.join(' ').toLowerCase();
+    }
+
+    function performObjectSearch(query){
+      query = (query || '').trim().toLowerCase();
+      var box = document.getElementById('object-search-results');
+      if (query.length < 1){ box.classList.remove('show'); box.innerHTML = ''; return; }
+      var matches = collectAllShapes().filter(function(entry){
+        return shapeSearchText(entry.shape).indexOf(query) !== -1;
+      }).slice(0, 25);
+      box.innerHTML = '';
+      if (!matches.length){
+        box.innerHTML = '<div class="object-search-result"><div class="info"><div class="layer">Sin resultados</div></div></div>';
+        box.classList.add('show');
+        return;
+      }
+      matches.forEach(function(entry){
+        var item = document.createElement('div');
+        item.className = 'object-search-result';
+        var kind = shapeKind(entry.shape);
+        item.innerHTML = '<span class="icon">' + shapeIconSVG(kind) + '</span>' +
+          '<div class="info"><div class="name">' + escapeHtmlText(entry.shape._customName || defaultShapeName(entry.shape)) + '</div>' +
+          '<div class="layer">' + escapeHtmlText(entry.layer.name) + '</div></div>';
+        item.addEventListener('click', function(){ goToSearchedObject(entry.shape, entry.layer); });
+        box.appendChild(item);
+      });
       box.classList.add('show');
-      return;
     }
-    matches.forEach(function(entry){
-      var item = document.createElement('div');
-      item.className = 'object-search-result';
-      var kind = shapeKind(entry.shape);
-      item.innerHTML = '<span class="icon">' + shapeIconSVG(kind) + '</span>' +
-        '<div class="info"><div class="name">' + escapeHtmlText(entry.shape._customName || defaultShapeName(entry.shape)) + '</div>' +
-        '<div class="layer">' + escapeHtmlText(entry.layer.name) + '</div></div>';
-      item.addEventListener('click', function(){ goToSearchedObject(entry.shape, entry.layer); });
-      box.appendChild(item);
+    var debouncedObjectSearch = debounce(performObjectSearch, 200);
+
+    function goToSearchedObject(shape, layerObj){
+      document.getElementById('object-search-results').classList.remove('show');
+      document.getElementById('object-search-input').value = '';
+      if (!layerObj.visible) setLayerVisibilityRecursive(layerObj.id, true);
+      var node = layerObj;
+      while (node){
+        node.expanded = true;
+        node = node.parentId ? getLayer(node.parentId) : null;
+      }
+      renderLayerList();
+      var center = getShapeCenter(shape);
+      if (center) map.setView(center, Math.max(map.getZoom(), 15));
+      selectedShape = shape;
+      showProperties(shape, layerObj);
+      var el = shape.getElement ? shape.getElement() : (shape._path || (shape._icon || null));
+      if (el){
+        el.classList.add('search-highlight-pulse');
+        setTimeout(function(){ el.classList.remove('search-highlight-pulse'); }, 1600);
+      }
+    }
+
+    document.getElementById('object-search-input').addEventListener('input', function(ev){ debouncedObjectSearch(ev.target.value); });
+    document.getElementById('object-search-input').addEventListener('keydown', function(ev){ if (ev.key === 'Escape'){ ev.target.value=''; performObjectSearch(''); } });
+    document.addEventListener('click', function(ev){
+      var wrap = document.getElementById('object-search-wrap');
+      if (wrap && !wrap.contains(ev.target)) document.getElementById('object-search-results').classList.remove('show');
     });
-    box.classList.add('show');
-  }
-  var debouncedObjectSearch = debounce(performObjectSearch, 200);
 
-  function goToSearchedObject(shape, layerObj){
-    document.getElementById('object-search-results').classList.remove('show');
-    document.getElementById('object-search-input').value = '';
-    if (!layerObj.visible) setLayerVisibilityRecursive(layerObj.id, true);
-    var node = layerObj;
-    while (node){
-      node.expanded = true;
-      node = node.parentId ? getLayer(node.parentId) : null;
+    loadEnfoqueLocal();
+    fillGithubConfigInputs();
+
+    if (!loadStateFromStorage()){
+      createTeatroOperacionesLayer();
+      createLayer('Capa 1', PALETTE[0]);
     }
-    renderLayerList();
-    var center = getShapeCenter(shape);
-    if (center) map.setView(center, Math.max(map.getZoom(), 15));
-    selectedShape = shape;
-    showProperties(shape, layerObj);
-    var el = shape.getElement ? shape.getElement() : (shape._path || (shape._icon || null));
-    if (el){
-      el.classList.add('search-highlight-pulse');
-      setTimeout(function(){ el.classList.remove('search-highlight-pulse'); }, 1600);
+    updateViewInfo();
+    updateUndoRedoUI();
+
+    if (githubConfigured()){
+      githubPull(false);
+    } else {
+      updateSyncStatus('off','Sin configurar');
     }
-  }
 
-  document.getElementById('object-search-input').addEventListener('input', function(ev){ debouncedObjectSearch(ev.target.value); });
-  document.getElementById('object-search-input').addEventListener('keydown', function(ev){ if (ev.key === 'Escape'){ ev.target.value=''; performObjectSearch(''); } });
-  document.addEventListener('click', function(ev){
-    var wrap = document.getElementById('object-search-wrap');
-    if (wrap && !wrap.contains(ev.target)) document.getElementById('object-search-results').classList.remove('show');
-  });
+    map.on('moveend zoomend', scheduleSave);
+    setInterval(saveStateToStorage, 8000);
+    window.addEventListener('beforeunload', saveStateToStorage);
+    document.addEventListener('visibilitychange', function(){
+      if (document.visibilityState === 'hidden'){
+        saveStateToStorage();
+        if (githubConfigured() && githubConfig.autoSync) githubPush();
+      }
+    });
 
-  loadEnfoqueLocal();
-  fillGithubConfigInputs();
+    setInterval(function(){
+      if (githubConfigured() && githubConfig.autoSync && !githubPushTimer &&
+          !activeToolName && !moveModeShape && !editingFieldFocused && !selectedShape &&
+          (Date.now()-lastLocalEditTime > 20000)){
+        githubPull(false, true);
+      }
+    }, 60000);
 
-  if (!loadStateFromStorage()){
-    createTeatroOperacionesLayer();
-    createLayer('Capa 1', PALETTE[0]);
-  }
-  updateViewInfo();
-  updateUndoRedoUI();
-
-  if (githubConfigured()){
-    githubPull(false);
-  } else {
-    updateSyncStatus('off','Sin configurar');
   }
 
-  map.on('moveend zoomend', scheduleSave);
-  setInterval(saveStateToStorage, 8000);
-  window.addEventListener('beforeunload', saveStateToStorage);
-  document.addEventListener('visibilitychange', function(){
-    if (document.visibilityState === 'hidden'){
-      saveStateToStorage();
-      if (githubConfigured() && githubConfig.autoSync) githubPush();
-    }
-  });
-
-  setInterval(function(){
-    if (githubConfigured() && githubConfig.autoSync && !githubPushTimer &&
-        !activeToolName && !moveModeShape && !editingFieldFocused && !selectedShape &&
-        (Date.now()-lastLocalEditTime > 20000)){
-      githubPull(false, true);
-    }
-  }, 60000);
+  initUserSelector(startApp);
 
 })();
 </script>
