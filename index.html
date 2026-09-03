@@ -87,10 +87,15 @@
   }
   body.read-only-mode #read-only-banner{ display:block; }
   #direccion-aula-switch-wrap{ margin-left:8px; font-weight:400; }
-  #direccion-aula-switch{
-    background:#fff; color:var(--navy); border:none; border-radius:5px;
-    padding:2px 6px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer;
+  #direccion-aula-toggles{ display:inline-flex; gap:4px; vertical-align:middle; }
+  .direccion-aula-toggle{
+    background:rgba(255,255,255,.18); color:#fff; border:1px solid rgba(255,255,255,.35);
+    border-radius:5px; width:26px; height:22px; font-family:inherit; font-size:11.5px; font-weight:800;
+    cursor:pointer; padding:0; line-height:1;
   }
+  .direccion-aula-toggle:hover{ background:rgba(255,255,255,.3); }
+  .direccion-aula-toggle.on{ background:#fff; color:#7A5B00; border-color:#fff; }
+  .direccion-aula-toggle.loading{ opacity:.55; cursor:wait; }
 
   /* ---------- HEADER ---------- */
   header{
@@ -639,11 +644,6 @@
     <h1>Sistema de Anotación Cartográfica</h1>
     <p id="user-select-subtitle">Seleccione el usuario que va a operar esta sesión</p>
     <div id="aula-grid"></div>
-    <div id="direccion-aula-picker" style="display:none;">
-      <p>¿Qué aula desea visualizar? <span style="opacity:.7;">(solo lectura — no podrá editar)</span></p>
-      <div id="direccion-aula-grid"></div>
-      <button class="outline-btn" id="direccion-back-btn">‹ Volver</button>
-    </div>
   </div>
 </div>
 
@@ -676,7 +676,7 @@
 <div id="read-only-banner">
   🔒 MODO SOLO LECTURA — está viendo el mapa de otra aula y no puede editarlo
   <span id="direccion-aula-switch-wrap">
-    · Ver: <select id="direccion-aula-switch"></select>
+    · Ver: <span id="direccion-aula-toggles"></span>
   </span>
 </div>
 
@@ -994,22 +994,20 @@
   function currentAulaSlug(){
     if (!userContext) return 'aulaA';
     if (userContext.role === 'aula') return 'aula' + userContext.aula;
-    if (userContext.role === 'direccion' && userContext.viewingAula) return 'aula' + userContext.viewingAula;
+    if (userContext.role === 'direccion') return 'direccion-view';
     return 'aulaA';
   }
   function isReadOnlyMode(){ return !!(userContext && userContext.role === 'direccion'); }
   function currentUserLabel(){
     if (!userContext) return '';
     if (userContext.role === 'aula') return 'AULA ' + userContext.aula;
-    if (userContext.role === 'direccion') return 'DIRECCIÓN — viendo AULA ' + (userContext.viewingAula || '?');
+    if (userContext.role === 'direccion') return 'DIRECCIÓN';
     return '';
   }
 
   function initUserSelector(onReady){
     var screen = document.getElementById('user-select-screen');
     var aulaGrid = document.getElementById('aula-grid');
-    var direccionPicker = document.getElementById('direccion-aula-picker');
-    var direccionGrid = document.getElementById('direccion-aula-grid');
     var subtitle = document.getElementById('user-select-subtitle');
 
     AULAS.forEach(function(letra){
@@ -1027,28 +1025,11 @@
     direccionBtn.className = 'aula-btn direccion-btn';
     direccionBtn.textContent = 'DIRECCIÓN';
     direccionBtn.addEventListener('click', function(){
-      aulaGrid.style.display = 'none';
-      subtitle.style.display = 'none';
-      direccionPicker.style.display = 'block';
+      userContext = { role:'direccion', visibleAulas: [] };
+      saveUserContext(userContext);
+      activateUserContext(onReady);
     });
     aulaGrid.appendChild(direccionBtn);
-
-    AULAS.forEach(function(letra){
-      var btn = document.createElement('button');
-      btn.className = 'aula-btn';
-      btn.textContent = 'AULA ' + letra;
-      btn.addEventListener('click', function(){
-        userContext = { role:'direccion', viewingAula: letra };
-        saveUserContext(userContext);
-        activateUserContext(onReady);
-      });
-      direccionGrid.appendChild(btn);
-    });
-    document.getElementById('direccion-back-btn').addEventListener('click', function(){
-      direccionPicker.style.display = 'none';
-      aulaGrid.style.display = 'grid';
-      subtitle.style.display = 'block';
-    });
 
     var saved = loadUserContext();
     if (saved){
@@ -1074,22 +1055,159 @@
     badge.title = currentUserLabel();
     document.getElementById('go-home-btn').addEventListener('click', goToHome);
     if (isReadOnlyMode()){
-      var switchSel = document.getElementById('direccion-aula-switch');
-      switchSel.innerHTML = '';
+      if (!userContext.visibleAulas) userContext.visibleAulas = [];
+      var togglesWrap = document.getElementById('direccion-aula-toggles');
+      togglesWrap.innerHTML = '';
       AULAS.forEach(function(letra){
-        var opt = document.createElement('option');
-        opt.value = letra;
-        opt.textContent = 'AULA ' + letra;
-        if (letra === userContext.viewingAula) opt.selected = true;
-        switchSel.appendChild(opt);
+        var btn = document.createElement('button');
+        btn.className = 'direccion-aula-toggle';
+        btn.textContent = letra;
+        btn.title = 'Mostrar/ocultar AULA ' + letra;
+        var isOn = userContext.visibleAulas.indexOf(letra) !== -1;
+        btn.classList.toggle('on', isOn);
+        btn.addEventListener('click', function(){
+          var nowOn = !btn.classList.contains('on');
+          btn.classList.toggle('on', nowOn);
+          if (nowOn){
+            if (userContext.visibleAulas.indexOf(letra) === -1) userContext.visibleAulas.push(letra);
+          } else {
+            userContext.visibleAulas = userContext.visibleAulas.filter(function(x){ return x !== letra; });
+          }
+          saveUserContext(userContext);
+          direccionToggleAula(letra, nowOn, btn);
+        });
+        togglesWrap.appendChild(btn);
       });
-      switchSel.addEventListener('change', function(ev){
-        userContext.viewingAula = ev.target.value;
-        saveUserContext(userContext);
-        location.reload();
+      onReady();
+      userContext.visibleAulas.slice().forEach(function(letra){
+        var btn = Array.from(togglesWrap.children).filter(function(b){ return b.textContent === letra; })[0];
+        direccionToggleAula(letra, true, btn);
       });
+      return;
     }
     onReady();
+  }
+
+  /* ---------------- DIRECCIÓN: superposición de varias aulas a la vez (solo lectura) ---------------- */
+  var direccionAulaCache = {};
+  var direccionAulaLoading = {};
+
+  function direccionAulaBasePath(letra){
+    return githubConfig.path.replace(/\.json$/i, '') + '/aula' + letra;
+  }
+
+  function direccionToggleAula(letra, on, btn){
+    if (!on){
+      direccionUnmergeAula(letra);
+      renderLayerList();
+      return;
+    }
+    if (direccionAulaCache[letra]){
+      direccionMergeAulaIntoLayers(letra);
+      renderLayerList();
+      return;
+    }
+    if (!githubConfigured()){
+      alert('Configure primero la sincronización con GitHub para poder ver las aulas.');
+      if (btn) btn.classList.remove('on');
+      userContext.visibleAulas = (userContext.visibleAulas || []).filter(function(x){ return x !== letra; });
+      saveUserContext(userContext);
+      return;
+    }
+    if (direccionAulaLoading[letra]) return;
+    direccionAulaLoading[letra] = true;
+    if (btn) btn.classList.add('loading');
+    var basePath = direccionAulaBasePath(letra);
+    fetch(githubContentsUrl(basePath + '/index.json', true), { headers: githubAuthHeaders() })
+      .then(function(res){
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(data){
+        if (!data) return null;
+        return resolveFileText(data).then(function(rawText){ return JSON.parse(rawText); });
+      })
+      .then(function(indexState){
+        if (!indexState){ direccionAulaCache[letra] = { indexEntries: [], layerNodes: {} }; return; }
+        var rootIds = (indexState.layers || []).filter(function(e){ return !e.parentId; }).map(function(e){ return e.id; });
+        var layerNodes = {};
+        var chain = Promise.resolve();
+        rootIds.forEach(function(id){
+          chain = chain.then(function(){
+            return fetch(githubContentsUrl(basePath + '/layers/' + id + '.json', true), { headers: githubAuthHeaders() })
+              .then(function(res2){
+                if (res2.status === 404) return null;
+                if (!res2.ok) throw new Error('HTTP ' + res2.status);
+                return res2.json();
+              })
+              .then(function(data2){
+                if (!data2) return;
+                return resolveFileText(data2).then(function(rawText2){ layerNodes[id] = JSON.parse(rawText2); });
+              });
+          });
+        });
+        return chain.then(function(){
+          direccionAulaCache[letra] = { indexEntries: indexState.layers || [], layerNodes: layerNodes };
+        });
+      })
+      .then(function(){
+        direccionAulaLoading[letra] = false;
+        if (btn) btn.classList.remove('loading');
+        direccionMergeAulaIntoLayers(letra);
+        renderLayerList();
+      })
+      .catch(function(err){
+        direccionAulaLoading[letra] = false;
+        if (btn){ btn.classList.remove('loading'); btn.classList.remove('on'); }
+        userContext.visibleAulas = (userContext.visibleAulas || []).filter(function(x){ return x !== letra; });
+        saveUserContext(userContext);
+        alert('No se pudo cargar AULA ' + letra + ': ' + err.message);
+      });
+  }
+
+  function direccionMergeAulaIntoLayers(letra){
+    var cache = direccionAulaCache[letra];
+    if (!cache) return;
+    direccionUnmergeAula(letra);
+    var prefix = 'd_' + letra + '_';
+    var letraOffset = AULAS.indexOf(letra) * 100000;
+    cache.indexEntries.forEach(function(entry){
+      var lo = {
+        id: prefix + entry.id,
+        name: entry.parentId ? entry.name : ('AULA ' + letra + ' — ' + entry.name),
+        color: entry.color,
+        group: L.featureGroup(),
+        visible: entry.visible !== false,
+        expanded: !!entry.expanded,
+        parentId: entry.parentId ? (prefix + entry.parentId) : null,
+        sortIndex: letraOffset + (entry.sortIndex || 0),
+        _direccionAula: letra
+      };
+      layers.push(lo);
+    });
+    Object.keys(cache.layerNodes).forEach(function(origId){
+      direccionApplyNode(cache.layerNodes[origId], prefix);
+    });
+    layers.filter(function(l){ return l._direccionAula === letra; }).forEach(function(l){
+      if (l.visible) map.addLayer(l.group);
+    });
+  }
+
+  function direccionApplyNode(node, prefix){
+    var lo = getLayer(prefix + node.id);
+    if (lo && node.geojson && node.geojson.features && node.geojson.features.length){
+      L.geoJSON(node.geojson, buildGeoJSONReconstructOptions(lo));
+    }
+    (node.children || []).forEach(function(child){ direccionApplyNode(child, prefix); });
+  }
+
+  function direccionUnmergeAula(letra){
+    layers.filter(function(l){ return l._direccionAula === letra; }).forEach(function(l){
+      map.removeLayer(l.group);
+    });
+    layers = layers.filter(function(l){ return l._direccionAula !== letra; });
+    if (activeLayerId && activeLayerId.indexOf('d_' + letra + '_') === 0) activeLayerId = null;
   }
 
   /* ---------------- CONFIRMACIÓN PERSONALIZADA (Sí / No) ---------------- */
@@ -6269,17 +6387,23 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     loadEnfoqueLocal();
     fillGithubConfigInputs();
 
-    if (!loadStateFromStorage()){
-      createTeatroOperacionesLayer();
-      createLayer('Capa 1', PALETTE[0]);
-    }
-    updateViewInfo();
-    updateUndoRedoUI();
-
-    if (githubConfigured()){
-      githubPull(false);
+    if (isReadOnlyMode()){
+      updateViewInfo();
+      updateUndoRedoUI();
+      updateSyncStatus('off','');
     } else {
-      updateSyncStatus('off','Sin configurar');
+      if (!loadStateFromStorage()){
+        createTeatroOperacionesLayer();
+        createLayer('Capa 1', PALETTE[0]);
+      }
+      updateViewInfo();
+      updateUndoRedoUI();
+
+      if (githubConfigured()){
+        githubPull(false);
+      } else {
+        updateSyncStatus('off','Sin configurar');
+      }
     }
 
     map.on('moveend zoomend', scheduleSave);
