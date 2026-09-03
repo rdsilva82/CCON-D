@@ -1178,7 +1178,12 @@
     if (!raw) return false;
     var state;
     try{ state = JSON.parse(raw); } catch(err){ return false; }
-    try{ return applyRemoteState(state); } catch(err){ return false; }
+    try{
+      applyingRemoteState = true;
+      var ok = applyRemoteState(state);
+      applyingRemoteState = false;
+      return ok;
+    } catch(err){ applyingRemoteState = false; return false; }
   }
 
   /* ---------------- NUBE COMPARTIDA (sincronización vía GitHub, granular por capa) ---------------- */
@@ -1503,7 +1508,7 @@
         headers: Object.assign({ 'Content-Type':'application/json' }, githubAuthHeaders()),
         body: JSON.stringify({ message:'Eliminar capa - ' + new Date().toISOString(), sha: knownSha, branch: githubConfig.branch || 'main' })
       }).then(function(res){
-        if (res.status === 409 && retriesLeft > 0){
+        if ((res.status === 409 || res.status === 422) && retriesLeft > 0){
           return githubRefreshSha(task.path).then(function(sha){ githubShas.layers[task.id] = sha; return githubPushOneFile(task, retriesLeft - 1); });
         }
         delete githubShas.layers[task.id];
@@ -1522,7 +1527,7 @@
       headers: Object.assign({ 'Content-Type':'application/json' }, githubAuthHeaders()),
       body: JSON.stringify(body)
     }).then(function(res){
-      if (res.status === 409 && retriesLeft > 0){
+      if ((res.status === 409 || res.status === 422) && retriesLeft > 0){
         return githubRefreshSha(task.path).then(function(sha){
           if (task.kind === 'index') githubShas.index = sha;
           else if (task.kind === 'enfoque') githubShas.enfoque = sha;
@@ -1531,7 +1536,7 @@
         });
       }
       return res.json().then(function(data){
-        if (!res.ok) throw new Error(data.message || ('HTTP ' + res.status));
+        if (!res.ok) throw new Error((data.message || ('HTTP ' + res.status)) + ' — pulse "Subir cambios" para reintentar.');
         if (task.kind === 'index'){ githubShas.index = data.content.sha; lastPushedIndexSig = task.sig; }
         else if (task.kind === 'enfoque'){ githubShas.enfoque = data.content.sha; lastPushedEnfoqueSig = task.sig; }
         else { githubShas.layers[task.id] = data.content.sha; lastPushedLayerSig[task.id] = task.sig; }
