@@ -100,7 +100,7 @@
     flex-shrink:0;
     z-index:1000;
   }
-  header .brand{ display:flex; align-items:center; gap:10px; }
+  header .brand{ display:flex; align-items:center; gap:10px; min-width:0; overflow:hidden; }
   header .brand .crest{
     width:30px;height:30px;border-radius:50%;
     background:var(--gold);
@@ -108,27 +108,48 @@
     color:var(--navy-deep);font-weight:700;font-size:14px;
     flex-shrink:0;
   }
-  header h1{ font-size:15px; margin:0; line-height:1.2; font-weight:700; letter-spacing:.2px; }
+  header h1{ font-size:15px; margin:0; line-height:1.2; font-weight:700; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   header .subtitle{ font-size:11px; color:var(--gold-light); font-weight:400; }
+  header .header-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  #user-controls{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  #current-user-badge{ flex-shrink:0; white-space:nowrap; }
   header .panel-toggles{ display:none; gap:8px; }
   header button.toggle-btn{
     background:rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.25);
     color:#fff; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;
+    white-space:nowrap; flex-shrink:0;
   }
   header button.toggle-btn:hover{ background:rgba(255,255,255,.18); }
 
   header .mode-switcher{
     display:flex; gap:2px; background:rgba(0,0,0,.22); border-radius:9px; padding:3px;
-    margin:0 auto;
+    margin:0 auto; flex-shrink:1; overflow-x:auto; max-width:100%;
   }
   header .mode-btn{
     background:transparent; border:none; color:rgba(255,255,255,.75);
     font-family:inherit; font-size:12.5px; font-weight:700; letter-spacing:.2px;
     padding:7px 16px; border-radius:7px; cursor:pointer; transition:background .15s,color .15s;
+    white-space:nowrap; flex-shrink:0;
   }
   header .mode-btn:hover{ color:#fff; }
   header .mode-btn.active{ background:var(--gold); color:var(--navy-deep); }
+
+  /* Encabezado compacto para tabletas (iPad y similares, ambas orientaciones) */
+  @media (max-width: 1180px){
+    header{ padding:0 8px; gap:6px; }
+    header .brand{ gap:6px; min-width:0; }
+    header .subtitle{ display:none; }
+    header h1{ font-size:12.5px; }
+    header .brand .crest{ width:26px; height:26px; font-size:12px; }
+    header .mode-btn{ padding:6px 9px; font-size:11px; }
+    #current-user-badge{ font-size:10px; padding:4px 7px; max-width:120px; overflow:hidden; text-overflow:ellipsis; }
+    header button.toggle-btn{ padding:6px 8px; font-size:11px; }
+  }
+  @media (max-width: 760px){
+    header .home-label{ display:none; }
+    #current-user-badge{ max-width:70px; }
+  }
 
   /* ---------- LAYOUT ---------- */
   .app-grid{
@@ -632,14 +653,18 @@
   <div class="mode-switcher">
     <button class="mode-btn active" id="mode-edicion-btn">✎ Edición</button>
     <button class="mode-btn" id="mode-coa-btn">◎ COA</button>
-    <button class="mode-btn" id="mode-enfoque-btn">🖼 Enfoque Operacional</button>
+    <button class="mode-btn" id="mode-enfoque-btn">🖼 Enfoque</button>
     <button class="mode-btn" id="mode-personal-btn">👤 Personal</button>
   </div>
-  <div class="panel-toggles">
-    <div id="current-user-badge"></div>
-    <button class="toggle-btn" id="go-home-btn" title="Volver al inicio y elegir otra aula o dirección">🏠 Inicio</button>
-    <button class="toggle-btn" id="toggle-left">☰</button>
-    <button class="toggle-btn" id="toggle-right">▤</button>
+  <div class="header-right">
+    <div id="user-controls">
+      <div id="current-user-badge"></div>
+      <button class="toggle-btn" id="go-home-btn" title="Volver al inicio y elegir otra aula o dirección">🏠 <span class="home-label">Inicio</span></button>
+    </div>
+    <div class="panel-toggles">
+      <button class="toggle-btn" id="toggle-left">☰</button>
+      <button class="toggle-btn" id="toggle-right">▤</button>
+    </div>
   </div>
 </header>
 
