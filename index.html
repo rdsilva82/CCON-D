@@ -404,6 +404,8 @@
     width:100%; padding:7px 8px; border:1px solid var(--border); border-radius:6px; font-family:inherit; font-size:13px;
   }
   .style-block{ display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--border); padding-top:10px; }
+  .multiselect-marker-glow{ filter: drop-shadow(0 0 3px #FFD54A) drop-shadow(0 0 6px #FFD54A); }
+  .multiselect-summary{ font-weight:700; color:var(--navy); font-size:13px; margin-bottom:4px; }
   .style-field{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; color:var(--muted); }
   .style-field input[type="color"]{ width:26px; height:26px; border:none; border-radius:6px; padding:0; cursor:pointer; }
   .style-field input[type="range"]{ flex:1; margin-left:8px; }
@@ -2115,6 +2117,8 @@
   var layerCounter = 0;
   var shapeCounter = 0;
   var selectedShape = null;
+  var multiSelectedShapes = [];
+  var multiSelectHighlights = {};
 
   function getChildren(parentId){
     return layers.filter(function(l){ return l.parentId === parentId; })
@@ -4026,6 +4030,12 @@
     if (shape._isMilSymbol && shape._supply == null) shape._supply = 100;
     shape.on('click', function(e){
       L.DomEvent.stopPropagation(e);
+      var shiftHeld = !!(e.originalEvent && e.originalEvent.shiftKey);
+      if (shiftHeld && !isReadOnlyMode()){
+        toggleMultiSelect(shape);
+        return;
+      }
+      clearMultiSelect();
       selectedShape = shape;
       showProperties(shape, layerObj || findLayerOfShape(shape));
       renderLayerList();
@@ -4677,12 +4687,90 @@
   });
 
   /* ---------------- PROPERTIES PANEL ---------------- */
+  /* ---------------- SELECCIÓN MÚLTIPLE (Shift + clic) ---------------- */
+  function buildMultiSelectHighlight(shape){
+    var style = { color:'#FFD54A', weight:7, opacity:.9, interactive:false, keyboard:false, lineJoin:'round', lineCap:'round', className:'multiselect-halo' };
+    if (shape instanceof L.Circle){
+      return L.circle(shape.getLatLng(), Object.assign({ radius: shape.getRadius(), fill:false }, style));
+    }
+    if (shape instanceof L.Polygon){
+      return L.polygon(shape.getLatLngs(), Object.assign({ fill:false }, style));
+    }
+    if (shape instanceof L.Polyline){
+      return L.polyline(shape.getLatLngs(), style);
+    }
+    return null;
+  }
+  function addMultiSelectHighlight(shape){
+    if (shape instanceof L.Marker){
+      var el = shape.getElement ? shape.getElement() : null;
+      if (el) el.classList.add('multiselect-marker-glow');
+      return;
+    }
+    if (multiSelectHighlights[shape._shapeId]) return;
+    var h = buildMultiSelectHighlight(shape);
+    if (h){ h.addTo(map); multiSelectHighlights[shape._shapeId] = h; }
+  }
+  function removeMultiSelectHighlight(shape){
+    if (shape instanceof L.Marker){
+      var el = shape.getElement ? shape.getElement() : null;
+      if (el) el.classList.remove('multiselect-marker-glow');
+    }
+    var h = multiSelectHighlights[shape._shapeId];
+    if (h){ h.remove(); delete multiSelectHighlights[shape._shapeId]; }
+  }
+  function syncMultiSelectHighlightPosition(shape){
+    if (shape instanceof L.Marker) return;
+    var h = multiSelectHighlights[shape._shapeId];
+    if (!h) return;
+    removeMultiSelectHighlight(shape);
+    addMultiSelectHighlight(shape);
+  }
+  function clearMultiSelect(){
+    multiSelectedShapes.forEach(removeMultiSelectHighlight);
+    multiSelectedShapes = [];
+    document.removeEventListener('keydown', multiSelectEscHandler);
+  }
+  function multiSelectEscHandler(ev){
+    if (ev.key === 'Escape'){ clearMultiSelect(); clearProperties(); renderLayerList(); }
+  }
+  function toggleMultiSelect(shape){
+    var idx = multiSelectedShapes.indexOf(shape);
+    if (idx !== -1){
+      multiSelectedShapes.splice(idx, 1);
+      removeMultiSelectHighlight(shape);
+    } else {
+      if (selectedShape && multiSelectedShapes.length === 0 && selectedShape !== shape){
+        multiSelectedShapes.push(selectedShape);
+        addMultiSelectHighlight(selectedShape);
+      }
+      selectedShape = null;
+      multiSelectedShapes.push(shape);
+      addMultiSelectHighlight(shape);
+      document.addEventListener('keydown', multiSelectEscHandler);
+    }
+    if (multiSelectedShapes.length === 0){
+      clearProperties();
+    } else if (multiSelectedShapes.length === 1){
+      var only = multiSelectedShapes[0];
+      removeMultiSelectHighlight(only);
+      multiSelectedShapes = [];
+      document.removeEventListener('keydown', multiSelectEscHandler);
+      selectedShape = only;
+      showProperties(only, findLayerOfShape(only));
+    } else {
+      showMultiProperties(multiSelectedShapes.slice());
+    }
+    renderLayerList();
+  }
+
   function clearProperties(){
     var body = document.getElementById('properties-body');
     body.className = 'empty';
     body.innerHTML = 'Seleccione una forma dibujada en el mapa, o desde la lista de capas, para ver y editar sus propiedades.';
     syncArrowHandlesForSelection(null);
     syncOtherHandlesForSelection(null);
+    if (multiSelectedShapes.length) clearMultiSelect();
     if (moveModeShape){
       if (moveModeCleanup) moveModeCleanup();
       moveModeCleanup = null;
@@ -4751,6 +4839,216 @@
     if (fillOpInput){ fillOpInput.value = shape.options.fillOpacity; document.getElementById('prop-fill-op-pct').textContent = Math.round(shape.options.fillOpacity*100)+'%'; }
     if (weightInputEl){ weightInputEl.value = shape.options.weight; var wp = document.getElementById('prop-weight-pct'); if (wp) wp.textContent = shape.options.weight + 'px'; }
     if (dashInputEl) dashInputEl.value = shape._dashStyle || '';
+  }
+
+  function deleteMultipleShapes(shapes){
+    var byOwner = {};
+    shapes.forEach(function(s){
+      var owner = findLayerOfShape(s);
+      if (!owner) return;
+      if (!byOwner[owner.id]) byOwner[owner.id] = { owner: owner, shapes: [] };
+      byOwner[owner.id].shapes.push(s);
+    });
+    Object.keys(byOwner).forEach(function(key){
+      var entry = byOwner[key];
+      entry.shapes.forEach(function(s){ entry.owner.group.removeLayer(s); });
+      recordDeleteShapes(entry.owner, entry.shapes);
+    });
+  }
+
+  function showMultiProperties(shapes){
+    syncArrowHandlesForSelection(null);
+    syncOtherHandlesForSelection(null);
+    if (moveModeShape){
+      if (moveModeCleanup) moveModeCleanup();
+      moveModeCleanup = null;
+      moveModeShape = null;
+      moveBoxEl.classList.remove('show');
+    }
+    var body = document.getElementById('properties-body');
+    body.className = '';
+    body.innerHTML = '';
+
+    var pathShapes = shapes.filter(function(s){ return s instanceof L.Path; });
+
+    var summary = document.createElement('div');
+    summary.className = 'multiselect-summary';
+    summary.textContent = shapes.length + ' objetos seleccionados';
+    body.appendChild(summary);
+
+    var hint = document.createElement('div');
+    hint.className = 'hint';
+    hint.textContent = 'Mantenga presionada Shift y haga clic para agregar o quitar objetos de la selección (Esc para cancelar). Los cambios de estilo se aplican a todos los objetos con línea/relleno seleccionados a la vez.';
+    body.appendChild(hint);
+
+    if (pathShapes.length){
+      var styleBlock = document.createElement('div');
+      styleBlock.className = 'style-block';
+
+      var strokeField = document.createElement('div');
+      strokeField.className = 'style-field';
+      strokeField.innerHTML = '<span>Color de línea</span>';
+      var strokeColor = document.createElement('input');
+      strokeColor.type = 'color';
+      strokeColor.value = rgbToHex(pathShapes[0].options.color);
+      strokeColor.addEventListener('input', function(ev){
+        pathShapes.forEach(function(s){ applyStrokeColor(s, ev.target.value); });
+        renderLayerList();
+      });
+      strokeField.appendChild(strokeColor);
+      styleBlock.appendChild(strokeField);
+
+      var strokeOpField = document.createElement('div');
+      strokeOpField.className = 'style-field';
+      strokeOpField.innerHTML = '<span>Transparencia de línea</span>';
+      var strokeOp = document.createElement('input');
+      strokeOp.type = 'range'; strokeOp.min=0; strokeOp.max=1; strokeOp.step=.05;
+      strokeOp.value = pathShapes[0].options.opacity != null ? pathShapes[0].options.opacity : 1;
+      var strokeOpPct = document.createElement('span');
+      strokeOpPct.className = 'pct';
+      strokeOpPct.textContent = Math.round(parseFloat(strokeOp.value)*100)+'%';
+      strokeOp.addEventListener('input', function(ev){
+        var v = parseFloat(ev.target.value);
+        pathShapes.forEach(function(s){ applyStrokeOpacity(s, v); });
+        strokeOpPct.textContent = Math.round(v*100)+'%';
+        renderLayerList();
+      });
+      strokeOpField.appendChild(strokeOp);
+      strokeOpField.appendChild(strokeOpPct);
+      styleBlock.appendChild(strokeOpField);
+
+      var fillCapable = pathShapes.filter(function(s){
+        var k = shapeKind(s);
+        return k === 'polygon' || k === 'circle' || k === 'arrow' || k === 'ellipse';
+      });
+      if (fillCapable.length){
+        var fillField = document.createElement('div');
+        fillField.className = 'style-field';
+        fillField.innerHTML = '<span>Color de relleno</span>';
+        var fillColor = document.createElement('input');
+        fillColor.type = 'color';
+        fillColor.value = fillCapable[0]._fillColorRaw || rgbToHex(fillCapable[0].options.fillColor || fillCapable[0].options.color);
+        fillColor.addEventListener('input', function(ev){
+          fillCapable.forEach(function(s){ applyFillStyle(s, s._fillStyleKey || 'solid', ev.target.value); });
+          renderLayerList();
+        });
+        fillField.appendChild(fillColor);
+        styleBlock.appendChild(fillField);
+
+        var fillStyleField = document.createElement('div');
+        fillStyleField.className = 'style-field';
+        fillStyleField.innerHTML = '<span>Estilo de relleno</span>';
+        var fillStyleSelect = document.createElement('select');
+        fillStyleSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
+        FILL_STYLES.forEach(function(opt){
+          var o = document.createElement('option');
+          o.value = opt[0]; o.textContent = opt[1];
+          fillStyleSelect.appendChild(o);
+        });
+        fillStyleSelect.addEventListener('change', function(ev){
+          fillCapable.forEach(function(s){
+            var color = s._fillColorRaw || rgbToHex(s.options.fillColor || s.options.color);
+            applyFillStyle(s, ev.target.value, color);
+          });
+          renderLayerList();
+        });
+        fillStyleField.appendChild(fillStyleSelect);
+        styleBlock.appendChild(fillStyleField);
+
+        var fillOpField = document.createElement('div');
+        fillOpField.className = 'style-field';
+        fillOpField.innerHTML = '<span>Transparencia de relleno</span>';
+        var fillOp = document.createElement('input');
+        fillOp.type = 'range'; fillOp.min=0; fillOp.max=1; fillOp.step=.05;
+        fillOp.value = fillCapable[0].options.fillOpacity != null ? fillCapable[0].options.fillOpacity : .25;
+        var fillOpPct = document.createElement('span');
+        fillOpPct.className = 'pct';
+        fillOpPct.textContent = Math.round(parseFloat(fillOp.value)*100)+'%';
+        fillOp.addEventListener('input', function(ev){
+          var v = parseFloat(ev.target.value);
+          fillCapable.forEach(function(s){ applyFillOpacity(s, v); });
+          fillOpPct.textContent = Math.round(v*100)+'%';
+          renderLayerList();
+        });
+        fillOpField.appendChild(fillOp);
+        fillOpField.appendChild(fillOpPct);
+        styleBlock.appendChild(fillOpField);
+      }
+
+      var weightField = document.createElement('div');
+      weightField.className = 'style-field';
+      weightField.innerHTML = '<span>Grosor de línea</span>';
+      var weightInput = document.createElement('input');
+      weightInput.type = 'range'; weightInput.min = 1; weightInput.max = 10; weightInput.step = 1;
+      weightInput.value = pathShapes[0].options.weight != null ? pathShapes[0].options.weight : 2;
+      var weightPct = document.createElement('span');
+      weightPct.className = 'pct';
+      weightPct.textContent = weightInput.value + 'px';
+      weightInput.addEventListener('input', function(ev){
+        var v = parseInt(ev.target.value,10);
+        pathShapes.forEach(function(s){ applyWeight(s, v); });
+        weightPct.textContent = v + 'px';
+      });
+      weightField.appendChild(weightInput);
+      weightField.appendChild(weightPct);
+      styleBlock.appendChild(weightField);
+
+      var dashField = document.createElement('div');
+      dashField.className = 'style-field';
+      dashField.innerHTML = '<span>Tipo de línea</span>';
+      var dashSelect = document.createElement('select');
+      dashSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
+      [['','Sólida'],['8 6','Discontinua'],['2 5','Punteada'],['double','Doble línea']].forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        dashSelect.appendChild(o);
+      });
+      dashSelect.addEventListener('change', function(ev){
+        pathShapes.forEach(function(s){ applyDash(s, ev.target.value || ''); });
+        renderLayerList();
+      });
+      dashField.appendChild(dashSelect);
+      styleBlock.appendChild(dashField);
+
+      body.appendChild(styleBlock);
+    } else {
+      var noStyleNote = document.createElement('div');
+      noStyleNote.className = 'hint';
+      noStyleNote.textContent = 'Ninguno de los objetos seleccionados admite color de línea/relleno (por ejemplo, puntos o textos).';
+      body.appendChild(noStyleNote);
+    }
+
+    var actions = document.createElement('div');
+    actions.className = 'prop-actions';
+
+    var deleteBtn = document.createElement('button');
+    deleteBtn.className = 'outline-btn danger-outline';
+    deleteBtn.textContent = '🗑 Eliminar seleccionados';
+    deleteBtn.addEventListener('click', function(){
+      showConfirm('¿Eliminar los ' + shapes.length + ' objetos seleccionados?', function(){
+        deleteMultipleShapes(shapes.slice());
+        clearMultiSelect();
+        clearProperties();
+        renderLayerList();
+      });
+    });
+
+    var cancelBtn = document.createElement('button');
+    cancelBtn.className = 'outline-btn';
+    cancelBtn.textContent = 'Cancelar selección';
+    cancelBtn.addEventListener('click', function(){
+      clearMultiSelect();
+      clearProperties();
+      renderLayerList();
+    });
+
+    actions.appendChild(cancelBtn);
+    actions.appendChild(deleteBtn);
+    body.appendChild(actions);
+
+    if (isReadOnlyMode()){
+      body.querySelectorAll('input, select, button').forEach(function(el){ el.disabled = true; });
+    }
   }
 
   function showProperties(shape, layerObj){
