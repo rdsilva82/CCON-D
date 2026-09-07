@@ -2191,6 +2191,12 @@
       if (milR){ if (visible) milR.addTo(map); else map.removeLayer(milR); }
       var lenL = lengthLabelLayers[s._shapeId];
       if (lenL){ if (visible) lenL.addTo(map); else map.removeLayer(lenL); }
+      var outl = arrowOutlines[s._shapeId];
+      if (outl){ if (visible) outl.addTo(map); else map.removeLayer(outl); }
+      var corL = arrowCorridorLines[s._shapeId];
+      if (corL){ if (visible) corL.addTo(map); else map.removeLayer(corL); }
+      var corM = arrowCorridorMagnitudes[s._shapeId];
+      if (corM){ if (visible) corM.addTo(map); else map.removeLayer(corM); }
     });
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
@@ -3344,6 +3350,11 @@
     var left = [], right = [];
     for (var i=0;i<=j;i++){
       var n = normalAt(i);
+      if (i === 0 && (arrow.tailLeftOffset || arrow.tailRightOffset)){
+        left.push(arrow.tailLeftOffset ? { x: pts[0].x+arrow.tailLeftOffset.x, y: pts[0].y+arrow.tailLeftOffset.y } : { x: pts[0].x+n.x*sw, y: pts[0].y+n.y*sw });
+        right.push(arrow.tailRightOffset ? { x: pts[0].x+arrow.tailRightOffset.x, y: pts[0].y+arrow.tailRightOffset.y } : { x: pts[0].x-n.x*sw, y: pts[0].y-n.y*sw });
+        continue;
+      }
       left.push({ x: pts[i].x+n.x*sw, y: pts[i].y+n.y*sw });
       right.push({ x: pts[i].x-n.x*sw, y: pts[i].y-n.y*sw });
     }
@@ -3365,17 +3376,160 @@
     var shaftWidth = Math.max(len*0.05, 3);
     var headLength = Math.max(len*0.3, shaftWidth*2);
     var headWidth = shaftWidth*2.6;
-    return { tail:tail, head:head, curve:null, shaftWidth:shaftWidth, headLength:headLength, headWidth:headWidth };
+    return { tail:tail, head:head, curve:null, shaftWidth:shaftWidth, headLength:headLength, headWidth:headWidth,
+      tailLeftOffset:null, tailRightOffset:null, corridorEnabled:false, corridorEchelon:'' };
+  }
+
+  function computeArrowCenterline(arrow){
+    var tail = arrow.tail, head = arrow.head;
+    var curveLatLng = arrow.curve || midLocal(tail, head);
+    var P0 = { x:0, y:0 };
+    var P1 = localXY(tail, head);
+    var C  = localXY(tail, curveLatLng);
+    var N = ARROW_CURVE_SEGMENTS;
+    var pts = [];
+    for (var i=0;i<=N;i++){ pts.push(bezierXY(P0, C, P1, i/N)); }
+    var s = [0];
+    for (var i=1;i<=N;i++){
+      var dx = pts[i].x-pts[i-1].x, dy = pts[i].y-pts[i-1].y;
+      s.push(s[i-1] + Math.sqrt(dx*dx+dy*dy));
+    }
+    var totalLen = s[N] || 0.0001;
+    var headLen = Math.min(arrow.headLength, totalLen*0.9);
+    var shaftEndArc = totalLen - headLen;
+    var j = 0;
+    while (j < N-1 && s[j+1] < shaftEndArc) j++;
+    var segSpan = s[j+1]-s[j];
+    var segFrac = segSpan > 0 ? (shaftEndArc-s[j])/segSpan : 0;
+    var shaftEndPt = { x: pts[j].x + (pts[j+1].x-pts[j].x)*segFrac, y: pts[j].y + (pts[j+1].y-pts[j].y)*segFrac };
+    var localPts = pts.slice(0, j+1).concat([shaftEndPt]);
+    var midIdx = Math.floor(localPts.length/2);
+    var a = localPts[Math.max(0,midIdx-1)], b = localPts[Math.min(localPts.length-1,midIdx+1)];
+    var angleDeg = Math.atan2(b.y-a.y, b.x-a.x) * 180/Math.PI;
+    return {
+      latlngs: localPts.map(function(p){ return fromLocalXY(tail, p.x, p.y); }),
+      midLatLng: fromLocalXY(tail, localPts[midIdx].x, localPts[midIdx].y),
+      angleDeg: angleDeg
+    };
   }
 
   function rebuildArrow(shape){
     shape.setLatLngs(computeArrowPoints(shape._arrow));
     if (shape._arrowHandles) positionArrowHandles(shape);
+    syncArrowOutline(shape);
+    syncArrowCorridor(shape);
   }
 
   function cloneArrowState(a){
-    return { tail: L.latLng(a.tail), head: L.latLng(a.head), curve: a.curve ? L.latLng(a.curve) : null, shaftWidth: a.shaftWidth, headWidth: a.headWidth, headLength: a.headLength };
+    return { tail: L.latLng(a.tail), head: L.latLng(a.head), curve: a.curve ? L.latLng(a.curve) : null,
+      shaftWidth: a.shaftWidth, headWidth: a.headWidth, headLength: a.headLength,
+      tailLeftOffset: a.tailLeftOffset ? { x:a.tailLeftOffset.x, y:a.tailLeftOffset.y } : null,
+      tailRightOffset: a.tailRightOffset ? { x:a.tailRightOffset.x, y:a.tailRightOffset.y } : null,
+      corridorEnabled: !!a.corridorEnabled, corridorEchelon: a.corridorEchelon || '' };
   }
+
+  /* ---------------- CONTORNO ABIERTO DE LA FLECHA (reverso sin cerrar) ---------------- */
+  var arrowOutlines = {};
+  function syncArrowOutline(shape){
+    if (!shape._isArrow) return;
+    var owner = findLayerOfShape(shape);
+    var pts = computeArrowPoints(shape._arrow);
+    var style = {
+      color: shape.options.color, weight: shape.options.weight,
+      opacity: shape.options.opacity != null ? shape.options.opacity : 1,
+      dashArray: shape.options.dashArray, interactive:false, keyboard:false
+    };
+    var outline = arrowOutlines[shape._shapeId];
+    if (!outline){
+      outline = L.polyline(pts, style);
+      outline.addTo(map);
+      arrowOutlines[shape._shapeId] = outline;
+    } else {
+      outline.setLatLngs(pts);
+      outline.setStyle(style);
+    }
+  }
+  function removeArrowOutline(shape){
+    var o = arrowOutlines[shape._shapeId];
+    if (o){ o.remove(); delete arrowOutlines[shape._shapeId]; }
+  }
+  function syncAllArrowOutlines(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){ if (s._isArrow) { liveIds[s._shapeId] = s; syncArrowOutline(s); } });
+    });
+    Object.keys(arrowOutlines).forEach(function(id){
+      if (!liveIds[id]){ arrowOutlines[id].remove(); delete arrowOutlines[id]; }
+    });
+  }
+
+  /* ---------------- CORREDOR DE MOVILIDAD (línea interior + magnitud) ---------------- */
+  var arrowCorridorLines = {};
+  var arrowCorridorMagnitudes = {};
+  function removeArrowCorridor(shape){
+    var line = arrowCorridorLines[shape._shapeId];
+    if (line){ line.remove(); delete arrowCorridorLines[shape._shapeId]; }
+    var mag = arrowCorridorMagnitudes[shape._shapeId];
+    if (mag){ mag.remove(); delete arrowCorridorMagnitudes[shape._shapeId]; }
+  }
+  function shaftPixelWidth(shape, atLatLng){
+    var arrow = shape._arrow;
+    var vec = localXY(arrow.tail, arrow.head);
+    var totalLen = Math.max(Math.sqrt(vec.x*vec.x+vec.y*vec.y), 0.01);
+    var ux = vec.x/totalLen, uy = vec.y/totalLen;
+    var nx = -uy, ny = ux;
+    var p1 = fromLocalXY(atLatLng, nx*arrow.shaftWidth/2, ny*arrow.shaftWidth/2);
+    var p2 = fromLocalXY(atLatLng, -nx*arrow.shaftWidth/2, -ny*arrow.shaftWidth/2);
+    var px1 = map.latLngToContainerPoint(p1), px2 = map.latLngToContainerPoint(p2);
+    return Math.max(18, Math.hypot(px2.x-px1.x, px2.y-px1.y));
+  }
+  function syncArrowCorridor(shape){
+    if (!shape._isArrow) return;
+    var arrow = shape._arrow;
+    if (!arrow.corridorEnabled){ removeArrowCorridor(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+    var centerData = computeArrowCenterline(arrow);
+
+    var line = arrowCorridorLines[shape._shapeId];
+    if (!line){
+      line = L.polyline(centerData.latlngs, { color:'#000', weight:2.5, opacity:.95, interactive:false, keyboard:false });
+      if (owner.visible) line.addTo(map);
+      arrowCorridorLines[shape._shapeId] = line;
+    } else {
+      line.setLatLngs(centerData.latlngs);
+    }
+
+    var pxW = Math.min(shaftPixelWidth(shape, centerData.midLatLng) * 0.9, 90);
+    var pxH = pxW * (14/56);
+    var marksSvg = milEchelonSVG(arrow.corridorEchelon);
+    var html = '<div style="width:' + pxW + 'px;height:' + pxH + 'px;transform:rotate(' + centerData.angleDeg + 'deg);">' +
+      '<svg width="' + pxW + '" height="' + pxH + '" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="1" y="1" width="58" height="12" fill="#fff" stroke="#000" stroke-width="1"/>' +
+      '<g transform="translate(0,3)">' + marksSvg + '</g>' +
+      '</svg></div>';
+    var icon = L.divIcon({ className:'', html: html, iconSize:[pxW, pxH], iconAnchor:[pxW/2, pxH/2] });
+    var mag = arrowCorridorMagnitudes[shape._shapeId];
+    if (!mag){
+      mag = L.marker(centerData.midLatLng, { icon: icon, interactive:false, keyboard:false, zIndexOffset:600 });
+      if (owner.visible) mag.addTo(map);
+      arrowCorridorMagnitudes[shape._shapeId] = mag;
+    } else {
+      mag.setLatLng(centerData.midLatLng);
+      mag.setIcon(icon);
+    }
+  }
+  function syncAllArrowCorridors(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){ if (s._isArrow && s._arrow.corridorEnabled) liveIds[s._shapeId] = s; });
+    });
+    Object.keys(arrowCorridorLines).forEach(function(id){
+      if (!liveIds[id]){ arrowCorridorLines[id].remove(); delete arrowCorridorLines[id]; if (arrowCorridorMagnitudes[id]){ arrowCorridorMagnitudes[id].remove(); delete arrowCorridorMagnitudes[id]; } }
+    });
+    Object.keys(liveIds).forEach(function(id){ syncArrowCorridor(liveIds[id]); });
+  }
+
 
   function makeHandleIcon(color, sizePx){
     return L.divIcon({
@@ -3399,6 +3553,21 @@
     return { width: widthPt, headWidth: headWidthPt, headBase: headBasePt, nx: nx, ny: ny };
   }
 
+  function arrowTailCornerPositions(arrow){
+    var curveLatLng = arrow.curve || midLocal(arrow.tail, arrow.head);
+    var C = localXY(arrow.tail, curveLatLng);
+    var tlen = Math.sqrt(C.x*C.x+C.y*C.y) || 1;
+    var ux = C.x/tlen, uy = C.y/tlen;
+    var nx = -uy, ny = ux;
+    var sw = arrow.shaftWidth/2;
+    var leftPt = arrow.tailLeftOffset || { x: nx*sw, y: ny*sw };
+    var rightPt = arrow.tailRightOffset || { x: -nx*sw, y: -ny*sw };
+    return {
+      left: fromLocalXY(arrow.tail, leftPt.x, leftPt.y),
+      right: fromLocalXY(arrow.tail, rightPt.x, rightPt.y)
+    };
+  }
+
   function createArrowHandles(shape){
     if (shape._arrowHandles) return;
     var tailM = L.marker(shape._arrow.tail, { draggable:true, icon: makeHandleIcon('#1F3864',16), zIndexOffset:2000, title:'Cola de la flecha' }).addTo(map);
@@ -3407,6 +3576,9 @@
     var sizePos = arrowSizeHandlePositions(shape._arrow);
     var widthM = L.marker(sizePos.width, { draggable:true, icon: makeHandleIcon('#4C7A57',14), zIndexOffset:2000, title:'Ancho del asta — arrastre para ensanchar/angostar' }).addTo(map);
     var headWidthM = L.marker(sizePos.headWidth, { draggable:true, icon: makeHandleIcon('#4C7A57',14), zIndexOffset:2000, title:'Tamaño de la punta — arrastre para agrandar/achicar' }).addTo(map);
+    var tailCorners = arrowTailCornerPositions(shape._arrow);
+    var tailLeftM = L.marker(tailCorners.left, { draggable:true, icon: makeHandleIcon('#A33A3A',13), zIndexOffset:2000, title:'Esquina trasera izquierda — arrástrela donde quiera' }).addTo(map);
+    var tailRightM = L.marker(tailCorners.right, { draggable:true, icon: makeHandleIcon('#A33A3A',13), zIndexOffset:2000, title:'Esquina trasera derecha — arrástrela donde quiera' }).addTo(map);
 
     var beforeState = null;
     function onDragStart(){ beforeState = cloneArrowState(shape._arrow); }
@@ -3446,7 +3618,19 @@
       rebuildArrow(shape);
     }).on('dragend', onDragEnd);
 
-    shape._arrowHandles = { tail: tailM, head: headM, curve: curveM, width: widthM, headWidth: headWidthM };
+    tailLeftM.on('dragstart', onDragStart).on('drag', function(){
+      var localPt = localXY(shape._arrow.tail, tailLeftM.getLatLng());
+      shape._arrow.tailLeftOffset = { x: localPt.x, y: localPt.y };
+      rebuildArrow(shape);
+    }).on('dragend', onDragEnd);
+
+    tailRightM.on('dragstart', onDragStart).on('drag', function(){
+      var localPt = localXY(shape._arrow.tail, tailRightM.getLatLng());
+      shape._arrow.tailRightOffset = { x: localPt.x, y: localPt.y };
+      rebuildArrow(shape);
+    }).on('dragend', onDragEnd);
+
+    shape._arrowHandles = { tail: tailM, head: headM, curve: curveM, width: widthM, headWidth: headWidthM, tailLeft: tailLeftM, tailRight: tailRightM };
   }
 
   function positionArrowHandles(shape){
@@ -3458,6 +3642,9 @@
     var sizePos = arrowSizeHandlePositions(shape._arrow);
     h.width.setLatLng(sizePos.width);
     h.headWidth.setLatLng(sizePos.headWidth);
+    var tailCorners = arrowTailCornerPositions(shape._arrow);
+    h.tailLeft.setLatLng(tailCorners.left);
+    h.tailRight.setLatLng(tailCorners.right);
   }
 
   function removeArrowHandles(shape){
@@ -3467,6 +3654,8 @@
     map.removeLayer(shape._arrowHandles.curve);
     map.removeLayer(shape._arrowHandles.width);
     map.removeLayer(shape._arrowHandles.headWidth);
+    map.removeLayer(shape._arrowHandles.tailLeft);
+    map.removeLayer(shape._arrowHandles.tailRight);
     shape._arrowHandles = null;
   }
 
@@ -3886,7 +4075,7 @@
     arrowTail = map.containerPointToLatLng(containerPointFromEvent(ev));
     var active = getActiveLayer();
     var params = defaultArrowParams(arrowTail, arrowTail);
-    arrowShape = L.polygon(computeArrowPoints(params), { color: active.color, weight:2, fillColor: active.color, fillOpacity:.4 }).addTo(map);
+    arrowShape = L.polygon(computeArrowPoints(params), { color: active.color, weight:2, fillColor: active.color, fillOpacity:.4, stroke:false }).addTo(map);
     arrowShape._arrow = params;
     mapContainer.addEventListener('pointermove', arrowPointerMove);
     mapContainer.addEventListener('pointerup', arrowPointerUp);
@@ -3898,13 +4087,14 @@
     var head = map.containerPointToLatLng(containerPointFromEvent(ev));
     arrowShape._arrow = defaultArrowParams(arrowTail, head);
     rebuildArrow(arrowShape);
+    syncArrowOutline(arrowShape);
   }
   function arrowPointerCancel(){
     mapContainer.removeEventListener('pointermove', arrowPointerMove);
     mapContainer.removeEventListener('pointerup', arrowPointerUp);
     mapContainer.removeEventListener('pointercancel', arrowPointerCancel);
     arrowPointerId = null;
-    if (arrowShape){ map.removeLayer(arrowShape); arrowShape = null; }
+    if (arrowShape){ map.removeLayer(arrowShape); removeArrowOutline(arrowShape); arrowShape = null; }
   }
   function arrowPointerUp(ev){
     if (ev.pointerId !== arrowPointerId) return;
@@ -3914,16 +4104,18 @@
     arrowPointerId = null;
     if (!arrowShape) return;
     var len = distanceMeters(arrowShape._arrow.tail, arrowShape._arrow.head);
-    if (len < 15){ map.removeLayer(arrowShape); arrowShape = null; return; }
+    if (len < 15){ map.removeLayer(arrowShape); removeArrowOutline(arrowShape); arrowShape = null; return; }
     map.removeLayer(arrowShape);
+    removeArrowOutline(arrowShape);
     var active = getActiveLayer();
-    var finalArrow = L.polygon(computeArrowPoints(arrowShape._arrow), { color: active.color, weight:2, fillColor: active.color, fillOpacity:.4 });
+    var finalArrow = L.polygon(computeArrowPoints(arrowShape._arrow), { color: active.color, weight:2, fillColor: active.color, fillOpacity:.4, stroke:false });
     finalArrow._arrow = arrowShape._arrow;
     finalArrow._isArrow = true;
     finalArrow._fillColorRaw = active.color;
     finalArrow._fillStyleKey = 'solid';
     active.group.addLayer(finalArrow);
     attachShapeInteractivity(finalArrow, active);
+    syncArrowOutline(finalArrow);
     recordAddShape(active, finalArrow);
     renderLayerList();
     selectedShape = finalArrow;
@@ -4179,12 +4371,14 @@
   /* ---------------- STYLE EDITING (shared by list + properties panel) ---------------- */
   function applyStrokeColor(shape, color){
     shape.setStyle({ color: color });
+    syncArrowOutline(shape);
   }
   function applyFillColor(shape, color){
     shape.setStyle({ fillColor: color });
   }
   function applyStrokeOpacity(shape, val){
     shape.setStyle({ opacity: val });
+    syncArrowOutline(shape);
   }
   function applyFillOpacity(shape, val){
     shape.setStyle({ fillOpacity: val });
@@ -4192,6 +4386,7 @@
   function applyWeight(shape, val){
     shape.setStyle({ weight: val });
     syncDoubleLineCompanion(shape);
+    syncArrowOutline(shape);
   }
   var doubleLineCompanions = {};
   function removeDoubleLineCompanion(shape){
@@ -4227,6 +4422,7 @@
       removeDoubleLineCompanion(shape);
       shape.setStyle({ dashArray: dash || null });
     }
+    syncArrowOutline(shape);
   }
 
   /* ---------------- LAYER LIST UI ---------------- */
@@ -4274,6 +4470,8 @@
     syncAllEmisoraCoverage();
     syncAllMilRadius();
     syncAllLengthLabels();
+    syncAllArrowOutlines();
+    syncAllArrowCorridors();
     if (isReadOnlyMode()){
       list.querySelectorAll('input, select, button').forEach(function(el){
         if (el.classList.contains('vis-btn')) return;
@@ -5715,10 +5913,50 @@
         dimField('Largo de cabeza', 'headLength', 3, 1);
         dimField('Ancho de cabeza', 'headWidth', 1, 1);
 
+        var corridorField = document.createElement('div');
+        corridorField.className = 'style-field';
+        corridorField.style.cssText = 'border-top:1px solid var(--border);padding-top:8px;margin-top:2px;';
+        var corridorLabel = document.createElement('label');
+        corridorLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var corridorCheck = document.createElement('input');
+        corridorCheck.type = 'checkbox';
+        corridorCheck.checked = !!shape._arrow.corridorEnabled;
+        var corridorText = document.createElement('span');
+        corridorText.textContent = 'Corredor de movilidad';
+        corridorLabel.appendChild(corridorCheck);
+        corridorLabel.appendChild(corridorText);
+        corridorField.appendChild(corridorLabel);
+        styleBlock.appendChild(corridorField);
+
+        var magnitudeField = document.createElement('div');
+        magnitudeField.className = 'style-field';
+        magnitudeField.style.display = shape._arrow.corridorEnabled ? 'flex' : 'none';
+        magnitudeField.innerHTML = '<span>Magnitud (Escalón/Tamaño)</span>';
+        var magnitudeSelect = document.createElement('select');
+        magnitudeSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
+        MIL_ECHELONS.forEach(function(opt){
+          var o = document.createElement('option');
+          o.value = opt[0]; o.textContent = opt[1];
+          if ((shape._arrow.corridorEchelon || '') === opt[0]) o.selected = true;
+          magnitudeSelect.appendChild(o);
+        });
+        magnitudeSelect.addEventListener('change', function(ev){
+          shape._arrow.corridorEchelon = ev.target.value;
+          syncArrowCorridor(shape);
+        });
+        magnitudeField.appendChild(magnitudeSelect);
+        styleBlock.appendChild(magnitudeField);
+
+        corridorCheck.addEventListener('change', function(ev){
+          shape._arrow.corridorEnabled = ev.target.checked;
+          magnitudeField.style.display = ev.target.checked ? 'flex' : 'none';
+          syncArrowCorridor(shape);
+        });
+
         var handleHint = document.createElement('div');
         handleHint.className = 'hint';
         handleHint.style.marginTop = '2px';
-        handleHint.innerHTML = 'Arrastre los puntos <b>azules</b> (cola/punta) directamente en el mapa para reposicionar la flecha, y el punto <b>dorado</b> para curvarla.';
+        handleHint.innerHTML = 'Arrastre los puntos <b>azules</b> (cola/punta) directamente en el mapa para reposicionar la flecha, el punto <b>dorado</b> para curvarla, y los puntos <b>rojos</b> en la parte trasera para abrir o cerrar el reverso a su gusto.';
         styleBlock.appendChild(handleHint);
 
         var repositionRow = document.createElement('div');
@@ -5872,7 +6110,11 @@
           curve: shape._arrow.curve ? [shape._arrow.curve.lat, shape._arrow.curve.lng] : null,
           shaftWidth: shape._arrow.shaftWidth,
           headWidth: shape._arrow.headWidth,
-          headLength: shape._arrow.headLength
+          headLength: shape._arrow.headLength,
+          tailLeftOffset: shape._arrow.tailLeftOffset || null,
+          tailRightOffset: shape._arrow.tailRightOffset || null,
+          corridorEnabled: !!shape._arrow.corridorEnabled,
+          corridorEchelon: shape._arrow.corridorEchelon || ''
         };
       }
       if (shape && shape._isMilSymbol){
@@ -5988,7 +6230,7 @@
       },
       style: function(feature){
         var p = feature.properties || {};
-        return {
+        var s = {
           color: p.color || targetLayerObj.color,
           fillColor: p.fillColor || p.color || targetLayerObj.color,
           fillOpacity: p.fillOpacity != null ? p.fillOpacity : .25,
@@ -5996,6 +6238,8 @@
           weight: p.weight != null ? p.weight : 3,
           dashArray: p.dashArray || null
         };
+        if (p.arrow) s.stroke = false;
+        return s;
       },
       onEachFeature: function(feature, layer){
         var p = feature.properties || {};
@@ -6014,7 +6258,11 @@
             curve: p.arrow.curve ? L.latLng(p.arrow.curve[0], p.arrow.curve[1]) : null,
             shaftWidth: p.arrow.shaftWidth,
             headWidth: p.arrow.headWidth,
-            headLength: p.arrow.headLength
+            headLength: p.arrow.headLength,
+            tailLeftOffset: p.arrow.tailLeftOffset || null,
+            tailRightOffset: p.arrow.tailRightOffset || null,
+            corridorEnabled: !!p.arrow.corridorEnabled,
+            corridorEchelon: p.arrow.corridorEchelon || ''
           };
           rebuildArrow(layer);
         }
@@ -6708,6 +6956,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     }
 
     map.on('moveend zoomend', scheduleSave);
+    map.on('zoomend', syncAllArrowCorridors);
     setInterval(saveStateToStorage, 8000);
     window.addEventListener('beforeunload', saveStateToStorage);
     document.addEventListener('visibilitychange', function(){
