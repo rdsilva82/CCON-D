@@ -3424,7 +3424,17 @@
     var endA = localPts[Math.max(0,endLastIdx-1)], endB = localPts[endLastIdx];
     var endAngleDeg = screenAngle(endA, endB);
 
+    var arcLens = [0];
+    for (var i=1;i<localPts.length;i++){
+      var adx = localPts[i].x-localPts[i-1].x, ady = localPts[i].y-localPts[i-1].y;
+      arcLens.push(arcLens[i-1] + Math.sqrt(adx*adx+ady*ady));
+    }
+
     return {
+      tail: tail,
+      localPts: localPts,
+      arcLens: arcLens,
+      midIdx: midIdx,
       latlngs: localPts.map(function(p){ return fromLocalXY(tail, p.x, p.y); }),
       midLatLng: fromLocalXY(tail, localPts[midIdx].x, localPts[midIdx].y),
       angleDeg: angleDeg,
@@ -3433,6 +3443,16 @@
       endLatLng: fromLocalXY(tail, localPts[endLastIdx].x, localPts[endLastIdx].y),
       endAngleDeg: endAngleDeg
     };
+  }
+
+  function pointAtArc(localPts, arcLens, targetArc){
+    var total = arcLens[arcLens.length-1];
+    targetArc = Math.max(0, Math.min(total, targetArc));
+    var k = 0;
+    while (k < arcLens.length-2 && arcLens[k+1] < targetArc) k++;
+    var span = arcLens[k+1]-arcLens[k];
+    var frac = span > 0 ? (targetArc-arcLens[k])/span : 0;
+    return { x: localPts[k].x + (localPts[k+1].x-localPts[k].x)*frac, y: localPts[k].y + (localPts[k+1].y-localPts[k].y)*frac };
   }
 
   function rebuildArrow(shape){
@@ -3524,23 +3544,46 @@
     if (!owner) return;
     var centerData = computeArrowCenterline(arrow);
 
+    // Tamaño de la magnitud primero, para poder calcular cuánto hay que cortar la línea.
+    var pxH = Math.min(shaftPixelWidth(shape, centerData.midLatLng) * 0.85, 40);
+    var pxW = pxH * (58/12);
+
+    // Conversión de píxeles a metros locales, reutilizando la misma referencia que ya
+    // usamos para medir el ancho de la flecha en pantalla.
+    var refPx = shaftPixelWidth(shape, centerData.midLatLng);
+    var metersPerPixel = arrow.shaftWidth / Math.max(refPx, 1);
+    var gapMeters = pxW * metersPerPixel;
+    var totalArc = centerData.arcLens[centerData.arcLens.length-1];
+    if (!isFinite(gapMeters) || gapMeters < 0) gapMeters = 0;
+    gapMeters = Math.min(gapMeters, totalArc * 0.6);
+    var midArc = centerData.arcLens[centerData.midIdx];
+    var gapStartArc = midArc - gapMeters/2;
+    var gapEndArc = midArc + gapMeters/2;
+
+    var segA = [];
+    for (var i=0;i<centerData.localPts.length;i++){
+      if (centerData.arcLens[i] <= gapStartArc) segA.push(centerData.localPts[i]); else break;
+    }
+    segA.push(pointAtArc(centerData.localPts, centerData.arcLens, gapStartArc));
+    var segB = [pointAtArc(centerData.localPts, centerData.arcLens, gapEndArc)];
+    for (var i=0;i<centerData.localPts.length;i++){
+      if (centerData.arcLens[i] >= gapEndArc) segB.push(centerData.localPts[i]);
+    }
+    var segALatLngs = segA.map(function(p){ return fromLocalXY(centerData.tail, p.x, p.y); });
+    var segBLatLngs = segB.map(function(p){ return fromLocalXY(centerData.tail, p.x, p.y); });
+
     var line = arrowCorridorLines[shape._shapeId];
     if (!line){
-      line = L.polyline(centerData.latlngs, { color:'#000', weight:2.5, opacity:.95, interactive:false, keyboard:false });
+      line = L.polyline([segALatLngs, segBLatLngs], { color:'#000', weight:2.5, opacity:.95, interactive:false, keyboard:false });
       if (owner.visible) line.addTo(map);
       arrowCorridorLines[shape._shapeId] = line;
     } else {
-      line.setLatLngs(centerData.latlngs);
+      line.setLatLngs([segALatLngs, segBLatLngs]);
     }
 
-    // El alto (dimensión transversal, después de rotar) debe caber dentro del ancho de la flecha;
-    // el ancho (dimensión longitudinal, donde se leen las marcas) es proporcional a ese alto.
-    var pxH = Math.min(shaftPixelWidth(shape, centerData.midLatLng) * 0.85, 40);
-    var pxW = pxH * (58/12);
     var marksSvg = milEchelonSVG(arrow.corridorEchelon);
     var html = '<div style="width:' + pxW + 'px;height:' + pxH + 'px;transform:rotate(' + centerData.angleDeg + 'deg);">' +
       '<svg width="' + pxW + '" height="' + pxH + '" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect x="1" y="1" width="58" height="12" fill="#fff" stroke="#000" stroke-width="1"/>' +
       '<g transform="translate(0,3)">' + marksSvg + '</g>' +
       '</svg></div>';
     var icon = L.divIcon({ className:'', html: html, iconSize:[pxW, pxH], iconAnchor:[pxW/2, pxH/2] });
