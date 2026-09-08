@@ -2197,6 +2197,8 @@
       if (corL){ if (visible) corL.addTo(map); else map.removeLayer(corL); }
       var corM = arrowCorridorMagnitudes[s._shapeId];
       if (corM){ if (visible) corM.addTo(map); else map.removeLayer(corM); }
+      var corC = arrowCorridorChevrons[s._shapeId];
+      if (corC){ if (visible){ corC.start.addTo(map); corC.end.addTo(map); } else { map.removeLayer(corC.start); map.removeLayer(corC.end); } }
     });
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
@@ -3404,12 +3406,32 @@
     var shaftEndPt = { x: pts[j].x + (pts[j+1].x-pts[j].x)*segFrac, y: pts[j].y + (pts[j+1].y-pts[j].y)*segFrac };
     var localPts = pts.slice(0, j+1).concat([shaftEndPt]);
     var midIdx = Math.floor(localPts.length/2);
-    var a = localPts[Math.max(0,midIdx-1)], b = localPts[Math.min(localPts.length-1,midIdx+1)];
-    var angleDeg = Math.atan2(b.y-a.y, b.x-a.x) * 180/Math.PI;
+
+    // Nota: en este sistema local, x = componente norte, y = componente este.
+    // En pantalla, norte es -Y y este es +X, así que el ángulo de rotación CSS
+    // correcto para un vector local (dx,dy) es atan2(-dx, dy), no atan2(dy,dx).
+    function screenAngle(a, b){
+      return Math.atan2(-(b.x-a.x), b.y-a.y) * 180/Math.PI;
+    }
+
+    var midA = localPts[Math.max(0,midIdx-1)], midB = localPts[Math.min(localPts.length-1,midIdx+1)];
+    var angleDeg = screenAngle(midA, midB);
+
+    var startA = localPts[0], startB = localPts[Math.min(localPts.length-1,1)];
+    var startAngleDeg = screenAngle(startA, startB);
+
+    var endLastIdx = localPts.length-1;
+    var endA = localPts[Math.max(0,endLastIdx-1)], endB = localPts[endLastIdx];
+    var endAngleDeg = screenAngle(endA, endB);
+
     return {
       latlngs: localPts.map(function(p){ return fromLocalXY(tail, p.x, p.y); }),
       midLatLng: fromLocalXY(tail, localPts[midIdx].x, localPts[midIdx].y),
-      angleDeg: angleDeg
+      angleDeg: angleDeg,
+      startLatLng: fromLocalXY(tail, localPts[0].x, localPts[0].y),
+      startAngleDeg: startAngleDeg,
+      endLatLng: fromLocalXY(tail, localPts[endLastIdx].x, localPts[endLastIdx].y),
+      endAngleDeg: endAngleDeg
     };
   }
 
@@ -3466,11 +3488,14 @@
   /* ---------------- CORREDOR DE MOVILIDAD (línea interior + magnitud) ---------------- */
   var arrowCorridorLines = {};
   var arrowCorridorMagnitudes = {};
+  var arrowCorridorChevrons = {};
   function removeArrowCorridor(shape){
     var line = arrowCorridorLines[shape._shapeId];
     if (line){ line.remove(); delete arrowCorridorLines[shape._shapeId]; }
     var mag = arrowCorridorMagnitudes[shape._shapeId];
     if (mag){ mag.remove(); delete arrowCorridorMagnitudes[shape._shapeId]; }
+    var chev = arrowCorridorChevrons[shape._shapeId];
+    if (chev){ chev.start.remove(); chev.end.remove(); delete arrowCorridorChevrons[shape._shapeId]; }
   }
   function shaftPixelWidth(shape, atLatLng){
     var arrow = shape._arrow;
@@ -3483,6 +3508,14 @@
     var px1 = map.latLngToContainerPoint(p1), px2 = map.latLngToContainerPoint(p2);
     return Math.max(18, Math.hypot(px2.x-px1.x, px2.y-px1.y));
   }
+  function buildChevronIcon(pxSize, angleDeg){
+    var html = '<div style="width:' + pxSize + 'px;height:' + pxSize + 'px;transform:rotate(' + angleDeg + 'deg);">' +
+      '<svg width="' + pxSize + '" height="' + pxSize + '" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M5,3 L15,10 L5,17" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg></div>';
+    return L.divIcon({ className:'', html: html, iconSize:[pxSize, pxSize], iconAnchor:[pxSize/2, pxSize/2] });
+  }
+
   function syncArrowCorridor(shape){
     if (!shape._isArrow) return;
     var arrow = shape._arrow;
@@ -3500,8 +3533,10 @@
       line.setLatLngs(centerData.latlngs);
     }
 
-    var pxW = Math.min(shaftPixelWidth(shape, centerData.midLatLng) * 0.9, 90);
-    var pxH = pxW * (14/56);
+    // El alto (dimensión transversal, después de rotar) debe caber dentro del ancho de la flecha;
+    // el ancho (dimensión longitudinal, donde se leen las marcas) es proporcional a ese alto.
+    var pxH = Math.min(shaftPixelWidth(shape, centerData.midLatLng) * 0.85, 40);
+    var pxW = pxH * (58/12);
     var marksSvg = milEchelonSVG(arrow.corridorEchelon);
     var html = '<div style="width:' + pxW + 'px;height:' + pxH + 'px;transform:rotate(' + centerData.angleDeg + 'deg);">' +
       '<svg width="' + pxW + '" height="' + pxH + '" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg">' +
@@ -3518,6 +3553,23 @@
       mag.setLatLng(centerData.midLatLng);
       mag.setIcon(icon);
     }
+
+    // Flechas invertidas en los extremos: >———Magnitud———<
+    var chevronPx = Math.min(shaftPixelWidth(shape, centerData.startLatLng) * 0.55, 22);
+    var startIcon = buildChevronIcon(chevronPx, centerData.startAngleDeg);
+    var endIcon = buildChevronIcon(chevronPx, centerData.endAngleDeg + 180);
+    var chevrons = arrowCorridorChevrons[shape._shapeId];
+    if (!chevrons){
+      var startM = L.marker(centerData.startLatLng, { icon: startIcon, interactive:false, keyboard:false, zIndexOffset:600 });
+      var endM = L.marker(centerData.endLatLng, { icon: endIcon, interactive:false, keyboard:false, zIndexOffset:600 });
+      if (owner.visible){ startM.addTo(map); endM.addTo(map); }
+      arrowCorridorChevrons[shape._shapeId] = { start: startM, end: endM };
+    } else {
+      chevrons.start.setLatLng(centerData.startLatLng);
+      chevrons.start.setIcon(startIcon);
+      chevrons.end.setLatLng(centerData.endLatLng);
+      chevrons.end.setIcon(endIcon);
+    }
   }
   function syncAllArrowCorridors(){
     var liveIds = {};
@@ -3525,7 +3577,11 @@
       l.group.eachLayer(function(s){ if (s._isArrow && s._arrow.corridorEnabled) liveIds[s._shapeId] = s; });
     });
     Object.keys(arrowCorridorLines).forEach(function(id){
-      if (!liveIds[id]){ arrowCorridorLines[id].remove(); delete arrowCorridorLines[id]; if (arrowCorridorMagnitudes[id]){ arrowCorridorMagnitudes[id].remove(); delete arrowCorridorMagnitudes[id]; } }
+      if (!liveIds[id]){
+        arrowCorridorLines[id].remove(); delete arrowCorridorLines[id];
+        if (arrowCorridorMagnitudes[id]){ arrowCorridorMagnitudes[id].remove(); delete arrowCorridorMagnitudes[id]; }
+        if (arrowCorridorChevrons[id]){ arrowCorridorChevrons[id].start.remove(); arrowCorridorChevrons[id].end.remove(); delete arrowCorridorChevrons[id]; }
+      }
     });
     Object.keys(liveIds).forEach(function(id){ syncArrowCorridor(liveIds[id]); });
   }
