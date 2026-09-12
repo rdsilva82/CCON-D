@@ -863,6 +863,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 19h16M6 19v-6l4 3v-3l4 3v-3l4 3v6" stroke-linecap="round"/></svg>
         <span>Infraestruct.</span>
       </button>
+      <button class="tool-btn" data-tool="image" title="Insertar Imagen: coloque una imagen sobre el mapa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5.5-5.5L8 18"/></svg>
+        <span>Imagen</span>
+      </button>
+      <input type="file" id="image-insert-input" accept="image/*" style="display:none;">
       <hr>
       <button class="tool-btn" data-tool="edit" title="Editar elementos de la capa activa">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4.2L15.8 4.9a1.7 1.7 0 012.4 0l.9.9a1.7 1.7 0 010 2.4L8.2 19 4 20z"/><path d="M13.5 6.5l4 4"/></svg>
@@ -1199,7 +1204,7 @@
   function direccionApplyNode(node, prefix){
     var lo = getLayer(prefix + node.id);
     if (lo && node.geojson && node.geojson.features && node.geojson.features.length){
-      L.geoJSON(node.geojson, buildGeoJSONReconstructOptions(lo));
+      reconstructGeoJSONInto(node.geojson, lo);
     }
     (node.children || []).forEach(function(child){ direccionApplyNode(child, prefix); });
   }
@@ -1295,7 +1300,7 @@
         sortIndex: entry.sortIndex != null ? entry.sortIndex : idx
       };
       layers.push(layerObj);
-      if (entry.geojson) L.geoJSON(entry.geojson, buildGeoJSONReconstructOptions(layerObj));
+      if (entry.geojson) reconstructGeoJSONInto(entry.geojson, layerObj);
       if (!layerObj.visible) map.removeLayer(layerObj.group);
     });
 
@@ -1456,7 +1461,7 @@
     if (layerObj){
       layerObj.group.clearLayers();
       if (node.geojson && node.geojson.features && node.geojson.features.length){
-        L.geoJSON(node.geojson, buildGeoJSONReconstructOptions(layerObj));
+        reconstructGeoJSONInto(node.geojson, layerObj);
       }
     }
     (node.children || []).forEach(applyLayerFileObject);
@@ -2247,7 +2252,7 @@
     if (parentNode) parentNode.expanded = true;
     var fc = layerToGeoJSON(src);
     if (fc.features && fc.features.length){
-      L.geoJSON(fc, buildGeoJSONReconstructOptions(copy));
+      reconstructGeoJSONInto(fc, copy);
     }
     getChildren(sourceId).forEach(function(child){
       copyLayerRecursive(child.id, copy.id);
@@ -2895,6 +2900,148 @@
     };
     map.on('click', infraClickHandler);
   }
+
+  /* ---------------- INSERTAR IMAGEN ---------------- */
+  function defaultImageParams(){
+    return { dataUrl:'', borderColor:'#1F3864', borderWidth:3, opacity:1, locked:false };
+  }
+
+  function applyImageOverlayStyle(shape){
+    var el = shape.getElement ? shape.getElement() : null;
+    if (!el){
+      shape.once('add', function(){ applyImageOverlayStyle(shape); });
+      return;
+    }
+    var img = shape._imageParams;
+    el.style.border = img.borderWidth + 'px solid ' + img.borderColor;
+    el.style.boxSizing = 'border-box';
+    el.style.pointerEvents = img.locked ? 'none' : 'auto';
+    shape.setOpacity(img.opacity);
+  }
+
+  function buildImageHandleIcon(color){
+    return L.divIcon({
+      className:'', iconSize:[15,15], iconAnchor:[7.5,7.5],
+      html:'<div style="width:15px;height:15px;border-radius:3px;background:' + color + ';border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.5);"></div>'
+    });
+  }
+
+  function createImageHandles(shape){
+    if (shape._imageHandles) return;
+    var corners = ['nw','ne','se','sw'];
+    var handles = {};
+    corners.forEach(function(corner){
+      var m = L.marker(imageCornerLatLng(shape, corner), { draggable:true, icon: buildImageHandleIcon('#4C7A57'), zIndexOffset:2000, title:'Arrastre para redimensionar' });
+      m.addTo(map);
+      var beforeBounds = null;
+      m.on('dragstart', function(){ beforeBounds = shape.getBounds(); });
+      m.on('drag', function(){
+        var b = shape.getBounds();
+        var lat = m.getLatLng().lat, lng = m.getLatLng().lng;
+        var newBounds;
+        if (corner === 'nw') newBounds = [[b.getSouth(), lng], [lat, b.getEast()]];
+        else if (corner === 'ne') newBounds = [[b.getSouth(), b.getWest()], [lat, lng]];
+        else if (corner === 'se') newBounds = [[lat, b.getWest()], [b.getNorth(), lng]];
+        else newBounds = [[lat, lng], [b.getNorth(), b.getEast()]];
+        shape.setBounds(newBounds);
+        positionImageHandles(shape, corner);
+      });
+      m.on('dragend', function(){
+        var afterBounds = shape.getBounds();
+        pushAction(
+          function(){ shape.setBounds(beforeBounds); positionImageHandles(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); },
+          function(){ shape.setBounds(afterBounds); positionImageHandles(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); }
+        );
+        renderLayerList();
+      });
+      handles[corner] = m;
+    });
+    shape._imageHandles = handles;
+    updateImageHandlesVisibility(shape);
+  }
+  function imageCornerLatLng(shape, corner){
+    var b = shape.getBounds();
+    if (corner === 'nw') return L.latLng(b.getNorth(), b.getWest());
+    if (corner === 'ne') return L.latLng(b.getNorth(), b.getEast());
+    if (corner === 'se') return L.latLng(b.getSouth(), b.getEast());
+    return L.latLng(b.getSouth(), b.getWest());
+  }
+  function positionImageHandles(shape, exceptCorner){
+    if (!shape._imageHandles) return;
+    ['nw','ne','se','sw'].forEach(function(corner){
+      if (corner === exceptCorner) return;
+      shape._imageHandles[corner].setLatLng(imageCornerLatLng(shape, corner));
+    });
+  }
+  function updateImageHandlesVisibility(shape){
+    if (!shape._imageHandles) return;
+    var show = !shape._imageParams.locked;
+    Object.keys(shape._imageHandles).forEach(function(corner){
+      var m = shape._imageHandles[corner];
+      var el = m.getElement();
+      if (el) el.style.display = show ? '' : 'none';
+    });
+  }
+  function removeImageHandles(shape){
+    if (!shape._imageHandles) return;
+    Object.keys(shape._imageHandles).forEach(function(corner){ map.removeLayer(shape._imageHandles[corner]); });
+    shape._imageHandles = null;
+  }
+
+  function insertImageFromFile(file){
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de insertar una imagen.'); return; }
+    var reader = new FileReader();
+    reader.onload = function(){
+      var img = new Image();
+      img.onload = function(){
+        var maxDim = 1600;
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var scale = Math.min(1, maxDim / Math.max(w, h));
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(w * scale));
+        canvas.height = Math.max(1, Math.round(h * scale));
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        var dataUrl = canvas.toDataURL('image/png');
+
+        var center = map.getCenter();
+        var aspect = canvas.width / canvas.height;
+        var halfHeightDeg = (map.getBounds().getNorth() - map.getBounds().getSouth()) * 0.22;
+        if (!isFinite(halfHeightDeg) || halfHeightDeg <= 0) halfHeightDeg = 0.02;
+        var latCorrection = Math.cos(center.lat * Math.PI/180) || 1;
+        var halfWidthDeg = halfHeightDeg * aspect / latCorrection;
+        if (!isFinite(halfWidthDeg) || halfWidthDeg <= 0) halfWidthDeg = halfHeightDeg * aspect;
+        var bounds = [[center.lat-halfHeightDeg, center.lng-halfWidthDeg], [center.lat+halfHeightDeg, center.lng+halfWidthDeg]];
+
+        var params = defaultImageParams();
+        params.dataUrl = dataUrl;
+        var overlay = L.imageOverlay(dataUrl, bounds, { opacity: params.opacity, interactive: true });
+        overlay._isImageOverlay = true;
+        overlay._imageParams = params;
+        active.group.addLayer(overlay);
+        attachShapeInteractivity(overlay, active);
+        applyImageOverlayStyle(overlay);
+        recordAddShape(active, overlay);
+        renderLayerList();
+        selectedShape = overlay;
+        showProperties(overlay, active);
+      };
+      img.onerror = function(){ alert('No se pudo leer esa imagen.'); };
+      img.src = reader.result;
+    };
+    reader.onerror = function(){ alert('No se pudo leer el archivo.'); };
+    reader.readAsDataURL(file);
+  }
+
+  function activateImageTool(){
+    document.getElementById('image-insert-input').click();
+  }
+  document.getElementById('image-insert-input').addEventListener('change', function(ev){
+    var file = ev.target.files[0];
+    ev.target.value = '';
+    if (file) insertImageFromFile(file);
+  });
 
   function disableAllTools(){
     ['marker','polyline','polygon','rectangle','circle'].forEach(function(k){
@@ -3789,6 +3936,10 @@
     } else if (shape._isText){
       otherHandlesCleanup = createTextRotationHandle(shape);
       otherHandlesShapeRef = shape;
+    } else if (shape._isImageOverlay){
+      createImageHandles(shape);
+      otherHandlesShapeRef = shape;
+      otherHandlesCleanup = function(){ removeImageHandles(shape); };
     }
   }
 
@@ -4009,6 +4160,13 @@
       syncMilRadius(shape);
       return;
     }
+    if (shape._isImageOverlay){
+      var b = shape.getBounds();
+      var newBounds = [[b.getSouth()+dLat, b.getWest()+dLng], [b.getNorth()+dLat, b.getEast()+dLng]];
+      shape.setBounds(newBounds);
+      positionImageHandles(shape);
+      return;
+    }
     if (shape.getLatLngs){
       (function shift(ll){
         if (Array.isArray(ll)) { for (var i=0;i<ll.length;i++) ll[i] = shift(ll[i]); return ll; }
@@ -4025,6 +4183,7 @@
     if (shape._isArrow) return cloneArrowState(shape._arrow);
     if (shape._isEllipse) return cloneEllipseState(shape._ellipse);
     if (shape._isText) return L.latLng(shape._text.latlng);
+    if (shape._isImageOverlay) return shape.getBounds();
     if (shape instanceof L.Marker || shape instanceof L.Circle) return L.latLng(shape.getLatLng());
     if (shape.getLatLngs) return JSON.parse(JSON.stringify(shape.getLatLngs()));
     return null;
@@ -4034,6 +4193,7 @@
     if (shape._isArrow){ shape._arrow = cloneArrowState(snap); rebuildArrow(shape); return; }
     if (shape._isEllipse){ shape._ellipse = cloneEllipseState(snap); rebuildEllipse(shape); return; }
     if (shape._isText){ shape._text.latlng = L.latLng(snap); shape.setLatLng(snap); if (shape._textHandles) positionTextHandle(shape); return; }
+    if (shape._isImageOverlay){ shape.setBounds(snap); positionImageHandles(shape); return; }
     if (shape instanceof L.Marker || shape instanceof L.Circle){ shape.setLatLng(snap); return; }
     if (shape.getLatLngs){ shape.setLatLngs(snap); syncDoubleLineCompanion(shape); if (shape._rectHandles) positionRectangleHandle(shape); syncLengthLabel(shape); return; }
   }
@@ -4309,6 +4469,7 @@
       else if (tool === 'text') activateTextTool();
       else if (tool === 'target') activateTargetTool();
       else if (tool === 'infra') activateInfraTool();
+      else if (tool === 'image') activateImageTool();
       else if (tool === 'undo') doUndo();
       else if (tool === 'redo') doRedo();
       else activateDrawTool(tool);
@@ -4343,6 +4504,7 @@
     if (shape._isText) return 'Texto ' + shapeCounter;
     if (shape._isTarget) return 'Blanco ' + shapeCounter;
     if (shape._isInfra) return 'Infraestructura ' + shapeCounter;
+    if (shape._isImageOverlay) return 'Imagen ' + shapeCounter;
     if (shape._isRectangle) return 'Rectángulo ' + shapeCounter;
     if (shape instanceof L.Marker) return 'Punto ' + shapeCounter;
     if (shape instanceof L.Circle) return 'Círculo ' + shapeCounter;
@@ -4357,6 +4519,7 @@
     if (shape._isText) return 'text';
     if (shape._isTarget) return 'target';
     if (shape._isInfra) return 'infra';
+    if (shape._isImageOverlay) return 'image';
     if (shape instanceof L.Marker) return 'marker';
     if (shape instanceof L.Circle) return 'circle';
     if (shape instanceof L.Polygon) return 'polygon';
@@ -4374,6 +4537,7 @@
       text: '<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M8 10h8M8 13h5"/>',
       target: '<line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/>',
       infra: '<path d="M4 19h16M6 19v-6l4 3v-3l4 3v-3l4 3v6" stroke-linecap="round"/>',
+      image: '<rect x="3" y="4" width="18" height="16" rx="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5.5-5.5L8 18"/>',
       arrow: '<path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/>'
     };
     return '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (icons[kind]||icons.marker) + '</svg>';
@@ -5822,6 +5986,92 @@
       body.appendChild(infraBlock);
     }
 
+    if (kind === 'image'){
+      var imgBlock = document.createElement('div');
+      imgBlock.className = 'style-block';
+
+      var borderColorField = document.createElement('div');
+      borderColorField.className = 'style-field';
+      borderColorField.innerHTML = '<span>Color de marco</span>';
+      var borderColorInput = document.createElement('input');
+      borderColorInput.type = 'color';
+      borderColorInput.value = shape._imageParams.borderColor;
+      borderColorInput.addEventListener('input', function(ev){
+        shape._imageParams.borderColor = ev.target.value;
+        applyImageOverlayStyle(shape);
+      });
+      borderColorField.appendChild(borderColorInput);
+      imgBlock.appendChild(borderColorField);
+
+      var borderWidthField = document.createElement('div');
+      borderWidthField.className = 'style-field';
+      borderWidthField.innerHTML = '<span>Grosor de marco</span>';
+      var borderWidthInput = document.createElement('input');
+      borderWidthInput.type = 'range'; borderWidthInput.min = 0; borderWidthInput.max = 20; borderWidthInput.step = 1;
+      borderWidthInput.value = shape._imageParams.borderWidth;
+      var borderWidthPct = document.createElement('span');
+      borderWidthPct.className = 'pct';
+      borderWidthPct.textContent = shape._imageParams.borderWidth + 'px';
+      borderWidthInput.addEventListener('input', function(ev){
+        shape._imageParams.borderWidth = parseInt(ev.target.value, 10);
+        borderWidthPct.textContent = shape._imageParams.borderWidth + 'px';
+        applyImageOverlayStyle(shape);
+      });
+      borderWidthField.appendChild(borderWidthInput);
+      borderWidthField.appendChild(borderWidthPct);
+      imgBlock.appendChild(borderWidthField);
+
+      var imgOpacityField = document.createElement('div');
+      imgOpacityField.className = 'style-field';
+      imgOpacityField.innerHTML = '<span>Transparencia</span>';
+      var imgOpacityInput = document.createElement('input');
+      imgOpacityInput.type = 'range'; imgOpacityInput.min = 0.1; imgOpacityInput.max = 1; imgOpacityInput.step = 0.05;
+      imgOpacityInput.value = shape._imageParams.opacity;
+      var imgOpacityPct = document.createElement('span');
+      imgOpacityPct.className = 'pct';
+      imgOpacityPct.textContent = Math.round(shape._imageParams.opacity*100) + '%';
+      imgOpacityInput.addEventListener('input', function(ev){
+        shape._imageParams.opacity = parseFloat(ev.target.value);
+        imgOpacityPct.textContent = Math.round(shape._imageParams.opacity*100) + '%';
+        applyImageOverlayStyle(shape);
+      });
+      imgOpacityField.appendChild(imgOpacityInput);
+      imgOpacityField.appendChild(imgOpacityPct);
+      imgBlock.appendChild(imgOpacityField);
+
+      var lockField = document.createElement('div');
+      lockField.className = 'style-field';
+      var lockLabel = document.createElement('label');
+      lockLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+      var lockCheck = document.createElement('input');
+      lockCheck.type = 'checkbox';
+      lockCheck.checked = !!shape._imageParams.locked;
+      var lockText = document.createElement('span');
+      lockText.textContent = '🔒 Bloqueada (no se puede mover ni seleccionar)';
+      lockLabel.appendChild(lockCheck);
+      lockLabel.appendChild(lockText);
+      lockField.appendChild(lockLabel);
+      lockCheck.addEventListener('change', function(ev){
+        shape._imageParams.locked = ev.target.checked;
+        applyImageOverlayStyle(shape);
+        updateImageHandlesVisibility(shape);
+        if (shape._imageParams.locked){
+          selectedShape = null;
+          syncOtherHandlesForSelection(null);
+          clearProperties();
+          renderLayerList();
+        }
+      });
+      imgBlock.appendChild(lockField);
+
+      var lockHint = document.createElement('div');
+      lockHint.className = 'hint';
+      lockHint.innerHTML = 'Arrastre los cuadrados verdes de las esquinas para redimensionar la imagen. Al bloquearla, deja de poder seleccionarse o moverse mientras trabaja con otras herramientas — para desbloquearla, vuelva a encontrarla desde la lista de capas.';
+      imgBlock.appendChild(lockHint);
+
+      body.appendChild(imgBlock);
+    }
+
     if (kind === 'polyline'){
       var lengthBlock = document.createElement('div');
       lengthBlock.className = 'style-block';
@@ -6180,8 +6430,13 @@
   }
 
   function layerToGeoJSON(layerObj){
+    var allShapes = layerObj.group.getLayers();
+    var imageShapes = allShapes.filter(function(s){ return s._isImageOverlay; });
     var fc = layerObj.group.toGeoJSON();
-    var shapesArr = layerObj.group.getLayers();
+    // Leaflet omite silenciosamente del resultado cualquier capa sin método toGeoJSON()
+    // propio (como L.ImageOverlay) — hay que filtrar la misma lista aquí para que el
+    // emparejamiento por índice con fc.features no se desalinee.
+    var shapesArr = allShapes.filter(function(s){ return typeof s.toGeoJSON === 'function'; });
     fc.features.forEach(function(f, idx){
       var shape = shapesArr[idx];
       f.properties = f.properties || {};
@@ -6256,6 +6511,25 @@
         f.properties.infra = shape._infra;
       }
     });
+    imageShapes.forEach(function(shape){
+      var b = shape.getBounds();
+      var ring = [[b.getWest(),b.getSouth()],[b.getEast(),b.getSouth()],[b.getEast(),b.getNorth()],[b.getWest(),b.getNorth()],[b.getWest(),b.getSouth()]];
+      fc.features.push({
+        type: 'Feature',
+        geometry: { type:'Polygon', coordinates:[ring] },
+        properties: {
+          nombre: shape._customName || '',
+          capa: layerObj.name,
+          image: {
+            dataUrl: shape._imageParams.dataUrl,
+            borderColor: shape._imageParams.borderColor,
+            borderWidth: shape._imageParams.borderWidth,
+            opacity: shape._imageParams.opacity,
+            locked: !!shape._imageParams.locked
+          }
+        }
+      });
+    });
     fc.properties = { capa: layerObj.name, color: layerObj.color, generado: new Date().toISOString() };
     return fc;
   }
@@ -6283,6 +6557,37 @@
   function slug(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'capa'; }
 
   /* ---------------- IMPORT ---------------- */
+  function reconstructGeoJSONInto(geojsonData, targetLayerObj){
+    if (!geojsonData || !geojsonData.features) return;
+    var imageFeatures = geojsonData.features.filter(function(f){ return f.properties && f.properties.image; });
+    var otherFeatures = geojsonData.features.filter(function(f){ return !(f.properties && f.properties.image); });
+    if (otherFeatures.length){
+      L.geoJSON({ type:'FeatureCollection', features: otherFeatures }, buildGeoJSONReconstructOptions(targetLayerObj));
+    }
+    imageFeatures.forEach(function(f){
+      var img = f.properties.image;
+      if (!img || !img.dataUrl) return;
+      var coords = f.geometry.coordinates[0];
+      var lons = coords.map(function(c){ return c[0]; });
+      var lats = coords.map(function(c){ return c[1]; });
+      var bounds = [[Math.min.apply(null, lats), Math.min.apply(null, lons)], [Math.max.apply(null, lats), Math.max.apply(null, lons)]];
+      var params = {
+        dataUrl: img.dataUrl,
+        borderColor: img.borderColor || '#1F3864',
+        borderWidth: img.borderWidth != null ? img.borderWidth : 3,
+        opacity: img.opacity != null ? img.opacity : 1,
+        locked: !!img.locked
+      };
+      var overlay = L.imageOverlay(params.dataUrl, bounds, { opacity: params.opacity, interactive: true });
+      overlay._isImageOverlay = true;
+      overlay._imageParams = params;
+      overlay._customName = (f.properties && f.properties.nombre) || '';
+      targetLayerObj.group.addLayer(overlay);
+      attachShapeInteractivity(overlay, targetLayerObj);
+      applyImageOverlayStyle(overlay);
+    });
+  }
+
   function buildGeoJSONReconstructOptions(targetLayerObj){
     return {
       pointToLayer: function(feature, latlng){
@@ -6401,7 +6706,7 @@
       var imported = createLayer(baseName, nextColor());
 
       try{
-        L.geoJSON(data, buildGeoJSONReconstructOptions(imported));
+        reconstructGeoJSONInto(data, imported);
       } catch(err){
         alert('No se pudo interpretar el contenido geoespacial del archivo.');
       }
