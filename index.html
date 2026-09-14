@@ -965,6 +965,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
 <script>
 (function(){
 
@@ -2034,6 +2035,7 @@
     ['solid','Sólido'],
     ['diag-r','Diagonal /'],
     ['diag-l','Diagonal \\'],
+    ['diag-cross','Cuadriculado diagonal'],
     ['grid','Cuadrícula'],
     ['dots','Puntos'],
     ['none','Sin relleno']
@@ -2064,7 +2066,8 @@
       line.setAttribute('x1','0'); line.setAttribute('y1','0'); line.setAttribute('x2','0'); line.setAttribute('y2','9');
       line.setAttribute('stroke', color); line.setAttribute('stroke-width','3');
       shapes.push(line);
-    } else if (styleKey === 'grid'){
+    } else if (styleKey === 'grid' || styleKey === 'diag-cross'){
+      if (styleKey === 'diag-cross') pattern.setAttribute('patternTransform', 'rotate(45)');
       var l1 = document.createElementNS(ns,'line');
       l1.setAttribute('x1','0'); l1.setAttribute('y1','0'); l1.setAttribute('x2','9'); l1.setAttribute('y2','0');
       l1.setAttribute('stroke', color); l1.setAttribute('stroke-width','1.6');
@@ -2208,6 +2211,10 @@
       if (corM){ if (visible) corM.addTo(map); else map.removeLayer(corM); }
       var corC = arrowCorridorChevrons[s._shapeId];
       if (corC){ if (visible){ corC.start.addTo(map); corC.end.addTo(map); } else { map.removeLayer(corC.start); map.removeLayer(corC.end); } }
+      var limL = limiteLines[s._shapeId];
+      if (limL){ if (visible) limL.addTo(map); else map.removeLayer(limL); }
+      var limM = limiteMagnitudes[s._shapeId];
+      if (limM){ if (visible) limM.addTo(map); else map.removeLayer(limM); }
     });
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
@@ -3856,6 +3863,158 @@
     Object.keys(liveIds).forEach(function(id){ syncArrowCorridor(liveIds[id]); });
   }
 
+  /* ---------------- LÍMITE (línea de límite con magnitud, para líneas y polígonos) ---------------- */
+  var limiteLines = {};
+  var limiteMagnitudes = {};
+
+  function shapeBoundaryLatLngs(shape){
+    if (shape instanceof L.Polygon){
+      var rings = shape.getLatLngs();
+      var outer = rings[0];
+      while (Array.isArray(outer) && Array.isArray(outer[0]) && !(outer[0] instanceof L.LatLng)) outer = outer[0];
+      if (!outer || !outer.length) return null;
+      return outer.concat([outer[0]]);
+    }
+    if (shape instanceof L.Polyline){
+      var pts = shape.getLatLngs();
+      if (Array.isArray(pts[0]) && !(pts[0] instanceof L.LatLng)) pts = pts[0];
+      return pts;
+    }
+    return null;
+  }
+
+  function limiteGeometry(shape){
+    var latlngs = shapeBoundaryLatLngs(shape);
+    if (!latlngs || latlngs.length < 2) return null;
+    var n = latlngs.length;
+    var dists = [0];
+    for (var i=1;i<n;i++){ dists.push(dists[i-1] + distanceMeters(latlngs[i-1], latlngs[i])); }
+    var total = dists[n-1];
+    if (!(total > 0)) return null;
+    return { latlngs: latlngs, dists: dists, total: total };
+  }
+
+  function limitePointAndAngleAtArc(geo, targetArc){
+    var latlngs = geo.latlngs, dists = geo.dists;
+    targetArc = Math.max(0, Math.min(geo.total, targetArc));
+    var k = 0;
+    while (k < dists.length-2 && dists[k+1] < targetArc) k++;
+    var span = dists[k+1]-dists[k];
+    var frac = span > 0 ? (targetArc-dists[k])/span : 0;
+    var a = latlngs[k], b = latlngs[k+1];
+    var lat = a.lat + (b.lat-a.lat)*frac;
+    var lng = a.lng + (b.lng-a.lng)*frac;
+    var deltaLat = b.lat - a.lat;
+    var deltaLng = (b.lng - a.lng) * (Math.cos(a.lat*Math.PI/180) || 1);
+    var angleDeg = Math.atan2(-deltaLat, deltaLng) * 180/Math.PI;
+    return { latlng: L.latLng(lat, lng), angleDeg: angleDeg };
+  }
+
+  function limitePointAtArc(geo, targetArc){
+    var latlngs = geo.latlngs, dists = geo.dists;
+    targetArc = Math.max(0, Math.min(geo.total, targetArc));
+    var k = 0;
+    while (k < dists.length-2 && dists[k+1] < targetArc) k++;
+    var span = dists[k+1]-dists[k];
+    var frac = span > 0 ? (targetArc-dists[k])/span : 0;
+    var a = latlngs[k], b = latlngs[k+1];
+    return L.latLng(a.lat + (b.lat-a.lat)*frac, a.lng + (b.lng-a.lng)*frac);
+  }
+
+  function removeLimiteCompanion(shape){
+    var line = limiteLines[shape._shapeId];
+    if (line){ line.remove(); delete limiteLines[shape._shapeId]; }
+    var mag = limiteMagnitudes[shape._shapeId];
+    if (mag){ mag.remove(); delete limiteMagnitudes[shape._shapeId]; }
+    shape.setStyle({ stroke: true });
+  }
+
+  function syncLimiteCompanion(shape){
+    if (!shape._limite || !shape._limite.enabled){ removeLimiteCompanion(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+    var geo = limiteGeometry(shape);
+    if (!geo){ return; }
+    var midArc = geo.total/2;
+    var midPos = limitePointAndAngleAtArc(geo, midArc);
+
+    // Ancho aproximado disponible en pantalla para la magnitud, según el zoom actual.
+    var p1 = map.latLngToContainerPoint(midPos.latlng);
+    var p2 = map.latLngToContainerPoint(L.latLng(midPos.latlng.lat, midPos.latlng.lng + 0.0005));
+    var pxPerDeg = Math.hypot(p2.x-p1.x, p2.y-p1.y) || 1;
+    var echelon2 = shape._limite.echelon2;
+    var glyphCount = echelon2 ? 2 : 1;
+    var pxH = Math.min(20, Math.max(12, pxPerDeg*0.02));
+    var pxW = pxH * (glyphCount === 2 ? 4.6 : 2.6);
+
+    var gapMeters = (pxW / Math.max(pxPerDeg,0.0001)) * 0.0005;
+    if (!isFinite(gapMeters) || gapMeters < 0) gapMeters = 0;
+    gapMeters = Math.min(gapMeters, geo.total * 0.6);
+    var gapStart = midArc - gapMeters/2, gapEnd = midArc + gapMeters/2;
+
+    var segA = [];
+    for (var i=0;i<geo.latlngs.length;i++){
+      if (geo.dists[i] <= gapStart) segA.push(geo.latlngs[i]); else break;
+    }
+    segA.push(limitePointAtArc(geo, gapStart));
+    var segB = [limitePointAtArc(geo, gapEnd)];
+    for (var i=0;i<geo.latlngs.length;i++){
+      if (geo.dists[i] >= gapEnd) segB.push(geo.latlngs[i]);
+    }
+
+    var style = {
+      color: shape.options.color, weight: shape.options.weight,
+      opacity: shape.options.opacity != null ? shape.options.opacity : 1,
+      dashArray: shape.options.dashArray, interactive:false, keyboard:false
+    };
+    shape.setStyle({ stroke: false });
+    var line = limiteLines[shape._shapeId];
+    if (!line){
+      line = L.polyline([segA, segB], style);
+      line.addTo(map);
+      limiteLines[shape._shapeId] = line;
+    } else {
+      line.setLatLngs([segA, segB]);
+      line.setStyle(style);
+    }
+
+    var marksHtml = milEchelonSVG(shape._limite.echelon1 || '');
+    var innerHtml;
+    if (echelon2){
+      innerHtml =
+        '<svg width="42%" height="100%" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,3)">' + marksHtml + '</g></svg>' +
+        '<span style="display:inline-block;width:16%;text-align:center;font-weight:800;color:#000;">/</span>' +
+        '<svg width="42%" height="100%" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,3)">' + milEchelonSVG(echelon2) + '</g></svg>';
+    } else {
+      innerHtml = '<svg width="100%" height="100%" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,3)">' + marksHtml + '</g></svg>';
+    }
+    var html = '<div style="width:' + pxW + 'px;height:' + pxH + 'px;display:flex;align-items:center;transform:rotate(' + midPos.angleDeg + 'deg);">' + innerHtml + '</div>';
+    var icon = L.divIcon({ className:'', html: html, iconSize:[pxW, pxH], iconAnchor:[pxW/2, pxH/2] });
+    var mag = limiteMagnitudes[shape._shapeId];
+    if (!mag){
+      mag = L.marker(midPos.latlng, { icon: icon, interactive:false, keyboard:false, zIndexOffset:600 });
+      mag.addTo(map);
+      limiteMagnitudes[shape._shapeId] = mag;
+    } else {
+      mag.setLatLng(midPos.latlng);
+      mag.setIcon(icon);
+    }
+  }
+
+  function syncAllLimiteCompanions(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){ if (s._limite && s._limite.enabled) liveIds[s._shapeId] = s; });
+    });
+    Object.keys(limiteLines).forEach(function(id){
+      if (!liveIds[id]){
+        limiteLines[id].remove(); delete limiteLines[id];
+        if (limiteMagnitudes[id]){ limiteMagnitudes[id].remove(); delete limiteMagnitudes[id]; }
+      }
+    });
+    Object.keys(liveIds).forEach(function(id){ syncLimiteCompanion(liveIds[id]); });
+  }
+
 
   function makeHandleIcon(color, sizePx){
     return L.divIcon({
@@ -4816,6 +4975,7 @@
     syncAllLengthLabels();
     syncAllArrowOutlines();
     syncAllArrowCorridors();
+    syncAllLimiteCompanions();
     if (isReadOnlyMode()){
       list.querySelectorAll('input, select, button').forEach(function(el){
         if (el.classList.contains('vis-btn')) return;
@@ -5386,6 +5546,109 @@
     if (dashInputEl) dashInputEl.value = shape._dashStyle || '';
   }
 
+  /* ---------------- UNIR / RESTAR POLÍGONOS ---------------- */
+  function polygonShapesFromSelection(shapes){
+    return shapes.filter(function(s){ return s instanceof L.Polygon; });
+  }
+
+  function finalizeGeometryOp(originalShapes, resultGeoJSON){
+    var owner = findLayerOfShape(originalShapes[0]);
+    if (!owner) return;
+    var base = originalShapes[0];
+    var style = {
+      color: base.options.color, weight: base.options.weight, opacity: base.options.opacity,
+      fillColor: base._fillColorRaw || base.options.fillColor, fillOpacity: base.options.fillOpacity,
+      dashArray: base.options.dashArray
+    };
+    var tempLayer = L.geoJSON(resultGeoJSON, { style: function(){ return style; } });
+    var addedShapes = tempLayer.getLayers();
+    if (!addedShapes.length){ alert('El resultado de la operación está vacío.'); return; }
+
+    var byOwner = {};
+    originalShapes.forEach(function(s){
+      var o = findLayerOfShape(s);
+      if (!o) return;
+      if (!byOwner[o.id]) byOwner[o.id] = { owner:o, shapes:[] };
+      byOwner[o.id].shapes.push(s);
+    });
+    Object.keys(byOwner).forEach(function(key){
+      byOwner[key].shapes.forEach(function(s){ byOwner[key].owner.group.removeLayer(s); });
+    });
+
+    addedShapes.forEach(function(ns){
+      owner.group.addLayer(ns);
+      attachShapeInteractivity(ns, owner);
+      ns._fillColorRaw = base._fillColorRaw || base.options.fillColor;
+      ns._fillStyleKey = base._fillStyleKey || 'solid';
+      ns._dashStyle = base._dashStyle || '';
+    });
+
+    function reAddOriginals(){
+      Object.keys(byOwner).forEach(function(key){
+        byOwner[key].shapes.forEach(function(s){ byOwner[key].owner.group.addLayer(s); });
+      });
+    }
+    function removeOriginals(){
+      Object.keys(byOwner).forEach(function(key){
+        byOwner[key].shapes.forEach(function(s){ byOwner[key].owner.group.removeLayer(s); });
+      });
+    }
+    function removeAdded(){ addedShapes.forEach(function(ns){ owner.group.removeLayer(ns); }); }
+    function reAddAdded(){ addedShapes.forEach(function(ns){ owner.group.addLayer(ns); }); }
+
+    pushAction(
+      function(){ removeAdded(); reAddOriginals(); clearMultiSelect(); selectedShape=null; clearProperties(); renderLayerList(); },
+      function(){ removeOriginals(); reAddAdded(); clearMultiSelect(); selectedShape=null; clearProperties(); renderLayerList(); }
+    );
+
+    clearMultiSelect();
+    renderLayerList();
+    if (addedShapes.length === 1){
+      selectedShape = addedShapes[0];
+      showProperties(addedShapes[0], owner);
+    } else {
+      clearProperties();
+    }
+  }
+
+  function unionSelectedPolygons(shapes){
+    var polys = polygonShapesFromSelection(shapes);
+    if (polys.length < 2) return;
+    if (typeof turf === 'undefined'){ alert('No se pudo cargar el motor de geometría (revise su conexión a internet e intente de nuevo).'); return; }
+    var result;
+    try {
+      result = polys[0].toGeoJSON();
+      for (var i=1;i<polys.length;i++){
+        var next = turf.union(result, polys[i].toGeoJSON());
+        if (!next) throw new Error('sin intersección/resultado válido');
+        result = next;
+      }
+    } catch(err){
+      alert('No se pudieron unir estos polígonos: ' + err.message);
+      return;
+    }
+    finalizeGeometryOp(polys, result);
+  }
+
+  function subtractSelectedPolygons(shapes){
+    var polys = polygonShapesFromSelection(shapes);
+    if (polys.length < 2) return;
+    if (typeof turf === 'undefined'){ alert('No se pudo cargar el motor de geometría (revise su conexión a internet e intente de nuevo).'); return; }
+    var result;
+    try {
+      result = polys[0].toGeoJSON();
+      for (var i=1;i<polys.length;i++){
+        result = turf.difference(result, polys[i].toGeoJSON());
+        if (!result) break;
+      }
+    } catch(err){
+      alert('No se pudo restar estos polígonos: ' + err.message);
+      return;
+    }
+    if (!result){ alert('El resultado de la resta está vacío (no queda área del primer polígono seleccionado).'); return; }
+    finalizeGeometryOp(polys, result);
+  }
+
   function deleteMultipleShapes(shapes){
     var byOwner = {};
     shapes.forEach(function(s){
@@ -5561,6 +5824,34 @@
       noStyleNote.className = 'hint';
       noStyleNote.textContent = 'Ninguno de los objetos seleccionados admite color de línea/relleno (por ejemplo, puntos o textos).';
       body.appendChild(noStyleNote);
+    }
+
+    var polysForOps = polygonShapesFromSelection(shapes);
+    if (polysForOps.length >= 2){
+      var geomOps = document.createElement('div');
+      geomOps.className = 'prop-actions';
+      geomOps.style.marginTop = '4px';
+
+      var unionBtn = document.createElement('button');
+      unionBtn.className = 'outline-btn';
+      unionBtn.textContent = '🔗 Unir polígonos';
+      unionBtn.title = 'Combina los polígonos seleccionados en una sola figura';
+      unionBtn.addEventListener('click', function(){ unionSelectedPolygons(shapes.slice()); });
+
+      var subtractBtn = document.createElement('button');
+      subtractBtn.className = 'outline-btn';
+      subtractBtn.textContent = '➖ Restar polígonos';
+      subtractBtn.title = 'Recorta del primer polígono seleccionado el área de los demás';
+      subtractBtn.addEventListener('click', function(){ subtractSelectedPolygons(shapes.slice()); });
+
+      geomOps.appendChild(unionBtn);
+      geomOps.appendChild(subtractBtn);
+      body.appendChild(geomOps);
+
+      var geomHint = document.createElement('div');
+      geomHint.className = 'hint';
+      geomHint.textContent = 'Restar usa como base el primer polígono que seleccionó, y le recorta el área de los demás.';
+      body.appendChild(geomHint);
     }
 
     var actions = document.createElement('div');
@@ -6299,6 +6590,78 @@
       dashField.appendChild(dashSelect);
       styleBlock.appendChild(dashField);
 
+      if (kind === 'polyline' || kind === 'polygon'){
+        if (!shape._limite) shape._limite = { enabled:false, echelon1:'', echelon2:'' };
+
+        var limiteField = document.createElement('div');
+        limiteField.className = 'style-field';
+        limiteField.style.cssText = 'border-top:1px solid var(--border);padding-top:8px;margin-top:2px;';
+        var limiteLabel = document.createElement('label');
+        limiteLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var limiteCheck = document.createElement('input');
+        limiteCheck.type = 'checkbox';
+        limiteCheck.checked = !!shape._limite.enabled;
+        var limiteText = document.createElement('span');
+        limiteText.textContent = 'Límite';
+        limiteLabel.appendChild(limiteCheck);
+        limiteLabel.appendChild(limiteText);
+        limiteField.appendChild(limiteLabel);
+        styleBlock.appendChild(limiteField);
+
+        var echelon1Field = document.createElement('div');
+        echelon1Field.className = 'style-field';
+        echelon1Field.style.display = shape._limite.enabled ? 'flex' : 'none';
+        echelon1Field.innerHTML = '<span>Escalón / tamaño</span>';
+        var echelon1Select = document.createElement('select');
+        echelon1Select.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
+        MIL_ECHELONS.forEach(function(opt){
+          var o = document.createElement('option');
+          o.value = opt[0]; o.textContent = opt[1];
+          if ((shape._limite.echelon1 || '') === opt[0]) o.selected = true;
+          echelon1Select.appendChild(o);
+        });
+        echelon1Select.addEventListener('change', function(ev){
+          shape._limite.echelon1 = ev.target.value;
+          syncLimiteCompanion(shape);
+          renderLayerList();
+        });
+        echelon1Field.appendChild(echelon1Select);
+        styleBlock.appendChild(echelon1Field);
+
+        var echelon2Field = document.createElement('div');
+        echelon2Field.className = 'style-field';
+        echelon2Field.style.display = shape._limite.enabled ? 'flex' : 'none';
+        echelon2Field.innerHTML = '<span>Segundo escalón (opcional)</span>';
+        var echelon2Select = document.createElement('select');
+        echelon2Select.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
+        MIL_ECHELONS.forEach(function(opt){
+          var o = document.createElement('option');
+          o.value = opt[0]; o.textContent = opt[1];
+          if ((shape._limite.echelon2 || '') === opt[0]) o.selected = true;
+          echelon2Select.appendChild(o);
+        });
+        echelon2Select.addEventListener('change', function(ev){
+          shape._limite.echelon2 = ev.target.value;
+          syncLimiteCompanion(shape);
+          renderLayerList();
+        });
+        echelon2Field.appendChild(echelon2Select);
+        styleBlock.appendChild(echelon2Field);
+
+        limiteCheck.addEventListener('change', function(ev){
+          shape._limite.enabled = ev.target.checked;
+          echelon1Field.style.display = ev.target.checked ? 'flex' : 'none';
+          echelon2Field.style.display = ev.target.checked ? 'flex' : 'none';
+          syncLimiteCompanion(shape);
+          renderLayerList();
+        });
+
+        var limiteHint = document.createElement('div');
+        limiteHint.className = 'hint';
+        limiteHint.textContent = 'Marca esta línea/polígono como un límite: se corta la línea y se muestra ahí el escalón/tamaño (dos, separados por "/", si carga el segundo), con fondo transparente.';
+        styleBlock.appendChild(limiteHint);
+      }
+
       if (kind === 'arrow'){
         var dimsNote = document.createElement('div');
         dimsNote.style.cssText = 'font-size:10.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px;';
@@ -6373,6 +6736,7 @@
         magnitudeSelect.addEventListener('change', function(ev){
           shape._arrow.corridorEchelon = ev.target.value;
           syncArrowCorridor(shape);
+          renderLayerList();
         });
         magnitudeField.appendChild(magnitudeSelect);
         styleBlock.appendChild(magnitudeField);
@@ -6537,6 +6901,9 @@
         f.properties.dashArray = shape.options.dashArray || '';
         f.properties.dashStyle = shape._dashStyle || '';
         f.properties.fillStyle = shape._fillStyleKey || 'solid';
+        if (shape._limite && shape._limite.enabled){
+          f.properties.limite = { enabled:true, echelon1: shape._limite.echelon1 || '', echelon2: shape._limite.echelon2 || '' };
+        }
       }
       if (shape && shape._isArrow){
         f.properties.arrow = {
@@ -6765,6 +7132,9 @@
           rebuildEllipse(layer);
         }
         layer._dashStyle = p.dashStyle || '';
+        if (p.limite && p.limite.enabled){
+          layer._limite = { enabled:true, echelon1: p.limite.echelon1 || '', echelon2: p.limite.echelon2 || '' };
+        }
         attachShapeInteractivity(layer, targetLayerObj);
         if (layer._fillStyleKey && layer._fillStyleKey !== 'solid' && layer.setStyle){
           applyFillStyle(layer, layer._fillStyleKey, layer._fillColorRaw);
