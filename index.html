@@ -7857,6 +7857,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
     map.on('moveend zoomend', scheduleSave);
     map.on('zoomend', syncAllArrowCorridors);
+    map.on('zoomend', syncAllLimiteCompanions);
     setInterval(saveStateToStorage, 8000);
     window.addEventListener('beforeunload', saveStateToStorage);
     document.addEventListener('visibilitychange', function(){
