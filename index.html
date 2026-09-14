@@ -835,6 +835,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12,3 21,9.5 17.8,20 6.2,20 3,9.5"/></svg>
         <span>Polígono</span>
       </button>
+      <button class="tool-btn" data-tool="freepolygon" title="Polígono libre (a mano alzada con lápiz o dedo)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15c1-4.5 2.5-9 6-9s3 5.5 5.5 5.5S17 6 20 6"/><path d="M20 6c0 5-2 12-8 12-4 0-7-3-8-7" stroke-dasharray="2 2.2"/></svg>
+        <span>Políg. libre</span>
+      </button>
       <button class="tool-btn" data-tool="rectangle" title="Rectángulo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="1.2"/></svg>
         <span>Rectáng.</span>
@@ -3050,6 +3054,7 @@
     if (editHandler){ try{ editHandler.disable(); }catch(e){} editHandler = null; }
     if (deleteHandler){ try{ deleteHandler.disable(); }catch(e){} deleteHandler = null; }
     if (freehandActive) stopFreehandMode();
+    if (freePolyActive) stopFreePolygonMode();
     if (arrowActive) stopArrowTool();
     stopElementsTool();
     stopTextTool();
@@ -3147,6 +3152,81 @@
     mapContainer.removeEventListener('pointercancel', freehandPointerUp);
     if (freehandPolyline){ map.removeLayer(freehandPolyline); freehandPolyline = null; }
     freehandLatLngs = [];
+  }
+
+  /* ---- Polígono libre (a mano alzada, cerrado y relleno) ---- */
+  var freePolyActive = false;
+  var freePolyLatLngs = [];
+  var freePolyShape = null;
+  var freePolyPointerId = null;
+
+  function freePolyPointerDown(ev){
+    if (ev.button !== undefined && ev.button !== 0) return; // solo botón izquierdo / toque / lápiz
+    if (freePolyPointerId !== null) return; // ya hay un trazo en curso
+    freePolyPointerId = ev.pointerId;
+    ev.preventDefault();
+    if (mapContainer.setPointerCapture){ try{ mapContainer.setPointerCapture(ev.pointerId); }catch(err){} }
+    var latlng = map.containerPointToLatLng(containerPointFromEvent(ev));
+    freePolyLatLngs = [latlng];
+    var active = getActiveLayer();
+    freePolyShape = L.polygon(freePolyLatLngs, { color: active.color, weight:3, opacity:1, fillColor: active.color, fillOpacity:.3 }).addTo(map);
+    mapContainer.addEventListener('pointermove', freePolyPointerMove);
+    mapContainer.addEventListener('pointerup', freePolyPointerUp);
+    mapContainer.addEventListener('pointercancel', freePolyPointerUp);
+  }
+  function freePolyPointerMove(ev){
+    if (ev.pointerId !== freePolyPointerId) return;
+    ev.preventDefault();
+    var latlng = map.containerPointToLatLng(containerPointFromEvent(ev));
+    freePolyLatLngs.push(latlng);
+    freePolyShape.setLatLngs(freePolyLatLngs);
+  }
+  function freePolyPointerUp(ev){
+    if (ev.pointerId !== freePolyPointerId) return;
+    mapContainer.removeEventListener('pointermove', freePolyPointerMove);
+    mapContainer.removeEventListener('pointerup', freePolyPointerUp);
+    mapContainer.removeEventListener('pointercancel', freePolyPointerUp);
+    freePolyPointerId = null;
+    if (!freePolyShape) return;
+    if (freePolyLatLngs.length < 3){ map.removeLayer(freePolyShape); freePolyShape = null; freePolyLatLngs = []; return; }
+    map.removeLayer(freePolyShape);
+    var active = getActiveLayer();
+    var finalPoly = L.polygon(freePolyLatLngs, { color: active.color, weight:3, opacity:1, fillColor: active.color, fillOpacity:.3 });
+    finalPoly._fillColorRaw = active.color;
+    finalPoly._fillStyleKey = 'solid';
+    active.group.addLayer(finalPoly);
+    attachShapeInteractivity(finalPoly, active);
+    recordAddShape(active, finalPoly);
+    renderLayerList();
+    selectedShape = finalPoly;
+    showProperties(finalPoly, active);
+    freePolyLatLngs = [];
+    freePolyShape = null;
+  }
+  function activateFreePolygon(){
+    if (activeToolName === 'freepolygon'){ disableAllTools(); return; }
+    if (!getActiveLayer()){ alert('Cree o seleccione una capa antes de dibujar.'); return; }
+    disableAllTools();
+    freePolyActive = true;
+    map.dragging.disable();
+    mapContainer.style.cursor = 'crosshair';
+    mapContainer.style.touchAction = 'none';
+    mapContainer.addEventListener('pointerdown', freePolyPointerDown);
+    activeToolName = 'freepolygon';
+    updateToolbarUI();
+  }
+  function stopFreePolygonMode(){
+    freePolyActive = false;
+    freePolyPointerId = null;
+    map.dragging.enable();
+    mapContainer.style.cursor = '';
+    mapContainer.style.touchAction = '';
+    mapContainer.removeEventListener('pointerdown', freePolyPointerDown);
+    mapContainer.removeEventListener('pointermove', freePolyPointerMove);
+    mapContainer.removeEventListener('pointerup', freePolyPointerUp);
+    mapContainer.removeEventListener('pointercancel', freePolyPointerUp);
+    if (freePolyShape){ map.removeLayer(freePolyShape); freePolyShape = null; }
+    freePolyLatLngs = [];
   }
 
   /* ---- Flechas vectoriales (arrow) ---- */
@@ -4464,6 +4544,7 @@
       if (tool === 'edit') activateEdit();
       else if (tool === 'delete') activateDelete();
       else if (tool === 'freehand') activateFreehand();
+      else if (tool === 'freepolygon') activateFreePolygon();
       else if (tool === 'arrow') activateArrowTool();
       else if (tool === 'elements') activateElementsTool();
       else if (tool === 'text') activateTextTool();
