@@ -5596,6 +5596,54 @@
     return shapes.filter(function(s){ return s instanceof L.Polygon; });
   }
 
+  function lineShapesFromSelection(shapes){
+    return shapes.filter(function(s){ return shapeKind(s) === 'polyline'; });
+  }
+
+  function flattenLineLatLngs(shape){
+    var pts = shape.getLatLngs();
+    if (Array.isArray(pts[0]) && !(pts[0] instanceof L.LatLng)) pts = pts[0];
+    return pts.map(function(p){ return L.latLng(p.lat, p.lng); });
+  }
+
+  function joinSelectedLines(shapes){
+    var lines = lineShapesFromSelection(shapes);
+    if (lines.length < 2) return;
+    var segments = lines.map(flattenLineLatLngs).filter(function(pts){ return pts.length >= 2; });
+    if (segments.length < 2) return;
+
+    // Encadena las líneas por el extremo más cercano, invirtiendo cada una si hace falta,
+    // uniendo el hueco entre ellas con un tramo recto (simple concatenación de puntos).
+    var used = new Array(segments.length);
+    var chain = segments[0].slice();
+    used[0] = true;
+    for (var count=1; count<segments.length; count++){
+      var chainEnd = chain[chain.length-1];
+      var bestIdx = -1, bestFlip = false, bestDist = Infinity;
+      for (var i=0;i<segments.length;i++){
+        if (used[i]) continue;
+        var segStart = segments[i][0];
+        var segEndPt = segments[i][segments[i].length-1];
+        var dStart = distanceMeters(chainEnd, segStart);
+        var dEnd = distanceMeters(chainEnd, segEndPt);
+        if (dStart < bestDist){ bestDist = dStart; bestIdx = i; bestFlip = false; }
+        if (dEnd < bestDist){ bestDist = dEnd; bestIdx = i; bestFlip = true; }
+      }
+      if (bestIdx === -1) break;
+      var chosen = segments[bestIdx].slice();
+      if (bestFlip) chosen.reverse();
+      chain = chain.concat(chosen);
+      used[bestIdx] = true;
+    }
+
+    var resultGeoJSON = {
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: chain.map(function(p){ return [p.lng, p.lat]; }) },
+      properties: {}
+    };
+    finalizeGeometryOp(lines, resultGeoJSON);
+  }
+
   function finalizeGeometryOp(originalShapes, resultGeoJSON){
     var owner = findLayerOfShape(originalShapes[0]);
     if (!owner) return;
@@ -5897,6 +5945,27 @@
       geomHint.className = 'hint';
       geomHint.textContent = 'Restar usa como base el primer polígono que seleccionó, y le recorta el área de los demás.';
       body.appendChild(geomHint);
+    }
+
+    var linesForOps = lineShapesFromSelection(shapes);
+    if (linesForOps.length >= 2){
+      var lineOps = document.createElement('div');
+      lineOps.className = 'prop-actions';
+      lineOps.style.marginTop = '4px';
+
+      var joinLinesBtn = document.createElement('button');
+      joinLinesBtn.className = 'outline-btn';
+      joinLinesBtn.textContent = '🔗 Unir líneas';
+      joinLinesBtn.title = 'Combina las líneas seleccionadas en un solo camino, cerrando los espacios entre ellas';
+      joinLinesBtn.addEventListener('click', function(){ joinSelectedLines(shapes.slice()); });
+
+      lineOps.appendChild(joinLinesBtn);
+      body.appendChild(lineOps);
+
+      var lineHint = document.createElement('div');
+      lineHint.className = 'hint';
+      lineHint.textContent = 'Une las líneas seleccionadas en un solo camino continuo, conectando con un tramo recto los espacios en blanco entre ellas.';
+      body.appendChild(lineHint);
     }
 
     var actions = document.createElement('div');
