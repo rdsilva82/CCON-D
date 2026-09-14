@@ -2214,7 +2214,7 @@
       var limL = limiteLines[s._shapeId];
       if (limL){ if (visible) limL.addTo(map); else map.removeLayer(limL); }
       var limM = limiteMagnitudes[s._shapeId];
-      if (limM){ if (visible) limM.addTo(map); else map.removeLayer(limM); }
+      if (limM){ limM.forEach(function(m){ if (visible) m.addTo(map); else map.removeLayer(m); }); }
     });
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
@@ -3925,8 +3925,29 @@
     var line = limiteLines[shape._shapeId];
     if (line){ line.remove(); delete limiteLines[shape._shapeId]; }
     var mag = limiteMagnitudes[shape._shapeId];
-    if (mag){ mag.remove(); delete limiteMagnitudes[shape._shapeId]; }
+    if (mag){ mag.forEach(function(m){ m.remove(); }); delete limiteMagnitudes[shape._shapeId]; }
     shape.setStyle({ stroke: true });
+  }
+
+  function limiteTotalPixelLength(geo){
+    var total = 0;
+    for (var i=1;i<geo.latlngs.length;i++){
+      var p1 = map.latLngToContainerPoint(geo.latlngs[i-1]);
+      var p2 = map.latLngToContainerPoint(geo.latlngs[i]);
+      total += Math.hypot(p2.x-p1.x, p2.y-p1.y);
+    }
+    return total;
+  }
+
+  function limiteMetersPerPixelNear(geo, arcPos){
+    var k = 0;
+    while (k < geo.dists.length-2 && geo.dists[k+1] < arcPos) k++;
+    var segMeters = geo.dists[k+1]-geo.dists[k];
+    if (segMeters < 1) return geo.total / Math.max(limiteTotalPixelLength(geo),1);
+    var p1 = map.latLngToContainerPoint(geo.latlngs[k]);
+    var p2 = map.latLngToContainerPoint(geo.latlngs[k+1]);
+    var segPx = Math.hypot(p2.x-p1.x, p2.y-p1.y) || 1;
+    return segMeters / segPx;
   }
 
   function syncLimiteCompanion(shape){
@@ -3934,33 +3955,49 @@
     var owner = findLayerOfShape(shape);
     if (!owner) return;
     var geo = limiteGeometry(shape);
-    if (!geo){ return; }
-    var midArc = geo.total/2;
-    var midPos = limitePointAndAngleAtArc(geo, midArc);
+    if (!geo) return;
 
-    // Ancho aproximado disponible en pantalla para la magnitud, según el zoom actual.
-    var p1 = map.latLngToContainerPoint(midPos.latlng);
-    var p2 = map.latLngToContainerPoint(L.latLng(midPos.latlng.lat, midPos.latlng.lng + 0.0005));
-    var pxPerDeg = Math.hypot(p2.x-p1.x, p2.y-p1.y) || 1;
     var echelon2 = shape._limite.echelon2;
     var glyphCount = echelon2 ? 2 : 1;
-    var pxH = Math.min(20, Math.max(12, pxPerDeg*0.02));
-    var pxW = pxH * (glyphCount === 2 ? 4.6 : 2.6);
+    var pxH = 26;
+    var pxW = pxH * (glyphCount === 2 ? 4.8 : 2.8);
 
-    var gapMeters = (pxW / Math.max(pxPerDeg,0.0001)) * 0.0005;
-    if (!isFinite(gapMeters) || gapMeters < 0) gapMeters = 0;
-    gapMeters = Math.min(gapMeters, geo.total * 0.6);
-    var gapStart = midArc - gapMeters/2, gapEnd = midArc + gapMeters/2;
+    // En líneas largas, repetir la magnitud a intervalos regulares (al menos 2 veces).
+    var totalPx = limiteTotalPixelLength(geo);
+    var spacingPx = pxW * 2.6;
+    var repeatCount = 1;
+    if (totalPx > spacingPx * 1.5){
+      repeatCount = Math.max(2, Math.floor(totalPx / spacingPx));
+    }
+    repeatCount = Math.min(repeatCount, 6);
 
-    var segA = [];
+    var positions = [];
+    for (var i=0;i<repeatCount;i++){ positions.push(geo.total * (i+0.5)/repeatCount); }
+
+    var gapRanges = positions.map(function(pos){
+      var mpp = limiteMetersPerPixelNear(geo, pos);
+      var gapM = pxW * mpp;
+      if (!isFinite(gapM) || gapM < 0) gapM = 0;
+      gapM = Math.min(gapM, (geo.total/repeatCount) * 0.85);
+      return { start: Math.max(0, pos-gapM/2), end: Math.min(geo.total, pos+gapM/2), pos: pos };
+    });
+
+    var segments = [];
+    var prevEnd = 0;
+    gapRanges.forEach(function(g){
+      var seg = [limitePointAtArc(geo, prevEnd)];
+      for (var i=0;i<geo.latlngs.length;i++){
+        if (geo.dists[i] > prevEnd && geo.dists[i] < g.start) seg.push(geo.latlngs[i]);
+      }
+      seg.push(limitePointAtArc(geo, g.start));
+      segments.push(seg);
+      prevEnd = g.end;
+    });
+    var lastSeg = [limitePointAtArc(geo, prevEnd)];
     for (var i=0;i<geo.latlngs.length;i++){
-      if (geo.dists[i] <= gapStart) segA.push(geo.latlngs[i]); else break;
+      if (geo.dists[i] > prevEnd) lastSeg.push(geo.latlngs[i]);
     }
-    segA.push(limitePointAtArc(geo, gapStart));
-    var segB = [limitePointAtArc(geo, gapEnd)];
-    for (var i=0;i<geo.latlngs.length;i++){
-      if (geo.dists[i] >= gapEnd) segB.push(geo.latlngs[i]);
-    }
+    segments.push(lastSeg);
 
     var style = {
       color: shape.options.color, weight: shape.options.weight,
@@ -3970,11 +4007,11 @@
     shape.setStyle({ stroke: false });
     var line = limiteLines[shape._shapeId];
     if (!line){
-      line = L.polyline([segA, segB], style);
+      line = L.polyline(segments, style);
       line.addTo(map);
       limiteLines[shape._shapeId] = line;
     } else {
-      line.setLatLngs([segA, segB]);
+      line.setLatLngs(segments);
       line.setStyle(style);
     }
 
@@ -3983,22 +4020,30 @@
     if (echelon2){
       innerHtml =
         '<svg width="42%" height="100%" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,3)">' + marksHtml + '</g></svg>' +
-        '<span style="display:inline-block;width:16%;text-align:center;font-weight:800;color:#000;">/</span>' +
+        '<span style="display:inline-block;width:16%;text-align:center;font-weight:800;color:#000;font-size:' + Math.round(pxH*0.85) + 'px;line-height:1;">/</span>' +
         '<svg width="42%" height="100%" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,3)">' + milEchelonSVG(echelon2) + '</g></svg>';
     } else {
       innerHtml = '<svg width="100%" height="100%" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,3)">' + marksHtml + '</g></svg>';
     }
-    var html = '<div style="width:' + pxW + 'px;height:' + pxH + 'px;display:flex;align-items:center;transform:rotate(' + midPos.angleDeg + 'deg);">' + innerHtml + '</div>';
-    var icon = L.divIcon({ className:'', html: html, iconSize:[pxW, pxH], iconAnchor:[pxW/2, pxH/2] });
-    var mag = limiteMagnitudes[shape._shapeId];
-    if (!mag){
-      mag = L.marker(midPos.latlng, { icon: icon, interactive:false, keyboard:false, zIndexOffset:600 });
-      mag.addTo(map);
-      limiteMagnitudes[shape._shapeId] = mag;
-    } else {
-      mag.setLatLng(midPos.latlng);
-      mag.setIcon(icon);
-    }
+
+    var existing = limiteMagnitudes[shape._shapeId] || [];
+    var updated = [];
+    positions.forEach(function(pos, idx){
+      var posInfo = limitePointAndAngleAtArc(geo, pos);
+      var html = '<div style="width:' + pxW + 'px;height:' + pxH + 'px;display:flex;align-items:center;transform:rotate(' + posInfo.angleDeg + 'deg);">' + innerHtml + '</div>';
+      var icon = L.divIcon({ className:'', html: html, iconSize:[pxW, pxH], iconAnchor:[pxW/2, pxH/2] });
+      var mag = existing[idx];
+      if (!mag){
+        mag = L.marker(posInfo.latlng, { icon: icon, interactive:false, keyboard:false, zIndexOffset:600 });
+        mag.addTo(map);
+      } else {
+        mag.setLatLng(posInfo.latlng);
+        mag.setIcon(icon);
+      }
+      updated.push(mag);
+    });
+    for (var j=updated.length;j<existing.length;j++){ existing[j].remove(); }
+    limiteMagnitudes[shape._shapeId] = updated;
   }
 
   function syncAllLimiteCompanions(){
@@ -4009,7 +4054,7 @@
     Object.keys(limiteLines).forEach(function(id){
       if (!liveIds[id]){
         limiteLines[id].remove(); delete limiteLines[id];
-        if (limiteMagnitudes[id]){ limiteMagnitudes[id].remove(); delete limiteMagnitudes[id]; }
+        if (limiteMagnitudes[id]){ limiteMagnitudes[id].forEach(function(m){ m.remove(); }); delete limiteMagnitudes[id]; }
       }
     });
     Object.keys(liveIds).forEach(function(id){ syncLimiteCompanion(liveIds[id]); });
