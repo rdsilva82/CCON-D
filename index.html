@@ -2215,6 +2215,8 @@
       if (limL){ if (visible) limL.addTo(map); else map.removeLayer(limL); }
       var limM = limiteMagnitudes[s._shapeId];
       if (limM){ limM.forEach(function(m){ if (visible) m.addTo(map); else map.removeLayer(m); }); }
+      var nameL = nameLabelLayers[s._shapeId];
+      if (nameL){ if (visible) nameL.addTo(map); else map.removeLayer(nameL); }
     });
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
@@ -2540,6 +2542,84 @@
   function buildLengthLabelIcon(text, rotationDeg){
     var html = '<div style="position:relative;"><div style="position:absolute; left:0; top:0; transform:translate(-50%,-50%) rotate(' + rotationDeg + 'deg); white-space:nowrap; background:rgba(255,255,255,.9); border:1px solid rgba(31,56,100,.35); border-radius:4px; padding:2px 7px; font-family:Calibri,Arial,sans-serif; font-size:12px; font-weight:700; color:#1F3864; box-shadow:0 1px 3px rgba(0,0,0,.25);">' + text + '</div></div>';
     return L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] });
+  }
+
+  function polygonCentroid(ring){
+    var origin = ring[0];
+    var pts = ring.map(function(ll){ return localXY(origin, ll); });
+    var n = pts.length;
+    var area = 0, cx = 0, cy = 0;
+    for (var i=0;i<n;i++){
+      var j = (i+1)%n;
+      var cross = pts[i].x*pts[j].y - pts[j].x*pts[i].y;
+      area += cross;
+      cx += (pts[i].x+pts[j].x)*cross;
+      cy += (pts[i].y+pts[j].y)*cross;
+    }
+    area *= 0.5;
+    if (Math.abs(area) < 1e-9){
+      var sx=0, sy=0;
+      pts.forEach(function(p){ sx+=p.x; sy+=p.y; });
+      return fromLocalXY(origin, sx/n, sy/n);
+    }
+    cx /= (6*area); cy /= (6*area);
+    return fromLocalXY(origin, cx, cy);
+  }
+
+  var nameLabelLayers = {};
+  function removeNameLabel(shape){
+    if (!shape) return;
+    var m = nameLabelLayers[shape._shapeId];
+    if (m){ m.remove(); delete nameLabelLayers[shape._shapeId]; }
+  }
+  function syncNameLabel(shape){
+    if (!shape || !shape._showName){ removeNameLabel(shape); return; }
+    var kind = shapeKind(shape);
+    if (kind !== 'polygon' && kind !== 'polyline'){ removeNameLabel(shape); return; }
+    var text = shape._customName || '';
+    if (!text){ removeNameLabel(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+
+    var point, rotationDeg;
+    if (kind === 'polygon'){
+      var boundary = shapeBoundaryLatLngs(shape);
+      if (!boundary || boundary.length < 4){ removeNameLabel(shape); return; }
+      var ring = boundary.slice(0, boundary.length-1);
+      point = polygonCentroid(ring);
+      rotationDeg = 0;
+    } else {
+      var pts = shape.getLatLngs();
+      if (Array.isArray(pts[0])) pts = pts[0];
+      if (!pts || pts.length < 2){ removeNameLabel(shape); return; }
+      var info = polylineMidpointAndBearing(pts);
+      point = info.point;
+      rotationDeg = labelRotationForBearing(info.bearing);
+    }
+
+    var marker = nameLabelLayers[shape._shapeId];
+    var icon = buildLengthLabelIcon(text, rotationDeg);
+    if (!marker){
+      marker = L.marker(point, { icon: icon, interactive:false, keyboard:false, zIndexOffset:610 });
+      if (owner.visible) marker.addTo(map);
+      nameLabelLayers[shape._shapeId] = marker;
+    } else {
+      marker.setLatLng(point);
+      marker.setIcon(icon);
+    }
+  }
+  function syncAllNameLabels(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){
+        var k = shapeKind(s);
+        if (s._showName && (k === 'polygon' || k === 'polyline')) liveIds[s._shapeId] = s;
+      });
+    });
+    Object.keys(nameLabelLayers).forEach(function(id){
+      if (!liveIds[id]){ nameLabelLayers[id].remove(); delete nameLabelLayers[id]; }
+    });
+    Object.keys(liveIds).forEach(function(id){ syncNameLabel(liveIds[id]); });
   }
 
   var lengthLabelLayers = {};
@@ -5021,6 +5101,7 @@
     syncAllArrowOutlines();
     syncAllArrowCorridors();
     syncAllLimiteCompanions();
+    syncAllNameLabels();
     if (isReadOnlyMode()){
       list.querySelectorAll('input, select, button').forEach(function(el){
         if (el.classList.contains('vis-btn')) return;
@@ -5259,6 +5340,7 @@
     nameInput.addEventListener('click', function(ev){ ev.stopPropagation(); });
     nameInput.addEventListener('change', function(){
       shape._customName = nameInput.value;
+      syncNameLabel(shape);
       if (selectedShape === shape) showProperties(shape, layerObj);
     });
 
@@ -5606,42 +5688,81 @@
     return pts.map(function(p){ return L.latLng(p.lat, p.lng); });
   }
 
+  var LIMITE_JOIN_CLOSE_PX = 140;
+
+  function pixelDistBetween(a, b){
+    var p1 = map.latLngToContainerPoint(a);
+    var p2 = map.latLngToContainerPoint(b);
+    return Math.hypot(p2.x-p1.x, p2.y-p1.y);
+  }
+
   function joinSelectedLines(shapes){
     var lines = lineShapesFromSelection(shapes);
     if (lines.length < 2) return;
-    var segments = lines.map(flattenLineLatLngs).filter(function(pts){ return pts.length >= 2; });
+    var segments = [], segLines = [];
+    lines.forEach(function(s){
+      var pts = flattenLineLatLngs(s);
+      if (pts.length >= 2){ segments.push(pts); segLines.push(s); }
+    });
     if (segments.length < 2) return;
 
-    // Encadena las líneas por el extremo más cercano, invirtiendo cada una si hace falta,
-    // uniendo el hueco entre ellas con un tramo recto (simple concatenación de puntos).
-    var used = new Array(segments.length);
-    var chain = segments[0].slice();
-    used[0] = true;
-    for (var count=1; count<segments.length; count++){
-      var chainEnd = chain[chain.length-1];
-      var bestIdx = -1, bestFlip = false, bestDist = Infinity;
-      for (var i=0;i<segments.length;i++){
-        if (used[i]) continue;
-        var segStart = segments[i][0];
-        var segEndPt = segments[i][segments[i].length-1];
-        var dStart = distanceMeters(chainEnd, segStart);
-        var dEnd = distanceMeters(chainEnd, segEndPt);
-        if (dStart < bestDist){ bestDist = dStart; bestIdx = i; bestFlip = false; }
-        if (dEnd < bestDist){ bestDist = dEnd; bestIdx = i; bestFlip = true; }
+    // Agrupa por cercanía real en pantalla: solo se encadenan tramos cuyo extremo más
+    // próximo esté a menos de LIMITE_JOIN_CLOSE_PX píxeles; lo demás queda sin tocar.
+    var used = new Array(segments.length).fill(false);
+    var groups = [];
+    for (var start=0; start<segments.length; start++){
+      if (used[start]) continue;
+      var chain = segments[start].slice();
+      var groupIndices = [start];
+      used[start] = true;
+      var extended = true;
+      while (extended){
+        extended = false;
+        var chainStart = chain[0], chainEnd = chain[chain.length-1];
+        var bestIdx = -1, bestDist = Infinity, bestMode = null;
+        for (var i=0;i<segments.length;i++){
+          if (used[i]) continue;
+          var segStart = segments[i][0], segEndPt = segments[i][segments[i].length-1];
+          var dEndToStart = pixelDistBetween(chainEnd, segStart);
+          var dEndToEnd = pixelDistBetween(chainEnd, segEndPt);
+          var dStartToStart = pixelDistBetween(chainStart, segStart);
+          var dStartToEnd = pixelDistBetween(chainStart, segEndPt);
+          if (dEndToStart < bestDist){ bestDist = dEndToStart; bestIdx = i; bestMode = 'appendForward'; }
+          if (dEndToEnd < bestDist){ bestDist = dEndToEnd; bestIdx = i; bestMode = 'appendReversed'; }
+          if (dStartToStart < bestDist){ bestDist = dStartToStart; bestIdx = i; bestMode = 'prependReversed'; }
+          if (dStartToEnd < bestDist){ bestDist = dStartToEnd; bestIdx = i; bestMode = 'prependForward'; }
+        }
+        if (bestIdx !== -1 && bestDist <= LIMITE_JOIN_CLOSE_PX){
+          var chosen = segments[bestIdx].slice();
+          if (bestMode === 'appendForward'){ chain = chain.concat(chosen); }
+          else if (bestMode === 'appendReversed'){ chosen.reverse(); chain = chain.concat(chosen); }
+          else if (bestMode === 'prependReversed'){ chosen.reverse(); chain = chosen.concat(chain); }
+          else { chain = chosen.concat(chain); }
+          used[bestIdx] = true;
+          groupIndices.push(bestIdx);
+          extended = true;
+        }
       }
-      if (bestIdx === -1) break;
-      var chosen = segments[bestIdx].slice();
-      if (bestFlip) chosen.reverse();
-      chain = chain.concat(chosen);
-      used[bestIdx] = true;
+      groups.push({ indices: groupIndices, chain: chain });
     }
 
-    var resultGeoJSON = {
-      type: 'Feature',
-      geometry: { type: 'LineString', coordinates: chain.map(function(p){ return [p.lng, p.lat]; }) },
-      properties: {}
-    };
-    finalizeGeometryOp(lines, resultGeoJSON);
+    var joinedCount = 0, skippedCount = 0;
+    groups.forEach(function(g){
+      if (g.indices.length < 2){ skippedCount++; return; }
+      joinedCount++;
+      var origShapesForGroup = g.indices.map(function(idx){ return segLines[idx]; });
+      var resultGeoJSON = {
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: g.chain.map(function(p){ return [p.lng, p.lat]; }) },
+        properties: {}
+      };
+      finalizeGeometryOp(origShapesForGroup, resultGeoJSON);
+    });
+
+    if (skippedCount > 0){
+      alert((joinedCount > 0 ? 'Se unieron ' + joinedCount + ' grupo(s) de líneas cercanas. ' : '') +
+        skippedCount + ' línea(s) quedaron sin unir por estar demasiado lejos de las demás.');
+    }
   }
 
   function finalizeGeometryOp(originalShapes, resultGeoJSON){
@@ -5964,7 +6085,7 @@
 
       var lineHint = document.createElement('div');
       lineHint.className = 'hint';
-      lineHint.textContent = 'Une las líneas seleccionadas en un solo camino continuo, conectando con un tramo recto los espacios en blanco entre ellas.';
+      lineHint.textContent = 'Une en un solo camino las líneas seleccionadas que estén cerca entre sí, cerrando el espacio con un tramo recto. Las que queden demasiado lejos de las demás no se tocan.';
       body.appendChild(lineHint);
     }
 
@@ -6705,6 +6826,26 @@
       styleBlock.appendChild(dashField);
 
       if (kind === 'polyline' || kind === 'polygon'){
+        var showNameField = document.createElement('div');
+        showNameField.className = 'style-field';
+        showNameField.style.cssText = 'border-top:1px solid var(--border);padding-top:8px;margin-top:2px;';
+        var showNameLabel = document.createElement('label');
+        showNameLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var showNameCheck = document.createElement('input');
+        showNameCheck.type = 'checkbox';
+        showNameCheck.checked = !!shape._showName;
+        var showNameText = document.createElement('span');
+        showNameText.textContent = kind === 'polygon' ? 'Mostrar nombre (centrado, horizontal)' : 'Mostrar nombre (en dirección de la línea)';
+        showNameLabel.appendChild(showNameCheck);
+        showNameLabel.appendChild(showNameText);
+        showNameField.appendChild(showNameLabel);
+        showNameCheck.addEventListener('change', function(ev){
+          shape._showName = ev.target.checked;
+          syncNameLabel(shape);
+          renderLayerList();
+        });
+        styleBlock.appendChild(showNameField);
+
         if (!shape._limite) shape._limite = { enabled:false, echelon1:'', echelon2:'' };
 
         var limiteField = document.createElement('div');
@@ -7006,6 +7147,9 @@
         f.properties.showLength = shape._showLength;
         f.properties.lengthUnit = shape._lengthUnit || 'km';
       }
+      if (shape && shape._showName != null){
+        f.properties.showName = shape._showName;
+      }
       if (shape && shape.options){
         f.properties.color = shape.options.color;
         f.properties.fillColor = shape._fillColorRaw || shape.options.fillColor;
@@ -7214,6 +7358,7 @@
         if (p.supply != null && layer._isMilSymbol) layer._supply = p.supply;
         else delete layer._supply;
         if (p.showLength != null){ layer._showLength = p.showLength; layer._lengthUnit = p.lengthUnit || 'km'; }
+        if (p.showName != null) layer._showName = p.showName;
         layer._fillColorRaw = p.fillColor || targetLayerObj.color;
         layer._fillStyleKey = p.fillStyle || 'solid';
         if (p.arrow){
