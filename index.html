@@ -6106,23 +6106,69 @@
 
     var pathShapes = layerObj.group.getLayers().filter(function(s){ return s instanceof L.Path; });
     var nameableShapes = layerNameableShapes(layerObj);
+    var pointShapes = layerObj.group.getLayers().filter(function(s){ return shapeKind(s) === 'marker' && !s._isMilSymbol; });
 
     var hint = document.createElement('div');
     hint.className = 'hint';
     hint.textContent = 'Los cambios se aplican a todos los objetos que ya están dentro de esta capa (no a sus subcapas).';
     body.appendChild(hint);
 
-    if (!pathShapes.length){
+    if (!pathShapes.length && !pointShapes.length){
       var emptyNote = document.createElement('div');
       emptyNote.className = 'hint';
-      emptyNote.textContent = 'Esta capa todavía no tiene objetos con línea o relleno para editar en conjunto.';
+      emptyNote.textContent = 'Esta capa todavía no tiene objetos para editar en conjunto.';
       body.appendChild(emptyNote);
       return;
     }
 
     var styleBlock = document.createElement('div');
     styleBlock.className = 'style-block';
-    appendBulkStyleFields(styleBlock, pathShapes);
+
+    if (pathShapes.length) appendBulkStyleFields(styleBlock, pathShapes);
+
+    if (pointShapes.length){
+      var pointColorField = document.createElement('div');
+      pointColorField.className = 'style-field';
+      pointColorField.style.cssText = pathShapes.length ? 'border-top:1px solid var(--border);padding-top:8px;margin-top:2px;' : '';
+      pointColorField.innerHTML = '<span>Color de los puntos</span>';
+      var pointColorInput = document.createElement('input');
+      pointColorInput.type = 'color';
+      pointColorInput.value = pointShapes[0]._pointColor || '#1F3864';
+      pointColorInput.addEventListener('input', function(ev){
+        pointShapes.forEach(function(s){
+          s._pointColor = ev.target.value;
+          s.setIcon(buildPointIcon(s._pointColor, s._pointShape));
+        });
+        renderLayerList();
+      });
+      pointColorField.appendChild(pointColorInput);
+      styleBlock.appendChild(pointColorField);
+
+      var pointShapeField = document.createElement('div');
+      pointShapeField.className = 'style-field';
+      pointShapeField.innerHTML = '<span>Forma de los puntos</span>';
+      var pointShapeSelect = document.createElement('select');
+      pointShapeSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
+      POINT_SHAPES.forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        pointShapeSelect.appendChild(o);
+      });
+      pointShapeSelect.addEventListener('change', function(ev){
+        pointShapes.forEach(function(s){
+          s._pointShape = ev.target.value;
+          s.setIcon(buildPointIcon(s._pointColor, s._pointShape));
+        });
+        renderLayerList();
+      });
+      pointShapeField.appendChild(pointShapeSelect);
+      styleBlock.appendChild(pointShapeField);
+
+      var pointHint = document.createElement('div');
+      pointHint.className = 'hint';
+      pointHint.textContent = 'Solo afecta a los puntos simples de esta capa (no a los símbolos militares, blancos, textos o infraestructura).';
+      styleBlock.appendChild(pointHint);
+    }
 
     if (nameableShapes.length){
       var showNamesField = document.createElement('div');
