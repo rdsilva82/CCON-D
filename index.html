@@ -188,6 +188,13 @@
 
   /* ---------- LAYER LIST ---------- */
   #layer-list{ display:flex; flex-direction:column; gap:6px; }
+  #direccion-broadcast-list{ display:flex; flex-direction:column; gap:6px; }
+  .broadcast-row{
+    border:1px solid var(--border); border-radius:8px; background:#F3F0E4;
+    padding:8px 10px; display:flex; align-items:center; gap:6px;
+  }
+  .broadcast-row .broadcast-name{ flex:1; font-size:12.5px; font-weight:700; color:var(--navy); }
+  .broadcast-row button{ flex-shrink:0; }
   .layer-card{
     border:1px solid var(--border); border-radius:8px; background:#FBFAF7; overflow:hidden;
   }
@@ -680,6 +687,7 @@
   <div class="header-right">
     <div id="user-controls">
       <div id="current-user-badge"></div>
+      <button class="toggle-btn" id="direccion-mode-toggle" style="display:none;"></button>
       <button class="toggle-btn" id="go-home-btn" title="Volver al inicio y elegir otra aula o dirección">🏠 <span class="home-label">Inicio</span></button>
     </div>
     <div class="panel-toggles">
@@ -732,6 +740,12 @@
       <div id="layer-list"></div>
       <button class="primary-btn" id="add-layer-btn">＋ Nueva capa</button>
       <div class="hint">Las formas nuevas se dibujan sobre la <b>capa activa</b> (resaltada en dorado). Despliegue una capa con la flecha ▸ para ver, editar o eliminar cada objeto individualmente: color de línea, relleno y transparencia.</div>
+    </section>
+
+    <section class="block" id="direccion-broadcast-section" style="display:none;">
+      <h2>Capas de Dirección</h2>
+      <div class="hint">Solo lectura — puede mostrarlas u ocultarlas en el mapa, y copiar cualquiera a sus propias capas para editarla libremente.</div>
+      <div id="direccion-broadcast-list"></div>
     </section>
 
     <section class="block">
@@ -1027,14 +1041,14 @@
   function currentAulaSlug(){
     if (!userContext) return 'aulaA';
     if (userContext.role === 'aula') return 'aula' + userContext.aula;
-    if (userContext.role === 'direccion') return 'direccion-view';
+    if (userContext.role === 'direccion') return userContext.direccionEditMode ? 'direccion-broadcast' : 'direccion-view';
     return 'aulaA';
   }
-  function isReadOnlyMode(){ return !!(userContext && userContext.role === 'direccion'); }
+  function isReadOnlyMode(){ return !!(userContext && userContext.role === 'direccion' && !userContext.direccionEditMode); }
   function currentUserLabel(){
     if (!userContext) return '';
     if (userContext.role === 'aula') return 'AULA ' + userContext.aula;
-    if (userContext.role === 'direccion') return 'DIRECCIÓN';
+    if (userContext.role === 'direccion') return userContext.direccionEditMode ? 'DIRECCIÓN — Editando capas propias' : 'DIRECCIÓN';
     return '';
   }
 
@@ -1087,6 +1101,27 @@
     badge.innerHTML = '<b>' + escapeHtmlText(currentUserLabel()) + '</b>';
     badge.title = currentUserLabel();
     document.getElementById('go-home-btn').addEventListener('click', goToHome);
+    if (userContext.role === 'direccion'){
+      var direccionModeBtn = document.getElementById('direccion-mode-toggle');
+      direccionModeBtn.style.display = 'inline-block';
+      direccionModeBtn.textContent = userContext.direccionEditMode ? '👁️ Volver a modo vista' : '🎖️ Editar capas de Dirección';
+      direccionModeBtn.title = userContext.direccionEditMode
+        ? 'Volver al modo de solo lectura para ver las aulas'
+        : 'Crear y editar sus propias capas, visibles (pero no editables) para todas las aulas';
+      direccionModeBtn.onclick = function(){
+        var goingToEdit = !userContext.direccionEditMode;
+        showConfirm(
+          goingToEdit
+            ? '¿Pasar a editar sus propias capas de Dirección? Se recargará la página.'
+            : '¿Volver al modo de solo lectura (ver aulas)? Se recargará la página.',
+          function(){
+            userContext.direccionEditMode = goingToEdit;
+            saveUserContext(userContext);
+            location.reload();
+          }
+        );
+      };
+    }
     if (isReadOnlyMode()){
       if (!userContext.visibleAulas) userContext.visibleAulas = [];
       var togglesWrap = document.getElementById('direccion-aula-toggles');
@@ -1241,6 +1276,150 @@
     });
     layers = layers.filter(function(l){ return l._direccionAula !== letra; });
     if (activeLayerId && activeLayerId.indexOf('d_' + letra + '_') === 0) activeLayerId = null;
+  }
+
+  /* ---------------- CAPAS DE DIRECCIÓN (panel de solo lectura para las aulas) ---------------- */
+  var direccionBroadcastCache = null;
+  var direccionBroadcastLoading = false;
+  var broadcastMapLayers = {};
+  var broadcastVisibleIds = {};
+
+  function direccionBroadcastBasePath(){
+    return githubConfig.path.replace(/\.json$/i, '') + '/direccion-broadcast';
+  }
+
+  function loadDireccionBroadcastPanel(){
+    if (!userContext || userContext.role !== 'aula') return;
+    var section = document.getElementById('direccion-broadcast-section');
+    if (!githubConfigured()){ section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    if (direccionBroadcastCache){ renderDireccionBroadcastList(); return; }
+    if (direccionBroadcastLoading) return;
+    direccionBroadcastLoading = true;
+    var basePath = direccionBroadcastBasePath();
+    fetch(githubContentsUrl(basePath + '/index.json', true), { headers: githubAuthHeaders() })
+      .then(function(res){
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(data){
+        if (!data) return null;
+        return resolveFileText(data).then(function(rawText){ return JSON.parse(rawText); });
+      })
+      .then(function(indexState){
+        if (!indexState){ direccionBroadcastCache = { indexEntries: [], layerNodes: {} }; return; }
+        var rootIds = (indexState.layers || []).filter(function(e){ return !e.parentId; }).map(function(e){ return e.id; });
+        var layerNodes = {};
+        var chain = Promise.resolve();
+        rootIds.forEach(function(id){
+          chain = chain.then(function(){
+            return fetch(githubContentsUrl(basePath + '/layers/' + id + '.json', true), { headers: githubAuthHeaders() })
+              .then(function(res2){
+                if (res2.status === 404) return null;
+                if (!res2.ok) throw new Error('HTTP ' + res2.status);
+                return res2.json();
+              })
+              .then(function(data2){
+                if (!data2) return;
+                return resolveFileText(data2).then(function(rawText2){ layerNodes[id] = JSON.parse(rawText2); });
+              });
+          });
+        });
+        return chain.then(function(){
+          direccionBroadcastCache = { indexEntries: indexState.layers || [], layerNodes: layerNodes };
+        });
+      })
+      .then(function(){
+        direccionBroadcastLoading = false;
+        renderDireccionBroadcastList();
+      })
+      .catch(function(err){
+        direccionBroadcastLoading = false;
+        console.error('No se pudieron cargar las capas de Dirección:', err);
+      });
+  }
+
+  function renderDireccionBroadcastList(){
+    var container = document.getElementById('direccion-broadcast-list');
+    if (!container) return;
+    container.innerHTML = '';
+    if (!direccionBroadcastCache || !direccionBroadcastCache.indexEntries.length){
+      container.innerHTML = '<div class="hint">Dirección todavía no compartió ninguna capa.</div>';
+      return;
+    }
+    var roots = direccionBroadcastCache.indexEntries.filter(function(e){ return !e.parentId; });
+    roots.forEach(function(entry){ container.appendChild(buildBroadcastLayerRow(entry)); });
+  }
+
+  function buildBroadcastLayerRow(entry){
+    var row = document.createElement('div');
+    row.className = 'broadcast-row';
+
+    var nameSpan = document.createElement('span');
+    nameSpan.className = 'broadcast-name';
+    nameSpan.textContent = entry.name;
+    row.appendChild(nameSpan);
+
+    var visBtn = document.createElement('button');
+    visBtn.className = 'vis-btn';
+    var isOn = !!broadcastVisibleIds[entry.id];
+    visBtn.textContent = isOn ? '👁' : '🚫';
+    visBtn.title = isOn ? 'Ocultar del mapa' : 'Mostrar en el mapa';
+    visBtn.addEventListener('click', function(){
+      broadcastVisibleIds[entry.id] = !broadcastVisibleIds[entry.id];
+      syncBroadcastLayerDisplay(entry.id);
+      renderDireccionBroadcastList();
+    });
+    row.appendChild(visBtn);
+
+    var copyBtn = document.createElement('button');
+    copyBtn.className = 'outline-btn';
+    copyBtn.textContent = '⧉ Copiar';
+    copyBtn.title = 'Copiar esta capa a sus propias capas, para editarla libremente';
+    copyBtn.addEventListener('click', function(){ copyBroadcastLayerToMine(entry.id); });
+    row.appendChild(copyBtn);
+
+    return row;
+  }
+
+  function syncBroadcastLayerDisplay(entryId){
+    if (broadcastMapLayers[entryId]){ map.removeLayer(broadcastMapLayers[entryId]); delete broadcastMapLayers[entryId]; }
+    if (!broadcastVisibleIds[entryId]) return;
+    var node = direccionBroadcastCache && direccionBroadcastCache.layerNodes[entryId];
+    if (!node || !node.geojson) return;
+    var group = L.geoJSON(node.geojson, {
+      interactive: false,
+      pointToLayer: function(feature, latlng){
+        var p = feature.properties || {};
+        return L.marker(latlng, { interactive:false, icon: buildPointIcon(p.pointColor || p.color || '#1F3864', p.pointShape || 'target') });
+      },
+      style: function(feature){
+        var p = feature.properties || {};
+        return {
+          color: p.color || '#1F3864',
+          fillColor: p.fillColor || p.color || '#1F3864',
+          fillOpacity: p.fillOpacity != null ? p.fillOpacity : .25,
+          opacity: p.opacity != null ? p.opacity : 1,
+          weight: p.weight != null ? p.weight : 3,
+          dashArray: p.dashArray || null,
+          interactive: false
+        };
+      }
+    });
+    group.addTo(map);
+    broadcastMapLayers[entryId] = group;
+  }
+
+  function copyBroadcastLayerToMine(entryId){
+    if (!direccionBroadcastCache) return;
+    var entry = direccionBroadcastCache.indexEntries.find(function(e){ return e.id === entryId; });
+    if (!entry) return;
+    var node = direccionBroadcastCache.layerNodes[entryId];
+    var newLayer = createLayer('Copia de ' + entry.name, entry.color || nextColor());
+    if (node) reconstructGeoJSONInto(node.geojson, newLayer);
+    renderLayerList();
+    alert('Se copió "' + entry.name + '" a sus propias capas como "' + newLayer.name + '". Ya puede editarla libremente.');
   }
 
   /* ---------------- CONFIRMACIÓN PERSONALIZADA (Sí / No) ---------------- */
@@ -1984,6 +2163,8 @@
     persistGithubConfig();
     githubFileSha = null;
     githubPull(true);
+    direccionBroadcastCache = null;
+    loadDireccionBroadcastPanel();
   });
 
   document.getElementById('gh-push-btn').addEventListener('click', function(){ githubPush(); });
@@ -8348,6 +8529,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       } else {
         updateSyncStatus('off','Sin configurar');
       }
+      loadDireccionBroadcastPanel();
     }
 
     map.on('moveend zoomend', scheduleSave);
