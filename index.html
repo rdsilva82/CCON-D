@@ -5326,7 +5326,7 @@
   function renderShapeRow(shape, layerObj){
     var kind = shapeKind(shape);
     var row = document.createElement('div');
-    row.className = 'shape-row' + (selectedShape === shape ? ' selected' : '');
+    row.className = 'shape-row' + ((selectedShape === shape || multiSelectedShapes.indexOf(shape) !== -1) ? ' selected' : '');
 
     var top = document.createElement('div');
     top.className = 'shape-top';
@@ -5498,7 +5498,12 @@
       row.appendChild(controls);
     }
 
-    row.addEventListener('click', function(){
+    row.addEventListener('click', function(ev){
+      if (ev.shiftKey && !isReadOnlyMode()){
+        toggleMultiSelect(shape);
+        return;
+      }
+      clearMultiSelect();
       selectedShape = shape;
       showProperties(shape, layerObj);
       renderLayerList();
@@ -5865,6 +5870,28 @@
     finalizeGeometryOp(polys, result);
   }
 
+  function moveMultipleShapesToLayer(shapes, toLayerObj){
+    if (!toLayerObj) return;
+    var moves = shapes.map(function(s){ return { shape: s, from: findLayerOfShape(s) }; })
+      .filter(function(m){ return m.from && m.from.id !== toLayerObj.id; });
+    if (!moves.length) return;
+    moves.forEach(function(m){ m.from.group.removeLayer(m.shape); toLayerObj.group.addLayer(m.shape); });
+    pushAction(
+      function(){
+        moves.forEach(function(m){ toLayerObj.group.removeLayer(m.shape); m.from.group.addLayer(m.shape); });
+        clearMultiSelect(); selectedShape = null; clearProperties(); renderLayerList();
+      },
+      function(){
+        moves.forEach(function(m){ m.from.group.removeLayer(m.shape); toLayerObj.group.addLayer(m.shape); });
+        clearMultiSelect(); selectedShape = null; clearProperties(); renderLayerList();
+      }
+    );
+    clearMultiSelect();
+    selectedShape = null;
+    clearProperties();
+    renderLayerList();
+  }
+
   function deleteMultipleShapes(shapes){
     var byOwner = {};
     shapes.forEach(function(s){
@@ -6167,6 +6194,27 @@
       lineHint.textContent = 'Une en un solo camino las líneas seleccionadas que estén cerca entre sí, cerrando el espacio con un tramo recto. Las que queden demasiado lejos de las demás no se tocan.';
       body.appendChild(lineHint);
     }
+
+    var moveField = document.createElement('div');
+    moveField.className = 'style-field';
+    moveField.style.cssText = 'border-top:1px solid var(--border);padding-top:8px;margin-top:2px;';
+    moveField.innerHTML = '<span>Mover los ' + shapes.length + ' seleccionados a…</span>';
+    var moveSelectAll = document.createElement('select');
+    moveSelectAll.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
+    var moveOptPlaceholderAll = document.createElement('option');
+    moveOptPlaceholderAll.value = ''; moveOptPlaceholderAll.textContent = 'Elegir capa…'; moveOptPlaceholderAll.disabled = true; moveOptPlaceholderAll.selected = true;
+    moveSelectAll.appendChild(moveOptPlaceholderAll);
+    flattenAllLayers(null).forEach(function(opt){
+      var o = document.createElement('option');
+      o.value = opt.id; o.textContent = opt.label;
+      moveSelectAll.appendChild(o);
+    });
+    moveSelectAll.addEventListener('change', function(ev){
+      var target = getLayer(ev.target.value);
+      if (target) moveMultipleShapesToLayer(shapes.slice(), target);
+    });
+    moveField.appendChild(moveSelectAll);
+    body.appendChild(moveField);
 
     var actions = document.createElement('div');
     actions.className = 'prop-actions';
