@@ -1783,7 +1783,7 @@
 
   /* ---------------- HISTORIAL DE GITHUB Y RESTAURACIÓN ---------------- */
   function githubFetchTextAtRef(path, refOrSha){
-    return fetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + path + '?ref=' + refOrSha, {
+    return fetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + encodeURIComponent(path).replace(/%2F/g, '/') + '?ref=' + encodeURIComponent(refOrSha), {
       headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
     }).then(function(res){
       if (!res.ok) throw new Error('HTTP ' + res.status);
