@@ -3135,6 +3135,45 @@
     if (file) insertImageFromFile(file);
   });
 
+  var singleShapeEditingShape = null;
+  var singleShapeEditingSnapshot = null;
+
+  function toggleSingleShapeEdit(shape){
+    if (singleShapeEditingShape === shape){
+      stopSingleShapeEdit();
+      return;
+    }
+    stopSingleShapeEdit();
+    if (!shape.editing){ alert('Este objeto no admite edición de puntos.'); return; }
+    disableAllTools();
+    singleShapeEditingSnapshot = snapshotShapePosition(shape);
+    singleShapeEditingShape = shape;
+    shape.editing.enable();
+    if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape));
+  }
+
+  function stopSingleShapeEdit(){
+    if (!singleShapeEditingShape) return;
+    var shape = singleShapeEditingShape;
+    var before = singleShapeEditingSnapshot;
+    try{ shape.editing.disable(); }catch(err){}
+    var after = snapshotShapePosition(shape);
+    if (JSON.stringify(before) !== JSON.stringify(after)){
+      pushAction(
+        function(){ restoreShapePosition(shape, before); renderLayerList(); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); },
+        function(){ restoreShapePosition(shape, after); renderLayerList(); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); }
+      );
+    }
+    singleShapeEditingShape = null;
+    singleShapeEditingSnapshot = null;
+    syncDoubleLineCompanion(shape);
+    syncLengthLabel(shape);
+    syncNameLabel(shape);
+    syncLimiteCompanion(shape);
+    renderLayerList();
+    if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape));
+  }
+
   function disableAllTools(){
     ['marker','polyline','polygon','rectangle','circle'].forEach(function(k){
       if (drawHandlers[k] && drawHandlers[k].enabled()) drawHandlers[k].disable();
@@ -3149,6 +3188,7 @@
     stopTargetTool();
     stopInfraTool();
     stopRouteOriginPick();
+    if (singleShapeEditingShape) stopSingleShapeEdit();
     activeToolName = null;
     updateToolbarUI();
   }
@@ -5603,6 +5643,7 @@
   }
 
   function clearProperties(){
+    if (singleShapeEditingShape) stopSingleShapeEdit();
     var body = document.getElementById('properties-body');
     body.className = 'empty';
     body.innerHTML = 'Seleccione una forma dibujada en el mapa, o desde la lista de capas, para ver y editar sus propiedades.';
@@ -6109,6 +6150,7 @@
   }
 
   function showMultiProperties(shapes){
+    if (singleShapeEditingShape) stopSingleShapeEdit();
     selectedLayerForBulk = null;
     syncArrowHandlesForSelection(null);
     syncOtherHandlesForSelection(null);
@@ -6251,6 +6293,7 @@
 
   function showProperties(shape, layerObj){
     selectedLayerForBulk = null;
+    if (singleShapeEditingShape && singleShapeEditingShape !== shape) stopSingleShapeEdit();
     syncArrowHandlesForSelection(shape);
     syncOtherHandlesForSelection(shape);
     if (moveModeShape && moveModeShape !== shape) exitMoveMode();
@@ -6954,6 +6997,26 @@
       styleBlock.appendChild(dashField);
 
       if (kind === 'polyline' || kind === 'polygon'){
+        var editPointsField = document.createElement('div');
+        editPointsField.className = 'style-field';
+        var editPointsBtn = document.createElement('button');
+        editPointsBtn.className = 'outline-btn';
+        var isEditingThis = singleShapeEditingShape === shape;
+        editPointsBtn.textContent = isEditingThis ? '✓ Terminar edición de puntos' : '✏️ Editar puntos';
+        editPointsBtn.title = 'Arrastre un punto para moverlo, arrastre el punto medio entre dos vértices para agregar uno nuevo, y doble clic sobre un punto para quitarlo';
+        editPointsBtn.style.width = '100%';
+        editPointsBtn.addEventListener('click', function(){
+          toggleSingleShapeEdit(shape);
+        });
+        editPointsField.appendChild(editPointsBtn);
+        styleBlock.appendChild(editPointsField);
+        if (isEditingThis){
+          var editPointsHint = document.createElement('div');
+          editPointsHint.className = 'hint';
+          editPointsHint.textContent = 'Arrastre un punto para moverlo. Arrastre el punto medio (más chico) entre dos vértices para agregar uno nuevo ahí. Doble clic sobre un punto para quitarlo.';
+          styleBlock.appendChild(editPointsHint);
+        }
+
         var showNameField = document.createElement('div');
         showNameField.className = 'style-field';
         showNameField.style.cssText = 'border-top:1px solid var(--border);padding-top:8px;margin-top:2px;';
