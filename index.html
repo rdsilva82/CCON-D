@@ -189,6 +189,10 @@
   /* ---------- LAYER LIST ---------- */
   #layer-list{ display:flex; flex-direction:column; gap:6px; }
   #direccion-broadcast-list{ display:flex; flex-direction:column; gap:6px; }
+  .collapsible-header{ cursor:pointer; display:flex; align-items:center; gap:6px; user-select:none; }
+  .collapsible-arrow{ display:inline-block; transition:transform .15s; font-size:11px; color:var(--muted); }
+  .collapsible-section.collapsed .collapsible-arrow{ transform:rotate(-90deg); }
+  .collapsible-section.collapsed .collapsible-body{ display:none; }
   .broadcast-row{
     border:1px solid var(--border); border-radius:8px; background:#F3F0E4;
     padding:8px 10px; display:flex; align-items:center; gap:6px;
@@ -731,21 +735,25 @@
   <!-- LEFT PANEL -->
   <aside id="left-panel">
    <div id="left-edicion-content" class="mode-content">
-    <section class="block">
-      <h2>Capas de dibujo</h2>
-      <div id="object-search-wrap">
-        <input type="text" id="object-search-input" placeholder="🔎 Buscar objeto por nombre…" autocomplete="off">
-        <div id="object-search-results"></div>
+    <section class="block collapsible-section" id="own-layers-section">
+      <h2 class="collapsible-header"><span class="collapsible-arrow">▾</span> Capas de dibujo</h2>
+      <div class="collapsible-body">
+        <div id="object-search-wrap">
+          <input type="text" id="object-search-input" placeholder="🔎 Buscar objeto por nombre…" autocomplete="off">
+          <div id="object-search-results"></div>
+        </div>
+        <div id="layer-list"></div>
+        <button class="primary-btn" id="add-layer-btn">＋ Nueva capa</button>
+        <div class="hint">Las formas nuevas se dibujan sobre la <b>capa activa</b> (resaltada en dorado). Despliegue una capa con la flecha ▸ para ver, editar o eliminar cada objeto individualmente: color de línea, relleno y transparencia.</div>
       </div>
-      <div id="layer-list"></div>
-      <button class="primary-btn" id="add-layer-btn">＋ Nueva capa</button>
-      <div class="hint">Las formas nuevas se dibujan sobre la <b>capa activa</b> (resaltada en dorado). Despliegue una capa con la flecha ▸ para ver, editar o eliminar cada objeto individualmente: color de línea, relleno y transparencia.</div>
     </section>
 
-    <section class="block" id="direccion-broadcast-section" style="display:none;">
-      <h2>Capas de Dirección</h2>
-      <div class="hint">Solo lectura — puede mostrarlas u ocultarlas en el mapa, y copiar cualquiera a sus propias capas para editarla libremente.</div>
-      <div id="direccion-broadcast-list"></div>
+    <section class="block collapsible-section" id="direccion-broadcast-section" style="display:none;">
+      <h2 class="collapsible-header"><span class="collapsible-arrow">▾</span> Capas de Dirección</h2>
+      <div class="collapsible-body">
+        <div class="hint">Solo lectura — puede mostrarlas u ocultarlas en el mapa, seleccionar sus objetos para verlos, y copiar cualquiera a sus propias capas para editarla libremente.</div>
+        <div id="direccion-broadcast-list"></div>
+      </div>
     </section>
 
     <section class="block">
@@ -1279,10 +1287,8 @@
   }
 
   /* ---------------- CAPAS DE DIRECCIÓN (panel de solo lectura para las aulas) ---------------- */
-  var direccionBroadcastCache = null;
+  var direccionBroadcastLoaded = false;
   var direccionBroadcastLoading = false;
-  var broadcastMapLayers = {};
-  var broadcastVisibleIds = {};
 
   function direccionBroadcastBasePath(){
     return githubConfig.path.replace(/\.json$/i, '') + '/direccion-broadcast';
@@ -1293,10 +1299,11 @@
     var section = document.getElementById('direccion-broadcast-section');
     if (!githubConfigured()){ section.style.display = 'none'; return; }
     section.style.display = 'block';
-    if (direccionBroadcastCache){ renderDireccionBroadcastList(); return; }
+    if (direccionBroadcastLoaded){ renderDireccionBroadcastList(); return; }
     if (direccionBroadcastLoading) return;
     direccionBroadcastLoading = true;
     var basePath = direccionBroadcastBasePath();
+    var indexState = null;
     fetch(githubContentsUrl(basePath + '/index.json', true), { headers: githubAuthHeaders() })
       .then(function(res){
         if (res.status === 404) return null;
@@ -1307,10 +1314,10 @@
         if (!data) return null;
         return resolveFileText(data).then(function(rawText){ return JSON.parse(rawText); });
       })
-      .then(function(indexState){
-        if (!indexState){ direccionBroadcastCache = { indexEntries: [], layerNodes: {} }; return; }
+      .then(function(parsedIndex){
+        indexState = parsedIndex;
+        if (!indexState) return;
         var rootIds = (indexState.layers || []).filter(function(e){ return !e.parentId; }).map(function(e){ return e.id; });
-        var layerNodes = {};
         var chain = Promise.resolve();
         rootIds.forEach(function(id){
           chain = chain.then(function(){
@@ -1322,16 +1329,17 @@
               })
               .then(function(data2){
                 if (!data2) return;
-                return resolveFileText(data2).then(function(rawText2){ layerNodes[id] = JSON.parse(rawText2); });
+                return resolveFileText(data2).then(function(rawText2){
+                  buildBroadcastLayerTree(JSON.parse(rawText2), indexState.layers || []);
+                });
               });
           });
         });
-        return chain.then(function(){
-          direccionBroadcastCache = { indexEntries: indexState.layers || [], layerNodes: layerNodes };
-        });
+        return chain;
       })
       .then(function(){
         direccionBroadcastLoading = false;
+        direccionBroadcastLoaded = true;
         renderDireccionBroadcastList();
       })
       .catch(function(err){
@@ -1340,86 +1348,85 @@
       });
   }
 
+  function buildBroadcastLayerTree(node, indexEntries, parentBroadcastId){
+    var entry = indexEntries.find(function(e){ return e.id === node.id; });
+    if (!entry) return;
+    var newId = 'bcast_' + node.id;
+    var lo = {
+      id: newId,
+      name: entry.name,
+      color: entry.color,
+      group: L.featureGroup(),
+      visible: false,
+      expanded: !!entry.expanded,
+      parentId: parentBroadcastId || null,
+      sortIndex: entry.sortIndex || 0,
+      _broadcastReadOnly: true
+    };
+    broadcastLayers.push(lo);
+    if (node.geojson && node.geojson.features && node.geojson.features.length){
+      reconstructGeoJSONInto(node.geojson, lo);
+      lo.group.eachLayer(function(s){ s._broadcastReadOnly = true; });
+    }
+    (node.children || []).forEach(function(child){ buildBroadcastLayerTree(child, indexEntries, newId); });
+  }
+
   function renderDireccionBroadcastList(){
     var container = document.getElementById('direccion-broadcast-list');
     if (!container) return;
     container.innerHTML = '';
-    if (!direccionBroadcastCache || !direccionBroadcastCache.indexEntries.length){
+    var roots = getBroadcastRootLayers();
+    if (!roots.length){
       container.innerHTML = '<div class="hint">Dirección todavía no compartió ninguna capa.</div>';
       return;
     }
-    var roots = direccionBroadcastCache.indexEntries.filter(function(e){ return !e.parentId; });
-    roots.forEach(function(entry){ container.appendChild(buildBroadcastLayerRow(entry)); });
+    var broadcastOpts = {
+      getChildren: getBroadcastChildren,
+      rerender: renderDireccionBroadcastList,
+      setVisibility: setBroadcastLayerVisibilityRecursive
+    };
+    roots.forEach(function(node){ container.appendChild(buildLayerCard(node, 0, broadcastOpts)); });
+    applyReadOnlySweep(container);
+    container.querySelectorAll('.layer-tools-row').forEach(function(el){ el.style.display = 'none'; });
+    addCopyButtonsToBroadcastCards(container, roots);
   }
 
-  function buildBroadcastLayerRow(entry){
-    var row = document.createElement('div');
-    row.className = 'broadcast-row';
-
-    var nameSpan = document.createElement('span');
-    nameSpan.className = 'broadcast-name';
-    nameSpan.textContent = entry.name;
-    row.appendChild(nameSpan);
-
-    var visBtn = document.createElement('button');
-    visBtn.className = 'vis-btn';
-    var isOn = !!broadcastVisibleIds[entry.id];
-    visBtn.textContent = isOn ? '👁' : '🚫';
-    visBtn.title = isOn ? 'Ocultar del mapa' : 'Mostrar en el mapa';
-    visBtn.addEventListener('click', function(){
-      broadcastVisibleIds[entry.id] = !broadcastVisibleIds[entry.id];
-      syncBroadcastLayerDisplay(entry.id);
-      renderDireccionBroadcastList();
+  function addCopyButtonsToBroadcastCards(container, roots){
+    var cards = container.querySelectorAll(':scope > .layer-card');
+    roots.forEach(function(node, idx){
+      var card = cards[idx];
+      if (!card) return;
+      var row = card.querySelector(':scope > .layer-row');
+      if (!row || row.querySelector('.broadcast-copy-btn')) return;
+      var copyBtn = document.createElement('button');
+      copyBtn.className = 'outline-btn broadcast-copy-btn';
+      copyBtn.textContent = '⧉ Copiar';
+      copyBtn.title = 'Copiar esta capa a sus propias capas, para editarla libremente';
+      copyBtn.disabled = false;
+      copyBtn.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        copyBroadcastLayerToMine(node.id);
+      });
+      row.appendChild(copyBtn);
     });
-    row.appendChild(visBtn);
-
-    var copyBtn = document.createElement('button');
-    copyBtn.className = 'outline-btn';
-    copyBtn.textContent = '⧉ Copiar';
-    copyBtn.title = 'Copiar esta capa a sus propias capas, para editarla libremente';
-    copyBtn.addEventListener('click', function(){ copyBroadcastLayerToMine(entry.id); });
-    row.appendChild(copyBtn);
-
-    return row;
   }
 
-  function syncBroadcastLayerDisplay(entryId){
-    if (broadcastMapLayers[entryId]){ map.removeLayer(broadcastMapLayers[entryId]); delete broadcastMapLayers[entryId]; }
-    if (!broadcastVisibleIds[entryId]) return;
-    var node = direccionBroadcastCache && direccionBroadcastCache.layerNodes[entryId];
-    if (!node || !node.geojson) return;
-    var group = L.geoJSON(node.geojson, {
-      interactive: false,
-      pointToLayer: function(feature, latlng){
-        var p = feature.properties || {};
-        return L.marker(latlng, { interactive:false, icon: buildPointIcon(p.pointColor || p.color || '#1F3864', p.pointShape || 'target') });
-      },
-      style: function(feature){
-        var p = feature.properties || {};
-        return {
-          color: p.color || '#1F3864',
-          fillColor: p.fillColor || p.color || '#1F3864',
-          fillOpacity: p.fillOpacity != null ? p.fillOpacity : .25,
-          opacity: p.opacity != null ? p.opacity : 1,
-          weight: p.weight != null ? p.weight : 3,
-          dashArray: p.dashArray || null,
-          interactive: false
-        };
-      }
-    });
-    group.addTo(map);
-    broadcastMapLayers[entryId] = group;
-  }
-
-  function copyBroadcastLayerToMine(entryId){
-    if (!direccionBroadcastCache) return;
-    var entry = direccionBroadcastCache.indexEntries.find(function(e){ return e.id === entryId; });
+  function copyBroadcastLayerToMine(broadcastId){
+    var entry = getBroadcastLayer(broadcastId);
     if (!entry) return;
-    var node = direccionBroadcastCache.layerNodes[entryId];
     var newLayer = createLayer('Copia de ' + entry.name, entry.color || nextColor());
-    if (node) reconstructGeoJSONInto(node.geojson, newLayer);
+    var fc = layerToGeoJSON(entry);
+    reconstructGeoJSONInto(fc, newLayer);
+    getBroadcastChildren(entry.id).forEach(function(childEntry){ copyBroadcastSubtree(childEntry, newLayer.id); });
     renderLayerList();
     alert('Se copió "' + entry.name + '" a sus propias capas como "' + newLayer.name + '". Ya puede editarla libremente.');
+  }
+
+  function copyBroadcastSubtree(entry, newParentId){
+    var newSub = createLayer(entry.name, entry.color || nextColor(), newParentId);
+    var fc = layerToGeoJSON(entry);
+    reconstructGeoJSONInto(fc, newSub);
+    getBroadcastChildren(entry.id).forEach(function(childEntry){ copyBroadcastSubtree(childEntry, newSub.id); });
   }
 
   /* ---------------- CONFIRMACIÓN PERSONALIZADA (Sí / No) ---------------- */
@@ -2341,6 +2348,33 @@
   }
   function getRootLayers(){ return getChildren(null); }
 
+  /* Árbol de capas de Dirección: completamente separado de `layers` para que nunca
+     se mezcle con lo que un aula guarda/sincroniza como propio. */
+  var broadcastLayers = [];
+  function getBroadcastLayer(id){ return broadcastLayers.find(function(l){ return l.id === id; }); }
+  function getBroadcastChildren(parentId){
+    return broadcastLayers.filter(function(l){ return l.parentId === parentId; })
+                           .sort(function(a,b){ return a.sortIndex - b.sortIndex; });
+  }
+  function getBroadcastRootLayers(){ return getBroadcastChildren(null); }
+  function isBroadcastLayerObj(layerObj){ return !!(layerObj && layerObj._broadcastReadOnly); }
+  function setBroadcastLayerVisibilityRecursive(id, visible){
+    var node = getBroadcastLayer(id);
+    if (!node) return;
+    node.visible = visible;
+    if (visible) map.addLayer(node.group); else map.removeLayer(node.group);
+    getBroadcastChildren(id).forEach(function(child){ setBroadcastLayerVisibilityRecursive(child.id, visible); });
+  }
+  function applyReadOnlySweep(container){
+    container.querySelectorAll('input, select, button').forEach(function(el){
+      if (el.classList.contains('vis-btn')) return;
+      if (el.type === 'checkbox') { el.disabled = true; return; }
+      if (/^(▲|▼|＋|⧉|🕐|⇄|✕)/.test(el.textContent || '')) { el.disabled = true; return; }
+      el.disabled = true;
+    });
+    container.querySelectorAll('.shape-name, .layer-name').forEach(function(el){ el.readOnly = true; });
+  }
+
   function nextSortIndex(parentId){
     var siblings = getChildren(parentId);
     return siblings.length ? Math.max.apply(null, siblings.map(function(s){ return s.sortIndex; })) + 1 : 0;
@@ -2510,6 +2544,7 @@
   }
 
   function setActiveLayer(id){
+    if (!getLayer(id)) return;
     activeLayerId = id;
     disableAllTools();
     buildDrawHandlers();
@@ -5346,18 +5381,16 @@
     syncAllLimiteCompanions();
     syncAllNameLabels();
     if (isReadOnlyMode()){
-      list.querySelectorAll('input, select, button').forEach(function(el){
-        if (el.classList.contains('vis-btn')) return;
-        if (el.type === 'checkbox') { el.disabled = true; return; }
-        if (/^(▲|▼|＋|⧉|🕐|⇄|✕)/.test(el.textContent || '')) { el.disabled = true; return; }
-        el.disabled = true;
-      });
-      list.querySelectorAll('.shape-name, .layer-name').forEach(function(el){ el.readOnly = true; });
+      applyReadOnlySweep(list);
     }
     scheduleSave();
   }
 
-  function buildLayerCard(l, depth){
+  function buildLayerCard(l, depth, opts){
+    opts = opts || {};
+    var childrenFn = opts.getChildren || getChildren;
+    var rerenderFn = opts.rerender || renderLayerList;
+    var setVisibilityFn = opts.setVisibility || setLayerVisibilityRecursive;
     var card = document.createElement('div');
     card.className = 'layer-card' + (l.id === activeLayerId ? ' active' : '');
     if (depth > 0) card.style.marginLeft = (depth * 12) + 'px';
@@ -5372,7 +5405,7 @@
     expandBtn.addEventListener('click', function(ev){
       ev.stopPropagation();
       l.expanded = !l.expanded;
-      renderLayerList();
+      rerenderFn();
     });
 
     var colorInput = document.createElement('input');
@@ -5391,7 +5424,7 @@
     nameInput.addEventListener('click', function(ev){ ev.stopPropagation(); });
     nameInput.addEventListener('change', function(ev){ l.name = ev.target.value || l.name; scheduleSave(); });
 
-    var childCount = getChildren(l.id).length;
+    var childCount = childrenFn(l.id).length;
     var count = document.createElement('span');
     count.className = 'layer-count';
     count.title = childCount ? (l.group.getLayers().length + ' objeto(s) · ' + childCount + ' subcapa(s)') : '';
@@ -5411,8 +5444,8 @@
     visBtn.textContent = l.visible ? '👁' : '🚫';
     visBtn.addEventListener('click', function(ev){
       ev.stopPropagation();
-      setLayerVisibilityRecursive(l.id, !l.visible);
-      renderLayerList();
+      setVisibilityFn(l.id, !l.visible);
+      rerenderFn();
     });
 
     var delBtn = document.createElement('button');
@@ -5510,7 +5543,7 @@
       var shapesWrap = document.createElement('div');
       shapesWrap.className = 'shape-list';
       var shapes = l.group.getLayers();
-      var children = getChildren(l.id);
+      var children = childrenFn(l.id);
       if (shapes.length === 0 && children.length === 0){
         var empty = document.createElement('div');
         empty.className = 'empty-shapes';
@@ -5524,7 +5557,7 @@
       card.appendChild(shapesWrap);
 
       children.forEach(function(childNode){
-        card.appendChild(buildLayerCard(childNode, depth + 1));
+        card.appendChild(buildLayerCard(childNode, depth + 1, opts));
       });
     }
 
@@ -5815,6 +5848,7 @@
     if (ev.key === 'Escape'){ clearMultiSelect(); clearProperties(); renderLayerList(); }
   }
   function toggleMultiSelect(shape){
+    if (shape._broadcastReadOnly) return;
     var idx = multiSelectedShapes.indexOf(shape);
     if (idx !== -1){
       multiSelectedShapes.splice(idx, 1);
@@ -6395,6 +6429,7 @@
     }
 
     body.appendChild(styleBlock);
+    if (isBroadcastLayerObj(layerObj)) applyReadOnlySweep(body);
   }
 
   function showMultiProperties(shapes){
@@ -7546,7 +7581,7 @@
     actions.appendChild(delBtn);
     body.appendChild(actions);
 
-    if (isReadOnlyMode()){
+    if (isReadOnlyMode() || isBroadcastLayerObj(layerObj)){
       body.querySelectorAll('input, select, textarea, button').forEach(function(el){
         if (el.id === 'shape-name-input' || el.tagName === 'BUTTON') { el.disabled = true; }
         else { el.disabled = true; }
@@ -8432,6 +8467,11 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
   function startApp(){
     loadGithubConfig();
+    document.querySelectorAll('.collapsible-header').forEach(function(header){
+      header.addEventListener('click', function(){
+        header.closest('.collapsible-section').classList.toggle('collapsed');
+      });
+    });
     /* ---------------- BÚSQUEDA DE OBJETOS PROPIOS EN EL MAPA ---------------- */
     function collectAllShapes(){
       var result = [];
