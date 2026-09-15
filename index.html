@@ -213,6 +213,14 @@
     color:var(--text); font-weight:600; min-width:0;
   }
   .layer-row .layer-name:focus{ outline:1px solid var(--gold); border-radius:3px; }
+  .layer-row .layer-name:disabled,
+  .layer-row .layer-name[readonly],
+  .shape-name:disabled,
+  .shape-name[readonly]{
+    color:var(--text) !important;
+    -webkit-text-fill-color:var(--text) !important;
+    opacity:1 !important;
+  }
   .layer-row .layer-count{ font-size:10.5px; color:var(--muted); flex-shrink:0; }
   .layer-row button, .expand-btn{
     border:none; background:transparent; cursor:pointer; font-size:13px; color:var(--muted);
@@ -819,8 +827,8 @@
   <aside id="direccion-panel" style="display:none;">
     <section class="block">
       <h2>Capas de Dirección</h2>
-      <div class="hint">Solo lectura — puede mostrarlas u ocultarlas en el mapa, seleccionar sus objetos para verlos, y copiar cualquiera a sus propias capas para editarla libremente.</div>
       <div id="direccion-broadcast-list"></div>
+      <div class="hint">Solo lectura — puede mostrarlas u ocultarlas en el mapa, seleccionar sus objetos para verlos, y copiar cualquiera a sus propias capas para editarla libremente.</div>
     </section>
   </aside>
 
@@ -2355,7 +2363,7 @@
   }
   function applyReadOnlySweep(container){
     container.querySelectorAll('input, select, button').forEach(function(el){
-      if (el.classList.contains('vis-btn')) return;
+      if (el.classList.contains('vis-btn') || el.classList.contains('expand-btn')) return;
       if (el.type === 'checkbox') { el.disabled = true; return; }
       if (/^(▲|▼|＋|⧉|🕐|⇄|✕)/.test(el.textContent || '')) { el.disabled = true; return; }
       el.disabled = true;
