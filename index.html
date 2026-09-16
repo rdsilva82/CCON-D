@@ -171,11 +171,13 @@
   aside{
     background:var(--panel-bg);
     overflow-y:auto;
+    overflow-x:hidden;
     padding:14px;
     display:flex;
     flex-direction:column;
     gap:18px;
     height:100%;
+    min-width:0;
   }
   aside.panel-collapsed{ padding:0; border:none !important; overflow:hidden; }
   #left-panel{ border-right:1px solid var(--border); }
@@ -299,7 +301,7 @@
   input[type="file"]{ display:none; }
 
   /* ---------- MAP ---------- */
-  #map-wrapper{ position:relative; height:100%; width:100%; }
+  #map-wrapper{ position:relative; height:100%; width:100%; min-width:0; }
   #map{ height:100%; width:100%; background:#DCE3EA; }
 
   /* ---------- BÚSQUEDA DE OBJETOS PROPIOS (panel de capas) ---------- */
