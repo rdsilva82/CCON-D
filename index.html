@@ -3772,12 +3772,12 @@
   function defaultInfraParams(tipo){
     tipo = tipo || 'industrial';
     if (tipo === 'hospital'){
-      return { tipo:'hospital', nivel:'', denominacion:'', municipio:'', departamento:'' };
+      return { tipo:'hospital', nivel:'', denominacion:'', municipio:'', departamento:'', showCodigo:true };
     }
     if (tipo === 'emisora'){
-      return { tipo:'emisora', identificacion:'', fuerza:'', unidad:'', herramienta:'', municipio:'', departamento:'', cobertura:'', estado:'', observaciones:'' };
+      return { tipo:'emisora', identificacion:'', fuerza:'', unidad:'', herramienta:'', municipio:'', departamento:'', cobertura:'', estado:'', observaciones:'', showCodigo:true };
     }
-    return { tipo:tipo, codigo:'', activo:'', descripcion:'', criticidad:'B' };
+    return { tipo:tipo, codigo:'', activo:'', descripcion:'', criticidad:'B', showCodigo:true };
   }
   function buildInfraIcon(infra){
     if (infra.tipo === 'hospital'){
@@ -3807,12 +3807,14 @@
   }
   function updateInfraTooltip(shape){
     var label = null;
-    if (shape._infra.tipo === 'hospital'){
-      label = shape._infra.nivel ? ('Nivel ' + shape._infra.nivel) : null;
-    } else if (shape._infra.tipo === 'emisora'){
-      label = shape._infra.identificacion || null;
-    } else {
-      label = shape._infra.codigo || null;
+    if (shape._infra.showCodigo !== false){
+      if (shape._infra.tipo === 'hospital'){
+        label = shape._infra.nivel ? ('Nivel ' + shape._infra.nivel) : null;
+      } else if (shape._infra.tipo === 'emisora'){
+        label = shape._infra.identificacion || null;
+      } else {
+        label = shape._infra.codigo || null;
+      }
     }
     if (label){
       shape.bindTooltip(String(label), { permanent:true, direction:'right', offset:[22,0], className:'mil-symbol-label' });
@@ -6361,13 +6363,14 @@
     var pathShapes = layerObj.group.getLayers().filter(function(s){ return s instanceof L.Path; });
     var nameableShapes = layerNameableShapes(layerObj);
     var pointShapes = layerObj.group.getLayers().filter(function(s){ return shapeKind(s) === 'marker' && !s._isMilSymbol; });
+    var infraShapes = layerObj.group.getLayers().filter(function(s){ return shapeKind(s) === 'infra'; });
 
     var hint = document.createElement('div');
     hint.className = 'hint';
     hint.textContent = 'Los cambios se aplican a todos los objetos que ya están dentro de esta capa (no a sus subcapas).';
     body.appendChild(hint);
 
-    if (!pathShapes.length && !pointShapes.length){
+    if (!pathShapes.length && !pointShapes.length && !infraShapes.length){
       var emptyNote = document.createElement('div');
       emptyNote.className = 'hint';
       emptyNote.textContent = 'Esta capa todavía no tiene objetos para editar en conjunto.';
@@ -6444,6 +6447,27 @@
         renderLayerList();
       });
       styleBlock.appendChild(showNamesField);
+    }
+
+    if (infraShapes.length){
+      var showCodigosField = document.createElement('div');
+      showCodigosField.className = 'style-field';
+      showCodigosField.style.cssText = 'border-top:1px solid var(--border);padding-top:8px;margin-top:2px;';
+      var showCodigosLabel = document.createElement('label');
+      showCodigosLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+      var showCodigosCheck = document.createElement('input');
+      showCodigosCheck.type = 'checkbox';
+      showCodigosCheck.checked = infraShapes.every(function(s){ return s._infra.showCodigo !== false; });
+      showCodigosCheck.indeterminate = !showCodigosCheck.checked && infraShapes.some(function(s){ return s._infra.showCodigo !== false; });
+      var showCodigosText = document.createElement('span');
+      showCodigosText.textContent = 'Mostrar etiqueta (código) de las infraestructuras de esta capa';
+      showCodigosLabel.appendChild(showCodigosCheck);
+      showCodigosLabel.appendChild(showCodigosText);
+      showCodigosField.appendChild(showCodigosLabel);
+      showCodigosCheck.addEventListener('change', function(ev){
+        infraShapes.forEach(function(s){ s._infra.showCodigo = ev.target.checked; updateInfraTooltip(s); });
+      });
+      styleBlock.appendChild(showCodigosField);
     }
 
     body.appendChild(styleBlock);
@@ -6996,6 +7020,24 @@
       });
       infraTipoField.appendChild(infraTipoSelect);
       infraBlock.appendChild(infraTipoField);
+
+      var showCodigoField = document.createElement('div');
+      showCodigoField.className = 'style-field';
+      var showCodigoLabel = document.createElement('label');
+      showCodigoLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+      var showCodigoCheck = document.createElement('input');
+      showCodigoCheck.type = 'checkbox';
+      showCodigoCheck.checked = shape._infra.showCodigo !== false;
+      var showCodigoText = document.createElement('span');
+      showCodigoText.textContent = 'Mostrar etiqueta (código) en el mapa';
+      showCodigoLabel.appendChild(showCodigoCheck);
+      showCodigoLabel.appendChild(showCodigoText);
+      showCodigoField.appendChild(showCodigoLabel);
+      showCodigoCheck.addEventListener('change', function(ev){
+        shape._infra.showCodigo = ev.target.checked;
+        updateInfraTooltip(shape);
+      });
+      infraBlock.appendChild(showCodigoField);
 
       function infraTextField(label, key, useTextarea){
         var field = document.createElement('div');
