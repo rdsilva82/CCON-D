@@ -197,6 +197,11 @@
   }
   .broadcast-row .broadcast-name{ flex:1; font-size:12.5px; font-weight:700; color:var(--navy); }
   .broadcast-row button{ flex-shrink:0; }
+  .broadcast-copy-btn{
+    border:none; background:transparent; cursor:pointer; font-size:14px; color:var(--muted);
+    padding:2px 4px; border-radius:4px; flex-shrink:0; width:auto; min-width:0;
+  }
+  .broadcast-copy-btn:hover{ color:var(--navy); background:#E6EAF1; }
   .layer-card{
     border:1px solid var(--border); border-radius:8px; background:#FBFAF7; overflow:hidden;
   }
@@ -634,7 +639,7 @@
     transition:left .2s, right .2s;
   }
   .panel-edge-tab.right{ border-radius:8px 0 0 8px; box-shadow:-2px 0 8px rgba(0,0,0,.12); }
-  .panel-edge-tab.direccion{ background:#F3F0E4; }
+  .panel-edge-tab.direccion{ background:#F3F0E4; top:calc(50% + 70px); }
   @media (max-width:980px){ .panel-edge-tab{ display:none; } }
 
   .gh-field{ display:flex; flex-direction:column; gap:3px; }
@@ -1384,6 +1389,7 @@
     roots.forEach(function(node){ container.appendChild(buildLayerCard(node, 0, broadcastOpts)); });
     applyReadOnlySweep(container);
     container.querySelectorAll('.layer-tools-row').forEach(function(el){ el.style.display = 'none'; });
+    container.querySelectorAll('.del-layer-btn').forEach(function(el){ el.style.display = 'none'; });
     addCopyButtonsToBroadcastCards(container, roots);
   }
 
@@ -1395,8 +1401,8 @@
       var row = card.querySelector(':scope > .layer-row');
       if (!row || row.querySelector('.broadcast-copy-btn')) return;
       var copyBtn = document.createElement('button');
-      copyBtn.className = 'outline-btn broadcast-copy-btn';
-      copyBtn.textContent = '⧉ Copiar';
+      copyBtn.className = 'broadcast-copy-btn';
+      copyBtn.textContent = '⧉';
       copyBtn.title = 'Copiar esta capa a sus propias capas, para editarla libremente';
       copyBtn.disabled = false;
       copyBtn.addEventListener('click', function(ev){
@@ -5445,6 +5451,7 @@
     });
 
     var delBtn = document.createElement('button');
+    delBtn.className = 'del-layer-btn';
     delBtn.title = 'Eliminar capa';
     delBtn.textContent = '✕';
     delBtn.addEventListener('click', function(ev){
