@@ -2686,6 +2686,9 @@
     ['logistics','Logística / Abastecimiento'],
     ['signal','Comunicaciones'],
     ['specialforces','Fuerzas especiales'],
+    ['transporte','Transporte'],
+    ['mantenimiento','Mantenimiento'],
+    ['policiamilitar','Policía Militar'],
     ['aspc','ASPC'],
     ['biter','BITER'],
     ['ggcar','GGCAR'],
@@ -2742,7 +2745,7 @@
   };
 
   function defaultMilParams(){
-    return { affiliation:'friendly', unitType:'generic', echelon:'', designation:'' };
+    return { affiliation:'friendly', unitType:'generic', echelon:'', designation:'', modifier:'none', condition:'present' };
   }
   function ensureMilTypeExtras(mil){
     if (mil.unitType === 'obus' && !mil.obus) mil.obus = { radioAccionKm: 50, alturaMaximaKm: 15 };
@@ -2960,18 +2963,60 @@
     Object.keys(liveIds).forEach(function(id){ syncMilRadius(liveIds[id]); });
   }
 
-  function milFrameSVG(affiliation){
+  var MIL_MODIFIERS = [
+    ['none','Ninguno'],
+    ['staff','Puesto de comando'],
+    ['dummy','Simulado'],
+    ['installation','Instalación'],
+    ['taskforce','Fuerza de tareas'],
+    ['direction','Dirección']
+  ];
+  var MIL_CONDITIONS = [
+    ['present','Presente'],
+    ['planned','Futuro'],
+    ['damaged','Dañado'],
+    ['destroyed','Destruido']
+  ];
+  function milFrameSVG(affiliation, condition){
     var fill = MIL_AFFILIATION_COLORS[affiliation] || MIL_AFFILIATION_COLORS.friendly;
+    var dash = condition === 'planned' ? ' stroke-dasharray="5,3"' : '';
     if (affiliation === 'hostile'){
-      return '<polygon points="30,8 52,30 30,52 8,30" fill="' + fill + '" stroke="#000" stroke-width="2"/>';
+      return '<polygon points="30,8 52,30 30,52 8,30" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
     }
     if (affiliation === 'neutral'){
-      return '<rect x="12" y="12" width="36" height="36" fill="' + fill + '" stroke="#000" stroke-width="2"/>';
+      return '<rect x="12" y="12" width="36" height="36" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
     }
     if (affiliation === 'unknown'){
-      return '<circle cx="30" cy="30" r="20" fill="' + fill + '" stroke="#000" stroke-width="2"/>';
+      return '<circle cx="30" cy="30" r="20" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
     }
-    return '<rect x="8" y="17" width="44" height="26" fill="' + fill + '" stroke="#000" stroke-width="2"/>';
+    return '<rect x="8" y="17" width="44" height="26" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+  }
+
+  function milModifierSVG(modifier){
+    switch(modifier){
+      case 'staff':
+        return '<line x1="8" y1="22" x2="-6" y2="10" stroke="#000" stroke-width="2.2"/>';
+      case 'dummy':
+        return '<line x1="8" y1="22" x2="-6" y2="10" stroke="#000" stroke-width="2.2" stroke-dasharray="3,2.5"/>';
+      case 'installation':
+        return '<line x1="30" y1="43" x2="30" y2="55" stroke="#000" stroke-width="2.2"/><line x1="21" y1="55" x2="39" y2="55" stroke="#000" stroke-width="2.2"/>';
+      case 'taskforce':
+        return '<line x1="3" y1="12" x2="3" y2="48" stroke="#000" stroke-width="2.4"/><line x1="57" y1="12" x2="57" y2="48" stroke="#000" stroke-width="2.4"/>';
+      case 'direction':
+        return '<line x1="30" y1="43" x2="30" y2="58" stroke="#000" stroke-width="2.2"/><polygon points="30,60 25,50 35,50" fill="#000"/>';
+      default:
+        return '';
+    }
+  }
+
+  function milConditionOverlaySVG(condition){
+    if (condition === 'damaged'){
+      return '<line x1="14" y1="20" x2="46" y2="40" stroke="#000" stroke-width="2.4"/>';
+    }
+    if (condition === 'destroyed'){
+      return '<line x1="11" y1="18" x2="49" y2="42" stroke="#000" stroke-width="2.4"/><line x1="49" y1="18" x2="11" y2="42" stroke="#000" stroke-width="2.4"/>';
+    }
+    return '';
   }
 
   function milGlyphSVG(unitType){
@@ -3013,6 +3058,12 @@
         return '<path d="M17,38 L27,20 L31,32 L41,16" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
       case 'specialforces':
         return '<line x1="16" y1="40" x2="42" y2="16" stroke="'+g+'" stroke-width="2.6" stroke-linecap="round"/><polygon points="42,16 34,18 40,24" fill="'+g+'"/>';
+      case 'transporte':
+        return '<circle cx="30" cy="30" r="11" fill="none" stroke="'+g+'" stroke-width="2"/><line x1="30" y1="19" x2="30" y2="41" stroke="'+g+'" stroke-width="1.6"/><line x1="19" y1="30" x2="41" y2="30" stroke="'+g+'" stroke-width="1.6"/><line x1="22.2" y1="22.2" x2="37.8" y2="37.8" stroke="'+g+'" stroke-width="1.6"/><line x1="37.8" y1="22.2" x2="22.2" y2="37.8" stroke="'+g+'" stroke-width="1.6"/>';
+      case 'mantenimiento':
+        return '<circle cx="20" cy="20" r="5" fill="none" stroke="'+g+'" stroke-width="2.2"/><line x1="24" y1="24" x2="36" y2="36" stroke="'+g+'" stroke-width="2.6" stroke-linecap="round"/><circle cx="40" cy="40" r="5" fill="none" stroke="'+g+'" stroke-width="2.2"/>';
+      case 'policiamilitar':
+        return '<path d="M30,14 L42,19 V30 C42,38 36,43 30,46 C24,43 18,38 18,30 V19 Z" fill="none" stroke="'+g+'" stroke-width="2"/>';
       case 'circo':
         return '<path d="M18,19 v13 a4,4 0 004,4 h9" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
                '<path d="M21,19 l9,10 -4,4 10,-10" fill="none" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
@@ -3079,8 +3130,10 @@
   function buildMilSymbolSVG(mil){
     return '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
       milEchelonSVG(mil.echelon) +
-      milFrameSVG(mil.affiliation) +
+      milFrameSVG(mil.affiliation, mil.condition) +
       milGlyphSVG(mil.unitType) +
+      milModifierSVG(mil.modifier) +
+      milConditionOverlaySVG(mil.condition) +
       '</svg>';
   }
 
@@ -6719,8 +6772,10 @@
         return field;
       }
       milBlock.appendChild(milSelectField('Afiliación', MIL_AFFILIATIONS, 'affiliation'));
-      milBlock.appendChild(milSelectField('Tipo de unidad', MIL_UNIT_TYPES, 'unitType'));
-      milBlock.appendChild(milSelectField('Escalón / tamaño', MIL_ECHELONS, 'echelon'));
+      milBlock.appendChild(milSelectField('Unidad base', MIL_UNIT_TYPES, 'unitType'));
+      milBlock.appendChild(milSelectField('Magnitud', MIL_ECHELONS, 'echelon'));
+      milBlock.appendChild(milSelectField('Modificador', MIL_MODIFIERS, 'modifier'));
+      milBlock.appendChild(milSelectField('Condición Operacional', MIL_CONDITIONS, 'condition'));
 
       var designField = document.createElement('div');
       designField.className = 'style-field';
@@ -7717,6 +7772,8 @@
           unitType: shape._mil.unitType,
           echelon: shape._mil.echelon,
           designation: shape._mil.designation,
+          modifier: shape._mil.modifier,
+          condition: shape._mil.condition,
           obus: shape._mil.obus,
           radarMilitar: shape._mil.radarMilitar
         };
@@ -7838,7 +7895,7 @@
       pointToLayer: function(feature, latlng){
         var p = feature.properties || {};
         if (p.mil){
-          var mil = { affiliation: p.mil.affiliation || 'friendly', unitType: p.mil.unitType || 'generic', echelon: p.mil.echelon || '', designation: p.mil.designation || '' };
+          var mil = { affiliation: p.mil.affiliation || 'friendly', unitType: p.mil.unitType || 'generic', echelon: p.mil.echelon || '', designation: p.mil.designation || '', modifier: p.mil.modifier || 'none', condition: p.mil.condition || 'present' };
           if (p.mil.obus) mil.obus = p.mil.obus;
           if (p.mil.radarMilitar) mil.radarMilitar = p.mil.radarMilitar;
           ensureMilTypeExtras(mil);
