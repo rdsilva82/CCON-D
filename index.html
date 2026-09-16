@@ -7784,14 +7784,19 @@
   });
 
   document.getElementById('export-all-btn').addEventListener('click', function(){
-    var allFeatures = [];
-    layers.forEach(function(l){
-      var fc = layerToGeoJSON(l);
-      allFeatures = allFeatures.concat(fc.features);
-    });
-    if (allFeatures.length === 0){ alert('No hay elementos dibujados para exportar.'); return; }
-    var combined = { type:'FeatureCollection', features: allFeatures, properties:{ generado: new Date().toISOString(), fuente:'Sistema de Anotación Cartográfica - División de Ejército III' } };
-    download(JSON.stringify(combined, null, 2), 'norte-de-santander-todas-las-capas.geojson', 'application/geo+json');
+    if (!layers.length){ alert('No hay capas para exportar.'); return; }
+    var totalShapes = layers.reduce(function(sum, l){ return sum + l.group.getLayers().length; }, 0);
+    if (totalShapes === 0){ alert('No hay elementos dibujados para exportar.'); return; }
+    var payload = {
+      tipo: 'capas-completas-ccon-d',
+      version: 1,
+      generado: new Date().toISOString(),
+      fuente: 'Sistema de Anotación Cartográfica - División de Ejército III',
+      layers: layers.map(function(l){
+        return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, parentId: l.parentId, sortIndex: l.sortIndex, geojson: layerToGeoJSON(l) };
+      })
+    };
+    download(JSON.stringify(payload, null, 2), 'norte-de-santander-todas-las-capas.geojson', 'application/geo+json');
   });
 
   function slug(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'capa'; }
@@ -7946,6 +7951,12 @@
       try{ data = JSON.parse(reader.result); }
       catch(err){ alert('El archivo no es un GeoJSON/JSON válido.'); return; }
 
+      if (data && data.tipo === 'capas-completas-ccon-d' && Array.isArray(data.layers)){
+        importFullLayerTree(data);
+        ev.target.value = '';
+        return;
+      }
+
       var baseName = file.name.replace(/\.(geojson|json)$/i,'');
       var imported = createLayer(baseName, nextColor());
 
@@ -7963,6 +7974,49 @@
     };
     reader.readAsText(file);
   });
+
+  function importFullLayerTree(data){
+    var idMap = {};
+    var createdLayers = [];
+    var pending = data.layers.slice();
+    var guardLoops = pending.length + 5;
+
+    while (pending.length && guardLoops-- > 0){
+      var stillPending = [];
+      pending.forEach(function(entry){
+        var mappedParentId = entry.parentId ? idMap[entry.parentId] : null;
+        if (entry.parentId && !mappedParentId){
+          stillPending.push(entry);
+          return;
+        }
+        var newLayer = createLayer(entry.name, entry.color, mappedParentId || null);
+        newLayer.visible = entry.visible !== false;
+        newLayer.expanded = !!entry.expanded;
+        newLayer.sortIndex = entry.sortIndex != null ? entry.sortIndex : newLayer.sortIndex;
+        if (newLayer.visible && !map.hasLayer(newLayer.group)) map.addLayer(newLayer.group);
+        if (!newLayer.visible && map.hasLayer(newLayer.group)) map.removeLayer(newLayer.group);
+        idMap[entry.id] = newLayer.id;
+        createdLayers.push({ layer: newLayer, geojson: entry.geojson });
+      });
+      pending = stillPending;
+    }
+
+    createdLayers.forEach(function(item){
+      if (item.geojson) reconstructGeoJSONInto(item.geojson, item.layer);
+    });
+
+    var allBounds = null;
+    createdLayers.forEach(function(item){
+      if (item.layer.group.getLayers().length){
+        var b = item.layer.group.getBounds();
+        allBounds = allBounds ? allBounds.extend(b) : b;
+      }
+    });
+    if (allBounds) map.fitBounds(allBounds, { maxZoom:14 });
+
+    renderLayerList();
+    alert('Se importaron ' + createdLayers.length + ' capas/subcapas, con su estructura, colores y propiedades originales.');
+  }
 
   /* ---------------- COORDINATE RIBBON + VIEW INFO ---------------- */
   function updateRibbon(latlng){
