@@ -2723,6 +2723,109 @@
     bafur:'BAFUR', ev:'EV', ggsan:'GGSAN', ggmmag:'GGMMAG', badre:'BADRE',
     badra:'BADRA', gtm:'GTM', evipe:'EVIPE', accionintegral:'AI'
   };
+  var MIL_BASE_UNITS = [
+    ['generic','Genérica / sin especificar'],
+    ['infanteria','Infantería'],
+    ['caballeria','Caballería'],
+    ['artilleria','Artillería'],
+    ['ingenieros','Ingenieros'],
+    ['comunicaciones','Comunicaciones'],
+    ['inteligencia','Inteligencia'],
+    ['fuerzasespeciales','Fuerzas Especiales'],
+    ['aviacion','Aviación'],
+    ['logistica','Logística'],
+    ['sanidad','Sanidad'],
+    ['mantenimiento','Mantenimiento'],
+    ['transporte','Transporte'],
+    ['policiamilitar','Policía Militar']
+  ];
+
+  // Cada "Unidad base" agrupa sus propios tipos particulares (mecanizado/motorizado/blindado
+  // donde aplica) y los códigos propios de Colombia que le corresponden, para no mezclarlos
+  // con los de otras unidades base.
+  var MIL_UNIT_TYPES_BY_BASE = {
+    generic: [
+      ['generic','Genérica / sin especificar']
+    ],
+    infanteria: [
+      ['infantry','Regular'],
+      ['mechanized','Mecanizada'],
+      ['bafur','BAFUR'],
+      ['biter','BITER'],
+      ['biacm','BIACM'],
+      ['imi','IMI (Infantería de Marina)']
+    ],
+    caballeria: [
+      ['cavalry','Reconocimiento'],
+      ['armor','Blindada / Tanques'],
+      ['gmar','GMAR'],
+      ['ev','EV']
+    ],
+    artilleria: [
+      ['artillery','Campaña'],
+      ['airdefense','Antiaérea'],
+      ['obus','OBUS'],
+      ['badre','BADRE'],
+      ['badra','BADRA']
+    ],
+    ingenieros: [
+      ['engineer','General'],
+      ['bapom','BAPOM (Pontoneros)']
+    ],
+    comunicaciones: [
+      ['signal','General'],
+      ['gtm','GTM'],
+      ['commandpost','Puesto de mando'],
+      ['accionintegral','Acción Integral']
+    ],
+    inteligencia: [
+      ['radar','Radar'],
+      ['radarmilitar','Radar Militar'],
+      ['evipe','EVIPE']
+    ],
+    fuerzasespeciales: [
+      ['specialforces','General'],
+      ['ggcar','GGCAR'],
+      ['ggmag','GGMAG'],
+      ['ggsan','GGSAN'],
+      ['ggmmag','GGMMAG'],
+      ['futam','FUTAM'],
+      ['circo','CIRCO']
+    ],
+    aviacion: [
+      ['aviation','Ala Fija'],
+      ['rotarywing','Ala Rotatoria'],
+      ['baseaerea','Base Aérea']
+    ],
+    logistica: [
+      ['logistics','General'],
+      ['aspc','ASPC'],
+      ['ammodepot','Depósito de municiones'],
+      ['udiv','U/DIV']
+    ],
+    sanidad: [
+      ['medical','General']
+    ],
+    mantenimiento: [
+      ['mantenimiento','General']
+    ],
+    transporte: [
+      ['transporte','Terrestre'],
+      ['buque','Buque'],
+      ['navalelement','Elemento Naval']
+    ],
+    policiamilitar: [
+      ['policiamilitar','General']
+    ]
+  };
+  function inferUnitBase(unitType){
+    var bases = Object.keys(MIL_UNIT_TYPES_BY_BASE);
+    for (var i=0;i<bases.length;i++){
+      if (MIL_UNIT_TYPES_BY_BASE[bases[i]].some(function(opt){ return opt[0] === unitType; })) return bases[i];
+    }
+    return 'generic';
+  }
+
   var MIL_ECHELONS = [
     ['','Sin especificar'],
     ['team','Equipo/Célula'],
@@ -2745,7 +2848,7 @@
   };
 
   function defaultMilParams(){
-    return { affiliation:'friendly', unitType:'generic', echelon:'', designation:'', modifier:'none', condition:'present' };
+    return { affiliation:'friendly', unitBase:'generic', unitType:'generic', echelon:'', designation:'', modifier:'none', condition:'present' };
   }
   function ensureMilTypeExtras(mil){
     if (mil.unitType === 'obus' && !mil.obus) mil.obus = { radioAccionKm: 50, alturaMaximaKm: 15 };
@@ -6771,8 +6874,34 @@
         field.appendChild(select);
         return field;
       }
+      if (!shape._mil.unitBase) shape._mil.unitBase = inferUnitBase(shape._mil.unitType);
+
       milBlock.appendChild(milSelectField('Afiliación', MIL_AFFILIATIONS, 'affiliation'));
-      milBlock.appendChild(milSelectField('Unidad base', MIL_UNIT_TYPES, 'unitType'));
+
+      var unitBaseField = document.createElement('div');
+      unitBaseField.className = 'style-field';
+      unitBaseField.innerHTML = '<span>Unidad base</span>';
+      var unitBaseSelect = document.createElement('select');
+      unitBaseSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;max-width:170px;';
+      MIL_BASE_UNITS.forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        if (shape._mil.unitBase === opt[0]) o.selected = true;
+        unitBaseSelect.appendChild(o);
+      });
+      unitBaseSelect.addEventListener('change', function(ev){
+        shape._mil.unitBase = ev.target.value;
+        shape._mil.unitType = MIL_UNIT_TYPES_BY_BASE[shape._mil.unitBase][0][0];
+        ensureMilTypeExtras(shape._mil);
+        syncMilRadius(shape);
+        applyMilSymbol(shape);
+        renderLayerList();
+        showProperties(shape, layerObj);
+      });
+      unitBaseField.appendChild(unitBaseSelect);
+      milBlock.appendChild(unitBaseField);
+
+      milBlock.appendChild(milSelectField('Tipo de unidad', MIL_UNIT_TYPES_BY_BASE[shape._mil.unitBase] || MIL_UNIT_TYPES_BY_BASE.generic, 'unitType'));
       milBlock.appendChild(milSelectField('Magnitud', MIL_ECHELONS, 'echelon'));
       milBlock.appendChild(milSelectField('Modificador', MIL_MODIFIERS, 'modifier'));
       milBlock.appendChild(milSelectField('Condición Operacional', MIL_CONDITIONS, 'condition'));
@@ -7769,6 +7898,7 @@
       if (shape && shape._isMilSymbol){
         f.properties.mil = {
           affiliation: shape._mil.affiliation,
+          unitBase: shape._mil.unitBase,
           unitType: shape._mil.unitType,
           echelon: shape._mil.echelon,
           designation: shape._mil.designation,
@@ -7896,6 +8026,7 @@
         var p = feature.properties || {};
         if (p.mil){
           var mil = { affiliation: p.mil.affiliation || 'friendly', unitType: p.mil.unitType || 'generic', echelon: p.mil.echelon || '', designation: p.mil.designation || '', modifier: p.mil.modifier || 'none', condition: p.mil.condition || 'present' };
+          mil.unitBase = p.mil.unitBase || inferUnitBase(mil.unitType);
           if (p.mil.obus) mil.obus = p.mil.obus;
           if (p.mil.radarMilitar) mil.radarMilitar = p.mil.radarMilitar;
           ensureMilTypeExtras(mil);
