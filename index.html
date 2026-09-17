@@ -5376,6 +5376,10 @@
     }
     if (shape._isMilSymbol && shape._supply == null) shape._supply = 100;
     shape.on('click', function(e){
+      if (activeToolName === 'elements' && elementsClickHandler){ elementsClickHandler(e); return; }
+      if (activeToolName === 'text' && textClickHandler){ textClickHandler(e); return; }
+      if (activeToolName === 'target' && targetClickHandler){ targetClickHandler(e); return; }
+      if (activeToolName === 'infra' && infraClickHandler){ infraClickHandler(e); return; }
       L.DomEvent.stopPropagation(e);
       var shiftHeld = !!(e.originalEvent && e.originalEvent.shiftKey);
       if (shiftHeld && !isReadOnlyMode()){
@@ -8299,6 +8303,106 @@
   }
   map.on('moveend zoomend', updateViewInfo);
 
+  /* ---------------- DESAGRUPADO AL PASAR EL MOUSE (solo escritorio/mouse) ---------------- */
+  var supportsHoverDeclutter = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+  var overlapClusters = [];
+  var declutterState = null;
+  var DECLUTTER_PX_THRESHOLD = 16;
+  var DECLUTTER_TRIGGER_RADIUS = 20;
+
+  function collectVisibleMarkers(){
+    var result = [];
+    layers.forEach(function(l){
+      if (!l.visible || !map.hasLayer(l.group)) return;
+      l.group.eachLayer(function(s){
+        if (s instanceof L.Marker && s.getElement && s.getElement()) result.push(s);
+      });
+    });
+    return result;
+  }
+
+  function computeOverlapClusters(){
+    overlapClusters = [];
+    if (!supportsHoverDeclutter) return;
+    var markers = collectVisibleMarkers();
+    var points = markers.map(function(m){ return map.latLngToContainerPoint(m.getLatLng()); });
+    var used = new Array(markers.length).fill(false);
+    for (var i=0;i<markers.length;i++){
+      if (used[i]) continue;
+      var group = [markers[i]];
+      used[i] = true;
+      for (var j=i+1;j<markers.length;j++){
+        if (used[j]) continue;
+        if (points[i].distanceTo(points[j]) < DECLUTTER_PX_THRESHOLD){
+          group.push(markers[j]);
+          used[j] = true;
+        }
+      }
+      if (group.length > 1){
+        var sumX=0, sumY=0;
+        group.forEach(function(m){ var p = map.latLngToContainerPoint(m.getLatLng()); sumX+=p.x; sumY+=p.y; });
+        overlapClusters.push({ center: L.point(sumX/group.length, sumY/group.length), shapes: group });
+      }
+    }
+  }
+
+  function spreadCluster(cluster){
+    if (declutterState && declutterState.cluster === cluster) return;
+    revertDeclutter();
+    var n = cluster.shapes.length;
+    var radius = 24 + Math.min(n, 8) * 3;
+    var leaderLayer = L.layerGroup().addTo(map);
+    cluster.shapes.forEach(function(shape, idx){
+      var angle = (idx / n) * 2 * Math.PI - Math.PI/2;
+      var dx = radius * Math.cos(angle);
+      var dy = radius * Math.sin(angle);
+      var el = shape.getElement();
+      if (!el) return;
+      var origLatLng = shape.getLatLng();
+      var origPoint = map.latLngToContainerPoint(origLatLng);
+      el.style.transition = 'transform .12s ease-out';
+      el.style.transform = el.style.transform + ' translate(' + dx + 'px,' + dy + 'px)';
+      el.style.zIndex = 9000 + idx;
+      var newPoint = L.point(origPoint.x + dx, origPoint.y + dy);
+      var newLatLng = map.containerPointToLatLng(newPoint);
+      L.polyline([origLatLng, newLatLng], { color:'#555', weight:1, dashArray:'2,3', opacity:.8, interactive:false }).addTo(leaderLayer);
+    });
+    declutterState = { cluster: cluster, leaderLayer: leaderLayer };
+  }
+
+  function revertDeclutter(){
+    if (!declutterState) return;
+    declutterState.cluster.shapes.forEach(function(shape){
+      var el = shape.getElement && shape.getElement();
+      if (el) el.style.transform = el.style.transform.replace(/\s*translate\([^)]*\)$/, '');
+    });
+    map.removeLayer(declutterState.leaderLayer);
+    declutterState = null;
+  }
+
+  if (supportsHoverDeclutter){
+    map.on('moveend zoomend', computeOverlapClusters);
+    map.on('mousemove', function(e){
+      if (!overlapClusters.length){ if (declutterState) revertDeclutter(); return; }
+      var mousePt = e.containerPoint;
+      var found = null;
+      for (var i=0;i<overlapClusters.length;i++){
+        if (mousePt.distanceTo(overlapClusters[i].center) < DECLUTTER_TRIGGER_RADIUS){ found = overlapClusters[i]; break; }
+      }
+      if (found){
+        spreadCluster(found);
+      } else if (declutterState){
+        var stillNear = declutterState.cluster.shapes.some(function(s){
+          var p = map.latLngToContainerPoint(s.getLatLng());
+          return mousePt.distanceTo(p) < 26;
+        });
+        if (!stillNear) revertDeclutter();
+      }
+    });
+    map.on('mouseout', function(){ if (declutterState) revertDeclutter(); });
+  }
+
+
   /* ---------------- RESPONSIVE PANEL TOGGLES ---------------- */
   var leftPanel = document.getElementById('left-panel');
   var rightPanel = document.getElementById('right-panel');
@@ -9002,6 +9106,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     map.on('zoomend', syncAllArrowCorridors);
     map.on('zoomend', syncAllLimiteCompanions);
     setInterval(saveStateToStorage, 8000);
+    if (typeof computeOverlapClusters === 'function') setTimeout(computeOverlapClusters, 800);
     window.addEventListener('beforeunload', saveStateToStorage);
     document.addEventListener('visibilitychange', function(){
       if (document.visibilityState === 'hidden'){
