@@ -2821,10 +2821,11 @@
       ['bapom','BAPOM']
     ]
   };
-  // Blindada, Anfibia, Motorizada y Desconocido son comunes a todas las unidades base.
+  // Blindada, Aerotransportada, Anfibios, Motorizada y Desconocido son comunes a todas las unidades base.
   var MIL_COMMON_SUBTYPES = [
     ['armor','Blindada'],
-    ['amphibious','Anfibia'],
+    ['aerotransportada','Aerotransportada'],
+    ['amphibious','Anfibios'],
     ['motorized','Motorizada'],
     ['unknown_unit','Desconocido (?)']
   ];
@@ -2841,6 +2842,26 @@
     }
     return 'generic';
   }
+
+  // Estos tipos no tienen palabras/código propio (son indicadores de movilidad/estado genéricos),
+  // así que se dibujan superpuestos sobre el símbolo propio de la unidad base, en vez de reemplazarlo.
+  var MIL_OVERLAY_TYPES = ['armor','aerotransportada','amphibious','motorized','unknown_unit'];
+  var MIL_BASE_PRIMARY_GLYPH = {
+    generic: 'generic',
+    infanteria: 'infantry',
+    caballeria: 'cavalry',
+    artilleria: 'artillery',
+    ingenieros: 'engineer',
+    comunicaciones: 'signal',
+    inteligencia: 'radar',
+    fuerzasespeciales: 'specialforces',
+    aviacion: 'aviation',
+    logistica: 'logistics',
+    sanidad: 'medical',
+    mantenimiento: 'mantenimiento',
+    transporte: 'transporte',
+    policiamilitar: 'policiamilitar'
+  };
 
   var MIL_ECHELONS = [
     ['','Sin especificar'],
@@ -3151,7 +3172,7 @@
       case 'mechanized':
         return '<ellipse cx="30" cy="30" rx="18" ry="11" fill="none" stroke="'+g+'" stroke-width="2"/><line x1="17" y1="22" x2="43" y2="38" stroke="'+g+'" stroke-width="2.2"/><line x1="43" y1="22" x2="17" y2="38" stroke="'+g+'" stroke-width="2.2"/>';
       case 'armor':
-        return '<ellipse cx="30" cy="30" rx="16" ry="9" fill="'+g+'"/>';
+        return '<ellipse cx="30" cy="30" rx="9" ry="5" fill="none" stroke="'+g+'" stroke-width="2"/>';
       case 'artillery':
         return '<circle cx="30" cy="30" r="6.5" fill="'+g+'"/>';
       case 'cavalry':
@@ -3178,9 +3199,11 @@
       case 'airdefensemissile':
         return '<polygon points="30,14 34,26 34,38 26,38 26,26" fill="'+g+'"/><polygon points="26,38 21,45 26,42" fill="'+g+'"/><polygon points="34,38 39,45 34,42" fill="'+g+'"/>';
       case 'amphibious':
+        return '<path d="M6,30 Q11,21 16,30 T26,30 T36,30 T46,30 T56,30" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="round"/>';
+      case 'aerotransportada':
         return '<path d="M14,36 Q22,26 30,36 Q38,26 46,36" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>';
       case 'motorized':
-        return '<circle cx="30" cy="30" r="10" fill="none" stroke="'+g+'" stroke-width="2.2"/>';
+        return '<line x1="30" y1="20" x2="30" y2="40" stroke="'+g+'" stroke-width="2.4"/>';
       case 'unknown_unit':
         return '<text x="30" y="38" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="800" fill="'+g+'">?</text>';
       case 'sof':
@@ -3259,10 +3282,17 @@
   }
 
   function buildMilSymbolSVG(mil){
+    var glyph;
+    if (MIL_OVERLAY_TYPES.indexOf(mil.unitType) !== -1){
+      var baseGlyphKey = MIL_BASE_PRIMARY_GLYPH[mil.unitBase] || 'generic';
+      glyph = milGlyphSVG(baseGlyphKey) + milGlyphSVG(mil.unitType);
+    } else {
+      glyph = milGlyphSVG(mil.unitType);
+    }
     return '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
       milEchelonSVG(mil.echelon) +
       milFrameSVG(mil.affiliation, mil.condition) +
-      milGlyphSVG(mil.unitType) +
+      glyph +
       milModifierSVG(mil.modifier) +
       milConditionOverlaySVG(mil.condition) +
       '</svg>';
