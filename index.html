@@ -3159,7 +3159,13 @@
     return '';
   }
 
-  function milGlyphSVG(unitType){
+  function frameBoundsForAffiliation(affiliation){
+    if (affiliation === 'hostile') return { x1:16, y1:20, x2:44, y2:40 };
+    if (affiliation === 'neutral') return { x1:12, y1:16, x2:48, y2:44 };
+    if (affiliation === 'unknown') return { x1:16, y1:16, x2:44, y2:44 };
+    return { x1:8, y1:17, x2:52, y2:43 };
+  }
+  function milGlyphSVG(unitType, affiliation){
     var g = '#000';
     if (MIL_TEXT_UNIT_CODES[unitType]){
       var txt = MIL_TEXT_UNIT_CODES[unitType];
@@ -3168,7 +3174,8 @@
     }
     switch(unitType){
       case 'infantry':
-        return '<line x1="16" y1="20" x2="44" y2="40" stroke="'+g+'" stroke-width="2.4"/><line x1="44" y1="20" x2="16" y2="40" stroke="'+g+'" stroke-width="2.4"/>';
+        var ib = frameBoundsForAffiliation(affiliation);
+        return '<line x1="'+ib.x1+'" y1="'+ib.y1+'" x2="'+ib.x2+'" y2="'+ib.y2+'" stroke="'+g+'" stroke-width="2.4"/><line x1="'+ib.x2+'" y1="'+ib.y1+'" x2="'+ib.x1+'" y2="'+ib.y2+'" stroke="'+g+'" stroke-width="2.4"/>';
       case 'mechanized':
         return '<ellipse cx="30" cy="30" rx="18" ry="11" fill="none" stroke="'+g+'" stroke-width="2"/><line x1="17" y1="22" x2="43" y2="38" stroke="'+g+'" stroke-width="2.2"/><line x1="43" y1="22" x2="17" y2="38" stroke="'+g+'" stroke-width="2.2"/>';
       case 'armor':
@@ -3184,8 +3191,8 @@
       case 'airdefense':
         return '<path d="M14,38 A16,16 0 0 1 46,38" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/><circle cx="30" cy="34" r="2" fill="'+g+'"/>';
       case 'engineer':
-        return '<path d="M15,33 V21 H24 V33" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="square"/>' +
-               '<path d="M33,33 V21 H42 V33" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="square"/>';
+        return '<path d="M13,34 V20 H21 V34" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="square"/>' +
+               '<path d="M39,34 V20 H47 V34" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="square"/>';
       case 'commandpost':
         return '<line x1="30" y1="12" x2="30" y2="46" stroke="'+g+'" stroke-width="2.2"/><polygon points="30,12 46,17.5 30,23" fill="'+g+'"/>';
       case 'medical':
@@ -3199,11 +3206,11 @@
       case 'airdefensemissile':
         return '<polygon points="30,14 34,26 34,38 26,38 26,26" fill="'+g+'"/><polygon points="26,38 21,45 26,42" fill="'+g+'"/><polygon points="34,38 39,45 34,42" fill="'+g+'"/>';
       case 'amphibious':
-        return '<path d="M6,30 Q11,21 16,30 T26,30 T36,30 T46,30 T56,30" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="round"/>';
+        return '<path d="M8,30 Q11.67,23 15.33,30 T22.67,30 T30,30 T37.33,30 T44.67,30 T52,30" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="round"/>';
       case 'aerotransportada':
-        return '<path d="M14,36 Q22,26 30,36 Q38,26 46,36" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>';
+        return '<path d="M20,38 Q25,31 30,38 Q35,31 40,38" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="round"/>';
       case 'motorized':
-        return '<line x1="30" y1="20" x2="30" y2="40" stroke="'+g+'" stroke-width="2.4"/>';
+        return '<line x1="30" y1="17" x2="30" y2="43" stroke="'+g+'" stroke-width="2.4"/>';
       case 'unknown_unit':
         return '<text x="30" y="38" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="800" fill="'+g+'">?</text>';
       case 'sof':
@@ -3285,9 +3292,9 @@
     var glyph;
     if (MIL_OVERLAY_TYPES.indexOf(mil.unitType) !== -1){
       var baseGlyphKey = MIL_BASE_PRIMARY_GLYPH[mil.unitBase] || 'generic';
-      glyph = milGlyphSVG(baseGlyphKey) + milGlyphSVG(mil.unitType);
+      glyph = milGlyphSVG(baseGlyphKey, mil.affiliation) + milGlyphSVG(mil.unitType, mil.affiliation);
     } else {
-      glyph = milGlyphSVG(mil.unitType);
+      glyph = milGlyphSVG(mil.unitType, mil.affiliation);
     }
     return '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
       milEchelonSVG(mil.echelon) +
