@@ -3135,9 +3135,9 @@
   function milModifierSVG(modifier){
     switch(modifier){
       case 'staff':
-        return '<line x1="8" y1="17" x2="8" y2="54" stroke="#000" stroke-width="2.2"/>';
+        return '<line x1="8" y1="30" x2="8" y2="54" stroke="#000" stroke-width="2.2"/>';
       case 'dummy':
-        return '<line x1="8" y1="17" x2="8" y2="54" stroke="#000" stroke-width="2.2" stroke-dasharray="3,2.5"/>';
+        return '<path d="M8,16 L30,10 L52,16" fill="none" stroke="#000" stroke-width="2" stroke-dasharray="3,2.5"/>';
       case 'installation':
         return '<line x1="30" y1="43" x2="30" y2="55" stroke="#000" stroke-width="2.2"/><line x1="21" y1="55" x2="39" y2="55" stroke="#000" stroke-width="2.2"/>';
       case 'taskforce':
@@ -3185,7 +3185,7 @@
       case 'mechanized':
         return '<ellipse cx="30" cy="30" rx="18" ry="11" fill="none" stroke="'+g+'" stroke-width="2"/><line x1="17" y1="22" x2="43" y2="38" stroke="'+g+'" stroke-width="2.2"/><line x1="43" y1="22" x2="17" y2="38" stroke="'+g+'" stroke-width="2.2"/>';
       case 'armor':
-        return '<ellipse cx="30" cy="30" rx="9" ry="5" fill="none" stroke="'+g+'" stroke-width="1.2"/>';
+        return '<ellipse cx="30" cy="30" rx="17" ry="10" fill="none" stroke="'+g+'" stroke-width="1.2"/>';
       case 'artillery':
         return '<circle cx="30" cy="30" r="6.5" fill="'+g+'"/>';
       case 'cavalry':
