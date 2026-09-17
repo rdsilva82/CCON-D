@@ -2745,7 +2745,8 @@
   // con los de otras unidades base.
   var MIL_UNIT_TYPES_BY_BASE = {
     generic: [
-      ['generic','Genérica / sin especificar']
+      ['generic','Genérica / sin especificar'],
+      ['illicit_economy','Economías ilícitas ($)']
     ],
     infanteria: [
       ['infantry','Regular'],
@@ -2753,24 +2754,23 @@
       ['bafur','BAFUR'],
       ['biter','BITER'],
       ['biacm','BIACM'],
-      ['imi','IMI (Infantería de Marina)']
+      ['ev','BAEV']
     ],
     caballeria: [
       ['cavalry','Reconocimiento'],
-      ['armor','Blindada / Tanques'],
-      ['gmar','GMAR'],
-      ['ev','EV']
+      ['gmar','GMAR']
     ],
     artilleria: [
       ['artillery','Campaña'],
       ['airdefense','Antiaérea'],
+      ['airdefensemissile','Misil de defensa aérea'],
+      ['mortar','Mortero'],
       ['obus','OBUS'],
       ['badre','BADRE'],
       ['badra','BADRA']
     ],
     ingenieros: [
-      ['engineer','General'],
-      ['bapom','BAPOM (Pontoneros)']
+      ['engineer','General']
     ],
     comunicaciones: [
       ['signal','General'],
@@ -2781,10 +2781,12 @@
     inteligencia: [
       ['radar','Radar'],
       ['radarmilitar','Radar Militar'],
-      ['evipe','EVIPE']
+      ['evipe','EVIPE'],
+      ['imi','IMI']
     ],
     fuerzasespeciales: [
       ['specialforces','General'],
+      ['sof','SOF'],
       ['ggcar','GGCAR'],
       ['ggmag','GGMAG'],
       ['ggsan','GGSAN'],
@@ -2815,9 +2817,23 @@
       ['navalelement','Elemento Naval']
     ],
     policiamilitar: [
-      ['policiamilitar','General']
+      ['policiamilitar','General'],
+      ['bapom','BAPOM']
     ]
   };
+  // Blindada, Anfibia, Motorizada y Desconocido son comunes a todas las unidades base.
+  var MIL_COMMON_SUBTYPES = [
+    ['armor','Blindada'],
+    ['amphibious','Anfibia'],
+    ['motorized','Motorizada'],
+    ['unknown_unit','Desconocido (?)']
+  ];
+  Object.keys(MIL_UNIT_TYPES_BY_BASE).forEach(function(baseKey){
+    if (baseKey === 'generic') return;
+    MIL_COMMON_SUBTYPES.forEach(function(entry){
+      MIL_UNIT_TYPES_BY_BASE[baseKey].push(entry);
+    });
+  });
   function inferUnitBase(unitType){
     var bases = Object.keys(MIL_UNIT_TYPES_BY_BASE);
     for (var i=0;i<bases.length;i++){
@@ -3098,13 +3114,13 @@
   function milModifierSVG(modifier){
     switch(modifier){
       case 'staff':
-        return '<line x1="8" y1="22" x2="-6" y2="10" stroke="#000" stroke-width="2.2"/>';
+        return '<line x1="8" y1="17" x2="8" y2="54" stroke="#000" stroke-width="2.2"/>';
       case 'dummy':
-        return '<line x1="8" y1="22" x2="-6" y2="10" stroke="#000" stroke-width="2.2" stroke-dasharray="3,2.5"/>';
+        return '<line x1="8" y1="17" x2="8" y2="54" stroke="#000" stroke-width="2.2" stroke-dasharray="3,2.5"/>';
       case 'installation':
         return '<line x1="30" y1="43" x2="30" y2="55" stroke="#000" stroke-width="2.2"/><line x1="21" y1="55" x2="39" y2="55" stroke="#000" stroke-width="2.2"/>';
       case 'taskforce':
-        return '<line x1="3" y1="12" x2="3" y2="48" stroke="#000" stroke-width="2.4"/><line x1="57" y1="12" x2="57" y2="48" stroke="#000" stroke-width="2.4"/>';
+        return '<rect x="4" y="-3" width="52" height="16" fill="none" stroke="#000" stroke-width="1.8"/>';
       case 'direction':
         return '<line x1="30" y1="43" x2="30" y2="58" stroke="#000" stroke-width="2.2"/><polygon points="30,60 25,50 35,50" fill="#000"/>';
       default:
@@ -3147,10 +3163,8 @@
       case 'airdefense':
         return '<path d="M14,38 A16,16 0 0 1 46,38" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/><circle cx="30" cy="34" r="2" fill="'+g+'"/>';
       case 'engineer':
-        return '<line x1="15" y1="19" x2="45" y2="19" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>' +
-               '<line x1="22" y1="19" x2="22" y2="41" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>' +
-               '<line x1="30" y1="19" x2="30" y2="41" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>' +
-               '<line x1="38" y1="19" x2="38" y2="41" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>';
+        return '<path d="M15,33 V21 H24 V33" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="square"/>' +
+               '<path d="M33,33 V21 H42 V33" fill="none" stroke="'+g+'" stroke-width="2.2" stroke-linecap="square"/>';
       case 'commandpost':
         return '<line x1="30" y1="12" x2="30" y2="46" stroke="'+g+'" stroke-width="2.2"/><polygon points="30,12 46,17.5 30,23" fill="'+g+'"/>';
       case 'medical':
@@ -3158,7 +3172,21 @@
       case 'logistics':
         return '<rect x="18" y="20" width="24" height="20" fill="none" stroke="'+g+'" stroke-width="2.2"/>';
       case 'signal':
-        return '<path d="M17,38 L27,20 L31,32 L41,16" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+        return '<path d="M13,40 L33,29 L27,25 L47,20" fill="none" stroke="'+g+'" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>';
+      case 'mortar':
+        return '<line x1="22" y1="40" x2="38" y2="20" stroke="'+g+'" stroke-width="4" stroke-linecap="round"/><circle cx="22" cy="40" r="4" fill="'+g+'"/>';
+      case 'airdefensemissile':
+        return '<polygon points="30,14 34,26 34,38 26,38 26,26" fill="'+g+'"/><polygon points="26,38 21,45 26,42" fill="'+g+'"/><polygon points="34,38 39,45 34,42" fill="'+g+'"/>';
+      case 'amphibious':
+        return '<path d="M14,36 Q22,26 30,36 Q38,26 46,36" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>';
+      case 'motorized':
+        return '<circle cx="30" cy="30" r="10" fill="none" stroke="'+g+'" stroke-width="2.2"/>';
+      case 'unknown_unit':
+        return '<text x="30" y="38" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="800" fill="'+g+'">?</text>';
+      case 'sof':
+        return '<text x="30" y="35" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="800" fill="'+g+'">SOF</text>';
+      case 'illicit_economy':
+        return '<text x="30" y="39" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="26" font-weight="800" fill="'+g+'">$</text>';
       case 'specialforces':
         return '<line x1="16" y1="40" x2="42" y2="16" stroke="'+g+'" stroke-width="2.6" stroke-linecap="round"/><polygon points="42,16 34,18 40,24" fill="'+g+'"/>';
       case 'transporte':
