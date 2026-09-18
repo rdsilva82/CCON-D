@@ -416,6 +416,10 @@
   }
   .mil-symbol-label::before{ display:none !important; }
 
+  .declutter-highlight{
+    filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 6px #fff) drop-shadow(0 0 9px rgba(255,196,0,.9));
+  }
+
   /* ---------- RIGHT PANEL / PROPERTIES ---------- */
   #view-info{
     font-size:12px; color:var(--muted); background:#F5F3EE; border-radius:7px; padding:8px 10px; line-height:1.7;
@@ -8307,8 +8311,8 @@
   var supportsHoverDeclutter = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
   var overlapClusters = [];
   var declutterState = null;
-  var DECLUTTER_PX_THRESHOLD = 16;
-  var DECLUTTER_TRIGGER_RADIUS = 20;
+  var DECLUTTER_PX_THRESHOLD = 32;
+  var DECLUTTER_TRIGGER_RADIUS = 30;
 
   function collectVisibleMarkers(){
     var result = [];
@@ -8350,7 +8354,7 @@
     if (declutterState && declutterState.cluster === cluster) return;
     revertDeclutter();
     var n = cluster.shapes.length;
-    var radius = 24 + Math.min(n, 8) * 3;
+    var radius = 55 + Math.min(n, 8) * 12;
     var leaderLayer = L.layerGroup().addTo(map);
     cluster.shapes.forEach(function(shape, idx){
       var angle = (idx / n) * 2 * Math.PI - Math.PI/2;
@@ -8360,9 +8364,19 @@
       if (!el) return;
       var origLatLng = shape.getLatLng();
       var origPoint = map.latLngToContainerPoint(origLatLng);
+      var offset = ' translate(' + dx + 'px,' + dy + 'px)';
       el.style.transition = 'transform .12s ease-out';
-      el.style.transform = el.style.transform + ' translate(' + dx + 'px,' + dy + 'px)';
-      el.style.zIndex = 9000 + idx;
+      el.style.transform = el.style.transform + offset;
+      el.style.zIndex = 10000 + idx;
+      el.classList.add('declutter-highlight');
+      var tooltip = shape.getTooltip && shape.getTooltip();
+      var tooltipEl = tooltip && tooltip.getElement && tooltip.getElement();
+      if (tooltipEl){
+        tooltipEl.style.transition = 'transform .12s ease-out';
+        tooltipEl.style.transform = tooltipEl.style.transform + offset;
+        tooltipEl.style.zIndex = 10000 + idx;
+        tooltipEl.classList.add('declutter-highlight');
+      }
       var newPoint = L.point(origPoint.x + dx, origPoint.y + dy);
       var newLatLng = map.containerPointToLatLng(newPoint);
       L.polyline([origLatLng, newLatLng], { color:'#555', weight:1, dashArray:'2,3', opacity:.8, interactive:false }).addTo(leaderLayer);
@@ -8374,7 +8388,16 @@
     if (!declutterState) return;
     declutterState.cluster.shapes.forEach(function(shape){
       var el = shape.getElement && shape.getElement();
-      if (el) el.style.transform = el.style.transform.replace(/\s*translate\([^)]*\)$/, '');
+      if (el){
+        el.style.transform = el.style.transform.replace(/\s*translate\([^)]*\)$/, '');
+        el.classList.remove('declutter-highlight');
+      }
+      var tooltip = shape.getTooltip && shape.getTooltip();
+      var tooltipEl = tooltip && tooltip.getElement && tooltip.getElement();
+      if (tooltipEl){
+        tooltipEl.style.transform = tooltipEl.style.transform.replace(/\s*translate\([^)]*\)$/, '');
+        tooltipEl.classList.remove('declutter-highlight');
+      }
     });
     map.removeLayer(declutterState.leaderLayer);
     declutterState = null;
