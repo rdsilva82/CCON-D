@@ -4329,7 +4329,7 @@
     var outline = arrowOutlines[shape._shapeId];
     if (!outline){
       outline = L.polyline(pts, style);
-      outline.addTo(map);
+      if (owner && owner.visible) outline.addTo(map);
       arrowOutlines[shape._shapeId] = outline;
     } else {
       outline.setLatLngs(pts);
@@ -4619,7 +4619,7 @@
     var line = limiteLines[shape._shapeId];
     if (!line){
       line = L.polyline(segments, style);
-      line.addTo(map);
+      if (owner.visible) line.addTo(map);
       limiteLines[shape._shapeId] = line;
     } else {
       line.setLatLngs(segments);
@@ -4646,7 +4646,7 @@
       var mag = existing[idx];
       if (!mag){
         mag = L.marker(posInfo.latlng, { icon: icon, interactive:false, keyboard:false, zIndexOffset:600 });
-        mag.addTo(map);
+        if (owner.visible) mag.addTo(map);
       } else {
         mag.setLatLng(posInfo.latlng);
         mag.setIcon(icon);
