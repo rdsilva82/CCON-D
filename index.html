@@ -399,6 +399,16 @@
   #draw-toolbar hr{ border:none; border-top:1px solid var(--border); margin:2px 0; }
   #draw-toolbar .toolbar-label{ font-size:8px; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:.4px; padding-top:1px; }
 
+  .tool-btn-wrap{ position:relative; }
+  .tool-submenu-row{
+    display:none; position:absolute; left:100%; top:0; margin-left:6px;
+    background:var(--panel-bg); border-radius:10px; padding:6px;
+    box-shadow:0 2px 10px rgba(21,42,76,.25); border:1px solid var(--border);
+    flex-direction:row; gap:3px; z-index:910; width:max-content;
+  }
+  .tool-btn-wrap.open .tool-submenu-row{ display:flex; }
+  .tool-btn-wrap.open > .tool-btn{ background:#EEF1F6; }
+
   #coord-ribbon{
     position:absolute; left:0; right:0; bottom:0; height:26px;
     background:var(--navy-deep); color:var(--gold-light);
@@ -900,10 +910,22 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.3"/></svg>
         <span>Círculo</span>
       </button>
-      <button class="tool-btn" data-tool="arrow" title="Flecha vectorial: arrastre para trazarla; luego seleccione y arrastre sus puntos (incluido el punto dorado de curvatura) para editarla">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg>
-        <span>Flechas</span>
-      </button>
+      <div class="tool-btn-wrap" id="tactica-wrap">
+        <button class="tool-btn" data-tool="tactica-toggle" title="Táctica: flechas y líneas de obstáculos/fortificación">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg>
+          <span>Táctica</span>
+        </button>
+        <div class="tool-submenu-row" id="tactica-submenu">
+          <button class="tool-btn" data-tool="arrow" title="Flecha vectorial: arrastre para trazarla; luego seleccione y arrastre sus puntos (incluido el punto dorado de curvatura) para editarla">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg>
+            <span>Flechas</span>
+          </button>
+          <button class="tool-btn" data-tool="defensiveline" title="Línea defensiva a mano alzada: obstáculo alámbrico, línea fortificada, zanja antitanque o punto fuerte">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l3-3 3 3 3-3 3 3 3-3 3 3" stroke-dasharray="0"/></svg>
+            <span>Línea def.</span>
+          </button>
+        </div>
+      </div>
       <button class="tool-btn" data-tool="elements" title="Elementos: unidades y símbolos militares tipo NATO (APP-6)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="7" width="16" height="10"/><path d="M4 7l16 10M20 7L4 17" stroke-width="1.6"/></svg>
         <span>Elementos</span>
@@ -2470,6 +2492,8 @@
       if (limL){ if (visible) limL.addTo(map); else map.removeLayer(limL); }
       var limM = limiteMagnitudes[s._shapeId];
       if (limM){ limM.forEach(function(m){ if (visible) m.addTo(map); else map.removeLayer(m); }); }
+      var defL = defensiveLineLayers[s._shapeId];
+      if (defL){ if (visible) defL.addTo(map); else map.removeLayer(defL); }
       var nameL = nameLabelLayers[s._shapeId];
       if (nameL){ if (visible) nameL.addTo(map); else map.removeLayer(nameL); }
     });
@@ -3666,6 +3690,7 @@
     if (editHandler){ try{ editHandler.disable(); }catch(e){} editHandler = null; }
     if (deleteHandler){ try{ deleteHandler.disable(); }catch(e){} deleteHandler = null; }
     if (freehandActive) stopFreehandMode();
+    if (defensiveLineActive) stopDefensiveLineMode();
     if (freePolyActive) stopFreePolygonMode();
     if (arrowActive) stopArrowTool();
     stopElementsTool();
@@ -3752,8 +3777,7 @@
     mapContainer.addEventListener('pointerdown', freehandPointerDown);
     activeToolName = 'freehand';
     updateToolbarUI();
-  }
-  function stopFreehandMode(){
+  }  function stopFreehandMode(){
     freehandActive = false;
     freehandPointerId = null;
     map.dragging.enable();
@@ -3765,6 +3789,81 @@
     mapContainer.removeEventListener('pointercancel', freehandPointerUp);
     if (freehandPolyline){ map.removeLayer(freehandPolyline); freehandPolyline = null; }
     freehandLatLngs = [];
+  }
+
+  /* ---- Línea defensiva (a mano alzada, con patrón doctrinal) ---- */
+  var defensiveLineActive = false;
+  var defensiveLineLatLngs = [];
+  var defensiveLinePolyline = null;
+  var defensiveLinePointerId = null;
+
+  function defensiveLinePointerDown(ev){
+    if (ev.button !== undefined && ev.button !== 0) return;
+    if (defensiveLinePointerId !== null) return;
+    defensiveLinePointerId = ev.pointerId;
+    ev.preventDefault();
+    if (mapContainer.setPointerCapture){ try{ mapContainer.setPointerCapture(ev.pointerId); }catch(err){} }
+    var latlng = map.containerPointToLatLng(containerPointFromEvent(ev));
+    defensiveLineLatLngs = [latlng];
+    var active = getActiveLayer();
+    defensiveLinePolyline = L.polyline(defensiveLineLatLngs, { color: active.color, weight:2, opacity:1, dashArray:'4,3' }).addTo(map);
+    mapContainer.addEventListener('pointermove', defensiveLinePointerMove);
+    mapContainer.addEventListener('pointerup', defensiveLinePointerUp);
+    mapContainer.addEventListener('pointercancel', defensiveLinePointerUp);
+  }
+  function defensiveLinePointerMove(ev){
+    if (ev.pointerId !== defensiveLinePointerId) return;
+    ev.preventDefault();
+    var latlng = map.containerPointToLatLng(containerPointFromEvent(ev));
+    defensiveLineLatLngs.push(latlng);
+    defensiveLinePolyline.setLatLngs(defensiveLineLatLngs);
+  }
+  function defensiveLinePointerUp(ev){
+    if (ev.pointerId !== defensiveLinePointerId) return;
+    mapContainer.removeEventListener('pointermove', defensiveLinePointerMove);
+    mapContainer.removeEventListener('pointerup', defensiveLinePointerUp);
+    mapContainer.removeEventListener('pointercancel', defensiveLinePointerUp);
+    defensiveLinePointerId = null;
+    if (!defensiveLinePolyline) return;
+    if (defensiveLineLatLngs.length < 2){ map.removeLayer(defensiveLinePolyline); defensiveLinePolyline = null; defensiveLineLatLngs = []; return; }
+    map.removeLayer(defensiveLinePolyline);
+    var active = getActiveLayer();
+    var finalLine = L.polyline(defensiveLineLatLngs, { color: active.color, weight:2, opacity:1 });
+    finalLine._defensiveLine = { tipo: 'alambrico' };
+    active.group.addLayer(finalLine);
+    attachShapeInteractivity(finalLine, active);
+    syncDefensiveLineCompanion(finalLine);
+    recordAddShape(active, finalLine);
+    renderLayerList();
+    selectedShape = finalLine;
+    showProperties(finalLine, active);
+    defensiveLineLatLngs = [];
+    defensiveLinePolyline = null;
+  }
+  function activateDefensiveLineTool(){
+    if (activeToolName === 'defensiveline'){ disableAllTools(); return; }
+    if (!getActiveLayer()){ alert('Cree o seleccione una capa antes de dibujar.'); return; }
+    disableAllTools();
+    defensiveLineActive = true;
+    map.dragging.disable();
+    mapContainer.style.cursor = 'crosshair';
+    mapContainer.style.touchAction = 'none';
+    mapContainer.addEventListener('pointerdown', defensiveLinePointerDown);
+    activeToolName = 'defensiveline';
+    updateToolbarUI();
+  }
+  function stopDefensiveLineMode(){
+    defensiveLineActive = false;
+    defensiveLinePointerId = null;
+    map.dragging.enable();
+    mapContainer.style.cursor = '';
+    mapContainer.style.touchAction = '';
+    mapContainer.removeEventListener('pointerdown', defensiveLinePointerDown);
+    mapContainer.removeEventListener('pointermove', defensiveLinePointerMove);
+    mapContainer.removeEventListener('pointerup', defensiveLinePointerUp);
+    mapContainer.removeEventListener('pointercancel', defensiveLinePointerUp);
+    if (defensiveLinePolyline){ map.removeLayer(defensiveLinePolyline); defensiveLinePolyline = null; }
+    defensiveLineLatLngs = [];
   }
 
   /* ---- Polígono libre (a mano alzada, cerrado y relleno) ---- */
@@ -4530,6 +4629,162 @@
     var frac = span > 0 ? (targetArc-dists[k])/span : 0;
     var a = latlngs[k], b = latlngs[k+1];
     return L.latLng(a.lat + (b.lat-a.lat)*frac, a.lng + (b.lng-a.lng)*frac);
+  }
+
+  /* ---------------- LÍNEA DEFENSIVA (patrones doctrinales sobre una línea a mano alzada) ---------------- */
+  var MIL_DEFENSIVE_LINE_TYPES = [
+    ['alambrico','Obstáculo alámbrico (XXXX)'],
+    ['fortificada','Línea fortificada (onda cuadrada)'],
+    ['zanja','Zanja antitanque (triángulos)'],
+    ['puntofuerte','Punto fuerte (trazos perpendiculares)']
+  ];
+  var defensiveLineLayers = {};
+
+  function resamplePixelPoints(pxPoints){
+    var arcLens = [0];
+    for (var i=1;i<pxPoints.length;i++){
+      arcLens.push(arcLens[i-1] + pxPoints[i].distanceTo(pxPoints[i-1]));
+    }
+    return { points: pxPoints, arcLens: arcLens, total: arcLens[arcLens.length-1] };
+  }
+  function pxPointAndTangentAtArc(res, arc){
+    var pts = res.points, arcLens = res.arcLens, n = pts.length;
+    if (n < 2) return null;
+    arc = Math.max(0, Math.min(arc, res.total));
+    for (var i=1;i<n;i++){
+      if (arcLens[i] >= arc || i === n-1){
+        var segLen = arcLens[i]-arcLens[i-1];
+        var t = segLen > 0 ? (arc-arcLens[i-1])/segLen : 0;
+        var x = pts[i-1].x + (pts[i].x-pts[i-1].x)*t;
+        var y = pts[i-1].y + (pts[i].y-pts[i-1].y)*t;
+        var tx = pts[i].x-pts[i-1].x, ty = pts[i].y-pts[i-1].y;
+        var tl = Math.hypot(tx,ty) || 1;
+        return { x:x, y:y, tx:tx/tl, ty:ty/tl, nx:-ty/tl, ny:tx/tl };
+      }
+    }
+    return null;
+  }
+  function buildAlambricoSegments(res){
+    var spacing = 16, half = 6.5;
+    var segs = [];
+    for (var arc = spacing/2; arc < res.total; arc += spacing){
+      var pt = pxPointAndTangentAtArc(res, arc);
+      if (!pt) continue;
+      segs.push([
+        { x: pt.x - half*pt.tx - half*pt.nx, y: pt.y - half*pt.ty - half*pt.ny },
+        { x: pt.x + half*pt.tx + half*pt.nx, y: pt.y + half*pt.ty + half*pt.ny }
+      ]);
+      segs.push([
+        { x: pt.x - half*pt.tx + half*pt.nx, y: pt.y - half*pt.ty + half*pt.ny },
+        { x: pt.x + half*pt.tx - half*pt.nx, y: pt.y + half*pt.ty - half*pt.ny }
+      ]);
+    }
+    return segs;
+  }
+  function buildFortificadaPath(res){
+    var period = 13, amp = 6.5;
+    var path = [];
+    var start = pxPointAndTangentAtArc(res, 0);
+    if (start) path.push(start);
+    var arc = 0, side = 1;
+    while (arc < res.total){
+      var nextArc = Math.min(arc + period, res.total);
+      var base = pxPointAndTangentAtArc(res, arc);
+      var tip = pxPointAndTangentAtArc(res, nextArc);
+      if (!base || !tip) break;
+      path.push({ x: base.x + side*amp*base.nx, y: base.y + side*amp*base.ny });
+      path.push({ x: tip.x + side*amp*tip.nx, y: tip.y + side*amp*tip.ny });
+      path.push({ x: tip.x, y: tip.y });
+      side *= -1;
+      arc = nextArc;
+    }
+    return path;
+  }
+  function buildZanjaTriangles(res){
+    var spacing = 14, height = 7.5;
+    var tris = [];
+    for (var arc = 0; arc < res.total; arc += spacing){
+      var arcEnd = Math.min(arc + spacing, res.total);
+      var p1 = pxPointAndTangentAtArc(res, arc);
+      var p2 = pxPointAndTangentAtArc(res, arcEnd);
+      var mid = pxPointAndTangentAtArc(res, (arc+arcEnd)/2);
+      if (!p1 || !p2 || !mid) continue;
+      tris.push([
+        { x:p1.x, y:p1.y },
+        { x: mid.x + height*mid.nx, y: mid.y + height*mid.ny },
+        { x:p2.x, y:p2.y }
+      ]);
+    }
+    return tris;
+  }
+  function buildPuntoFuerteTicks(res){
+    var spacing = 13, tickLen = 7;
+    var segs = [];
+    for (var arc = spacing/2; arc < res.total; arc += spacing){
+      var pt = pxPointAndTangentAtArc(res, arc);
+      if (!pt) continue;
+      segs.push([
+        { x: pt.x - tickLen*pt.nx, y: pt.y - tickLen*pt.ny },
+        { x: pt.x + tickLen*pt.nx, y: pt.y + tickLen*pt.ny }
+      ]);
+    }
+    return segs;
+  }
+  function removeDefensiveLineCompanion(shape){
+    var g = defensiveLineLayers[shape._shapeId];
+    if (g){ g.remove(); delete defensiveLineLayers[shape._shapeId]; }
+    if (shape.setStyle) shape.setStyle({ stroke: true });
+  }
+  function syncDefensiveLineCompanion(shape){
+    if (!shape._defensiveLine){ removeDefensiveLineCompanion(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+    var latlngs = shape.getLatLngs();
+    if (Array.isArray(latlngs[0])) latlngs = latlngs[0];
+    if (!latlngs || latlngs.length < 2) return;
+    shape.setStyle({ stroke: false });
+
+    var pxPoints = latlngs.map(function(ll){ return map.latLngToContainerPoint(ll); });
+    var res = resamplePixelPoints(pxPoints);
+    if (res.total < 1) return;
+
+    var old = defensiveLineLayers[shape._shapeId];
+    if (old) map.removeLayer(old);
+    var group = L.layerGroup();
+    var color = shape.options.color || '#000';
+    var weight = shape.options.weight || 2;
+    function toLatLng(p){ return map.containerPointToLatLng(L.point(p.x, p.y)); }
+
+    var tipo = shape._defensiveLine.tipo;
+    if (tipo === 'fortificada'){
+      var path = buildFortificadaPath(res).map(toLatLng);
+      L.polyline(path, { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
+    } else if (tipo === 'zanja'){
+      buildZanjaTriangles(res).forEach(function(tri){
+        L.polygon(tri.map(toLatLng), { color:color, weight:1, fillColor:color, fillOpacity:1, interactive:false, keyboard:false }).addTo(group);
+      });
+    } else if (tipo === 'puntofuerte'){
+      L.polyline(latlngs, { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
+      buildPuntoFuerteTicks(res).forEach(function(seg){
+        L.polyline(seg.map(toLatLng), { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
+      });
+    } else {
+      L.polyline(latlngs, { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
+      buildAlambricoSegments(res).forEach(function(seg){
+        L.polyline(seg.map(toLatLng), { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
+      });
+    }
+    if (owner.visible) group.addTo(map);
+    defensiveLineLayers[shape._shapeId] = group;
+  }
+  function syncAllDefensiveLineCompanions(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){ if (s._defensiveLine){ liveIds[s._shapeId] = s; syncDefensiveLineCompanion(s); } });
+    });
+    Object.keys(defensiveLineLayers).forEach(function(id){
+      if (!liveIds[id]){ defensiveLineLayers[id].remove(); delete defensiveLineLayers[id]; }
+    });
   }
 
   function removeLimiteCompanion(shape){
@@ -5354,13 +5609,19 @@
   }
 
   document.querySelectorAll('#draw-toolbar .tool-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){
+    btn.addEventListener('click', function(ev){
       var tool = btn.getAttribute('data-tool');
+      if (tool === 'tactica-toggle'){
+        ev.stopPropagation();
+        document.getElementById('tactica-wrap').classList.toggle('open');
+        return;
+      }
       if (tool === 'edit') activateEdit();
       else if (tool === 'delete') activateDelete();
       else if (tool === 'freehand') activateFreehand();
       else if (tool === 'freepolygon') activateFreePolygon();
       else if (tool === 'arrow') activateArrowTool();
+      else if (tool === 'defensiveline') activateDefensiveLineTool();
       else if (tool === 'elements') activateElementsTool();
       else if (tool === 'text') activateTextTool();
       else if (tool === 'target') activateTargetTool();
@@ -5369,7 +5630,14 @@
       else if (tool === 'undo') doUndo();
       else if (tool === 'redo') doRedo();
       else activateDrawTool(tool);
+      document.getElementById('tactica-wrap').classList.remove('open');
     });
+  });
+  document.addEventListener('click', function(ev){
+    var wrap = document.getElementById('tactica-wrap');
+    if (wrap && wrap.classList.contains('open') && !wrap.contains(ev.target)){
+      wrap.classList.remove('open');
+    }
   });
 
   function attachShapeInteractivity(shape, layerObj){
@@ -5636,6 +5904,7 @@
     syncAllArrowOutlines();
     syncAllArrowCorridors();
     syncAllLimiteCompanions();
+    syncAllDefensiveLineCompanions();
     syncAllNameLabels();
     if (isReadOnlyMode()){
       applyReadOnlySweep(list);
@@ -7646,6 +7915,27 @@
         });
         styleBlock.appendChild(showNameField);
 
+        if (shape._defensiveLine){
+          var defLineField = document.createElement('div');
+          defLineField.className = 'style-field';
+          defLineField.style.cssText = 'border-top:1px solid var(--border);padding-top:8px;margin-top:2px;';
+          defLineField.innerHTML = '<span>Tipo de línea defensiva</span>';
+          var defLineSelect = document.createElement('select');
+          defLineSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
+          MIL_DEFENSIVE_LINE_TYPES.forEach(function(opt){
+            var o = document.createElement('option');
+            o.value = opt[0]; o.textContent = opt[1];
+            if (shape._defensiveLine.tipo === opt[0]) o.selected = true;
+            defLineSelect.appendChild(o);
+          });
+          defLineSelect.addEventListener('change', function(ev){
+            shape._defensiveLine.tipo = ev.target.value;
+            syncDefensiveLineCompanion(shape);
+          });
+          defLineField.appendChild(defLineSelect);
+          styleBlock.appendChild(defLineField);
+        }
+
         if (!shape._limite) shape._limite = { enabled:false, echelon1:'', echelon2:'' };
 
         var limiteField = document.createElement('div');
@@ -7962,6 +8252,9 @@
         if (shape._limite && shape._limite.enabled){
           f.properties.limite = { enabled:true, echelon1: shape._limite.echelon1 || '', echelon2: shape._limite.echelon2 || '' };
         }
+        if (shape._defensiveLine){
+          f.properties.defensiveLine = { tipo: shape._defensiveLine.tipo };
+        }
       }
       if (shape && shape._isArrow){
         f.properties.arrow = {
@@ -8202,6 +8495,9 @@
         layer._dashStyle = p.dashStyle || '';
         if (p.limite && p.limite.enabled){
           layer._limite = { enabled:true, echelon1: p.limite.echelon1 || '', echelon2: p.limite.echelon2 || '' };
+        }
+        if (p.defensiveLine && p.defensiveLine.tipo){
+          layer._defensiveLine = { tipo: p.defensiveLine.tipo };
         }
         attachShapeInteractivity(layer, targetLayerObj);
         if (layer._fillStyleKey && layer._fillStyleKey !== 'solid' && layer.setStyle){
@@ -9144,6 +9440,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     map.on('moveend zoomend', scheduleSave);
     map.on('zoomend', syncAllArrowCorridors);
     map.on('zoomend', syncAllLimiteCompanions);
+    map.on('zoomend', syncAllDefensiveLineCompanions);
     setInterval(saveStateToStorage, 8000);
     if (typeof computeOverlapClusters === 'function') setTimeout(computeOverlapClusters, 800);
     window.addEventListener('beforeunload', saveStateToStorage);
