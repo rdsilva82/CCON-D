@@ -401,10 +401,10 @@
 
   .tool-btn-wrap{ position:relative; }
   .tool-submenu-row{
-    display:none; position:absolute; left:100%; top:0; margin-left:6px;
+    display:none; position:fixed;
     background:var(--panel-bg); border-radius:10px; padding:6px;
     box-shadow:0 2px 10px rgba(21,42,76,.25); border:1px solid var(--border);
-    flex-direction:row; gap:3px; z-index:910; width:max-content;
+    flex-direction:row; gap:3px; z-index:1200; width:max-content;
   }
   .tool-btn-wrap.open .tool-submenu-row{ display:flex; }
   .tool-btn-wrap.open > .tool-btn{ background:#EEF1F6; }
@@ -5613,7 +5613,15 @@
       var tool = btn.getAttribute('data-tool');
       if (tool === 'tactica-toggle'){
         ev.stopPropagation();
-        document.getElementById('tactica-wrap').classList.toggle('open');
+        var wrap = document.getElementById('tactica-wrap');
+        var nowOpen = !wrap.classList.contains('open');
+        wrap.classList.toggle('open', nowOpen);
+        if (nowOpen){
+          var btnRect = btn.getBoundingClientRect();
+          var submenu = document.getElementById('tactica-submenu');
+          submenu.style.left = (btnRect.right + 6) + 'px';
+          submenu.style.top = btnRect.top + 'px';
+        }
         return;
       }
       if (tool === 'edit') activateEdit();
