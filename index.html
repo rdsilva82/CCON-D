@@ -8350,9 +8350,19 @@
     }
   }
 
+  var declutterPaneReady = false;
+  function ensureDeclutterPane(){
+    if (declutterPaneReady) return;
+    var pane = map.createPane('declutterPane');
+    pane.style.zIndex = 10000;
+    declutterPaneReady = true;
+  }
+
   function spreadCluster(cluster){
     if (declutterState && declutterState.cluster === cluster) return;
     revertDeclutter();
+    ensureDeclutterPane();
+    var declutterPaneEl = map.getPane('declutterPane');
     var n = cluster.shapes.length;
     var radius = 55 + Math.min(n, 8) * 12;
     var leaderLayer = L.layerGroup().addTo(map);
@@ -8369,6 +8379,8 @@
       el.style.transform = el.style.transform + offset;
       el.style.zIndex = 10000 + idx;
       el.classList.add('declutter-highlight');
+      shape._declutterOrigParent = el.parentNode;
+      declutterPaneEl.appendChild(el);
       var tooltip = shape.getTooltip && shape.getTooltip();
       var tooltipEl = tooltip && tooltip.getElement && tooltip.getElement();
       if (tooltipEl){
@@ -8376,6 +8388,8 @@
         tooltipEl.style.transform = tooltipEl.style.transform + offset;
         tooltipEl.style.zIndex = 10000 + idx;
         tooltipEl.classList.add('declutter-highlight');
+        shape._declutterTooltipOrigParent = tooltipEl.parentNode;
+        declutterPaneEl.appendChild(tooltipEl);
       }
       var newPoint = L.point(origPoint.x + dx, origPoint.y + dy);
       var newLatLng = map.containerPointToLatLng(newPoint);
@@ -8391,12 +8405,14 @@
       if (el){
         el.style.transform = el.style.transform.replace(/\s*translate\([^)]*\)$/, '');
         el.classList.remove('declutter-highlight');
+        if (shape._declutterOrigParent){ shape._declutterOrigParent.appendChild(el); delete shape._declutterOrigParent; }
       }
       var tooltip = shape.getTooltip && shape.getTooltip();
       var tooltipEl = tooltip && tooltip.getElement && tooltip.getElement();
       if (tooltipEl){
         tooltipEl.style.transform = tooltipEl.style.transform.replace(/\s*translate\([^)]*\)$/, '');
         tooltipEl.classList.remove('declutter-highlight');
+        if (shape._declutterTooltipOrigParent){ shape._declutterTooltipOrigParent.appendChild(tooltipEl); delete shape._declutterTooltipOrigParent; }
       }
     });
     map.removeLayer(declutterState.leaderLayer);
