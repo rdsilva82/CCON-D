@@ -4633,10 +4633,10 @@
 
   /* ---------------- LÍNEA DEFENSIVA (patrones doctrinales sobre una línea a mano alzada) ---------------- */
   var MIL_DEFENSIVE_LINE_TYPES = [
-    ['alambrico','Obstáculo alámbrico (XXXX)'],
-    ['fortificada','Línea fortificada (onda cuadrada)'],
-    ['zanja','Zanja antitanque (triángulos)'],
-    ['puntofuerte','Punto fuerte (trazos perpendiculares)']
+    ['alambrico','Obstáculo alámbrico'],
+    ['fortificada','Línea fortificada'],
+    ['zanja','Zanja antitanque'],
+    ['puntofuerte','Punto fuerte']
   ];
   var defensiveLineLayers = {};
 
@@ -4718,13 +4718,13 @@
     return tris;
   }
   function buildPuntoFuerteTicks(res){
-    var spacing = 13, tickLen = 7;
+    var spacing = 13, tickLen = 9;
     var segs = [];
     for (var arc = spacing/2; arc < res.total; arc += spacing){
       var pt = pxPointAndTangentAtArc(res, arc);
       if (!pt) continue;
       segs.push([
-        { x: pt.x - tickLen*pt.nx, y: pt.y - tickLen*pt.ny },
+        { x: pt.x, y: pt.y },
         { x: pt.x + tickLen*pt.nx, y: pt.y + tickLen*pt.ny }
       ]);
     }
