@@ -924,6 +924,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l3-3 3 3 3-3 3 3 3-3 3 3" stroke-dasharray="0"/></svg>
             <span>Línea def.</span>
           </button>
+          <button class="tool-btn" data-tool="task" title="Tareas tácticas: Bloquear, Canalizar, Despejar, Penetrar, Desarticular, Destruir, Interdictar, Neutralizar (simbología OTAN)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="16" y2="12"/><polyline points="12 6 18 12 12 18"/></svg>
+            <span>Tareas</span>
+          </button>
         </div>
       </div>
       <button class="tool-btn" data-tool="elements" title="Elementos: unidades y símbolos militares tipo NATO (APP-6)">
@@ -3342,6 +3346,51 @@
       '</svg>';
   }
 
+  var TASK_TYPES = [
+    ['bloquear','Bloquear'],
+    ['canalizar','Canalizar'],
+    ['despejar','Despejar'],
+    ['penetrar','Penetrar'],
+    ['desarticular','Desarticular'],
+    ['destruir','Destruir'],
+    ['interdictar','Interdictar'],
+    ['neutralizar','Neutralizar']
+  ];
+  function defaultTaskParams(){
+    return { tipo:'bloquear', rotation:0, scale:1 };
+  }
+  function taskGlyphSVG(tipo, c){
+    switch(tipo){
+      case 'canalizar':
+        return '<path d="M8,40 L20,40 L20,20" fill="none" stroke="'+c+'" stroke-width="2.2"/><line x1="20" y1="20" x2="36" y2="12" stroke="'+c+'" stroke-width="2.2"/><polygon points="40,10 31,11 35,18" fill="'+c+'"/>';
+      case 'despejar':
+        return '<line x1="8" y1="22" x2="40" y2="22" stroke="'+c+'" stroke-width="2.2"/><polygon points="48,22 39,18 39,26" fill="'+c+'"/><line x1="8" y1="38" x2="40" y2="38" stroke="'+c+'" stroke-width="2.2"/><polygon points="48,38 39,34 39,42" fill="'+c+'"/>';
+      case 'penetrar':
+        return '<line x1="8" y1="30" x2="40" y2="30" stroke="'+c+'" stroke-width="2.2"/><polygon points="48,30 39,26 39,34" fill="'+c+'"/><line x1="42" y1="16" x2="42" y2="44" stroke="'+c+'" stroke-width="2.2"/>';
+      case 'desarticular':
+        return '<path d="M8,40 L20,40 L20,20" fill="none" stroke="'+c+'" stroke-width="2.2"/><line x1="20" y1="20" x2="38" y2="20" stroke="'+c+'" stroke-width="2.2"/><line x1="27" y1="14" x2="27" y2="26" stroke="'+c+'" stroke-width="2.2"/><polygon points="46,20 37,16 37,24" fill="'+c+'"/>';
+      case 'destruir':
+        return '<line x1="14" y1="14" x2="46" y2="46" stroke="'+c+'" stroke-width="2.4"/><line x1="46" y1="14" x2="14" y2="46" stroke="'+c+'" stroke-width="2.4"/>';
+      case 'interdictar':
+        return '<line x1="10" y1="30" x2="46" y2="30" stroke="'+c+'" stroke-width="2.2"/><polygon points="52,30 43,26 43,34" fill="'+c+'"/><line x1="21" y1="23" x2="16" y2="37" stroke="'+c+'" stroke-width="2.2"/><line x1="28" y1="23" x2="23" y2="37" stroke="'+c+'" stroke-width="2.2"/>';
+      case 'neutralizar':
+        return '<line x1="14" y1="14" x2="46" y2="46" stroke="'+c+'" stroke-width="2.2" stroke-dasharray="4,3"/><line x1="46" y1="14" x2="14" y2="46" stroke="'+c+'" stroke-width="2.2" stroke-dasharray="4,3"/>';
+      default: // bloquear
+        return '<line x1="8" y1="30" x2="42" y2="30" stroke="'+c+'" stroke-width="2.2"/><line x1="42" y1="16" x2="42" y2="44" stroke="'+c+'" stroke-width="2.2"/>';
+    }
+  }
+  function buildTaskSVG(task, color){
+    var c = color || '#1F3864';
+    var rotation = task.rotation || 0;
+    var scale = task.scale || 1;
+    return '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+      '<g transform="translate(30,30) rotate(' + rotation + ') scale(' + scale + ') translate(-30,-30)">' + taskGlyphSVG(task.tipo, c) + '</g>' +
+      '</svg>';
+  }
+  function buildTaskIcon(task, color){
+    return L.divIcon({ className:'', html: buildTaskSVG(task, color), iconSize:[60,60], iconAnchor:[30,30] });
+  }
+
   function buildMilSymbolIcon(mil){
     return L.divIcon({ className:'', html: buildMilSymbolSVG(mil), iconSize:[60,60], iconAnchor:[30,30] });
   }
@@ -3407,6 +3456,38 @@
       disableAllTools();
     };
     map.on('click', elementsClickHandler);
+  }
+
+  var taskClickHandler = null;
+  function stopTaskTool(){
+    if (taskClickHandler){ map.off('click', taskClickHandler); taskClickHandler = null; }
+    mapContainer.style.cursor = '';
+  }
+  function activateTaskTool(){
+    if (activeToolName === 'task'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar una tarea.'); return; }
+    disableAllTools();
+    activeToolName = 'task';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    taskClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var task = defaultTaskParams();
+      var layer = L.marker(e.latlng, { icon: buildTaskIcon(task, activeNow.color) });
+      layer._isTask = true;
+      layer._task = task;
+      layer._fillColorRaw = activeNow.color;
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', taskClickHandler);
   }
 
   var textClickHandler = null;
@@ -3694,6 +3775,7 @@
     if (freePolyActive) stopFreePolygonMode();
     if (arrowActive) stopArrowTool();
     stopElementsTool();
+    stopTaskTool();
     stopTextTool();
     stopTargetTool();
     stopInfraTool();
@@ -5630,6 +5712,7 @@
       else if (tool === 'freepolygon') activateFreePolygon();
       else if (tool === 'arrow') activateArrowTool();
       else if (tool === 'defensiveline') activateDefensiveLineTool();
+      else if (tool === 'task') activateTaskTool();
       else if (tool === 'elements') activateElementsTool();
       else if (tool === 'text') activateTextTool();
       else if (tool === 'target') activateTargetTool();
@@ -5657,6 +5740,7 @@
     if (shape._isMilSymbol && shape._supply == null) shape._supply = 100;
     shape.on('click', function(e){
       if (activeToolName === 'elements' && elementsClickHandler){ elementsClickHandler(e); return; }
+      if (activeToolName === 'task' && taskClickHandler){ taskClickHandler(e); return; }
       if (activeToolName === 'text' && textClickHandler){ textClickHandler(e); return; }
       if (activeToolName === 'target' && targetClickHandler){ targetClickHandler(e); return; }
       if (activeToolName === 'infra' && infraClickHandler){ infraClickHandler(e); return; }
@@ -5695,6 +5779,7 @@
     if (shape._isText) return 'text';
     if (shape._isTarget) return 'target';
     if (shape._isInfra) return 'infra';
+    if (shape._isTask) return 'task';
     if (shape._isImageOverlay) return 'image';
     if (shape instanceof L.Marker) return 'marker';
     if (shape instanceof L.Circle) return 'circle';
@@ -7530,6 +7615,83 @@
       body.appendChild(targetBlock);
     }
 
+    if (kind === 'task'){
+      var taskBlock = document.createElement('div');
+      taskBlock.className = 'style-block';
+
+      var taskTipoField = document.createElement('div');
+      taskTipoField.className = 'style-field';
+      taskTipoField.innerHTML = '<span>Tipo de tarea</span>';
+      var taskTipoSelect = document.createElement('select');
+      taskTipoSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
+      TASK_TYPES.forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        if (shape._task.tipo === opt[0]) o.selected = true;
+        taskTipoSelect.appendChild(o);
+      });
+      taskTipoSelect.addEventListener('change', function(ev){
+        shape._task.tipo = ev.target.value;
+        shape.setIcon(buildTaskIcon(shape._task, shape._fillColorRaw));
+        renderLayerList();
+      });
+      taskTipoField.appendChild(taskTipoSelect);
+      taskBlock.appendChild(taskTipoField);
+
+      var taskColorField = document.createElement('div');
+      taskColorField.className = 'style-field';
+      taskColorField.innerHTML = '<span>Color</span>';
+      var taskColorInput = document.createElement('input');
+      taskColorInput.type = 'color';
+      taskColorInput.value = shape._fillColorRaw || '#1F3864';
+      taskColorInput.addEventListener('input', function(ev){
+        shape._fillColorRaw = ev.target.value;
+        shape.setIcon(buildTaskIcon(shape._task, shape._fillColorRaw));
+      });
+      taskColorField.appendChild(taskColorInput);
+      taskBlock.appendChild(taskColorField);
+
+      var taskRotField = document.createElement('div');
+      taskRotField.className = 'style-field';
+      taskRotField.innerHTML = '<span>Orientación</span>';
+      var taskRotInput = document.createElement('input');
+      taskRotInput.type = 'range'; taskRotInput.min = 0; taskRotInput.max = 359; taskRotInput.step = 1;
+      taskRotInput.value = shape._task.rotation || 0;
+      var taskRotPct = document.createElement('span');
+      taskRotPct.className = 'pct';
+      taskRotPct.textContent = taskRotInput.value + '°';
+      taskRotInput.addEventListener('input', function(ev){
+        var v = parseInt(ev.target.value, 10);
+        shape._task.rotation = v;
+        shape.setIcon(buildTaskIcon(shape._task, shape._fillColorRaw));
+        taskRotPct.textContent = v + '°';
+      });
+      taskRotField.appendChild(taskRotInput);
+      taskRotField.appendChild(taskRotPct);
+      taskBlock.appendChild(taskRotField);
+
+      var taskScaleField = document.createElement('div');
+      taskScaleField.className = 'style-field';
+      taskScaleField.innerHTML = '<span>Tamaño</span>';
+      var taskScaleInput = document.createElement('input');
+      taskScaleInput.type = 'range'; taskScaleInput.min = 0.5; taskScaleInput.max = 3; taskScaleInput.step = 0.1;
+      taskScaleInput.value = shape._task.scale || 1;
+      var taskScalePct = document.createElement('span');
+      taskScalePct.className = 'pct';
+      taskScalePct.textContent = Math.round((shape._task.scale || 1)*100) + '%';
+      taskScaleInput.addEventListener('input', function(ev){
+        var v = parseFloat(ev.target.value);
+        shape._task.scale = v;
+        shape.setIcon(buildTaskIcon(shape._task, shape._fillColorRaw));
+        taskScalePct.textContent = Math.round(v*100) + '%';
+      });
+      taskScaleField.appendChild(taskScaleInput);
+      taskScaleField.appendChild(taskScalePct);
+      taskBlock.appendChild(taskScaleField);
+
+      body.appendChild(taskBlock);
+    }
+
     if (kind === 'infra'){
       var infraBlock = document.createElement('div');
       infraBlock.className = 'style-block';
@@ -8291,6 +8453,10 @@
           radarMilitar: shape._mil.radarMilitar
         };
       }
+      if (shape && shape._isTask){
+        f.properties.task = { tipo: shape._task.tipo, rotation: shape._task.rotation, scale: shape._task.scale };
+        f.properties.color = shape._fillColorRaw;
+      }
       if (shape && shape._pointShape){
         f.properties.pointShape = shape._pointShape;
         f.properties.pointColor = shape._pointColor;
@@ -8418,6 +8584,15 @@
           m._mil = mil;
           updateMilSymbolTooltip(m);
           return m;
+        }
+        if (p.task){
+          var task = { tipo: p.task.tipo || 'bloquear', rotation: p.task.rotation || 0, scale: p.task.scale || 1 };
+          var taskColor = p.color || p.fillColor || '#1F3864';
+          var tk = L.marker(latlng, { icon: buildTaskIcon(task, taskColor) });
+          tk._isTask = true;
+          tk._task = task;
+          tk._fillColorRaw = taskColor;
+          return tk;
         }
         if (p.text){
           var t = { latlng: latlng, text: p.text.text, fontSize: p.text.fontSize, color: p.text.color,
