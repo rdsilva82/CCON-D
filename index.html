@@ -4016,10 +4016,20 @@
     if (tipo === 'despejar' || tipo === 'desarticular') g.arrowRatios = [0.55, 0.55, 0.55];
     if (tipo === 'desarticular') g.stubRatio = 0.1;
     if (tipo === 'interdictar') g.crossRatio = 0.85;
+    if (['retener','contener','aislar','ocupar','asegurar'].indexOf(tipo) !== -1) g.widthRatio = 0.72;
+    if (tipo === 'contener') g.enemyRatio = 0.4;
+    if (tipo === 'fijar'){ g.widthRatio = 0.12; g.waveWidthRatio = 0.18; }
+    if (tipo === 'frentedefuego'){
+      g.arrow1Start = { d:0, p:-0.12 };
+      g.arrow1End = { d:-0.85, p:-0.55 };
+      g.arrow2Start = { d:0, p:0.12 };
+      g.arrow2End = { d:0.85, p:0.55 };
+    }
     return g;
   }
   function taskLetter(tipo){
-    return { bloquear:'B', canalizar:'C', despejar:'C', penetrar:'P', desarticular:'D', destruir:'D', interdictar:'I', neutralizar:'N' }[tipo] || '';
+    return { bloquear:'B', canalizar:'C', despejar:'C', penetrar:'P', desarticular:'D', destruir:'D', interdictar:'I', neutralizar:'N',
+      retener:'R', contener:'C', fijar:'F', ocupar:'O', asegurar:'S' }[tipo] || '';
   }
   function taskBearingDeg(dir){
     var b = Math.atan2(dir.y, dir.x) * 180/Math.PI;
@@ -4030,10 +4040,20 @@
     var html = '<div style="position:relative;"><div style="position:absolute; left:0; top:0; transform:translate(-50%,-50%) rotate(' + rotationDeg + 'deg); white-space:nowrap; font-family:Calibri,Arial,sans-serif; font-size:14px; font-weight:800; color:' + color + '; text-shadow:0 0 3px #fff, 0 0 4px #fff, 0 0 5px #fff;">' + text + '</div></div>';
     return L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] });
   }
+  function ellipseBoundaryPt(base, dir, perp, a, b, theta){
+    return taskPt(base, dir, perp, a*Math.cos(theta), b*Math.sin(theta));
+  }
+  function ellipseRing(base, dir, perp, a, b, steps){
+    var ring = [];
+    for (var i=0;i<=steps;i++){
+      ring.push(ellipseBoundaryPt(base, dir, perp, a, b, (i/steps)*Math.PI*2));
+    }
+    return ring;
+  }
   function buildTacticalTaskParts(g){
     var ax = taskAxis(g.base, g.tip);
     var len = ax.len, dir = ax.dir, perp = ax.perp;
-    var lines = [], heads = [], label = null;
+    var lines = [], heads = [], tris = [], label = null, labels = [];
     var letter = taskLetter(g.tipo);
     var gap = Math.max(len*0.07, 3);
 
@@ -4119,7 +4139,122 @@
       label = { pos: crossCenter, text: letter, bearing: taskBearingDeg(crossDir) };
     }
 
-    return { lines: lines, heads: heads, label: label };
+    if (g.tipo === 'retener' || g.tipo === 'asegurar'){
+      var b1 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
+      lines.push({ pts: ellipseRing(g.base, dir, perp, len, b1, 40) });
+      if (g.tipo === 'retener'){
+        var nTicks = 9, gapDeg = 46;
+        for (var i=0;i<nTicks;i++){
+          var th = (gapDeg/2 + i*((360-gapDeg)/(nTicks-1))) * Math.PI/180;
+          var p = ellipseBoundaryPt(g.base, dir, perp, len, b1, th);
+          var nrm = localXY(g.base, p); var nl = Math.hypot(nrm.x,nrm.y)||1;
+          var nUnit = { x:nrm.x/nl, y:nrm.y/nl };
+          var tickLen = len*0.13;
+          lines.push({ pts: [ p, fromLocalXY(p, nUnit.x*tickLen, nUnit.y*tickLen) ] });
+        }
+      }
+      var arrowTip = taskPt(g.base, dir, perp, len*1.28, 0);
+      lines.push({ pts: [ g.tip, arrowTip ] });
+      heads.push(taskArrowHeadPts(arrowTip, dir, Math.max(len*0.09,4)));
+      labels.push({ pos: taskPt(g.base, dir, perp, len*1.1, b1*0.55), text: letter, bearing: 0 });
+    }
+    else if (g.tipo === 'contener'){
+      var b2 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
+      lines.push({ pts: ellipseRing(g.base, dir, perp, len, b2, 40) });
+      var nTicks2 = 9, gapDeg2 = 46;
+      for (var j=0;j<nTicks2;j++){
+        var th2 = (gapDeg2/2 + j*((360-gapDeg2)/(nTicks2-1))) * Math.PI/180;
+        var p2 = ellipseBoundaryPt(g.base, dir, perp, len, b2, th2);
+        var nrm2 = localXY(g.base, p2); var nl2 = Math.hypot(nrm2.x,nrm2.y)||1;
+        var nUnit2 = { x:nrm2.x/nl2, y:nrm2.y/nl2 };
+        var tickLen2 = len*0.13;
+        lines.push({ pts: [ p2, fromLocalXY(p2, -nUnit2.x*tickLen2, -nUnit2.y*tickLen2) ] });
+      }
+      var enemyLen = len*(g.enemyRatio != null ? g.enemyRatio : 0.4);
+      var enemyStart = taskPt(g.base, dir, perp, len+enemyLen, 0);
+      lines.push({ pts: [ enemyStart, g.tip ] });
+      heads.push(taskArrowHeadPts(g.tip, dir, Math.max(len*0.09,4)));
+      labels.push({ pos: taskPt(g.base, dir, perp, len*1.05, b2*0.5), text: letter, bearing: 0 });
+      labels.push({ pos: taskPt(g.base, dir, perp, len+enemyLen*0.5, len*0.12), text: 'ENY', bearing: taskBearingDeg(dir) });
+    }
+    else if (g.tipo === 'aislar'){
+      var b3 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
+      lines.push({ pts: ellipseRing(g.base, dir, perp, len, b3, 40) });
+      var nTri = 8, gapDeg3 = 30;
+      for (var k=0;k<nTri;k++){
+        var th3 = (gapDeg3/2 + k*((360-gapDeg3)/(nTri-1))) * Math.PI/180;
+        var p3 = ellipseBoundaryPt(g.base, dir, perp, len, b3, th3);
+        var nrm3 = localXY(g.base, p3); var nl3 = Math.hypot(nrm3.x,nrm3.y)||1;
+        var nUnit3 = { x:nrm3.x/nl3, y:nrm3.y/nl3 };
+        var tUnit3 = { x:-nUnit3.y, y:nUnit3.x };
+        var triSize = len*0.09;
+        var apex = fromLocalXY(p3, -nUnit3.x*triSize*1.4, -nUnit3.y*triSize*1.4);
+        var s1 = fromLocalXY(p3, tUnit3.x*triSize*0.6, tUnit3.y*triSize*0.6);
+        var s2 = fromLocalXY(p3, -tUnit3.x*triSize*0.6, -tUnit3.y*triSize*0.6);
+        tris.push({ pts: [apex, s1, s2] });
+      }
+      var arrowTipA = taskPt(g.base, dir, perp, len*1.18, 0);
+      lines.push({ pts: [ g.tip, arrowTipA ] });
+      heads.push(taskArrowHeadPts(arrowTipA, dir, Math.max(len*0.08,4)));
+    }
+    else if (g.tipo === 'ocupar'){
+      var b4 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
+      lines.push({ pts: ellipseRing(g.base, dir, perp, len, b4, 40) });
+      var crossSize = len*0.08;
+      var crossD1a = fromLocalXY(g.tip, -crossSize, -crossSize), crossD1b = fromLocalXY(g.tip, crossSize, crossSize);
+      var crossD2a = fromLocalXY(g.tip, crossSize, -crossSize), crossD2b = fromLocalXY(g.tip, -crossSize, crossSize);
+      lines.push({ pts: [crossD1a, crossD1b] });
+      lines.push({ pts: [crossD2a, crossD2b] });
+      labels.push({ pos: taskPt(g.base, dir, perp, len*1.1, b4*0.55), text: letter, bearing: 0 });
+    }
+    else if (g.tipo === 'fijar'){
+      var waveAmp = len*(g.waveWidthRatio != null ? g.waveWidthRatio : 0.18);
+      var waveLen = len*0.58;
+      var nSegs = 5;
+      var wavePts = [g.base];
+      for (var w=1; w<=nSegs; w++){
+        var wt = (w/nSegs)*waveLen;
+        var side = (w % 2 === 0) ? 1 : -1;
+        wavePts.push(taskPt(g.base, dir, perp, wt, side*waveAmp));
+      }
+      var waveEnd = taskPt(g.base, dir, perp, waveLen, 0);
+      wavePts.push(waveEnd);
+      lines.push({ pts: wavePts });
+      lines.push({ pts: [ waveEnd, g.tip ] });
+      heads.push(taskArrowHeadPts(g.tip, dir, Math.max(len*(g.widthRatio != null ? g.widthRatio : 0.12), 4)));
+      labels.push({ pos: taskPt(g.base, dir, perp, -len*0.07, 0), text: letter, bearing: taskBearingDeg(dir) });
+    }
+    else if (g.tipo === 'frentedefuego'){
+      function ratioPt(r){ return taskPt(g.base, dir, perp, len*r.d, len*r.p); }
+      function zigzagBetween(p1, p2, n){
+        var v = localXY(p1, p2);
+        var vl = Math.hypot(v.x,v.y) || 1;
+        var vd = { x:v.x/vl, y:v.y/vl };
+        var vp = { x:-vd.y, y:vd.x };
+        var amp = vl*0.09;
+        var pts = [p1];
+        for (var q=1; q<n; q++){
+          var qt = (q/n)*vl;
+          var side = (q % 2 === 0) ? 1 : -1;
+          pts.push(taskPt(p1, vd, vp, qt, side*amp));
+        }
+        pts.push(p2);
+        return pts;
+      }
+      var a1s = ratioPt(g.arrow1Start), a1e = ratioPt(g.arrow1End);
+      var a2s = ratioPt(g.arrow2Start), a2e = ratioPt(g.arrow2End);
+      lines.push({ pts: zigzagBetween(a1s, a1e, 4) });
+      lines.push({ pts: zigzagBetween(a2s, a2e, 4) });
+      var d1 = localXY(a1s, a1e); var d1l = Math.hypot(d1.x,d1.y)||1;
+      var d2 = localXY(a2s, a2e); var d2l = Math.hypot(d2.x,d2.y)||1;
+      heads.push(taskArrowHeadPts(a1e, {x:d1.x/d1l,y:d1.y/d1l}, Math.max(len*0.08,4)));
+      heads.push(taskArrowHeadPts(a2e, {x:d2.x/d2l,y:d2.y/d2l}, Math.max(len*0.08,4)));
+      lines.push({ pts: ellipseRing(a1s, {x:1,y:0}, {x:0,y:1}, len*0.02, len*0.02, 16) });
+      lines.push({ pts: ellipseRing(a2s, {x:1,y:0}, {x:0,y:1}, len*0.02, len*0.02, 16) });
+    }
+
+    if (label) labels.push(label);
+    return { lines: lines, heads: heads, tris: tris, labels: labels };
   }
 
   var tacticalTaskLayers = {};
@@ -4143,11 +4278,14 @@
     parts.heads.forEach(function(head){
       L.polygon(head, { color:color, weight:1, fillColor:color, fillOpacity:1, interactive:false, keyboard:false }).addTo(group);
     });
-    if (parts.label){
-      var rotDeg = labelRotationForBearing(parts.label.bearing || 0);
-      var icon = buildTaskLabelIcon(parts.label.text, rotDeg, color);
-      L.marker(parts.label.pos, { icon:icon, interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
-    }
+    (parts.tris || []).forEach(function(tri){
+      L.polygon(tri.pts, { color:color, weight:weight, fill:false, interactive:false, keyboard:false }).addTo(group);
+    });
+    (parts.labels || []).forEach(function(lbl){
+      var rotDeg = labelRotationForBearing(lbl.bearing || 0);
+      var icon = buildTaskLabelIcon(lbl.text, rotDeg, color);
+      L.marker(lbl.pos, { icon:icon, interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
+    });
     if (owner.visible) group.addTo(map);
     tacticalTaskLayers[shape._shapeId] = group;
   }
@@ -4199,6 +4337,9 @@
     });
     parts.heads.forEach(function(head){
       L.polygon(head, { color: shape._fillColorRaw, weight:1, fillColor: shape._fillColorRaw, fillOpacity:1, interactive:false }).addTo(group);
+    });
+    (parts.tris || []).forEach(function(tri){
+      L.polygon(tri.pts, { color: shape._fillColorRaw, weight:2.4, fill:false, interactive:false }).addTo(group);
     });
     group.addTo(map);
     tacticalTaskPreviewLayer = group;
@@ -5482,6 +5623,85 @@
         }
       });
     }
+    if (t === 'retener' || t === 'contener' || t === 'aislar' || t === 'ocupar' || t === 'asegurar'){
+      extraDefs.push({
+        color:'#5B8A72', size:13, title:'Arrastre para cambiar el ancho',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var wr = shape._task.widthRatio != null ? shape._task.widthRatio : 0.72;
+          return taskPt(shape._task.base, ax.dir, ax.perp, 0, ax.len*wr);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          shape._task.widthRatio = Math.max(distanceMeters(shape._task.base, latlng) / ax.len, 0.1);
+        }
+      });
+    }
+    if (t === 'contener'){
+      extraDefs.push({
+        color:'#8B6BB0', size:13, title:'Arrastre para cambiar el largo de la flecha enemiga',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var enemyLen = ax.len * (shape._task.enemyRatio != null ? shape._task.enemyRatio : 0.4);
+          return taskPt(shape._task.base, ax.dir, ax.perp, ax.len+enemyLen, 0);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var d = distanceMeters(shape._task.base, latlng) - ax.len;
+          shape._task.enemyRatio = Math.max(d / ax.len, 0.1);
+        }
+      });
+    }
+    if (t === 'fijar'){
+      extraDefs.push({
+        color:'#5B8A72', size:13, title:'Arrastre para cambiar el ancho de la flecha',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var wr = shape._task.widthRatio != null ? shape._task.widthRatio : 0.12;
+          return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.9, ax.len*wr*1.6);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var refPt = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.9, 0);
+          shape._task.widthRatio = Math.max((distanceMeters(refPt, latlng)/1.6) / ax.len, 0.03);
+        }
+      });
+      extraDefs.push({
+        color:'#8B6BB0', size:13, title:'Arrastre para cambiar el ancho de la onda',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var waveLen = ax.len*0.58;
+          var wwr = shape._task.waveWidthRatio != null ? shape._task.waveWidthRatio : 0.18;
+          return taskPt(shape._task.base, ax.dir, ax.perp, waveLen*0.5, ax.len*wwr);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var waveLen = ax.len*0.58;
+          var refPt = taskPt(shape._task.base, ax.dir, ax.perp, waveLen*0.5, 0);
+          shape._task.waveWidthRatio = Math.max(distanceMeters(refPt, latlng) / ax.len, 0.03);
+        }
+      });
+    }
+    if (t === 'frentedefuego'){
+      ['arrow1Start','arrow1End','arrow2Start','arrow2End'].forEach(function(key){
+        extraDefs.push({
+          color: key.indexOf('Start') !== -1 ? '#8B6BB0' : '#5B8A72', size:13,
+          title:'Arrastre para editar esta flecha (' + (key.indexOf('1')!==-1 ? '1' : '2') + ')',
+          compute: function(){
+            var ax = taskAxis(shape._task.base, shape._task.tip);
+            var r = shape._task[key];
+            return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*r.d, ax.len*r.p);
+          },
+          onDrag: function(latlng){
+            var ax = taskAxis(shape._task.base, shape._task.tip);
+            var loc = localXY(shape._task.base, latlng);
+            var d = loc.x*ax.dir.x + loc.y*ax.dir.y;
+            var p = loc.x*ax.perp.x + loc.y*ax.perp.y;
+            shape._task[key] = { d: d/ax.len, p: p/ax.len };
+          }
+        });
+      });
+    }
 
     var extraMarkers = extraDefs.map(function(def){
       var m = L.marker(def.compute(), { draggable:true, icon: makeHandleIcon(def.color, def.size), zIndexOffset:2000, title: def.title }).addTo(map);
@@ -6108,7 +6328,14 @@
     ['desarticular','Desarticular'],
     ['destruir','Destruir'],
     ['interdictar','Interdictar'],
-    ['neutralizar','Neutralizar']
+    ['neutralizar','Neutralizar'],
+    ['retener','Retener'],
+    ['contener','Contener'],
+    ['fijar','Fijar'],
+    ['aislar','Aislar'],
+    ['ocupar','Ocupar'],
+    ['asegurar','Asegurar'],
+    ['frentedefuego','Frente de fuego']
   ];
   function tareaIconSVG(tipo){
     var c = '#1F3864';
@@ -6134,6 +6361,35 @@
         return '<line x1="10" y1="38" x2="46" y2="18" stroke="'+c+'" stroke-width="3"/><polygon points="53,14 44,17 47,24" fill="'+c+'"/><line x1="19" y1="24" x2="14" y2="35" stroke="'+c+'" stroke-width="3"/>';
       case 'neutralizar':
         return '<line x1="14" y1="14" x2="46" y2="46" stroke="'+c+'" stroke-width="3"/><line x1="46" y1="14" x2="14" y2="46" stroke="'+c+'" stroke-width="3" stroke-dasharray="5,4"/>';
+      case 'retener':
+        return '<circle cx="28" cy="30" r="15" fill="none" stroke="'+c+'" stroke-width="3"/>' +
+          '<line x1="28" y1="12" x2="28" y2="6" stroke="'+c+'" stroke-width="2.5"/><line x1="46" y1="30" x2="52" y2="30" stroke="'+c+'" stroke-width="2.5"/>' +
+          '<line x1="13" y1="20" x2="8" y2="16" stroke="'+c+'" stroke-width="2.5"/><line x1="13" y1="40" x2="8" y2="44" stroke="'+c+'" stroke-width="2.5"/>' +
+          '<line x1="43" y1="20" x2="48" y2="16" stroke="'+c+'" stroke-width="2.5"/><line x1="28" y1="48" x2="28" y2="54" stroke="'+c+'" stroke-width="2.5"/>' +
+          '<line x1="43" y1="18" x2="52" y2="12" stroke="'+c+'" stroke-width="2.8"/><polygon points="57,9 49,9 51,16" fill="'+c+'"/>';
+      case 'contener':
+        return '<circle cx="32" cy="30" r="15" fill="none" stroke="'+c+'" stroke-width="3"/>' +
+          '<line x1="32" y1="17" x2="32" y2="11" stroke="'+c+'" stroke-width="2.5"/><line x1="19" y1="22" x2="14" y2="18" stroke="'+c+'" stroke-width="2.5"/>' +
+          '<line x1="19" y1="38" x2="14" y2="42" stroke="'+c+'" stroke-width="2.5"/><line x1="32" y1="43" x2="32" y2="49" stroke="'+c+'" stroke-width="2.5"/>' +
+          '<line x1="46" y1="22" x2="51" y2="18" stroke="'+c+'" stroke-width="2.5"/><line x1="46" y1="38" x2="51" y2="42" stroke="'+c+'" stroke-width="2.5"/>' +
+          '<line x1="10" y1="30" x2="17" y2="30" stroke="'+c+'" stroke-width="2.8"/><polygon points="17,30 10,26 10,34" fill="'+c+'"/>';
+      case 'fijar':
+        return '<path d="M6,42 L16,22 L26,42 L36,22" fill="none" stroke="'+c+'" stroke-width="2.6"/><line x1="36" y1="22" x2="50" y2="22" stroke="'+c+'" stroke-width="2.8"/><polygon points="56,22 47,18 47,26" fill="'+c+'"/>';
+      case 'aislar':
+        return '<circle cx="30" cy="30" r="15" fill="none" stroke="'+c+'" stroke-width="3"/>' +
+          '<polygon points="30,20 26,12 34,12" fill="none" stroke="'+c+'" stroke-width="2"/>' +
+          '<polygon points="30,40 26,48 34,48" fill="none" stroke="'+c+'" stroke-width="2"/>' +
+          '<polygon points="15,30 7,26 7,34" fill="none" stroke="'+c+'" stroke-width="2"/>' +
+          '<polygon points="45,30 53,26 53,34" fill="none" stroke="'+c+'" stroke-width="2"/>';
+      case 'ocupar':
+        return '<circle cx="28" cy="30" r="15" fill="none" stroke="'+c+'" stroke-width="3"/>' +
+          '<line x1="40" y1="18" x2="48" y2="26" stroke="'+c+'" stroke-width="2.6"/><line x1="48" y1="18" x2="40" y2="26" stroke="'+c+'" stroke-width="2.6"/>';
+      case 'asegurar':
+        return '<circle cx="28" cy="30" r="15" fill="none" stroke="'+c+'" stroke-width="3"/><line x1="43" y1="30" x2="52" y2="30" stroke="'+c+'" stroke-width="2.8"/><polygon points="58,30 49,26 49,34" fill="'+c+'"/>';
+      case 'frentedefuego':
+        return '<circle cx="30" cy="30" r="2" fill="'+c+'"/>' +
+          '<path d="M30,29 L18,24 L10,32" fill="none" stroke="'+c+'" stroke-width="2.4"/><polygon points="5,36 12,29 14,37" fill="'+c+'"/>' +
+          '<path d="M30,31 L42,36 L50,28" fill="none" stroke="'+c+'" stroke-width="2.4"/><polygon points="55,24 48,31 46,23" fill="'+c+'"/>';
       default: // bloquear
         return '<line x1="8" y1="30" x2="50" y2="30" stroke="'+c+'" stroke-width="3"/><line x1="20" y1="12" x2="20" y2="48" stroke="'+c+'" stroke-width="3"/>';
     }
@@ -8839,6 +9095,12 @@
           arrowRatios: shape._task.arrowRatios || undefined,
           stubRatio: shape._task.stubRatio,
           crossRatio: shape._task.crossRatio,
+          enemyRatio: shape._task.enemyRatio,
+          waveWidthRatio: shape._task.waveWidthRatio,
+          arrow1Start: shape._task.arrow1Start,
+          arrow1End: shape._task.arrow1End,
+          arrow2Start: shape._task.arrow2Start,
+          arrow2End: shape._task.arrow2End,
           weight: shape._task.weight
         };
         f.properties.color = shape._fillColorRaw;
@@ -9083,6 +9345,12 @@
             arrowRatios: p.task.arrowRatios || undefined,
             stubRatio: p.task.stubRatio,
             crossRatio: p.task.crossRatio,
+            enemyRatio: p.task.enemyRatio,
+            waveWidthRatio: p.task.waveWidthRatio,
+            arrow1Start: p.task.arrow1Start,
+            arrow1End: p.task.arrow1End,
+            arrow2Start: p.task.arrow2Start,
+            arrow2End: p.task.arrow2End,
             weight: p.task.weight
           };
           layer._fillColorRaw = p.color || targetLayerObj.color;
