@@ -408,6 +408,7 @@
   }
   .tool-btn-wrap.open .tool-submenu-row{ display:flex; }
   .tool-btn-wrap.open > .tool-btn{ background:#EEF1F6; }
+  .tool-submenu-row.open{ display:flex; }
   #tareas-submenu.open{ display:flex; }
   .tarea-icon-btn{
     width:44px; height:44px; border:1px solid var(--border); border-radius:8px; background:#fff;
@@ -6262,6 +6263,7 @@
   }
 
   function positionFloatingSubmenu(submenuEl, anchorEl){
+    if (submenuEl.parentNode !== document.body) document.body.appendChild(submenuEl);
     var margin = 8;
     var anchorRect = anchorEl.getBoundingClientRect();
     var subRect = submenuEl.getBoundingClientRect();
@@ -6284,10 +6286,11 @@
       if (tool === 'tactica-toggle'){
         ev.stopPropagation();
         var wrap = document.getElementById('tactica-wrap');
-        var nowOpen = !wrap.classList.contains('open');
+        var submenu = document.getElementById('tactica-submenu');
+        var nowOpen = !submenu.classList.contains('open');
         wrap.classList.toggle('open', nowOpen);
+        submenu.classList.toggle('open', nowOpen);
         if (nowOpen){
-          var submenu = document.getElementById('tactica-submenu');
           positionFloatingSubmenu(submenu, btn);
         } else {
           document.getElementById('tareas-submenu').classList.remove('open');
@@ -6320,16 +6323,18 @@
       else if (tool === 'redo') doRedo();
       else activateDrawTool(tool);
       document.getElementById('tactica-wrap').classList.remove('open');
+      document.getElementById('tactica-submenu').classList.remove('open');
     });
   });
   document.addEventListener('click', function(ev){
     var wrap = document.getElementById('tactica-wrap');
+    var tacticaSub = document.getElementById('tactica-submenu');
     var tareasSub = document.getElementById('tareas-submenu');
-    if (wrap && wrap.classList.contains('open') && !wrap.contains(ev.target) && !(tareasSub && tareasSub.contains(ev.target))){
-      wrap.classList.remove('open');
-    }
-    if (tareasSub && tareasSub.classList.contains('open') && !tareasSub.contains(ev.target) && !(wrap && wrap.contains(ev.target))){
-      tareasSub.classList.remove('open');
+    var insideAny = (wrap && wrap.contains(ev.target)) || (tacticaSub && tacticaSub.contains(ev.target)) || (tareasSub && tareasSub.contains(ev.target));
+    if (!insideAny){
+      if (wrap) wrap.classList.remove('open');
+      if (tacticaSub) tacticaSub.classList.remove('open');
+      if (tareasSub) tareasSub.classList.remove('open');
     }
   });
 
@@ -6420,6 +6425,7 @@
         activateTacticalTaskTool(opt[0]);
         document.getElementById('tareas-submenu').classList.remove('open');
         document.getElementById('tactica-wrap').classList.remove('open');
+        document.getElementById('tactica-submenu').classList.remove('open');
       });
       container.appendChild(btn);
     });
