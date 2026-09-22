@@ -6481,7 +6481,6 @@
     if (shape._isMilSymbol && shape._supply == null) shape._supply = 100;
     shape.on('click', function(e){
       if (activeToolName === 'elements' && elementsClickHandler){ elementsClickHandler(e); return; }
-      if (routeOriginClickHandler){ routeOriginClickHandler(e); return; }
       if (activeToolName === 'text' && textClickHandler){ textClickHandler(e); return; }
       if (activeToolName === 'target' && targetClickHandler){ targetClickHandler(e); return; }
       if (activeToolName === 'infra' && infraClickHandler){ infraClickHandler(e); return; }
@@ -10189,7 +10188,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   });
 
   function stopRouteOriginPick(){
-    if (routeOriginClickHandler){ map.off('click', routeOriginClickHandler); routeOriginClickHandler = null; }
+    if (routeOriginClickHandler){ mapContainer.removeEventListener('click', routeOriginClickHandler, true); routeOriginClickHandler = null; }
     mapContainer.style.cursor = '';
     document.getElementById('route-pick-hint').classList.remove('show');
     document.removeEventListener('keydown', routeOriginEscHandler);
@@ -10206,10 +10205,12 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     document.addEventListener('keydown', routeOriginEscHandler);
     var destLatLng = searchSelectedLatLng, destLabel = searchSelectedLabel;
     routeOriginClickHandler = function(e){
+      if (!mapContainer.contains(e.target) && e.target !== mapContainer) return;
+      var latlng = map.containerPointToLatLng(containerPointFromEvent(e));
       stopRouteOriginPick();
-      traceRoute(e.latlng, destLatLng, destLabel);
+      traceRoute(latlng, destLatLng, destLabel);
     };
-    map.on('click', routeOriginClickHandler);
+    mapContainer.addEventListener('click', routeOriginClickHandler, true);
   });
   document.getElementById('route-pick-cancel').addEventListener('click', stopRouteOriginPick);
 
