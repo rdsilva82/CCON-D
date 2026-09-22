@@ -4010,12 +4010,25 @@
   }
   function defaultTacticalTaskGeom(tipo, base, tip){
     var g = { tipo: tipo, base: base, tip: tip };
+    if (tipo === 'bloquear') g.widthRatio = 0.42;
+    if (tipo === 'canalizar') g.widthRatio = 0.85;
+    if (tipo === 'penetrar') g.widthRatio = 0.85;
     if (tipo === 'despejar' || tipo === 'desarticular') g.arrowRatios = [0.55, 0.55, 0.55];
+    if (tipo === 'desarticular') g.stubRatio = 0.1;
     if (tipo === 'interdictar') g.crossRatio = 0.85;
     return g;
   }
   function taskLetter(tipo){
     return { bloquear:'B', canalizar:'C', despejar:'C', penetrar:'P', desarticular:'D', destruir:'D', interdictar:'I', neutralizar:'N' }[tipo] || '';
+  }
+  function taskBearingDeg(dir){
+    var b = Math.atan2(dir.y, dir.x) * 180/Math.PI;
+    if (b < 0) b += 360;
+    return b;
+  }
+  function buildTaskLabelIcon(text, rotationDeg, color){
+    var html = '<div style="position:relative;"><div style="position:absolute; left:0; top:0; transform:translate(-50%,-50%) rotate(' + rotationDeg + 'deg); white-space:nowrap; font-family:Calibri,Arial,sans-serif; font-size:14px; font-weight:800; color:' + color + '; text-shadow:0 0 3px #fff, 0 0 4px #fff, 0 0 5px #fff;">' + text + '</div></div>';
+    return L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] });
   }
   function buildTacticalTaskParts(g){
     var ax = taskAxis(g.base, g.tip);
@@ -4029,13 +4042,13 @@
     }
 
     if (g.tipo === 'bloquear'){
-      var vHalf = len*0.42;
+      var vHalf = len*(g.widthRatio != null ? g.widthRatio : 0.42);
       lines.push({ pts: [ taskPt(g.base, dir, perp, 0, -vHalf), taskPt(g.base, dir, perp, 0, vHalf) ] });
       addLineWithLabelAt(g.base, g.tip, 0.5);
-      label = { pos: taskPt(g.base, dir, perp, len*0.5, 0), text: letter };
+      label = { pos: taskPt(g.base, dir, perp, len*0.5, 0), text: letter, bearing: taskBearingDeg(dir) };
     }
     else if (g.tipo === 'canalizar'){
-      var armLen = len*0.85, tickLen = len*0.22;
+      var armLen = len*(g.widthRatio != null ? g.widthRatio : 0.85), tickLen = len*0.22;
       lines.push({ pts: [ taskPt(g.base, dir, perp, 0, -armLen), g.base ] });
       var bottomTickEnd = taskPt(g.base, dir, perp, -tickLen*0.7, -armLen-tickLen*0.5);
       lines.push({ pts: [ taskPt(g.base, dir, perp, 0, -armLen), bottomTickEnd ] });
@@ -4043,7 +4056,7 @@
       var topTickEnd = taskPt(g.base, dir, perp, len+tickLen*0.7, -armLen-tickLen*0.5);
       lines.push({ pts: [ taskPt(g.base, dir, perp, len, -armLen), topTickEnd ] });
       addLineWithLabelAt(g.base, g.tip, 0.5);
-      label = { pos: taskPt(g.base, dir, perp, len*0.5, 0), text: letter };
+      label = { pos: taskPt(g.base, dir, perp, len*0.5, 0), text: letter, bearing: taskBearingDeg(dir) };
     }
     else if (g.tipo === 'despejar' || g.tipo === 'desarticular'){
       var isDespejar = g.tipo === 'despejar';
@@ -4062,7 +4075,7 @@
         var hdir = { x: hv.x/hl, y: hv.y/hl };
         if (idx === 1 && letter){
           taskSegWithGap(tailPt, headPt, 0.5, gap).forEach(function(seg){ lines.push({ pts: seg }); });
-          label = { pos: taskPt(g.base, dir, perp, len*t, outerSign*armLen*0.5), text: letter };
+          label = { pos: taskPt(g.base, dir, perp, len*t, outerSign*armLen*0.5), text: letter, bearing: taskBearingDeg(perp) };
         } else {
           lines.push({ pts: [ tailPt, headPt ] });
         }
@@ -4070,17 +4083,18 @@
       });
       if (g.tipo === 'desarticular'){
         var midAxis = taskPt(g.base, dir, perp, len*0.5, 0);
-        lines.push({ pts: [ midAxis, taskPt(g.base, dir, perp, len*0.5, -len*0.1) ] });
+        var stubLen = len*(g.stubRatio != null ? g.stubRatio : 0.1);
+        lines.push({ pts: [ midAxis, taskPt(g.base, dir, perp, len*0.5, -stubLen) ] });
       }
     }
     else if (g.tipo === 'penetrar'){
       lines.push({ pts: [ g.base, g.tip ] });
-      var pArmLen = len*0.85;
+      var pArmLen = len*(g.widthRatio != null ? g.widthRatio : 0.85);
       var pAxisPt = taskPt(g.base, dir, perp, len*0.5, 0);
       var pTail = taskPt(g.base, dir, perp, len*0.5, -pArmLen);
       taskSegWithGap(pTail, pAxisPt, 0.5, gap).forEach(function(seg){ lines.push({ pts: seg }); });
       heads.push(taskArrowHeadPts(pAxisPt, { x:perp.x, y:perp.y }, Math.max(len*0.09,4)));
-      label = { pos: taskPt(g.base, dir, perp, len*0.5, -pArmLen*0.5), text: letter };
+      label = { pos: taskPt(g.base, dir, perp, len*0.5, -pArmLen*0.5), text: letter, bearing: taskBearingDeg(perp) };
     }
     else if (g.tipo === 'destruir' || g.tipo === 'neutralizar'){
       var a1 = taskPt(g.base, dir, perp, len, 0);
@@ -4089,7 +4103,7 @@
       var a4 = taskPt(g.base, dir, perp, 0, -len);
       lines.push({ pts: [ a3, a1 ] });
       lines.push({ pts: [ a4, a2 ], dash: (g.tipo === 'neutralizar') });
-      label = { pos: g.base, text: letter };
+      label = { pos: g.base, text: letter, bearing: taskBearingDeg(dir) };
     }
     else if (g.tipo === 'interdictar'){
       lines.push({ pts: [ g.base, g.tip ] });
@@ -4102,7 +4116,7 @@
       var crossTip = fromLocalXY(crossCenter, crossDir.x*crossLen*0.65, crossDir.y*crossLen*0.65);
       taskSegWithGap(crossTail, crossTip, (crossLen*0.35)/(crossLen), gap*0.8).forEach(function(seg){ lines.push({ pts: seg }); });
       heads.push(taskArrowHeadPts(crossTip, crossDir, Math.max(len*0.09,4)));
-      label = { pos: crossCenter, text: letter };
+      label = { pos: crossCenter, text: letter, bearing: taskBearingDeg(crossDir) };
     }
 
     return { lines: lines, heads: heads, label: label };
@@ -4130,11 +4144,8 @@
       L.polygon(head, { color:color, weight:1, fillColor:color, fillOpacity:1, interactive:false, keyboard:false }).addTo(group);
     });
     if (parts.label){
-      var fontSize = Math.max(Math.round(taskAxis(shape._task.base, shape._task.tip).len * 0.12), 11);
-      var icon = L.divIcon({
-        className: '', html: '<div style="font-family:Calibri,Arial,sans-serif;font-weight:800;font-size:' + fontSize + 'px;color:' + color + ';text-shadow:0 0 3px #fff,0 0 4px #fff,0 0 5px #fff;transform:translate(-50%,-50%);white-space:nowrap;">' + parts.label.text + '</div>',
-        iconSize:[0,0]
-      });
+      var rotDeg = labelRotationForBearing(parts.label.bearing || 0);
+      var icon = buildTaskLabelIcon(parts.label.text, rotDeg, color);
       L.marker(parts.label.pos, { icon:icon, interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
     }
     if (owner.visible) group.addTo(map);
@@ -5388,17 +5399,98 @@
   }
 
   function createTacticalTaskHandles(shape){
-    var markers = [];
     var before = JSON.parse(JSON.stringify(shape._task));
 
     function finalizeUndo(){
       var after = JSON.parse(JSON.stringify(shape._task));
       pushAction(
-        function(){ shape._task = JSON.parse(JSON.stringify(before)); syncTacticalTaskCompanion(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); },
-        function(){ shape._task = JSON.parse(JSON.stringify(after)); syncTacticalTaskCompanion(shape); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); }
+        function(){ shape._task = JSON.parse(JSON.stringify(before)); syncTacticalTaskCompanion(shape); repositionAll(); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); },
+        function(){ shape._task = JSON.parse(JSON.stringify(after)); syncTacticalTaskCompanion(shape); repositionAll(); if (selectedShape===shape) showProperties(shape, findLayerOfShape(shape)); }
       );
       before = JSON.parse(JSON.stringify(shape._task));
       renderLayerList();
+    }
+
+    var t = shape._task.tipo;
+    var extraDefs = [];
+
+    if (t === 'bloquear' || t === 'canalizar' || t === 'penetrar'){
+      extraDefs.push({
+        color:'#5B8A72', size:13, title:'Arrastre para cambiar el ancho',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var wr = shape._task.widthRatio != null ? shape._task.widthRatio : 0.5;
+          if (t === 'bloquear') return taskPt(shape._task.base, ax.dir, ax.perp, 0, ax.len*wr);
+          if (t === 'canalizar') return taskPt(shape._task.base, ax.dir, ax.perp, 0, -ax.len*wr);
+          return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, -ax.len*wr);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var refPt = (t === 'penetrar') ? taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, 0) : shape._task.base;
+          shape._task.widthRatio = Math.max(distanceMeters(refPt, latlng) / ax.len, 0.05);
+        }
+      });
+    }
+    if (t === 'despejar' || t === 'desarticular'){
+      var isDespejar = t === 'despejar';
+      [0,0.5,1].forEach(function(tt, idx){
+        extraDefs.push({
+          color:'#5B8A72', size:13, title:'Arrastre para cambiar esta flecha',
+          compute: function(){
+            var ax = taskAxis(shape._task.base, shape._task.tip);
+            var armLen = ax.len * shape._task.arrowRatios[idx];
+            var outerSign = isDespejar ? -1 : 1;
+            return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*tt, outerSign*armLen);
+          },
+          onDrag: function(latlng){
+            var ax = taskAxis(shape._task.base, shape._task.tip);
+            var axisPt = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*tt, 0);
+            shape._task.arrowRatios[idx] = Math.max(distanceMeters(axisPt, latlng) / ax.len, 0.08);
+          }
+        });
+      });
+    }
+    if (t === 'desarticular'){
+      extraDefs.push({
+        color:'#8B6BB0', size:13, title:'Arrastre para cambiar el trazo perpendicular',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var stubLen = ax.len * (shape._task.stubRatio != null ? shape._task.stubRatio : 0.1);
+          return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, -stubLen);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var midAxis = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, 0);
+          shape._task.stubRatio = Math.max(distanceMeters(midAxis, latlng) / ax.len, 0.02);
+        }
+      });
+    }
+    if (t === 'interdictar'){
+      extraDefs.push({
+        color:'#5B8A72', size:13, title:'Arrastre para cambiar la flecha cruzada',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var crossCenter = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.4, 0);
+          var crossDir = taskRotateVec(ax.dir, -50);
+          var crossLen = ax.len * (shape._task.crossRatio || 0.85);
+          return fromLocalXY(crossCenter, crossDir.x*crossLen*0.65, crossDir.y*crossLen*0.65);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var crossCenter = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.4, 0);
+          shape._task.crossRatio = Math.max((distanceMeters(crossCenter, latlng)/0.65) / ax.len, 0.1);
+        }
+      });
+    }
+
+    var extraMarkers = extraDefs.map(function(def){
+      var m = L.marker(def.compute(), { draggable:true, icon: makeHandleIcon(def.color, def.size), zIndexOffset:2000, title: def.title }).addTo(map);
+      m._taskHandleDef = def;
+      return m;
+    });
+
+    function repositionAll(){
+      extraMarkers.forEach(function(m){ m.setLatLng(m._taskHandleDef.compute()); });
     }
 
     var baseMarker = L.marker(shape._task.base, { draggable:true, icon: makeHandleIcon('#1F3864',16), zIndexOffset:2000, title:'Arrastre para mover el origen' }).addTo(map);
@@ -5406,62 +5498,31 @@
       shape._task.base = baseMarker.getLatLng();
       shape.setLatLngs([shape._task.base, shape._task.tip]);
       syncTacticalTaskCompanion(shape);
+      repositionAll();
     });
     baseMarker.on('dragend', finalizeUndo);
-    markers.push(baseMarker);
 
     var tipMarker = L.marker(shape._task.tip, { draggable:true, icon: makeHandleIcon('#B8962E',16), zIndexOffset:2000, title:'Arrastre para rotar y cambiar el tamaño' }).addTo(map);
     tipMarker.on('drag', function(){
       shape._task.tip = tipMarker.getLatLng();
       shape.setLatLngs([shape._task.base, shape._task.tip]);
       syncTacticalTaskCompanion(shape);
+      repositionAll();
     });
     tipMarker.on('dragend', finalizeUndo);
-    markers.push(tipMarker);
 
-    if (shape._task.tipo === 'despejar' || shape._task.tipo === 'desarticular'){
-      var isDespejar = shape._task.tipo === 'despejar';
-      [0,0.5,1].forEach(function(t, idx){
-        function currentOuter(){
-          var ax = taskAxis(shape._task.base, shape._task.tip);
-          var armLen = ax.len * (shape._task.arrowRatios[idx]);
-          var outerSign = isDespejar ? -1 : 1;
-          return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*t, outerSign*armLen);
-        }
-        var m = L.marker(currentOuter(), { draggable:true, icon: makeHandleIcon('#5B8A72',13), zIndexOffset:2000, title:'Arrastre para cambiar esta flecha' }).addTo(map);
-        m.on('drag', function(){
-          var ax = taskAxis(shape._task.base, shape._task.tip);
-          var axisPt = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*t, 0);
-          var d = distanceMeters(axisPt, m.getLatLng());
-          shape._task.arrowRatios[idx] = Math.max(d / ax.len, 0.08);
-          syncTacticalTaskCompanion(shape);
-        });
-        m.on('dragend', function(){ m.setLatLng(currentOuter()); finalizeUndo(); });
-        markers.push(m);
-      });
-    }
-    if (shape._task.tipo === 'interdictar'){
-      function currentCrossTip(){
-        var ax = taskAxis(shape._task.base, shape._task.tip);
-        var crossCenter = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.4, 0);
-        var crossDir = taskRotateVec(ax.dir, -50);
-        var crossLen = ax.len * (shape._task.crossRatio || 0.85);
-        return fromLocalXY(crossCenter, crossDir.x*crossLen*0.65, crossDir.y*crossLen*0.65);
-      }
-      var cm = L.marker(currentCrossTip(), { draggable:true, icon: makeHandleIcon('#5B8A72',13), zIndexOffset:2000, title:'Arrastre para cambiar la flecha cruzada' }).addTo(map);
-      cm.on('drag', function(){
-        var ax = taskAxis(shape._task.base, shape._task.tip);
-        var crossCenter = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.4, 0);
-        var d = distanceMeters(crossCenter, cm.getLatLng());
-        shape._task.crossRatio = Math.max((d/0.65) / ax.len, 0.1);
+    extraMarkers.forEach(function(m){
+      m.on('drag', function(){
+        m._taskHandleDef.onDrag(m.getLatLng());
         syncTacticalTaskCompanion(shape);
+        repositionAll();
       });
-      cm.on('dragend', function(){ cm.setLatLng(currentCrossTip()); finalizeUndo(); });
-      markers.push(cm);
-    }
+      m.on('dragend', finalizeUndo);
+    });
 
+    var allMarkers = [baseMarker, tipMarker].concat(extraMarkers);
     return function cleanup(){
-      markers.forEach(function(m){ map.removeLayer(m); });
+      allMarkers.forEach(function(mk){ map.removeLayer(mk); });
     };
   }
 
@@ -8774,7 +8835,9 @@
       if (shape && shape._isTacticalTask){
         f.properties.task = {
           tipo: shape._task.tipo,
+          widthRatio: shape._task.widthRatio,
           arrowRatios: shape._task.arrowRatios || undefined,
+          stubRatio: shape._task.stubRatio,
           crossRatio: shape._task.crossRatio,
           weight: shape._task.weight
         };
@@ -9016,7 +9079,9 @@
             tipo: p.task.tipo,
             base: llArr[0],
             tip: llArr[1],
+            widthRatio: p.task.widthRatio,
             arrowRatios: p.task.arrowRatios || undefined,
+            stubRatio: p.task.stubRatio,
             crossRatio: p.task.crossRatio,
             weight: p.task.weight
           };
