@@ -6261,6 +6261,23 @@
     updateToolbarUI();
   }
 
+  function positionFloatingSubmenu(submenuEl, anchorEl){
+    var margin = 8;
+    var anchorRect = anchorEl.getBoundingClientRect();
+    var subRect = submenuEl.getBoundingClientRect();
+    var left = anchorRect.right + 6;
+    if (left + subRect.width > window.innerWidth - margin){
+      left = anchorRect.left - subRect.width - 6;
+      if (left < margin) left = Math.max(margin, Math.min(anchorRect.right + 6, window.innerWidth - subRect.width - margin));
+    }
+    var top = anchorRect.top;
+    if (top + subRect.height > window.innerHeight - margin){
+      top = Math.max(margin, window.innerHeight - subRect.height - margin);
+    }
+    submenuEl.style.left = left + 'px';
+    submenuEl.style.top = top + 'px';
+  }
+
   document.querySelectorAll('#draw-toolbar .tool-btn').forEach(function(btn){
     btn.addEventListener('click', function(ev){
       var tool = btn.getAttribute('data-tool');
@@ -6270,10 +6287,8 @@
         var nowOpen = !wrap.classList.contains('open');
         wrap.classList.toggle('open', nowOpen);
         if (nowOpen){
-          var btnRect = btn.getBoundingClientRect();
           var submenu = document.getElementById('tactica-submenu');
-          submenu.style.left = (btnRect.right + 6) + 'px';
-          submenu.style.top = btnRect.top + 'px';
+          positionFloatingSubmenu(submenu, btn);
         } else {
           document.getElementById('tareas-submenu').classList.remove('open');
         }
@@ -6286,9 +6301,7 @@
         var nowOpenT = !tareasSubmenu.classList.contains('open');
         tareasSubmenu.classList.toggle('open', nowOpenT);
         if (nowOpenT){
-          var tRect = btn.getBoundingClientRect();
-          tareasSubmenu.style.left = (tRect.right + 6) + 'px';
-          tareasSubmenu.style.top = tRect.top + 'px';
+          positionFloatingSubmenu(tareasSubmenu, btn);
         }
         return;
       }
