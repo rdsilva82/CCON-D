@@ -4051,6 +4051,26 @@
     }
     return ring;
   }
+  function ellipseTangentAt(base, dir, perp, a, b, theta){
+    var p1 = ellipseBoundaryPt(base, dir, perp, a, b, theta - 0.02);
+    var p2 = ellipseBoundaryPt(base, dir, perp, a, b, theta + 0.02);
+    var v = localXY(p1, p2);
+    var vl = Math.hypot(v.x, v.y) || 1;
+    return { x: v.x/vl, y: v.y/vl };
+  }
+  function arcPointsRange(base, dir, perp, a, b, thA, thB, steps){
+    var pts = [];
+    var n = Math.max(Math.round(steps), 2);
+    for (var i=0;i<=n;i++){ pts.push(ellipseBoundaryPt(base, dir, perp, a, b, thA + (i/n)*(thB-thA))); }
+    return pts;
+  }
+  function arcWithLabelGap(base, dir, perp, a, b, thStart, thEnd, labelTheta, gapRad, steps){
+    var segs = [];
+    var labelA = labelTheta - gapRad/2, labelB = labelTheta + gapRad/2;
+    if (labelA > thStart + 0.02) segs.push(arcPointsRange(base, dir, perp, a, b, thStart, labelA, steps*(labelA-thStart)/(thEnd-thStart)));
+    if (labelB < thEnd - 0.02) segs.push(arcPointsRange(base, dir, perp, a, b, labelB, thEnd, steps*(thEnd-labelB)/(thEnd-thStart)));
+    return segs;
+  }
   function buildTacticalTaskParts(g){
     var ax = taskAxis(g.base, g.tip);
     var len = ax.len, dir = ax.dir, perp = ax.perp;
@@ -4140,13 +4160,21 @@
       label = { pos: crossCenter, text: letter, bearing: taskBearingDeg(crossDir) };
     }
 
-    if (g.tipo === 'retener' || g.tipo === 'asegurar'){
+    if (g.tipo === 'retener' || g.tipo === 'asegurar' || g.tipo === 'aislar' || g.tipo === 'ocupar'){
       var b1 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
-      lines.push({ pts: ellipseRing(g.base, dir, perp, len, b1, 40) });
+      var gapDeg = 28, gapRad = gapDeg*Math.PI/180;
+      var thStart = gapRad/2, thEnd = Math.PI*2 - gapRad/2;
+      var labelTheta = Math.PI; // opposite the opening
+      var labelGapRad = letter ? (0.5) : 0;
+      if (letter){
+        arcWithLabelGap(g.base, dir, perp, len, b1, thStart, thEnd, labelTheta, labelGapRad, 44).forEach(function(seg){ lines.push({ pts: seg }); });
+      } else {
+        lines.push({ pts: arcPointsRange(g.base, dir, perp, len, b1, thStart, thEnd, 44) });
+      }
       if (g.tipo === 'retener'){
-        var nTicks = 9, gapDeg = 46;
+        var nTicks = 8, tGapDeg = 42;
         for (var i=0;i<nTicks;i++){
-          var th = (gapDeg/2 + i*((360-gapDeg)/(nTicks-1))) * Math.PI/180;
+          var th = (tGapDeg/2 + i*((360-tGapDeg)/(nTicks-1))) * Math.PI/180;
           var p = ellipseBoundaryPt(g.base, dir, perp, len, b1, th);
           var nrm = localXY(g.base, p); var nl = Math.hypot(nrm.x,nrm.y)||1;
           var nUnit = { x:nrm.x/nl, y:nrm.y/nl };
@@ -4154,17 +4182,46 @@
           lines.push({ pts: [ p, fromLocalXY(p, nUnit.x*tickLen, nUnit.y*tickLen) ] });
         }
       }
-      var arrowTip = taskPt(g.base, dir, perp, len*1.28, 0);
-      lines.push({ pts: [ g.tip, arrowTip ] });
-      heads.push(taskArrowHeadPts(arrowTip, dir, Math.max(len*0.09,4)));
-      labels.push({ pos: taskPt(g.base, dir, perp, len*1.1, b1*0.55), text: letter, bearing: 0 });
+      if (g.tipo === 'aislar'){
+        var nTri = 8, triGapDeg = 30;
+        for (var k=0;k<nTri;k++){
+          var th3 = (triGapDeg/2 + k*((360-triGapDeg)/(nTri-1))) * Math.PI/180;
+          var p3 = ellipseBoundaryPt(g.base, dir, perp, len, b1, th3);
+          var nrm3 = localXY(g.base, p3); var nl3 = Math.hypot(nrm3.x,nrm3.y)||1;
+          var nUnit3 = { x:nrm3.x/nl3, y:nrm3.y/nl3 };
+          var tUnit3 = { x:-nUnit3.y, y:nUnit3.x };
+          var triSize = len*0.09;
+          var apex = fromLocalXY(p3, -nUnit3.x*triSize*1.4, -nUnit3.y*triSize*1.4);
+          var s1 = fromLocalXY(p3, tUnit3.x*triSize*0.6, tUnit3.y*triSize*0.6);
+          var s2 = fromLocalXY(p3, -tUnit3.x*triSize*0.6, -tUnit3.y*triSize*0.6);
+          tris.push({ pts: [apex, s1, s2] });
+        }
+      }
+      var endPt = ellipseBoundaryPt(g.base, dir, perp, len, b1, thEnd);
+      var tangent = ellipseTangentAt(g.base, dir, perp, len, b1, thEnd);
+      if (g.tipo === 'ocupar'){
+        var crossSize = len*0.08;
+        lines.push({ pts: [ fromLocalXY(endPt,-crossSize,-crossSize), fromLocalXY(endPt,crossSize,crossSize) ] });
+        lines.push({ pts: [ fromLocalXY(endPt,crossSize,-crossSize), fromLocalXY(endPt,-crossSize,crossSize) ] });
+      } else {
+        var arrowLen = len*0.38;
+        var arrowTip = fromLocalXY(endPt, tangent.x*arrowLen, tangent.y*arrowLen);
+        lines.push({ pts: [ endPt, arrowTip ] });
+        heads.push(taskArrowHeadPts(arrowTip, tangent, Math.max(len*0.09,4)));
+      }
+      if (letter){
+        labels.push({ pos: ellipseBoundaryPt(g.base, dir, perp, len, b1, labelTheta), text: letter, bearing: 0 });
+      }
     }
     else if (g.tipo === 'contener'){
       var b2 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
-      lines.push({ pts: ellipseRing(g.base, dir, perp, len, b2, 40) });
-      var nTicks2 = 9, gapDeg2 = 46;
+      var half = Math.PI/2;
+      var thStart2 = -half, thEnd2 = half;
+      var labelTheta2 = 0;
+      arcWithLabelGap(g.base, dir, perp, len, b2, thStart2, thEnd2, labelTheta2, 0.5, 30).forEach(function(seg){ lines.push({ pts: seg }); });
+      var nTicks2 = 6, tGapDeg2 = 20;
       for (var j=0;j<nTicks2;j++){
-        var th2 = (gapDeg2/2 + j*((360-gapDeg2)/(nTicks2-1))) * Math.PI/180;
+        var th2 = (-half) + (tGapDeg2*Math.PI/180/2) + j*((Math.PI-(tGapDeg2*Math.PI/180))/(nTicks2-1));
         var p2 = ellipseBoundaryPt(g.base, dir, perp, len, b2, th2);
         var nrm2 = localXY(g.base, p2); var nl2 = Math.hypot(nrm2.x,nrm2.y)||1;
         var nUnit2 = { x:nrm2.x/nl2, y:nrm2.y/nl2 };
@@ -4173,40 +4230,10 @@
       }
       var enemyLen = len*(g.enemyRatio != null ? g.enemyRatio : 0.4);
       var enemyStart = taskPt(g.base, dir, perp, len+enemyLen, 0);
-      lines.push({ pts: [ enemyStart, g.tip ] });
-      heads.push(taskArrowHeadPts(g.tip, dir, Math.max(len*0.09,4)));
-      labels.push({ pos: taskPt(g.base, dir, perp, len*1.05, b2*0.5), text: letter, bearing: 0 });
+      lines.push({ pts: [ enemyStart, g.base ] });
+      heads.push(taskArrowHeadPts(g.base, dir, Math.max(len*0.09,4)));
+      labels.push({ pos: ellipseBoundaryPt(g.base, dir, perp, len, b2, labelTheta2), text: letter, bearing: 0 });
       labels.push({ pos: taskPt(g.base, dir, perp, len+enemyLen*0.5, len*0.12), text: 'ENY', bearing: taskBearingDeg(dir) });
-    }
-    else if (g.tipo === 'aislar'){
-      var b3 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
-      lines.push({ pts: ellipseRing(g.base, dir, perp, len, b3, 40) });
-      var nTri = 8, gapDeg3 = 30;
-      for (var k=0;k<nTri;k++){
-        var th3 = (gapDeg3/2 + k*((360-gapDeg3)/(nTri-1))) * Math.PI/180;
-        var p3 = ellipseBoundaryPt(g.base, dir, perp, len, b3, th3);
-        var nrm3 = localXY(g.base, p3); var nl3 = Math.hypot(nrm3.x,nrm3.y)||1;
-        var nUnit3 = { x:nrm3.x/nl3, y:nrm3.y/nl3 };
-        var tUnit3 = { x:-nUnit3.y, y:nUnit3.x };
-        var triSize = len*0.09;
-        var apex = fromLocalXY(p3, -nUnit3.x*triSize*1.4, -nUnit3.y*triSize*1.4);
-        var s1 = fromLocalXY(p3, tUnit3.x*triSize*0.6, tUnit3.y*triSize*0.6);
-        var s2 = fromLocalXY(p3, -tUnit3.x*triSize*0.6, -tUnit3.y*triSize*0.6);
-        tris.push({ pts: [apex, s1, s2] });
-      }
-      var arrowTipA = taskPt(g.base, dir, perp, len*1.18, 0);
-      lines.push({ pts: [ g.tip, arrowTipA ] });
-      heads.push(taskArrowHeadPts(arrowTipA, dir, Math.max(len*0.08,4)));
-    }
-    else if (g.tipo === 'ocupar'){
-      var b4 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
-      lines.push({ pts: ellipseRing(g.base, dir, perp, len, b4, 40) });
-      var crossSize = len*0.08;
-      var crossD1a = fromLocalXY(g.tip, -crossSize, -crossSize), crossD1b = fromLocalXY(g.tip, crossSize, crossSize);
-      var crossD2a = fromLocalXY(g.tip, crossSize, -crossSize), crossD2b = fromLocalXY(g.tip, -crossSize, crossSize);
-      lines.push({ pts: [crossD1a, crossD1b] });
-      lines.push({ pts: [crossD2a, crossD2b] });
-      labels.push({ pos: taskPt(g.base, dir, perp, len*1.1, b4*0.55), text: letter, bearing: 0 });
     }
     else if (g.tipo === 'fijar'){
       var waveAmp = len*(g.waveWidthRatio != null ? g.waveWidthRatio : 0.18);
@@ -4227,29 +4254,26 @@
     }
     else if (g.tipo === 'frentedefuego'){
       function ratioPt(r){ return taskPt(g.base, dir, perp, len*r.d, len*r.p); }
-      function zigzagBetween(p1, p2, n){
+      function zigzag3(p1, p2){
         var v = localXY(p1, p2);
         var vl = Math.hypot(v.x,v.y) || 1;
         var vd = { x:v.x/vl, y:v.y/vl };
         var vp = { x:-vd.y, y:vd.x };
-        var amp = vl*0.09;
-        var pts = [p1];
-        for (var q=1; q<n; q++){
-          var qt = (q/n)*vl;
-          var side = (q % 2 === 0) ? 1 : -1;
-          pts.push(taskPt(p1, vd, vp, qt, side*amp));
-        }
-        pts.push(p2);
-        return pts;
+        var amp = vl*0.11;
+        var m1 = taskPt(p1, vd, vp, vl*0.42, amp);
+        var m2 = taskPt(p1, vd, vp, vl*0.52, -amp*0.35);
+        return [p1, m1, m2, p2];
       }
       var a1s = ratioPt(g.arrow1Start), a1e = ratioPt(g.arrow1End);
       var a2s = ratioPt(g.arrow2Start), a2e = ratioPt(g.arrow2End);
-      lines.push({ pts: zigzagBetween(a1s, a1e, 4) });
-      lines.push({ pts: zigzagBetween(a2s, a2e, 4) });
-      var d1 = localXY(a1s, a1e); var d1l = Math.hypot(d1.x,d1.y)||1;
-      var d2 = localXY(a2s, a2e); var d2l = Math.hypot(d2.x,d2.y)||1;
-      heads.push(taskArrowHeadPts(a1e, {x:d1.x/d1l,y:d1.y/d1l}, Math.max(len*0.08,4)));
-      heads.push(taskArrowHeadPts(a2e, {x:d2.x/d2l,y:d2.y/d2l}, Math.max(len*0.08,4)));
+      var zz1 = zigzag3(a1s, a1e);
+      var zz2 = zigzag3(a2s, a2e);
+      lines.push({ pts: zz1 });
+      lines.push({ pts: zz2 });
+      var d1 = localXY(zz1[zz1.length-2], zz1[zz1.length-1]); var d1l = Math.hypot(d1.x,d1.y)||1;
+      var d2 = localXY(zz2[zz2.length-2], zz2[zz2.length-1]); var d2l = Math.hypot(d2.x,d2.y)||1;
+      heads.push({ pts: taskArrowHeadPts(a1e, {x:d1.x/d1l,y:d1.y/d1l}, Math.max(len*0.08,4)), fill:false });
+      heads.push({ pts: taskArrowHeadPts(a2e, {x:d2.x/d2l,y:d2.y/d2l}, Math.max(len*0.08,4)), fill:false });
       lines.push({ pts: ellipseRing(a1s, {x:1,y:0}, {x:0,y:1}, len*0.02, len*0.02, 16) });
       lines.push({ pts: ellipseRing(a2s, {x:1,y:0}, {x:0,y:1}, len*0.02, len*0.02, 16) });
     }
@@ -4277,7 +4301,9 @@
       L.polyline(line.pts, { color:color, weight:weight, interactive:false, keyboard:false, dashArray: line.dash ? '7,5' : null }).addTo(group);
     });
     parts.heads.forEach(function(head){
-      L.polygon(head, { color:color, weight:1, fillColor:color, fillOpacity:1, interactive:false, keyboard:false }).addTo(group);
+      var pts = head.pts || head;
+      var filled = head.fill !== false;
+      L.polygon(pts, { color:color, weight: filled ? 1 : weight, fillColor:color, fill: filled, fillOpacity: filled ? 1 : 0, interactive:false, keyboard:false }).addTo(group);
     });
     (parts.tris || []).forEach(function(tri){
       L.polygon(tri.pts, { color:color, weight:weight, fill:false, interactive:false, keyboard:false }).addTo(group);
@@ -4337,7 +4363,9 @@
       L.polyline(line.pts, { color: shape._fillColorRaw, weight: 2.4, dashArray: line.dash ? '7,5' : null, interactive:false }).addTo(group);
     });
     parts.heads.forEach(function(head){
-      L.polygon(head, { color: shape._fillColorRaw, weight:1, fillColor: shape._fillColorRaw, fillOpacity:1, interactive:false }).addTo(group);
+      var pts = head.pts || head;
+      var filled = head.fill !== false;
+      L.polygon(pts, { color: shape._fillColorRaw, weight: filled ? 1 : 2.4, fillColor: shape._fillColorRaw, fill: filled, fillOpacity: filled ? 1 : 0, interactive:false }).addTo(group);
     });
     (parts.tris || []).forEach(function(tri){
       L.polygon(tri.pts, { color: shape._fillColorRaw, weight:2.4, fill:false, interactive:false }).addTo(group);
