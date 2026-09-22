@@ -1532,6 +1532,13 @@
     catch(err){ /* almacenamiento no disponible; se continúa sin guardar */ }
   }
 
+  var pendingAulaRestore = [];
+  function restorePendingAulas(){
+    if (pendingAulaRestore.length && typeof direccionMergeAulaIntoLayers === 'function'){
+      pendingAulaRestore.forEach(function(letra){ direccionMergeAulaIntoLayers(letra); });
+    }
+    pendingAulaRestore = [];
+  }
   function applyRemoteState(state, options){
     options = options || {};
     var applyView = options.applyView !== false;
@@ -1549,6 +1556,8 @@
       if (document.body.classList.contains('mode-personal')) renderPersonalPanel();
     }
     if (!state.layers || !state.layers.length) return false;
+    pendingAulaRestore = layers.filter(function(l){ return l._direccionAula; }).map(function(l){ return l._direccionAula; });
+    pendingAulaRestore = pendingAulaRestore.filter(function(v, i){ return pendingAulaRestore.indexOf(v) === i; });
     layers.forEach(function(l){ map.removeLayer(l.group); });
     layers = [];
     selectedShape = null;
@@ -1598,6 +1607,7 @@
       applyingRemoteState = true;
       var ok = applyRemoteState(state);
       applyingRemoteState = false;
+      restorePendingAulas();
       return ok;
     } catch(err){ applyingRemoteState = false; return false; }
   }
@@ -1764,11 +1774,7 @@
             var chain = Promise.resolve();
             rootIds.forEach(function(id){ chain = chain.then(function(){ return githubPullLayerFile(id); }); });
             chain = chain.then(function(){ return githubPullEnfoqueFile(); });
-            chain = chain.then(function(){
-              if (userContext && userContext.role === 'direccion' && !userContext.direccionEditMode && userContext.visibleAulas && userContext.visibleAulas.length){
-                userContext.visibleAulas.slice().forEach(function(letra){ direccionMergeAulaIntoLayers(letra); });
-              }
-            });
+            chain = chain.then(restorePendingAulas);
             return chain.then(function(){
               renderLayerList();
               updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
@@ -1850,6 +1856,7 @@
           applyingRemoteState = true;
           applyRemoteState(state, { applyView: !isBackground });
           applyingRemoteState = false;
+          restorePendingAulas();
           updateSyncStatus('syncing','Migrando a formato por capas…');
           syncInProgress = false;
           return githubPush();
@@ -2032,6 +2039,7 @@
             applyingRemoteState = true;
             applyRemoteState(state, { applyView:true });
             applyingRemoteState = false;
+            restorePendingAulas();
             closeHistoryScrim();
             if (githubConfigured() && githubConfig.autoSync) scheduleGithubPush();
           } catch(err){
@@ -2118,7 +2126,7 @@
         var rootIds = getRootLayers().map(function(l){ return l.id; });
         var chain = Promise.resolve();
         rootIds.forEach(function(id){ chain = chain.then(function(){ return githubPullLayerFile(id); }); });
-        return chain;
+        return chain.then(restorePendingAulas);
       }).then(function(){
         renderLayerList();
         closeHistoryScrim();
