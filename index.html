@@ -1764,6 +1764,11 @@
             var chain = Promise.resolve();
             rootIds.forEach(function(id){ chain = chain.then(function(){ return githubPullLayerFile(id); }); });
             chain = chain.then(function(){ return githubPullEnfoqueFile(); });
+            chain = chain.then(function(){
+              if (userContext && userContext.role === 'direccion' && !userContext.direccionEditMode && userContext.visibleAulas && userContext.visibleAulas.length){
+                userContext.visibleAulas.slice().forEach(function(letra){ direccionMergeAulaIntoLayers(letra); });
+              }
+            });
             return chain.then(function(){
               renderLayerList();
               updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
