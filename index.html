@@ -6481,6 +6481,7 @@
     if (shape._isMilSymbol && shape._supply == null) shape._supply = 100;
     shape.on('click', function(e){
       if (activeToolName === 'elements' && elementsClickHandler){ elementsClickHandler(e); return; }
+      if (routeOriginClickHandler){ routeOriginClickHandler(e); return; }
       if (activeToolName === 'text' && textClickHandler){ textClickHandler(e); return; }
       if (activeToolName === 'target' && targetClickHandler){ targetClickHandler(e); return; }
       if (activeToolName === 'infra' && infraClickHandler){ infraClickHandler(e); return; }
