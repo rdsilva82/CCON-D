@@ -4197,8 +4197,8 @@
     }
     if (tipo === 'emboscada'){ g.widthRatio = 0.9; g.arrowRatio = 0.8; }
     if (tipo === 'apoyodefuego'){
-      g.arrow1End = { d:-0.3, p:-0.9 };
-      g.arrow2End = { d:1.3, p:-0.9 };
+      g.arrow1End = { d:-0.672, p:0.672 };
+      g.arrow2End = { d:1.672, p:0.672 };
     }
     return g;
   }
@@ -4452,27 +4452,28 @@
       lines.push({ pts: ellipseRing(a2s, {x:1,y:0}, {x:0,y:1}, len*0.02, len*0.02, 16) });
     }
     else if (g.tipo === 'emboscada'){
-      var eb = len*(g.widthRatio != null ? g.widthRatio : 0.9);
-      lines.push({ pts: arcPointsRange(g.base, dir, perp, len, eb, Math.PI/2, Math.PI*1.5, 30) });
-      var toothLen = len*0.35;
-      var nTeeth = 7;
+      var eb = len*(g.widthRatio != null ? g.widthRatio : 0.95);
+      var virtualCenter = taskPt(g.base, dir, perp, -len, 0);
+      lines.push({ pts: arcPointsRange(virtualCenter, dir, perp, len, eb, -Math.PI/2, Math.PI/2, 30) });
+      var toothLen = len*0.33;
+      var nTeeth = 8;
       for (var ti=0; ti<nTeeth; ti++){
-        var py = -eb*0.85 + ti*(1.7*eb/(nTeeth-1));
+        var py = -eb*0.92 + ti*(1.84*eb/(nTeeth-1));
         var ratio = py/eb;
-        var xArc = -len*Math.sqrt(Math.max(1-ratio*ratio,0));
-        var arcPt = taskPt(g.base, dir, perp, xArc, py);
-        var innerPt = taskPt(g.base, dir, perp, xArc + toothLen, py);
-        lines.push({ pts: [arcPt, innerPt] });
+        var xRel = len*Math.sqrt(Math.max(1-ratio*ratio,0)) - len;
+        var arcPt = taskPt(g.base, dir, perp, xRel, py);
+        var outerPt = taskPt(g.base, dir, perp, xRel - toothLen, py);
+        lines.push({ pts: [arcPt, outerPt] });
       }
-      var eArrowLen = len*(g.arrowRatio != null ? g.arrowRatio : 0.8);
+      var eArrowLen = len*(g.arrowRatio != null ? g.arrowRatio : 1.0);
       var eArrowTip = taskPt(g.base, dir, perp, eArrowLen, 0);
       lines.push({ pts: [g.base, eArrowTip] });
       heads.push(taskArrowHeadPts(eArrowTip, dir, Math.max(len*0.1,4)));
     }
     else if (g.tipo === 'apoyodefuego'){
       function ratioPtAF(r){ return taskPt(g.base, dir, perp, len*r.d, len*r.p); }
-      var af1 = ratioPtAF(g.arrow1End || {d:-0.3, p:-0.9});
-      var af2 = ratioPtAF(g.arrow2End || {d:1.3, p:-0.9});
+      var af1 = ratioPtAF(g.arrow1End || {d:-0.672, p:0.672});
+      var af2 = ratioPtAF(g.arrow2End || {d:1.672, p:0.672});
       var d1v = localXY(g.base, af1); var d1l = Math.hypot(d1v.x,d1v.y)||1;
       var dir1 = { x:d1v.x/d1l, y:d1v.y/d1l };
       var d2v = localXY(g.tip, af2); var d2l = Math.hypot(d2v.x,d2v.y)||1;
@@ -4481,9 +4482,9 @@
       lines.push({ pts: [g.tip, af2] });
       heads.push(taskArrowHeadPts(af1, dir1, Math.max(len*0.09,4)));
       heads.push(taskArrowHeadPts(af2, dir2, Math.max(len*0.09,4)));
-      var backLen = len*0.35;
-      var backDir1 = taskRotateVec(dir, 180-45);
-      var backDir2 = taskRotateVec(dir, 180+45);
+      var backLen = len*0.32;
+      var backDir1 = taskRotateVec(dir, 225);
+      var backDir2 = taskRotateVec(dir, -45);
       var back1 = fromLocalXY(g.base, backDir1.x*backLen, backDir1.y*backLen);
       var back2 = fromLocalXY(g.tip, backDir2.x*backLen, backDir2.y*backLen);
       lines.push({ pts: [g.base, back1] });
