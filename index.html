@@ -3749,6 +3749,26 @@
   var freehandPointerId = null;
   var mapContainer = map.getContainer();
 
+  /* Leaflet.draw agrega sus propios vértices escuchando clics en el mapa; como Leaflet detiene la
+     propagación del clic cuando cae sobre una forma interactiva (polígono, línea, símbolo, etc.),
+     sin esto no se puede colocar un punto/vértice de Línea, Polígono, Rectángulo o Círculo encima
+     de un objeto ya existente. Se intercepta en fase de captura (antes de que la forma se quede
+     con el clic) y se reenvía como un clic de mapa genuino con la coordenada correcta. */
+  mapContainer.addEventListener('click', function(e){
+    if (!activeToolName || !drawHandlers[activeToolName] || typeof drawHandlers[activeToolName].enabled !== 'function' || !drawHandlers[activeToolName].enabled()) return;
+    var landedOnShape = e.target && e.target.closest && (e.target.closest('path') || e.target.closest('.leaflet-marker-icon'));
+    if (!landedOnShape) return;
+    e.stopPropagation();
+    var latlng = map.containerPointToLatLng(containerPointFromEvent(e));
+    map.fire('click', {
+      latlng: latlng,
+      layerPoint: map.latLngToLayerPoint(latlng),
+      containerPoint: map.latLngToContainerPoint(latlng),
+      originalEvent: e
+    });
+  }, true);
+
+
   function containerPointFromEvent(ev){
     var rect = mapContainer.getBoundingClientRect();
     return L.point(ev.clientX - rect.left, ev.clientY - rect.top);
