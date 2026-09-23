@@ -3334,13 +3334,16 @@
       case 'claseVII': {
         var lp = logisticsFrameParts(affiliation);
         return '<line x1="'+lp.x1+'" y1="'+lp.lineY+'" x2="'+lp.x2+'" y2="'+lp.lineY+'" stroke="'+g+'" stroke-width="2.2"/>' +
-          '<circle cx="'+(lp.cx-6)+'" cy="'+(lp.cyU-3)+'" r="1.6" fill="'+g+'"/><circle cx="'+(lp.cx+6)+'" cy="'+(lp.cyU-3)+'" r="1.6" fill="'+g+'"/>' +
-          '<path d="M'+(lp.cx-6)+','+(lp.cyU-3)+' Q'+lp.cx+','+(lp.cyU+4)+' '+(lp.cx+6)+','+(lp.cyU-3)+'" fill="none" stroke="'+g+'" stroke-width="1.8"/>';
+          '<circle cx="'+(lp.cx-6)+'" cy="'+(lp.cyU+3)+'" r="1.6" fill="'+g+'"/><circle cx="'+(lp.cx+6)+'" cy="'+(lp.cyU+3)+'" r="1.6" fill="'+g+'"/>' +
+          '<path d="M'+(lp.cx-6)+','+(lp.cyU+3)+' Q'+lp.cx+','+(lp.cyU-4)+' '+(lp.cx+6)+','+(lp.cyU+3)+'" fill="none" stroke="'+g+'" stroke-width="1.8"/>';
       }
       case 'claseVIII': {
         var lp = logisticsFrameParts(affiliation);
+        var topY = lp.cyU - 8;
+        var upperThirdY = topY + (lp.lineY - topY) * 0.33;
         return '<line x1="'+lp.x1+'" y1="'+lp.lineY+'" x2="'+lp.x2+'" y2="'+lp.lineY+'" stroke="'+g+'" stroke-width="2.2"/>' +
-          '<line x1="'+lp.cx+'" y1="'+(lp.cyU-8)+'" x2="'+lp.cx+'" y2="'+lp.lineY+'" stroke="'+g+'" stroke-width="1.8"/>';
+          '<line x1="'+lp.cx+'" y1="'+topY+'" x2="'+lp.cx+'" y2="'+lp.lineY+'" stroke="'+g+'" stroke-width="1.8"/>' +
+          '<line x1="'+(lp.cx-7)+'" y1="'+upperThirdY+'" x2="'+(lp.cx+7)+'" y2="'+upperThirdY+'" stroke="'+g+'" stroke-width="1.8"/>';
       }
       case 'claseIX': {
         var lp = logisticsFrameParts(affiliation);
