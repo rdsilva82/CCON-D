@@ -4472,6 +4472,7 @@
     }
     else if (g.tipo === 'apoyodefuego'){
       function ratioPtAF(r){ return taskPt(g.base, dir, perp, len*r.d, len*r.p); }
+      lines.push({ pts: [g.base, g.tip] });
       var af1 = ratioPtAF(g.arrow1End || {d:-0.672, p:0.672});
       var af2 = ratioPtAF(g.arrow2End || {d:1.672, p:0.672});
       var d1v = localXY(g.base, af1); var d1l = Math.hypot(d1v.x,d1v.y)||1;
@@ -5321,7 +5322,8 @@
     ['alambrico','Obstáculo alámbrico'],
     ['fortificada','Línea fortificada'],
     ['zanja','Zanja antitanque'],
-    ['puntofuerte','Punto fuerte']
+    ['puntofuerte','Punto fuerte'],
+    ['obstaculosgenerales','Obstáculos generales']
   ];
   var defensiveLineLayers = {};
 
@@ -5402,6 +5404,22 @@
     }
     return tris;
   }
+  function buildObstaculosGeneralesSegments(res){
+    var spacing = 17, peakWidth = 10, height = 8;
+    var segs = [];
+    for (var arc = 0; arc < res.total; arc += spacing){
+      var arcMid = Math.min(arc + peakWidth/2, res.total);
+      var arcEnd = Math.min(arc + peakWidth, res.total);
+      var p1 = pxPointAndTangentAtArc(res, arc);
+      var mid = pxPointAndTangentAtArc(res, arcMid);
+      var p2 = pxPointAndTangentAtArc(res, arcEnd);
+      if (!p1 || !mid || !p2) continue;
+      var apex = { x: mid.x + height*mid.nx, y: mid.y + height*mid.ny };
+      segs.push([ {x:p1.x,y:p1.y}, apex ]);
+      segs.push([ apex, {x:p2.x,y:p2.y} ]);
+    }
+    return segs;
+  }
   function buildPuntoFuerteTicks(res){
     var spacing = 13, tickLen = 9;
     var segs = [];
@@ -5447,6 +5465,10 @@
     } else if (tipo === 'zanja'){
       buildZanjaTriangles(res).forEach(function(tri){
         L.polygon(tri.map(toLatLng), { color:color, weight:1, fillColor:color, fillOpacity:1, interactive:false, keyboard:false }).addTo(group);
+      });
+    } else if (tipo === 'obstaculosgenerales'){
+      buildObstaculosGeneralesSegments(res).forEach(function(seg){
+        L.polyline(seg.map(toLatLng), { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
       });
     } else if (tipo === 'puntofuerte'){
       L.polyline(latlngs, { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
