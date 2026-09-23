@@ -619,8 +619,8 @@
     font-size:12px; font-weight:600; color:var(--navy); box-shadow:0 2px 10px rgba(0,0,0,.35); cursor:pointer;
   }
   #clima-iframe{ position:absolute; inset:0; width:100%; height:100%; border:none; }
-  #clima-overlay-map{ position:absolute; inset:0; width:100%; height:100%; z-index:3; pointer-events:none; background:transparent; }
-  #clima-overlay-map.hidden{ display:none; }
+  #clima-overlay-map{ position:absolute; inset:0; width:100%; height:100%; z-index:3; pointer-events:auto; background:transparent; }
+  #clima-overlay-map.hidden{ display:none; pointer-events:none; }
   #clima-overlay-map .leaflet-container{ background:transparent; }
 
   /* ---------- PANEL PERSONAL ---------- */
@@ -1063,7 +1063,7 @@
 <div id="clima-panel">
   <div id="clima-toolbar">
     <button class="primary-btn" id="clima-center-btn">📍 Centrar en mi mapa</button>
-    <label id="clima-overlay-toggle-label"><input type="checkbox" id="clima-overlay-toggle" checked> Ver calcos</label>
+    <label id="clima-overlay-toggle-label" title="Arrastre o haga zoom sobre el mapa para mover Windy junto con los calcos"><input type="checkbox" id="clima-overlay-toggle" checked> Ver calcos</label>
   </div>
   <iframe id="clima-iframe" title="Clima (Windy)" allow="geolocation"></iframe>
   <div id="clima-overlay-map"></div>
@@ -9873,11 +9873,32 @@
   function ensureClimaOverlayMap(){
     if (climaOverlayMap) return climaOverlayMap;
     climaOverlayMap = L.map('clima-overlay-map', {
-      zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false,
-      doubleClickZoom:false, boxZoom:false, keyboard:false, touchZoom:false, tap:false,
-      fadeAnimation:false, inertia:false
+      zoomControl:true, attributionControl:false, dragging:true, scrollWheelZoom:true,
+      doubleClickZoom:true, boxZoom:true, keyboard:true, touchZoom:true, tap:true,
+      fadeAnimation:false, inertia:true
+    });
+    climaOverlayMap.zoomControl.setPosition('bottomright');
+    var syncTimer = null;
+    climaOverlayMap.on('moveend zoomend', function(){
+      if (climaFollowSuspended) return;
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(pushOverlayViewToWindy, 550);
     });
     return climaOverlayMap;
+  }
+  var climaFollowSuspended = false;
+  function pushOverlayViewToWindy(){
+    var m = climaOverlayMap;
+    if (!m) return;
+    var center = m.getCenter();
+    var zoom = Math.min(Math.max(Math.round(m.getZoom()), 3), 12);
+    var lat = center.lat.toFixed(3), lng = center.lng.toFixed(3);
+    var url = 'https://embed.windy.com/embed2.html?lat=' + lat + '&lon=' + lng +
+      '&detailLat=' + lat + '&detailLon=' + lng +
+      '&width=650&height=450&zoom=' + zoom + '&level=surface&overlay=wind' +
+      '&menu=&message=true&marker=true&calendar=now&pressure=&type=map' +
+      '&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1';
+    document.getElementById('clima-iframe').src = url;
   }
   function renderClimaOverlayShapes(){
     var m = ensureClimaOverlayMap();
@@ -9917,10 +9938,12 @@
       '&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1';
     document.getElementById('clima-iframe').src = url;
     var m = ensureClimaOverlayMap();
+    climaFollowSuspended = true;
     setTimeout(function(){
       m.invalidateSize();
       m.setView(center, zoom);
       renderClimaOverlayShapes();
+      setTimeout(function(){ climaFollowSuspended = false; }, 300);
     }, 60);
   }
   document.getElementById('clima-center-btn').addEventListener('click', centerClimaOnMap);
