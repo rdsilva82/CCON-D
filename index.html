@@ -4196,7 +4196,10 @@
       g.arrow2End = { d:0.85, p:0.55 };
     }
     if (tipo === 'emboscada'){ g.widthRatio = 0.9; g.arrowRatio = 0.8; }
-    if (tipo === 'apoyodefuego'){ g.spreadDeg = 28; g.arrow1Ratio = 0.9; g.arrow2Ratio = 0.9; }
+    if (tipo === 'apoyodefuego'){
+      g.arrow1End = { d:-0.3, p:-0.9 };
+      g.arrow2End = { d:1.3, p:-0.9 };
+    }
     return g;
   }
   function taskLetter(tipo){
@@ -4458,8 +4461,8 @@
         var ratio = py/eb;
         var xArc = -len*Math.sqrt(Math.max(1-ratio*ratio,0));
         var arcPt = taskPt(g.base, dir, perp, xArc, py);
-        var endPt = taskPt(g.base, dir, perp, xArc - toothLen, py);
-        lines.push({ pts: [arcPt, endPt] });
+        var innerPt = taskPt(g.base, dir, perp, xArc + toothLen, py);
+        lines.push({ pts: [arcPt, innerPt] });
       }
       var eArrowLen = len*(g.arrowRatio != null ? g.arrowRatio : 0.8);
       var eArrowTip = taskPt(g.base, dir, perp, eArrowLen, 0);
@@ -4467,17 +4470,24 @@
       heads.push(taskArrowHeadPts(eArrowTip, dir, Math.max(len*0.1,4)));
     }
     else if (g.tipo === 'apoyodefuego'){
-      var spreadDeg = g.spreadDeg != null ? g.spreadDeg : 28;
-      var dir1 = taskRotateVec(dir, -spreadDeg);
-      var dir2 = taskRotateVec(dir, spreadDeg);
-      var a1Len = len*(g.arrow1Ratio != null ? g.arrow1Ratio : 0.9);
-      var a2Len = len*(g.arrow2Ratio != null ? g.arrow2Ratio : 0.9);
-      var af1 = fromLocalXY(g.base, dir1.x*a1Len, dir1.y*a1Len);
-      var af2 = fromLocalXY(g.base, dir2.x*a2Len, dir2.y*a2Len);
+      function ratioPtAF(r){ return taskPt(g.base, dir, perp, len*r.d, len*r.p); }
+      var af1 = ratioPtAF(g.arrow1End || {d:-0.3, p:-0.9});
+      var af2 = ratioPtAF(g.arrow2End || {d:1.3, p:-0.9});
+      var d1v = localXY(g.base, af1); var d1l = Math.hypot(d1v.x,d1v.y)||1;
+      var dir1 = { x:d1v.x/d1l, y:d1v.y/d1l };
+      var d2v = localXY(g.tip, af2); var d2l = Math.hypot(d2v.x,d2v.y)||1;
+      var dir2 = { x:d2v.x/d2l, y:d2v.y/d2l };
       lines.push({ pts: [g.base, af1] });
-      lines.push({ pts: [g.base, af2] });
+      lines.push({ pts: [g.tip, af2] });
       heads.push(taskArrowHeadPts(af1, dir1, Math.max(len*0.09,4)));
       heads.push(taskArrowHeadPts(af2, dir2, Math.max(len*0.09,4)));
+      var backLen = len*0.35;
+      var backDir1 = taskRotateVec(dir, 180-45);
+      var backDir2 = taskRotateVec(dir, 180+45);
+      var back1 = fromLocalXY(g.base, backDir1.x*backLen, backDir1.y*backLen);
+      var back2 = fromLocalXY(g.tip, backDir2.x*backLen, backDir2.y*backLen);
+      lines.push({ pts: [g.base, back1] });
+      lines.push({ pts: [g.tip, back2] });
     }
 
     if (label) labels.push(label);
@@ -5961,37 +5971,21 @@
       });
     }
     if (t === 'apoyodefuego'){
-      extraDefs.push({
-        color:'#5B8A72', size:13, title:'Arrastre para cambiar el ancho (separación entre las flechas)',
-        compute: function(){
-          var ax = taskAxis(shape._task.base, shape._task.tip);
-          var sd = shape._task.spreadDeg != null ? shape._task.spreadDeg : 28;
-          var d2 = taskRotateVec(ax.dir, sd);
-          return fromLocalXY(shape._task.base, d2.x*ax.len*0.5, d2.y*ax.len*0.5);
-        },
-        onDrag: function(latlng){
-          var ax = taskAxis(shape._task.base, shape._task.tip);
-          var v = localXY(shape._task.base, latlng);
-          var angleToDir = (Math.atan2(v.y, v.x) - Math.atan2(ax.dir.y, ax.dir.x)) * 180/Math.PI;
-          while (angleToDir > 180) angleToDir -= 360;
-          while (angleToDir < -180) angleToDir += 360;
-          shape._task.spreadDeg = Math.max(Math.min(Math.abs(angleToDir), 80), 5);
-        }
-      });
-      [['arrow1Ratio', -1, '#8B6BB0'], ['arrow2Ratio', 1, '#5B8A72']].forEach(function(cfg){
-        var key = cfg[0], sign = cfg[1], color = cfg[2];
+      [['arrow1End','#8B6BB0'], ['arrow2End','#5B8A72']].forEach(function(cfg){
+        var key = cfg[0], color = cfg[1];
         extraDefs.push({
-          color: color, size:13, title:'Arrastre para cambiar esta flecha',
+          color: color, size:13, title:'Arrastre para reposicionar la punta de esta flecha',
           compute: function(){
             var ax = taskAxis(shape._task.base, shape._task.tip);
-            var sd = shape._task.spreadDeg != null ? shape._task.spreadDeg : 28;
-            var d = taskRotateVec(ax.dir, sign*sd);
-            var r = shape._task[key] != null ? shape._task[key] : 0.9;
-            return fromLocalXY(shape._task.base, d.x*ax.len*r, d.y*ax.len*r);
+            var r = shape._task[key];
+            return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*r.d, ax.len*r.p);
           },
           onDrag: function(latlng){
             var ax = taskAxis(shape._task.base, shape._task.tip);
-            shape._task[key] = Math.max(distanceMeters(shape._task.base, latlng) / ax.len, 0.1);
+            var loc = localXY(shape._task.base, latlng);
+            var d = loc.x*ax.dir.x + loc.y*ax.dir.y;
+            var p = loc.x*ax.perp.x + loc.y*ax.perp.y;
+            shape._task[key] = { d: d/ax.len, p: p/ax.len };
           }
         });
       });
