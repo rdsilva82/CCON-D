@@ -5404,21 +5404,25 @@
     }
     return tris;
   }
-  function buildObstaculosGeneralesSegments(res){
-    var spacing = 17, peakWidth = 10, height = 8;
-    var segs = [];
-    for (var arc = 0; arc < res.total; arc += spacing){
-      var arcMid = Math.min(arc + peakWidth/2, res.total);
-      var arcEnd = Math.min(arc + peakWidth, res.total);
-      var p1 = pxPointAndTangentAtArc(res, arc);
-      var mid = pxPointAndTangentAtArc(res, arcMid);
-      var p2 = pxPointAndTangentAtArc(res, arcEnd);
-      if (!p1 || !mid || !p2) continue;
-      var apex = { x: mid.x + height*mid.nx, y: mid.y + height*mid.ny };
-      segs.push([ {x:p1.x,y:p1.y}, apex ]);
-      segs.push([ apex, {x:p2.x,y:p2.y} ]);
+  function buildObstaculosGeneralesPath(res){
+    var spacing = 55, peakWidth = 15, height = 9;
+    var pts = [];
+    var start = pxPointAndTangentAtArc(res, 0);
+    if (start) pts.push({ x:start.x, y:start.y });
+    for (var arc = spacing/2; arc < res.total; arc += spacing){
+      var upArc = Math.max(arc - peakWidth/2, 0);
+      var downArc = Math.min(arc + peakWidth/2, res.total);
+      var p1 = pxPointAndTangentAtArc(res, upArc);
+      var apexPt = pxPointAndTangentAtArc(res, arc);
+      var p2 = pxPointAndTangentAtArc(res, downArc);
+      if (!p1 || !apexPt || !p2) continue;
+      pts.push({ x:p1.x, y:p1.y });
+      pts.push({ x: apexPt.x + height*apexPt.nx, y: apexPt.y + height*apexPt.ny });
+      pts.push({ x:p2.x, y:p2.y });
     }
-    return segs;
+    var end = pxPointAndTangentAtArc(res, res.total);
+    if (end) pts.push({ x:end.x, y:end.y });
+    return pts;
   }
   function buildPuntoFuerteTicks(res){
     var spacing = 13, tickLen = 9;
@@ -5467,9 +5471,8 @@
         L.polygon(tri.map(toLatLng), { color:color, weight:1, fillColor:color, fillOpacity:1, interactive:false, keyboard:false }).addTo(group);
       });
     } else if (tipo === 'obstaculosgenerales'){
-      buildObstaculosGeneralesSegments(res).forEach(function(seg){
-        L.polyline(seg.map(toLatLng), { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
-      });
+      var ogPath = buildObstaculosGeneralesPath(res).map(toLatLng);
+      L.polyline(ogPath, { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
     } else if (tipo === 'puntofuerte'){
       L.polyline(latlngs, { color:color, weight:weight, interactive:false, keyboard:false }).addTo(group);
       buildPuntoFuerteTicks(res).forEach(function(seg){
