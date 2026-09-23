@@ -936,9 +936,9 @@
           <span>Táctica</span>
         </button>
         <div class="tool-submenu-row" id="tactica-submenu">
-          <button class="tool-btn" data-tool="arrow" title="Flecha vectorial: arrastre para trazarla; luego seleccione y arrastre sus puntos (incluido el punto dorado de curvatura) para editarla">
+          <button class="tool-btn" data-tool="lineaofensiva-toggle" title="Línea ofensiva: Flecha, Emboscada, Apoyo de fuego">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg>
-            <span>Flechas</span>
+            <span>Línea of.</span>
           </button>
           <button class="tool-btn" data-tool="defensiveline" title="Línea defensiva a mano alzada: obstáculo alámbrico, línea fortificada, zanja antitanque o punto fuerte">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l3-3 3 3 3-3 3 3 3-3 3 3" stroke-dasharray="0"/></svg>
@@ -951,6 +951,20 @@
         </div>
       </div>
       <div id="tareas-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:220px;"></div>
+      <div id="lineaofensiva-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:160px;">
+        <button class="tool-btn" data-tool="arrow" title="Flecha vectorial: arrastre para trazarla; luego seleccione y arrastre sus puntos (incluido el punto dorado de curvatura) para editarla">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg>
+          <span>Flecha</span>
+        </button>
+        <button class="tool-btn" data-tool="lineaofensiva:emboscada" title="Emboscada: arco con líneas paralelas y flecha de salida; largo, ancho, largo de flecha y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2" y1="6" x2="9" y2="6"/><line x1="2" y1="9" x2="9" y2="9"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="2" y1="15" x2="9" y2="15"/><line x1="2" y1="18" x2="9" y2="18"/><path d="M9,4 A8,8 0 0,1 9,20" stroke-width="1.8"/><line x1="12" y1="12" x2="21" y2="12" stroke-width="1.8"/><polyline points="17,8 21,12 17,16" stroke-width="1.8"/></svg>
+          <span>Emboscada</span>
+        </button>
+        <button class="tool-btn" data-tool="lineaofensiva:apoyodefuego" title="Apoyo de fuego: dos flechas divergentes editables por separado, ancho y rotación del conjunto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="13"/><line x1="12" y1="13" x2="6" y2="4"/><polyline points="6,8 6,4 10,4"/><line x1="12" y1="13" x2="18" y2="4"/><polyline points="14,4 18,4 18,8"/></svg>
+          <span>Apoyo fuego</span>
+        </button>
+      </div>
       <button class="tool-btn" data-tool="elements" title="Elementos: unidades y símbolos militares tipo NATO (APP-6)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="7" width="16" height="10"/><path d="M4 7l16 10M20 7L4 17" stroke-width="1.6"/></svg>
         <span>Elementos</span>
@@ -4181,6 +4195,8 @@
       g.arrow2Start = { d:0, p:0.12 };
       g.arrow2End = { d:0.85, p:0.55 };
     }
+    if (tipo === 'emboscada'){ g.widthRatio = 0.9; g.arrowRatio = 0.8; }
+    if (tipo === 'apoyodefuego'){ g.spreadDeg = 28; g.arrow1Ratio = 0.9; g.arrow2Ratio = 0.9; }
     return g;
   }
   function taskLetter(tipo){
@@ -4431,6 +4447,37 @@
       heads.push({ pts: taskArrowHeadPts(a2e, {x:d2.x/d2l,y:d2.y/d2l}, Math.max(len*0.08,4)), fill:false });
       lines.push({ pts: ellipseRing(a1s, {x:1,y:0}, {x:0,y:1}, len*0.02, len*0.02, 16) });
       lines.push({ pts: ellipseRing(a2s, {x:1,y:0}, {x:0,y:1}, len*0.02, len*0.02, 16) });
+    }
+    else if (g.tipo === 'emboscada'){
+      var eb = len*(g.widthRatio != null ? g.widthRatio : 0.9);
+      lines.push({ pts: arcPointsRange(g.base, dir, perp, len, eb, Math.PI/2, Math.PI*1.5, 30) });
+      var toothLen = len*0.35;
+      var nTeeth = 7;
+      for (var ti=0; ti<nTeeth; ti++){
+        var py = -eb*0.85 + ti*(1.7*eb/(nTeeth-1));
+        var ratio = py/eb;
+        var xArc = -len*Math.sqrt(Math.max(1-ratio*ratio,0));
+        var arcPt = taskPt(g.base, dir, perp, xArc, py);
+        var endPt = taskPt(g.base, dir, perp, xArc - toothLen, py);
+        lines.push({ pts: [arcPt, endPt] });
+      }
+      var eArrowLen = len*(g.arrowRatio != null ? g.arrowRatio : 0.8);
+      var eArrowTip = taskPt(g.base, dir, perp, eArrowLen, 0);
+      lines.push({ pts: [g.base, eArrowTip] });
+      heads.push(taskArrowHeadPts(eArrowTip, dir, Math.max(len*0.1,4)));
+    }
+    else if (g.tipo === 'apoyodefuego'){
+      var spreadDeg = g.spreadDeg != null ? g.spreadDeg : 28;
+      var dir1 = taskRotateVec(dir, -spreadDeg);
+      var dir2 = taskRotateVec(dir, spreadDeg);
+      var a1Len = len*(g.arrow1Ratio != null ? g.arrow1Ratio : 0.9);
+      var a2Len = len*(g.arrow2Ratio != null ? g.arrow2Ratio : 0.9);
+      var af1 = fromLocalXY(g.base, dir1.x*a1Len, dir1.y*a1Len);
+      var af2 = fromLocalXY(g.base, dir2.x*a2Len, dir2.y*a2Len);
+      lines.push({ pts: [g.base, af1] });
+      lines.push({ pts: [g.base, af2] });
+      heads.push(taskArrowHeadPts(af1, dir1, Math.max(len*0.09,4)));
+      heads.push(taskArrowHeadPts(af2, dir2, Math.max(len*0.09,4)));
     }
 
     if (label) labels.push(label);
@@ -5886,6 +5933,69 @@
         });
       });
     }
+    if (t === 'emboscada'){
+      extraDefs.push({
+        color:'#5B8A72', size:13, title:'Arrastre para cambiar el ancho del arco',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var wr = shape._task.widthRatio != null ? shape._task.widthRatio : 0.9;
+          return taskPt(shape._task.base, ax.dir, ax.perp, 0, ax.len*wr);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          shape._task.widthRatio = Math.max(distanceMeters(shape._task.base, latlng) / ax.len, 0.1);
+        }
+      });
+      extraDefs.push({
+        color:'#8B6BB0', size:13, title:'Arrastre para cambiar el largo de la flecha',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var ar = shape._task.arrowRatio != null ? shape._task.arrowRatio : 0.8;
+          return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*ar, 0);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var axisPt = taskPt(shape._task.base, ax.dir, ax.perp, 0, 0);
+          shape._task.arrowRatio = Math.max(distanceMeters(axisPt, latlng) / ax.len, 0.1);
+        }
+      });
+    }
+    if (t === 'apoyodefuego'){
+      extraDefs.push({
+        color:'#5B8A72', size:13, title:'Arrastre para cambiar el ancho (separación entre las flechas)',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var sd = shape._task.spreadDeg != null ? shape._task.spreadDeg : 28;
+          var d2 = taskRotateVec(ax.dir, sd);
+          return fromLocalXY(shape._task.base, d2.x*ax.len*0.5, d2.y*ax.len*0.5);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var v = localXY(shape._task.base, latlng);
+          var angleToDir = (Math.atan2(v.y, v.x) - Math.atan2(ax.dir.y, ax.dir.x)) * 180/Math.PI;
+          while (angleToDir > 180) angleToDir -= 360;
+          while (angleToDir < -180) angleToDir += 360;
+          shape._task.spreadDeg = Math.max(Math.min(Math.abs(angleToDir), 80), 5);
+        }
+      });
+      [['arrow1Ratio', -1, '#8B6BB0'], ['arrow2Ratio', 1, '#5B8A72']].forEach(function(cfg){
+        var key = cfg[0], sign = cfg[1], color = cfg[2];
+        extraDefs.push({
+          color: color, size:13, title:'Arrastre para cambiar esta flecha',
+          compute: function(){
+            var ax = taskAxis(shape._task.base, shape._task.tip);
+            var sd = shape._task.spreadDeg != null ? shape._task.spreadDeg : 28;
+            var d = taskRotateVec(ax.dir, sign*sd);
+            var r = shape._task[key] != null ? shape._task[key] : 0.9;
+            return fromLocalXY(shape._task.base, d.x*ax.len*r, d.y*ax.len*r);
+          },
+          onDrag: function(latlng){
+            var ax = taskAxis(shape._task.base, shape._task.tip);
+            shape._task[key] = Math.max(distanceMeters(shape._task.base, latlng) / ax.len, 0.1);
+          }
+        });
+      });
+    }
 
     var extraMarkers = extraDefs.map(function(def){
       var m = L.marker(def.compute(), { draggable:true, icon: makeHandleIcon(def.color, def.size), zIndexOffset:2000, title: def.title }).addTo(map);
@@ -6492,6 +6602,24 @@
         }
         return;
       }
+      if (tool === 'lineaofensiva-toggle'){
+        ev.stopPropagation();
+        var loSubmenu = document.getElementById('lineaofensiva-submenu');
+        var nowOpenL = !loSubmenu.classList.contains('open');
+        loSubmenu.classList.toggle('open', nowOpenL);
+        if (nowOpenL){
+          positionFloatingSubmenu(loSubmenu, btn);
+        }
+        return;
+      }
+      if (tool && tool.indexOf('lineaofensiva:') === 0){
+        ev.stopPropagation();
+        activateTacticalTaskTool(tool.split(':')[1]);
+        document.getElementById('lineaofensiva-submenu').classList.remove('open');
+        document.getElementById('tactica-wrap').classList.remove('open');
+        document.getElementById('tactica-submenu').classList.remove('open');
+        return;
+      }
       if (tool === 'edit') activateEdit();
       else if (tool === 'delete') activateDelete();
       else if (tool === 'freehand') activateFreehand();
@@ -6508,17 +6636,20 @@
       else activateDrawTool(tool);
       document.getElementById('tactica-wrap').classList.remove('open');
       document.getElementById('tactica-submenu').classList.remove('open');
+      document.getElementById('lineaofensiva-submenu').classList.remove('open');
     });
   });
   document.addEventListener('click', function(ev){
     var wrap = document.getElementById('tactica-wrap');
     var tacticaSub = document.getElementById('tactica-submenu');
     var tareasSub = document.getElementById('tareas-submenu');
-    var insideAny = (wrap && wrap.contains(ev.target)) || (tacticaSub && tacticaSub.contains(ev.target)) || (tareasSub && tareasSub.contains(ev.target));
+    var loSub = document.getElementById('lineaofensiva-submenu');
+    var insideAny = (wrap && wrap.contains(ev.target)) || (tacticaSub && tacticaSub.contains(ev.target)) || (tareasSub && tareasSub.contains(ev.target)) || (loSub && loSub.contains(ev.target));
     if (!insideAny){
       if (wrap) wrap.classList.remove('open');
       if (tacticaSub) tacticaSub.classList.remove('open');
       if (tareasSub) tareasSub.classList.remove('open');
+      if (loSub) loSub.classList.remove('open');
     }
   });
 
@@ -9295,6 +9426,7 @@
         f.properties.task = {
           tipo: shape._task.tipo,
           widthRatio: shape._task.widthRatio,
+          arrowRatio: shape._task.arrowRatio,
           arrowRatios: shape._task.arrowRatios || undefined,
           stubRatio: shape._task.stubRatio,
           crossRatio: shape._task.crossRatio,
@@ -9304,6 +9436,9 @@
           arrow1End: shape._task.arrow1End,
           arrow2Start: shape._task.arrow2Start,
           arrow2End: shape._task.arrow2End,
+          spreadDeg: shape._task.spreadDeg,
+          arrow1Ratio: shape._task.arrow1Ratio,
+          arrow2Ratio: shape._task.arrow2Ratio,
           weight: shape._task.weight
         };
         f.properties.color = shape._fillColorRaw;
@@ -9545,6 +9680,7 @@
             base: llArr[0],
             tip: llArr[1],
             widthRatio: p.task.widthRatio,
+            arrowRatio: p.task.arrowRatio,
             arrowRatios: p.task.arrowRatios || undefined,
             stubRatio: p.task.stubRatio,
             crossRatio: p.task.crossRatio,
@@ -9554,6 +9690,9 @@
             arrow1End: p.task.arrow1End,
             arrow2Start: p.task.arrow2Start,
             arrow2End: p.task.arrow2End,
+            spreadDeg: p.task.spreadDeg,
+            arrow1Ratio: p.task.arrow1Ratio,
+            arrow2Ratio: p.task.arrow2Ratio,
             weight: p.task.weight
           };
           layer._fillColorRaw = p.color || targetLayerObj.color;
