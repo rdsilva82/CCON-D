@@ -385,15 +385,20 @@
     display:flex; flex-direction:column; gap:3px; width:64px;
     max-height:calc(100% - 42px); overflow-y:auto;
   }
-  #draw-toolbar .tool-btn{
+  #draw-toolbar .tool-btn,
+  .tool-submenu-row .tool-btn{
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
     border:1px solid transparent; background:transparent; border-radius:7px;
     padding:7px 2px 6px 2px; cursor:pointer; color:var(--navy); font-family:inherit;
   }
-  #draw-toolbar .tool-btn svg{ width:19px; height:19px; }
-  #draw-toolbar .tool-btn span{ font-size:8.7px; font-weight:700; letter-spacing:.2px; text-transform:uppercase; }
-  #draw-toolbar .tool-btn:hover{ background:#EEF1F6; }
-  #draw-toolbar .tool-btn.active{ background:var(--gold); color:var(--navy-deep); border-color:var(--gold-light); }
+  #draw-toolbar .tool-btn svg,
+  .tool-submenu-row .tool-btn svg{ width:19px; height:19px; }
+  #draw-toolbar .tool-btn span,
+  .tool-submenu-row .tool-btn span{ font-size:8.7px; font-weight:700; letter-spacing:.2px; text-transform:uppercase; }
+  #draw-toolbar .tool-btn:hover,
+  .tool-submenu-row .tool-btn:hover{ background:#EEF1F6; }
+  #draw-toolbar .tool-btn.active,
+  .tool-submenu-row .tool-btn.active{ background:var(--gold); color:var(--navy-deep); border-color:var(--gold-light); }
   #draw-toolbar .tool-btn.danger:hover{ background:#FBEDED; color:var(--danger); }
   #draw-toolbar .tool-btn.danger.active{ background:var(--danger); color:#fff; border-color:var(--danger-light); }
   #draw-toolbar hr{ border:none; border-top:1px solid var(--border); margin:2px 0; }
@@ -411,8 +416,8 @@
   .tool-submenu-row.open{ display:flex; }
   #tareas-submenu.open{ display:flex; }
   .tarea-icon-btn{
-    width:44px; height:44px; border:1px solid var(--border); border-radius:8px; background:#fff;
-    cursor:pointer; display:flex; align-items:center; justify-content:center; padding:2px;
+    width:38px; height:38px; border:1px solid transparent; border-radius:7px; background:transparent;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px; color:var(--navy);
   }
   .tarea-icon-btn:hover{ background:#EEF1F6; }
   .tarea-icon-btn svg{ width:100%; height:100%; }
@@ -6245,6 +6250,7 @@
     selectedShape = finalArrow;
     showProperties(finalArrow, active);
     arrowShape = null;
+    disableAllTools();
   }
   function activateArrowTool(){
     if (activeToolName === 'arrow'){ disableAllTools(); return; }
