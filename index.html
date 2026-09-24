@@ -940,21 +940,63 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg>
             <span>Línea of.</span>
           </button>
-          <button class="tool-btn" data-tool="defensiveline" title="Línea defensiva a mano alzada: obstáculo alámbrico, línea fortificada, zanja antitanque o punto fuerte">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l3-3 3 3 3-3 3 3 3-3 3 3" stroke-dasharray="0"/></svg>
-            <span>Línea def.</span>
-          </button>
           <button class="tool-btn" data-tool="tareas-toggle" title="Tareas tácticas: Bloquear, Canalizar, Despejar, Penetrar, Desarticular, Destruir, Interdictar, Neutralizar (simbología OTAN)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="16" y2="12"/><polyline points="12 6 18 12 12 18"/></svg>
             <span>Tareas</span>
           </button>
-          <button class="tool-btn" data-tool="pasajes-toggle" title="Pasajes">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16"/></svg>
-            <span>Pasajes</span>
+          <button class="tool-btn" data-tool="ingenieros-toggle" title="Ingenieros: Pasajes, Campos Minados, Obstáculos">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="15" y1="20" x2="15" y2="6"/><line x1="15" y1="6" x2="6" y2="6"/><line x1="6" y1="6" x2="6" y2="12"/></svg>
+            <span>Ingenieros</span>
           </button>
         </div>
       </div>
       <div id="tareas-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:220px;"></div>
+      <div id="ingenieros-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:160px;">
+        <button class="tool-btn" data-tool="pasajes-toggle" title="Pasajes: Vadeo fácil, Puente, Ferry, Pasaje">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16"/></svg>
+          <span>Pasajes</span>
+        </button>
+        <button class="tool-btn" data-tool="camposminados-toggle" title="Campos Minados">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/><line x1="3" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="21" y2="12"/></svg>
+          <span>Campos Min.</span>
+        </button>
+        <button class="tool-btn" data-tool="obstaculos-toggle" title="Obstáculos: Línea defensiva y otros">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l3-3 3 3 3-3 3 3 3-3 3 3" stroke-dasharray="0"/></svg>
+          <span>Obstáculos</span>
+        </button>
+      </div>
+      <div id="camposminados-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:160px;">
+        <button class="tool-btn" data-tool="camposminados:minas" title="Minas: rectángulo con tres círculos; largo, ancho y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10"/><circle cx="8" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="16" cy="12" r="1.8"/></svg>
+          <span>Minas</span>
+        </button>
+        <button class="tool-btn" data-tool="camposminados:campominado" title="Campo minado: polígono a mano alzada con la letra M sobre su borde, apuntando hacia el centro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8 L9 4 L16 5 L20 10 L18 16 L12 19 L6 16 L4 11 Z"/></svg>
+          <span>Campo minado</span>
+        </button>
+      </div>
+      <div id="obstaculos-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:160px;">
+        <button class="tool-btn" data-tool="defensiveline" title="Línea defensiva a mano alzada: obstáculo alámbrico, línea fortificada, zanja antitanque, punto fuerte u obstáculos generales">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l3-3 3 3 3-3 3 3 3-3 3 3" stroke-dasharray="0"/></svg>
+          <span>Línea def.</span>
+        </button>
+        <button class="tool-btn" data-tool="obstaculos:demoplaneada" title="Demolición Planeada: dos líneas discontinuas paralelas; largo, ancho y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="2,2"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/></svg>
+          <span>Dem. Planeada</span>
+        </button>
+        <button class="tool-btn" data-tool="obstaculos:demopreparada" title="Demolición Preparada: línea discontinua y línea sólida paralelas; largo, ancho y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="8" x2="20" y2="8" stroke-dasharray="2,2"/><line x1="4" y1="16" x2="20" y2="16"/></svg>
+          <span>Dem. Preparada</span>
+        </button>
+        <button class="tool-btn" data-tool="obstaculos:demoactivada" title="Demolición Activada: dos líneas sólidas paralelas; largo, ancho y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/></svg>
+          <span>Dem. Activada</span>
+        </button>
+        <button class="tool-btn" data-tool="obstaculos:demoejecutada" title="Demolición Ejecutada: dos líneas paralelas cruzadas por dos diagonales; largo, ancho y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/><line x1="9" y1="20" x2="15" y2="4"/><line x1="14" y1="20" x2="20" y2="4"/></svg>
+          <span>Dem. Ejecutada</span>
+        </button>
+      </div>
       <div id="pasajes-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:160px;">
         <button class="tool-btn" data-tool="pasajes:vadeofacil" title="Vadeo fácil: ancho, largo y rotación editables">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="9" x2="8" y2="9"/><line x1="11" y1="9" x2="15" y2="9"/><line x1="18" y1="9" x2="22" y2="9"/><line x1="4" y1="15" x2="8" y2="15"/><line x1="11" y1="15" x2="15" y2="15"/><line x1="18" y1="15" x2="22" y2="15"/></svg>
@@ -2572,6 +2614,8 @@
       if (defL){ if (visible) defL.addTo(map); else map.removeLayer(defL); }
       var taskL = tacticalTaskLayers[s._shapeId];
       if (taskL){ if (visible) taskL.addTo(map); else map.removeLayer(taskL); }
+      var cmL = camposMinadosLayers[s._shapeId];
+      if (cmL){ if (visible) cmL.addTo(map); else map.removeLayer(cmL); }
       var nameL = nameLabelLayers[s._shapeId];
       if (nameL){ if (visible) nameL.addTo(map); else map.removeLayer(nameL); }
     });
@@ -3879,6 +3923,7 @@
     if (defensiveLineActive) stopDefensiveLineMode();
     stopTacticalTaskTool();
     if (freePolyActive) stopFreePolygonMode();
+    if (cmPolyActive) stopCamposMinadosMode();
     if (arrowActive) stopArrowTool();
     stopElementsTool();
     stopTextTool();
@@ -4148,6 +4193,135 @@
     freePolyLatLngs = [];
   }
 
+  /* ---- Campo minado (polígono a mano alzada con letras "M" orientadas hacia el centro) ---- */
+  var cmPolyActive = false;
+  var cmPolyLatLngs = [];
+  var cmPolyShape = null;
+  var cmPolyPointerId = null;
+  function cmPolyPointerDown(ev){
+    if (ev.button !== undefined && ev.button !== 0) return;
+    if (cmPolyPointerId !== null) return;
+    cmPolyPointerId = ev.pointerId;
+    ev.preventDefault();
+    if (mapContainer.setPointerCapture){ try{ mapContainer.setPointerCapture(ev.pointerId); }catch(err){} }
+    var latlng = map.containerPointToLatLng(containerPointFromEvent(ev));
+    cmPolyLatLngs = [latlng];
+    var active = getActiveLayer();
+    cmPolyShape = L.polygon(cmPolyLatLngs, { color: active.color, weight:3, opacity:1, fillColor: active.color, fillOpacity:.15 }).addTo(map);
+    mapContainer.addEventListener('pointermove', cmPolyPointerMove);
+    mapContainer.addEventListener('pointerup', cmPolyPointerUp);
+    mapContainer.addEventListener('pointercancel', cmPolyPointerUp);
+  }
+  function cmPolyPointerMove(ev){
+    if (ev.pointerId !== cmPolyPointerId) return;
+    ev.preventDefault();
+    var latlng = map.containerPointToLatLng(containerPointFromEvent(ev));
+    cmPolyLatLngs.push(latlng);
+    cmPolyShape.setLatLngs(cmPolyLatLngs);
+  }
+  function cmPolyPointerUp(ev){
+    if (ev.pointerId !== cmPolyPointerId) return;
+    mapContainer.removeEventListener('pointermove', cmPolyPointerMove);
+    mapContainer.removeEventListener('pointerup', cmPolyPointerUp);
+    mapContainer.removeEventListener('pointercancel', cmPolyPointerUp);
+    cmPolyPointerId = null;
+    if (!cmPolyShape) return;
+    if (cmPolyLatLngs.length < 3){ map.removeLayer(cmPolyShape); cmPolyShape = null; cmPolyLatLngs = []; return; }
+    map.removeLayer(cmPolyShape);
+    var active = getActiveLayer();
+    var finalPoly = L.polygon(cmPolyLatLngs, { color: active.color, weight:3, opacity:1, fillColor: active.color, fillOpacity:.15 });
+    finalPoly._fillColorRaw = active.color;
+    finalPoly._fillStyleKey = 'solid';
+    finalPoly._isCamposMinados = true;
+    active.group.addLayer(finalPoly);
+    attachShapeInteractivity(finalPoly, active);
+    syncCamposMinadosCompanion(finalPoly);
+    recordAddShape(active, finalPoly);
+    renderLayerList();
+    selectedShape = finalPoly;
+    showProperties(finalPoly, active);
+    cmPolyLatLngs = [];
+    cmPolyShape = null;
+    disableAllTools();
+  }
+  function activateCamposMinadosTool(){
+    if (!getActiveLayer()){ alert('Cree o seleccione una capa antes de dibujar.'); return; }
+    disableAllTools();
+    cmPolyActive = true;
+    map.dragging.disable();
+    mapContainer.style.cursor = 'crosshair';
+    mapContainer.style.touchAction = 'none';
+    mapContainer.addEventListener('pointerdown', cmPolyPointerDown);
+    activeToolName = 'camposminados';
+    updateToolbarUI();
+  }
+  function stopCamposMinadosMode(){
+    cmPolyActive = false;
+    cmPolyPointerId = null;
+    map.dragging.enable();
+    mapContainer.style.cursor = '';
+    mapContainer.style.touchAction = '';
+    mapContainer.removeEventListener('pointerdown', cmPolyPointerDown);
+    mapContainer.removeEventListener('pointermove', cmPolyPointerMove);
+    mapContainer.removeEventListener('pointerup', cmPolyPointerUp);
+    mapContainer.removeEventListener('pointercancel', cmPolyPointerUp);
+    if (cmPolyShape){ map.removeLayer(cmPolyShape); cmPolyShape = null; }
+    cmPolyLatLngs = [];
+  }
+  var camposMinadosLayers = {};
+  function removeCamposMinadosCompanion(shape){
+    var g = camposMinadosLayers[shape._shapeId];
+    if (g){ g.remove(); delete camposMinadosLayers[shape._shapeId]; }
+  }
+  function syncCamposMinadosCompanion(shape){
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+    var latlngs = shape.getLatLngs();
+    if (Array.isArray(latlngs[0])) latlngs = latlngs[0];
+    if (!latlngs || latlngs.length < 3) return;
+    var cLat = 0, cLng = 0;
+    latlngs.forEach(function(p){ cLat += p.lat; cLng += p.lng; });
+    cLat /= latlngs.length; cLng /= latlngs.length;
+    var centroid = L.latLng(cLat, cLng);
+    var closedPts = latlngs.concat([latlngs[0]]);
+    var cum = [0];
+    for (var i=1;i<closedPts.length;i++){ cum.push(cum[i-1] + distanceMeters(closedPts[i-1], closedPts[i])); }
+    var perimeter = cum[cum.length-1];
+    if (perimeter < 1) return;
+    var spacing = Math.max(perimeter/10, 25);
+    var old = camposMinadosLayers[shape._shapeId];
+    if (old) map.removeLayer(old);
+    var group = L.layerGroup();
+    var color = shape.options.color || shape._fillColorRaw || '#1F3864';
+    for (var d = spacing/2; d < perimeter; d += spacing){
+      for (var j=1;j<cum.length;j++){
+        if (cum[j] >= d){
+          var segLen = cum[j]-cum[j-1];
+          var t = segLen > 0 ? (d-cum[j-1])/segLen : 0;
+          var p1 = closedPts[j-1], p2 = closedPts[j];
+          var pos = L.latLng(p1.lat + (p2.lat-p1.lat)*t, p1.lng + (p2.lng-p1.lng)*t);
+          var out = localXY(centroid, pos);
+          var outLen = Math.hypot(out.x, out.y) || 1;
+          var rotDeg = taskBearingDeg({ x: out.x/outLen, y: out.y/outLen });
+          var icon = buildTaskLabelIcon('M', rotDeg, color);
+          L.marker(pos, { icon:icon, interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
+          break;
+        }
+      }
+    }
+    if (owner.visible) group.addTo(map);
+    camposMinadosLayers[shape._shapeId] = group;
+  }
+  function syncAllCamposMinadosCompanions(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){ if (s._isCamposMinados){ liveIds[s._shapeId] = s; syncCamposMinadosCompanion(s); } });
+    });
+    Object.keys(camposMinadosLayers).forEach(function(id){
+      if (!liveIds[id]){ camposMinadosLayers[id].remove(); delete camposMinadosLayers[id]; }
+    });
+  }
+
   /* ---- Flechas vectoriales (arrow) ---- */
   var EARTH_R = 6378137;
   function localXY(origin, latlng){
@@ -4223,6 +4397,8 @@
       g.arrow2End = { d:1.672, p:0.672 };
     }
     if (tipo === 'vadeofacil' || tipo === 'puente') g.widthRatio = 0.4;
+    if (['demoplaneada','demopreparada','demoactivada','demoejecutada'].indexOf(tipo) !== -1) g.widthRatio = 0.35;
+    if (tipo === 'minas') g.widthRatio = 0.45;
     return g;
   }
   function taskLetter(tipo){
@@ -4555,6 +4731,35 @@
       var w2b = taskPt(g.base, dir, perp, len+wingLen, wingSpread);
       lines.push({ pts: [g.tip, w2a] });
       lines.push({ pts: [g.tip, w2b] });
+    }
+    else if (g.tipo === 'demoplaneada' || g.tipo === 'demopreparada' || g.tipo === 'demoactivada' || g.tipo === 'demoejecutada'){
+      var dHalfW = len*(g.widthRatio != null ? g.widthRatio : 0.35)/2;
+      var topDash = (g.tipo === 'demoplaneada' || g.tipo === 'demopreparada');
+      var botDash = (g.tipo === 'demoplaneada');
+      var topP1 = taskPt(g.base, dir, perp, 0, dHalfW), topP2 = taskPt(g.base, dir, perp, len, dHalfW);
+      var botP1 = taskPt(g.base, dir, perp, 0, -dHalfW), botP2 = taskPt(g.base, dir, perp, len, -dHalfW);
+      lines.push({ pts: [topP1, topP2], dash: topDash });
+      lines.push({ pts: [botP1, botP2], dash: botDash });
+      if (g.tipo === 'demoejecutada'){
+        var margin = dHalfW*0.4;
+        [0.35, 0.65].forEach(function(t){
+          var dTop = taskPt(g.base, dir, perp, len*t + dHalfW*0.5, dHalfW+margin);
+          var dBot = taskPt(g.base, dir, perp, len*t - dHalfW*0.5, -dHalfW-margin);
+          lines.push({ pts: [dBot, dTop] });
+        });
+      }
+    }
+    else if (g.tipo === 'minas'){
+      var mHalfW = len*(g.widthRatio != null ? g.widthRatio : 0.45)/2;
+      var r1 = taskPt(g.base, dir, perp, 0, -mHalfW);
+      var r2 = taskPt(g.base, dir, perp, len, -mHalfW);
+      var r3 = taskPt(g.base, dir, perp, len, mHalfW);
+      var r4 = taskPt(g.base, dir, perp, 0, mHalfW);
+      lines.push({ pts: [r1, r2, r3, r4, r1] });
+      var circR = Math.min(mHalfW, len/8)*0.75;
+      [0.2, 0.5, 0.8].forEach(function(t){
+        tris.push({ pts: ellipseRing(taskPt(g.base, dir, perp, len*t, 0), dir, perp, circR, circR, 20), circle:true });
+      });
     }
 
     if (label) labels.push(label);
@@ -5904,12 +6109,13 @@
         }
       });
     }
-    if (t === 'vadeofacil' || t === 'puente'){
+    if (t === 'vadeofacil' || t === 'puente' || t === 'demoplaneada' || t === 'demopreparada' || t === 'demoactivada' || t === 'demoejecutada' || t === 'minas'){
+      var wDefault = (t === 'minas') ? 0.45 : (t === 'vadeofacil' || t === 'puente') ? 0.4 : 0.35;
       extraDefs.push({
         color:'#5B8A72', size:13, title:'Arrastre para cambiar el ancho',
         compute: function(){
           var ax = taskAxis(shape._task.base, shape._task.tip);
-          var wr = shape._task.widthRatio != null ? shape._task.widthRatio : 0.4;
+          var wr = shape._task.widthRatio != null ? shape._task.widthRatio : wDefault;
           return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, ax.len*wr/2);
         },
         onDrag: function(latlng){
@@ -6712,6 +6918,40 @@
         }
         return;
       }
+      if (tool === 'ingenieros-toggle'){
+        ev.stopPropagation();
+        var ingenierosSubmenu = document.getElementById('ingenieros-submenu');
+        var nowOpenI = !ingenierosSubmenu.classList.contains('open');
+        ingenierosSubmenu.classList.toggle('open', nowOpenI);
+        if (nowOpenI){
+          positionFloatingSubmenu(ingenierosSubmenu, btn);
+        } else {
+          document.getElementById('pasajes-submenu').classList.remove('open');
+          document.getElementById('camposminados-submenu').classList.remove('open');
+          document.getElementById('obstaculos-submenu').classList.remove('open');
+        }
+        return;
+      }
+      if (tool === 'camposminados-toggle'){
+        ev.stopPropagation();
+        var cmSubmenu = document.getElementById('camposminados-submenu');
+        var nowOpenC = !cmSubmenu.classList.contains('open');
+        cmSubmenu.classList.toggle('open', nowOpenC);
+        if (nowOpenC){
+          positionFloatingSubmenu(cmSubmenu, btn);
+        }
+        return;
+      }
+      if (tool === 'obstaculos-toggle'){
+        ev.stopPropagation();
+        var obsSubmenu = document.getElementById('obstaculos-submenu');
+        var nowOpenO = !obsSubmenu.classList.contains('open');
+        obsSubmenu.classList.toggle('open', nowOpenO);
+        if (nowOpenO){
+          positionFloatingSubmenu(obsSubmenu, btn);
+        }
+        return;
+      }
       if (tool === 'lineaofensiva-toggle'){
         ev.stopPropagation();
         var loSubmenu = document.getElementById('lineaofensiva-submenu');
@@ -6734,6 +6974,34 @@
         ev.stopPropagation();
         activateTacticalTaskTool(tool.split(':')[1]);
         document.getElementById('pasajes-submenu').classList.remove('open');
+        document.getElementById('ingenieros-submenu').classList.remove('open');
+        document.getElementById('tactica-wrap').classList.remove('open');
+        document.getElementById('tactica-submenu').classList.remove('open');
+        return;
+      }
+      if (tool && tool.indexOf('obstaculos:') === 0){
+        ev.stopPropagation();
+        activateTacticalTaskTool(tool.split(':')[1]);
+        document.getElementById('obstaculos-submenu').classList.remove('open');
+        document.getElementById('ingenieros-submenu').classList.remove('open');
+        document.getElementById('tactica-wrap').classList.remove('open');
+        document.getElementById('tactica-submenu').classList.remove('open');
+        return;
+      }
+      if (tool === 'camposminados:minas'){
+        ev.stopPropagation();
+        activateTacticalTaskTool('minas');
+        document.getElementById('camposminados-submenu').classList.remove('open');
+        document.getElementById('ingenieros-submenu').classList.remove('open');
+        document.getElementById('tactica-wrap').classList.remove('open');
+        document.getElementById('tactica-submenu').classList.remove('open');
+        return;
+      }
+      if (tool === 'camposminados:campominado'){
+        ev.stopPropagation();
+        activateCamposMinadosTool();
+        document.getElementById('camposminados-submenu').classList.remove('open');
+        document.getElementById('ingenieros-submenu').classList.remove('open');
         document.getElementById('tactica-wrap').classList.remove('open');
         document.getElementById('tactica-submenu').classList.remove('open');
         return;
@@ -6756,6 +7024,9 @@
       document.getElementById('tactica-submenu').classList.remove('open');
       document.getElementById('lineaofensiva-submenu').classList.remove('open');
       document.getElementById('pasajes-submenu').classList.remove('open');
+      document.getElementById('ingenieros-submenu').classList.remove('open');
+      document.getElementById('camposminados-submenu').classList.remove('open');
+      document.getElementById('obstaculos-submenu').classList.remove('open');
     });
   });
   document.addEventListener('click', function(ev){
@@ -6764,13 +7035,13 @@
     var tareasSub = document.getElementById('tareas-submenu');
     var loSub = document.getElementById('lineaofensiva-submenu');
     var pasajesSub = document.getElementById('pasajes-submenu');
-    var insideAny = (wrap && wrap.contains(ev.target)) || (tacticaSub && tacticaSub.contains(ev.target)) || (tareasSub && tareasSub.contains(ev.target)) || (loSub && loSub.contains(ev.target)) || (pasajesSub && pasajesSub.contains(ev.target));
+    var ingenierosSub = document.getElementById('ingenieros-submenu');
+    var cmSub = document.getElementById('camposminados-submenu');
+    var obsSub = document.getElementById('obstaculos-submenu');
+    var allSubs = [wrap, tacticaSub, tareasSub, loSub, pasajesSub, ingenierosSub, cmSub, obsSub];
+    var insideAny = allSubs.some(function(el){ return el && el.contains(ev.target); });
     if (!insideAny){
-      if (wrap) wrap.classList.remove('open');
-      if (tacticaSub) tacticaSub.classList.remove('open');
-      if (tareasSub) tareasSub.classList.remove('open');
-      if (loSub) loSub.classList.remove('open');
-      if (pasajesSub) pasajesSub.classList.remove('open');
+      allSubs.forEach(function(el){ if (el) el.classList.remove('open'); });
     }
   });
 
@@ -7134,6 +7405,7 @@
     syncAllLimiteCompanions();
     syncAllDefensiveLineCompanions();
     syncAllTacticalTaskCompanions();
+    syncAllCamposMinadosCompanions();
     syncAllNameLabels();
     if (isReadOnlyMode()){
       applyReadOnlySweep(list);
@@ -9584,6 +9856,9 @@
       if (shape && shape._isRectangle){
         f.properties.isRectangle = true;
       }
+      if (shape && shape._isCamposMinados){
+        f.properties.isCamposMinados = true;
+      }
       if (shape && shape._isEllipse){
         f.properties.ellipse = {
           center: [shape._ellipse.center.lat, shape._ellipse.center.lng],
@@ -9778,6 +10053,7 @@
           layer._pointColor = p.pointColor || p.color || targetLayerObj.color;
         }
         if (p.isRectangle) layer._isRectangle = true;
+        if (p.isCamposMinados) layer._isCamposMinados = true;
         if (p.ellipse){
           layer._isEllipse = true;
           layer._ellipse = {
@@ -9825,6 +10101,7 @@
         }
         if (layer._dashStyle === 'double') syncDoubleLineCompanion(layer);
         if (layer._isTacticalTask) syncTacticalTaskCompanion(layer);
+        if (layer._isCamposMinados) syncCamposMinadosCompanion(layer);
       }
     };
   }
