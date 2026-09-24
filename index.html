@@ -948,9 +948,31 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="16" y2="12"/><polyline points="12 6 18 12 12 18"/></svg>
             <span>Tareas</span>
           </button>
+          <button class="tool-btn" data-tool="pasajes-toggle" title="Pasajes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16"/></svg>
+            <span>Pasajes</span>
+          </button>
         </div>
       </div>
       <div id="tareas-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:220px;"></div>
+      <div id="pasajes-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:160px;">
+        <button class="tool-btn" data-tool="pasajes:vadeofacil" title="Vadeo fácil: ancho, largo y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="9" x2="8" y2="9"/><line x1="11" y1="9" x2="15" y2="9"/><line x1="18" y1="9" x2="22" y2="9"/><line x1="4" y1="15" x2="8" y2="15"/><line x1="11" y1="15" x2="15" y2="15"/><line x1="18" y1="15" x2="22" y2="15"/></svg>
+          <span>Vadeo fácil</span>
+        </button>
+        <button class="tool-btn" data-tool="pasajes:puente" title="Puente: ancho, largo y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4 3h10l4-3"/><path d="M3 16l4-3h10l4 3"/></svg>
+          <span>Puente</span>
+        </button>
+        <button class="tool-btn" data-tool="pasajes:ferry" title="Ferry: largo y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="9,7 4,12 9,17"/><polyline points="15,7 20,12 15,17"/></svg>
+          <span>Ferry</span>
+        </button>
+        <button class="tool-btn" data-tool="pasajes:pasaje" title="Pasaje: largo y rotación editables">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="2" y2="9"/><line x1="5" y1="12" x2="2" y2="15"/><line x1="19" y1="12" x2="22" y2="9"/><line x1="19" y1="12" x2="22" y2="15"/></svg>
+          <span>Pasaje</span>
+        </button>
+      </div>
       <div id="lineaofensiva-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:160px;">
         <button class="tool-btn" data-tool="arrow" title="Flecha vectorial: arrastre para trazarla; luego seleccione y arrastre sus puntos (incluido el punto dorado de curvatura) para editarla">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg>
@@ -4195,11 +4217,12 @@
       g.arrow2Start = { d:0, p:0.12 };
       g.arrow2End = { d:0.85, p:0.55 };
     }
-    if (tipo === 'emboscada'){ g.widthRatio = 0.9; g.arrowRatio = 0.8; }
+    if (tipo === 'emboscada'){ g.widthRatio = 0.95; g.arrowRatio = 1.0; }
     if (tipo === 'apoyodefuego'){
       g.arrow1End = { d:-0.672, p:0.672 };
       g.arrow2End = { d:1.672, p:0.672 };
     }
+    if (tipo === 'vadeofacil' || tipo === 'puente') g.widthRatio = 0.4;
     return g;
   }
   function taskLetter(tipo){
@@ -4490,6 +4513,48 @@
       var back2 = fromLocalXY(g.tip, backDir2.x*backLen, backDir2.y*backLen);
       lines.push({ pts: [g.base, back1] });
       lines.push({ pts: [g.tip, back2] });
+    }
+    else if (g.tipo === 'vadeofacil'){
+      var vHalfW = len*(g.widthRatio != null ? g.widthRatio : 0.4)/2;
+      var vSegLen = len*0.1;
+      [0.2, 0.5, 0.8].forEach(function(t){
+        [-1, 1].forEach(function(rowSign){
+          var c = taskPt(g.base, dir, perp, len*t, rowSign*vHalfW);
+          var p1 = fromLocalXY(c, -dir.x*vSegLen/2, -dir.y*vSegLen/2);
+          var p2 = fromLocalXY(c, dir.x*vSegLen/2, dir.y*vSegLen/2);
+          lines.push({ pts: [p1, p2] });
+        });
+      });
+    }
+    else if (g.tipo === 'puente'){
+      var pHalfW = len*(g.widthRatio != null ? g.widthRatio : 0.4)/2;
+      var kick = len*0.09;
+      var flatT1 = 0.14, flatT2 = 0.86;
+      [-1, 1].forEach(function(rowSign){
+        var outer1 = taskPt(g.base, dir, perp, 0, rowSign*(pHalfW+kick));
+        var flat1 = taskPt(g.base, dir, perp, len*flatT1, rowSign*pHalfW);
+        var flat2 = taskPt(g.base, dir, perp, len*flatT2, rowSign*pHalfW);
+        var outer2 = taskPt(g.base, dir, perp, len, rowSign*(pHalfW+kick));
+        lines.push({ pts: [outer1, flat1, flat2, outer2] });
+      });
+    }
+    else if (g.tipo === 'ferry'){
+      lines.push({ pts: [g.base, g.tip] });
+      heads.push(taskArrowHeadPts(g.base, { x:-dir.x, y:-dir.y }, Math.max(len*0.1,4)));
+      heads.push(taskArrowHeadPts(g.tip, dir, Math.max(len*0.1,4)));
+    }
+    else if (g.tipo === 'pasaje'){
+      lines.push({ pts: [g.base, g.tip] });
+      var wingLen = len*0.16;
+      var wingSpread = len*0.09;
+      var w1a = taskPt(g.base, dir, perp, -wingLen, -wingSpread);
+      var w1b = taskPt(g.base, dir, perp, -wingLen, wingSpread);
+      lines.push({ pts: [g.base, w1a] });
+      lines.push({ pts: [g.base, w1b] });
+      var w2a = taskPt(g.base, dir, perp, len+wingLen, -wingSpread);
+      var w2b = taskPt(g.base, dir, perp, len+wingLen, wingSpread);
+      lines.push({ pts: [g.tip, w2a] });
+      lines.push({ pts: [g.tip, w2b] });
     }
 
     if (label) labels.push(label);
@@ -5405,7 +5470,7 @@
     return tris;
   }
   function buildObstaculosGeneralesPath(res){
-    var spacing = 55, peakWidth = 15, height = 9;
+    var spacing = 41.25, peakWidth = 22.5, height = 13.5;
     var pts = [];
     var start = pxPointAndTangentAtArc(res, 0);
     if (start) pts.push({ x:start.x, y:start.y });
@@ -5836,6 +5901,21 @@
           var ax = taskAxis(shape._task.base, shape._task.tip);
           var refPt = (t === 'penetrar') ? taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, 0) : shape._task.base;
           shape._task.widthRatio = Math.max(distanceMeters(refPt, latlng) / ax.len, 0.05);
+        }
+      });
+    }
+    if (t === 'vadeofacil' || t === 'puente'){
+      extraDefs.push({
+        color:'#5B8A72', size:13, title:'Arrastre para cambiar el ancho',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var wr = shape._task.widthRatio != null ? shape._task.widthRatio : 0.4;
+          return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, ax.len*wr/2);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var refPt = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, 0);
+          shape._task.widthRatio = Math.max((distanceMeters(refPt, latlng)*2) / ax.len, 0.05);
         }
       });
     }
@@ -6622,6 +6702,16 @@
         }
         return;
       }
+      if (tool === 'pasajes-toggle'){
+        ev.stopPropagation();
+        var pasajesSubmenu = document.getElementById('pasajes-submenu');
+        var nowOpenP = !pasajesSubmenu.classList.contains('open');
+        pasajesSubmenu.classList.toggle('open', nowOpenP);
+        if (nowOpenP){
+          positionFloatingSubmenu(pasajesSubmenu, btn);
+        }
+        return;
+      }
       if (tool === 'lineaofensiva-toggle'){
         ev.stopPropagation();
         var loSubmenu = document.getElementById('lineaofensiva-submenu');
@@ -6636,6 +6726,14 @@
         ev.stopPropagation();
         activateTacticalTaskTool(tool.split(':')[1]);
         document.getElementById('lineaofensiva-submenu').classList.remove('open');
+        document.getElementById('tactica-wrap').classList.remove('open');
+        document.getElementById('tactica-submenu').classList.remove('open');
+        return;
+      }
+      if (tool && tool.indexOf('pasajes:') === 0){
+        ev.stopPropagation();
+        activateTacticalTaskTool(tool.split(':')[1]);
+        document.getElementById('pasajes-submenu').classList.remove('open');
         document.getElementById('tactica-wrap').classList.remove('open');
         document.getElementById('tactica-submenu').classList.remove('open');
         return;
@@ -6657,6 +6755,7 @@
       document.getElementById('tactica-wrap').classList.remove('open');
       document.getElementById('tactica-submenu').classList.remove('open');
       document.getElementById('lineaofensiva-submenu').classList.remove('open');
+      document.getElementById('pasajes-submenu').classList.remove('open');
     });
   });
   document.addEventListener('click', function(ev){
@@ -6664,12 +6763,14 @@
     var tacticaSub = document.getElementById('tactica-submenu');
     var tareasSub = document.getElementById('tareas-submenu');
     var loSub = document.getElementById('lineaofensiva-submenu');
-    var insideAny = (wrap && wrap.contains(ev.target)) || (tacticaSub && tacticaSub.contains(ev.target)) || (tareasSub && tareasSub.contains(ev.target)) || (loSub && loSub.contains(ev.target));
+    var pasajesSub = document.getElementById('pasajes-submenu');
+    var insideAny = (wrap && wrap.contains(ev.target)) || (tacticaSub && tacticaSub.contains(ev.target)) || (tareasSub && tareasSub.contains(ev.target)) || (loSub && loSub.contains(ev.target)) || (pasajesSub && pasajesSub.contains(ev.target));
     if (!insideAny){
       if (wrap) wrap.classList.remove('open');
       if (tacticaSub) tacticaSub.classList.remove('open');
       if (tareasSub) tareasSub.classList.remove('open');
       if (loSub) loSub.classList.remove('open');
+      if (pasajesSub) pasajesSub.classList.remove('open');
     }
   });
 
