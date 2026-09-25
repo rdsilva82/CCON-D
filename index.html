@@ -815,7 +815,7 @@
     <section class="block">
       <h2>Guardado local</h2>
       <div class="hint">Además de la nube (abajo), cada cambio se guarda de respaldo en este navegador y se restaura si abre la página sin conexión.</div>
-      <button class="outline-btn danger-outline" id="reset-storage-btn">Borrar datos guardados y reiniciar</button>
+      <button class="outline-btn danger-outline" id="reset-storage-btn" style="display:none;">Borrar datos guardados y reiniciar</button>
     </section>
 
     <section class="block">
@@ -1699,6 +1699,7 @@
   var githubShas = { index: null, layers: {}, enfoque: null }; // sha conocido de cada archivo dividido
   var lastPushedIndexSig = null;
   var lastPushedLayerSig = {}; // layerId -> firma del último contenido subido con éxito
+  var incompleteLayerLoads = {}; // layerId -> true mientras su contenido no se haya descargado con éxito tras el último reset de capas (evita subir una capa vacía por una descarga interrumpida)
   var githubPushTimer = null;
   var lastLocalEditTime = 0;
   var editingFieldFocused = false;
@@ -1754,6 +1755,13 @@
 
   function githubConfigured(){
     return !!(githubConfig && githubConfig.token && githubConfig.repo && githubConfig.path);
+  }
+
+  function incompleteLayerLoadsSummary(){
+    var ids = Object.keys(incompleteLayerLoads);
+    if (!ids.length) return '';
+    var names = ids.map(function(id){ var l = getLayer(id); return l ? l.name : id; });
+    return names.slice(0, 3).join(', ') + (names.length > 3 ? ' y ' + (names.length - 3) + ' más' : '');
   }
 
   function githubApiUrl(withRef){
@@ -1851,13 +1859,32 @@
             githubShas.index = data.sha;
             lastPushedIndexSig = indexContentSignature();
             var rootIds = getRootLayers().map(function(l){ return l.id; });
+            // La reconstrucción de arriba deja cada capa vacía hasta que su propio archivo
+            // se descargue con éxito. Márcalas como "incompletas" desde ya, para que una
+            // interrupción de red a mitad de la descarga no deje capas vacías listas para
+            // subirse por accidente (ver githubPush).
+            rootIds.forEach(function(id){ incompleteLayerLoads[id] = true; });
             var chain = Promise.resolve();
-            rootIds.forEach(function(id){ chain = chain.then(function(){ return githubPullLayerFile(id); }); });
+            rootIds.forEach(function(id){
+              chain = chain.then(function(){
+                return githubPullLayerFile(id).then(function(){
+                  delete incompleteLayerLoads[id];
+                }).catch(function(err){
+                  incompleteLayerLoads[id] = true;
+                  // No relanzamos: una capa que falla no debe impedir que se intenten las demás.
+                });
+              });
+            });
             chain = chain.then(function(){ return githubPullEnfoqueFile(); });
             chain = chain.then(restorePendingAulas);
             return chain.then(function(){
               renderLayerList();
-              updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+              var pendingCount = Object.keys(incompleteLayerLoads).length;
+              if (pendingCount){
+                updateSyncStatus('error', pendingCount + ' capa(s) no se pudieron descargar por completo (¿se cortó la conexión?): ' + incompleteLayerLoadsSummary() + '. No se subirán cambios hasta descargar de nuevo con éxito.');
+              } else {
+                updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+              }
               syncInProgress = false;
               return true;
             });
@@ -1949,6 +1976,16 @@
     if (isReadOnlyMode()) return Promise.resolve(false);
     if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
     if (syncInProgress){ scheduleGithubPush(); return Promise.resolve(false); }
+    var incompleteIds = Object.keys(incompleteLayerLoads);
+    if (incompleteIds.length){
+      // Al menos una capa quedó sin confirmar (una descarga anterior se interrumpió, por
+      // ejemplo por un corte de conexión) y por lo tanto puede estar vacía en este
+      // navegador aunque tenga contenido real en GitHub. Subir ahora arriesgaría
+      // sobrescribir esos datos con una versión vacía, así que se bloquea la subida
+      // hasta lograr una descarga completa y exitosa.
+      updateSyncStatus('error', incompleteIds.length + ' capa(s) sin confirmar tras un corte de conexión (' + incompleteLayerLoadsSummary() + ') — pulse "Descargar última versión" antes de poder subir cambios.');
+      return Promise.resolve(false);
+    }
     syncInProgress = true;
     updateSyncStatus('syncing','Subiendo…');
 
@@ -2204,15 +2241,29 @@
         applyRemoteState(indexState, { applyView:true });
         applyingRemoteState = false;
         var rootIds = getRootLayers().map(function(l){ return l.id; });
+        rootIds.forEach(function(id){ incompleteLayerLoads[id] = true; });
         var chain = Promise.resolve();
-        rootIds.forEach(function(id){ chain = chain.then(function(){ return githubPullLayerFile(id); }); });
+        rootIds.forEach(function(id){
+          chain = chain.then(function(){
+            return githubPullLayerFile(id).then(function(){
+              delete incompleteLayerLoads[id];
+            }).catch(function(err){
+              incompleteLayerLoads[id] = true;
+            });
+          });
+        });
         return chain.then(restorePendingAulas);
       }).then(function(){
         renderLayerList();
         closeHistoryScrim();
+        if (Object.keys(incompleteLayerLoads).length){
+          updateSyncStatus('error','Estructura restaurada, pero algunas capas no se pudieron descargar por completo (' + incompleteLayerLoadsSummary() + '). No se subirán cambios hasta descargar de nuevo con éxito.');
+          return null;
+        }
         updateSyncStatus('ok','Estructura restaurada, subiendo…');
         return githubRefreshSha(githubIndexPath());
       }).then(function(sha2){
+        if (sha2 == null) return;
         githubShas.index = sha2;
         githubPush();
       }).catch(function(err){
