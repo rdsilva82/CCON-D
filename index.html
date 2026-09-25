@@ -3029,6 +3029,7 @@
     ['aerotransportada','Aerotransportada'],
     ['amphibious','Anfibios'],
     ['motorized','Motorizada'],
+    ['wheeled','A Rueda'],
     ['unknown_unit','Desconocido (?)']
   ];
   Object.keys(MIL_UNIT_TYPES_BY_BASE).forEach(function(baseKey){
@@ -3047,7 +3048,7 @@
 
   // Estos tipos no tienen palabras/código propio (son indicadores de movilidad/estado genéricos),
   // así que se dibujan superpuestos sobre el símbolo propio de la unidad base, en vez de reemplazarlo.
-  var MIL_OVERLAY_TYPES = ['armor','aerotransportada','amphibious','motorized','unknown_unit'];
+  var MIL_OVERLAY_TYPES = ['armor','aerotransportada','amphibious','motorized','wheeled','unknown_unit'];
   var MIL_BASE_PRIMARY_GLYPH = {
     generic: 'generic',
     infanteria: 'infantry',
@@ -3394,7 +3395,7 @@
       case 'armor':
         return '<ellipse cx="30" cy="30" rx="17" ry="10" fill="none" stroke="'+g+'" stroke-width="1.2"/>';
       case 'artillery':
-        return '<circle cx="30" cy="30" r="6.5" fill="'+g+'"/>';
+        return '<circle cx="30" cy="30" r="3.25" fill="'+g+'"/>';
       case 'cavalry':
         return '<ellipse cx="30" cy="30" rx="15" ry="9" fill="none" stroke="'+g+'" stroke-width="2.2"/><line x1="17" y1="39" x2="43" y2="21" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>';
       case 'aviation':
@@ -3517,6 +3518,10 @@
       case 'motorized':
         var mv = frameVerticalExtent(affiliation);
         return '<line x1="30" y1="'+mv.y1+'" x2="30" y2="'+mv.y2+'" stroke="'+g+'" stroke-width="1.2"/>';
+      case 'wheeled':
+        return '<line x1="20" y1="41" x2="40" y2="41" stroke="'+g+'" stroke-width="1.6"/>' +
+               '<circle cx="20" cy="41" r="3" fill="none" stroke="'+g+'" stroke-width="1.6"/>' +
+               '<circle cx="40" cy="41" r="3" fill="none" stroke="'+g+'" stroke-width="1.6"/>';
       case 'unknown_unit':
         return '<text x="30" y="38" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="800" fill="'+g+'">?</text>';
       case 'sof':
