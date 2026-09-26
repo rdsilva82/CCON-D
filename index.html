@@ -213,6 +213,24 @@
     border:1px solid var(--border); border-radius:8px; background:#FBFAF7; overflow:hidden;
   }
   .layer-card.active{ border-color:var(--gold); box-shadow:0 0 0 1px var(--gold-light) inset; background:#FBF4E1; }
+  .aula-divider{
+    display:flex; align-items:center; gap:8px;
+    margin:14px 0 6px; padding:0;
+    font-family:Calibri,Arial,sans-serif; font-size:11px; font-weight:800;
+    color:var(--navy); letter-spacing:0.04em; text-transform:uppercase;
+  }
+  .aula-divider:first-child{ margin-top:2px; }
+  .aula-divider::before{ content:''; flex-shrink:0; width:4px; align-self:stretch; background:var(--gold); border-radius:2px; }
+  .aula-divider span{ flex-shrink:0; }
+  .aula-divider::after{ content:''; flex:1; height:1px; background:var(--border); }
+  #ui-floating-tooltip{
+    position:fixed; z-index:9999; pointer-events:none;
+    background:var(--navy); color:#fff; font-family:Calibri,Arial,sans-serif;
+    font-size:12px; font-weight:600; line-height:1.35;
+    padding:6px 10px; border-radius:6px; box-shadow:0 4px 14px rgba(0,0,0,0.25);
+    max-width:260px; white-space:normal; display:none;
+  }
+  #ui-floating-tooltip b{ color:var(--gold-light); }
   .layer-row{
     display:flex; align-items:center; gap:4px;
     padding:7px 6px; cursor:pointer;
@@ -768,6 +786,8 @@
   </div>
 </div>
 
+<div id="ui-floating-tooltip"></div>
+
 <div class="confirm-scrim" id="history-scrim">
   <div class="confirm-box" role="dialog" aria-modal="true" style="width:min(480px,92vw); max-height:80vh; display:flex; flex-direction:column;">
     <div class="confirm-message" id="history-title" style="font-weight:700; margin-bottom:2px;">Historial</div>
@@ -1169,7 +1189,7 @@
   function nextColor(){ var c = PALETTE[paletteIdx % PALETTE.length]; paletteIdx++; return c; }
 
   /* ---------------- USUARIO / AULA ACTIVA ---------------- */
-  var AULAS = ['A','B','C','D','E','F','G'];
+  var AULAS = ['A','B','C','D','E','F','G','H'];
   var USER_CONTEXT_KEY = 'active_user_context_v1';
   var userContext = null; // { role:'aula', aula:'A' } o { role:'direccion', viewingAula:'A'|null }
 
@@ -1384,7 +1404,7 @@
     cache.indexEntries.forEach(function(entry){
       var lo = {
         id: prefix + entry.id,
-        name: entry.parentId ? entry.name : ('AULA ' + letra + ' — ' + entry.name),
+        name: entry.name,
         color: entry.color,
         group: L.featureGroup(),
         visible: entry.visible !== false,
@@ -2118,6 +2138,28 @@
       return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' }) + ', ' +
              d.toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
     } catch(e){ return iso; }
+  }
+
+  /* ---------------- ETIQUETA FLOTANTE (tooltip) reutilizable ---------------- */
+  var uiFloatingTooltip = document.getElementById('ui-floating-tooltip');
+  function showFloatingTooltip(html, ev){
+    if (!uiFloatingTooltip) return;
+    uiFloatingTooltip.innerHTML = html;
+    uiFloatingTooltip.style.display = 'block';
+    positionFloatingTooltip(ev);
+  }
+  function positionFloatingTooltip(ev){
+    if (!uiFloatingTooltip || uiFloatingTooltip.style.display !== 'block') return;
+    var pad = 14;
+    var x = ev.clientX + pad, y = ev.clientY + pad;
+    var rect = uiFloatingTooltip.getBoundingClientRect();
+    if (x + rect.width > window.innerWidth - 8) x = ev.clientX - rect.width - pad;
+    if (y + rect.height > window.innerHeight - 8) y = ev.clientY - rect.height - pad;
+    uiFloatingTooltip.style.left = Math.max(4,x) + 'px';
+    uiFloatingTooltip.style.top = Math.max(4,y) + 'px';
+  }
+  function hideFloatingTooltip(){
+    if (uiFloatingTooltip) uiFloatingTooltip.style.display = 'none';
   }
 
   var historyScrim = document.getElementById('history-scrim');
@@ -7440,7 +7482,18 @@
   function renderLayerList(){
     var list = document.getElementById('layer-list');
     list.innerHTML = '';
-    getRootLayers().forEach(function(node){ list.appendChild(buildLayerCard(node, 0)); });
+    var readOnly = isReadOnlyMode();
+    var lastAula;
+    getRootLayers().forEach(function(node, idx){
+      if (readOnly && node._direccionAula && node._direccionAula !== lastAula){
+        var divider = document.createElement('div');
+        divider.className = 'aula-divider';
+        divider.innerHTML = '<span>AULA ' + escapeHtmlText(node._direccionAula) + '</span>';
+        list.appendChild(divider);
+        lastAula = node._direccionAula;
+      }
+      list.appendChild(buildLayerCard(node, 0));
+    });
     syncAllSupplyIndicators();
     syncAllEmisoraCoverage();
     syncAllMilRadius();
@@ -7495,6 +7548,14 @@
     nameInput.value = l.name;
     nameInput.addEventListener('click', function(ev){ ev.stopPropagation(); });
     nameInput.addEventListener('change', function(ev){ l.name = ev.target.value || l.name; scheduleSave(); });
+    (function(){
+      var tooltipHtml = l._direccionAula
+        ? escapeHtmlText(l.name) + '<br><b>AULA ' + escapeHtmlText(l._direccionAula) + '</b>'
+        : escapeHtmlText(l.name);
+      nameInput.addEventListener('mouseenter', function(ev){ showFloatingTooltip(tooltipHtml, ev); });
+      nameInput.addEventListener('mousemove', function(ev){ positionFloatingTooltip(ev); });
+      nameInput.addEventListener('mouseleave', hideFloatingTooltip);
+    })();
 
     var childCount = childrenFn(l.id).length;
     var count = document.createElement('span');
