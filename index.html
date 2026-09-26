@@ -214,14 +214,20 @@
   }
   .layer-card.active{ border-color:var(--gold); box-shadow:0 0 0 1px var(--gold-light) inset; background:#FBF4E1; }
   .aula-divider{
-    display:flex; align-items:center; gap:8px;
-    margin:14px 0 6px; padding:0;
-    font-family:Calibri,Arial,sans-serif; font-size:11px; font-weight:800;
+    display:flex; align-items:center; gap:6px;
+    margin:10px 0 4px; padding:6px 8px;
+    font-family:Calibri,Arial,sans-serif; font-size:11.5px; font-weight:800;
     color:var(--navy); letter-spacing:0.04em; text-transform:uppercase;
+    background:#EFEAD9; border-radius:6px; cursor:pointer; user-select:none;
   }
+  .aula-divider:hover{ background:#E6DFC7; }
   .aula-divider:first-child{ margin-top:2px; }
   .aula-divider::before{ content:''; flex-shrink:0; width:4px; align-self:stretch; background:var(--gold); border-radius:2px; }
-  .aula-divider span{ flex-shrink:0; }
+  .aula-divider .aula-divider-arrow{ flex-shrink:0; font-size:10px; color:var(--gold); transition:transform .15s; }
+  .aula-divider.collapsed .aula-divider-arrow{ transform:rotate(0deg); }
+  .aula-divider:not(.collapsed) .aula-divider-arrow{ transform:rotate(90deg); }
+  .aula-divider .aula-divider-label{ flex-shrink:0; }
+  .aula-divider .aula-divider-count{ font-weight:600; color:var(--muted); text-transform:none; letter-spacing:0; margin-left:2px; }
   .aula-divider::after{ content:''; flex:1; height:1px; background:var(--border); }
   #ui-floating-tooltip{
     position:fixed; z-index:9999; pointer-events:none;
@@ -7479,19 +7485,35 @@
     return select;
   }
 
+  // Colapso de cada grupo "AULA X" en la lista de capas (modo vista de DIRECCIÓN). Colapsado
+  // por defecto para que, con varias aulas activas, la lista muestre solo sus encabezados.
+  var direccionAulaSectionCollapsed = {};
+  function isAulaSectionCollapsed(letra){ return direccionAulaSectionCollapsed[letra] !== false; }
+
   function renderLayerList(){
     var list = document.getElementById('layer-list');
     list.innerHTML = '';
     var readOnly = isReadOnlyMode();
+    var rootLayers = getRootLayers();
     var lastAula;
-    getRootLayers().forEach(function(node, idx){
+    rootLayers.forEach(function(node, idx){
       if (readOnly && node._direccionAula && node._direccionAula !== lastAula){
-        var divider = document.createElement('div');
-        divider.className = 'aula-divider';
-        divider.innerHTML = '<span>AULA ' + escapeHtmlText(node._direccionAula) + '</span>';
-        list.appendChild(divider);
         lastAula = node._direccionAula;
+        var letra = lastAula;
+        var collapsed = isAulaSectionCollapsed(letra);
+        var count = rootLayers.filter(function(n){ return n._direccionAula === letra; }).length;
+        var divider = document.createElement('div');
+        divider.className = 'aula-divider' + (collapsed ? ' collapsed' : '');
+        divider.innerHTML = '<span class="aula-divider-arrow">▸</span><span class="aula-divider-label">AULA ' +
+          escapeHtmlText(letra) + '</span><span class="aula-divider-count">(' + count + ')</span>';
+        divider.title = collapsed ? 'Mostrar las capas de AULA ' + letra : 'Ocultar las capas de AULA ' + letra;
+        divider.addEventListener('click', function(){
+          direccionAulaSectionCollapsed[letra] = !collapsed; // toggle: era colapsado -> ahora expandido, y viceversa
+          renderLayerList();
+        });
+        list.appendChild(divider);
       }
+      if (readOnly && node._direccionAula && isAulaSectionCollapsed(node._direccionAula)) return;
       list.appendChild(buildLayerCard(node, 0));
     });
     syncAllSupplyIndicators();
