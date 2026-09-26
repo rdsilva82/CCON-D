@@ -1448,7 +1448,7 @@
   }
 
   function loadDireccionBroadcastPanel(){
-    if (!userContext || userContext.role !== 'aula') return;
+    if (!userContext || (userContext.role !== 'aula' && userContext.role !== 'direccion')) return;
     if (!githubConfigured()){ hideDireccionPanel(); return; }
     showDireccionPanel();
     if (direccionBroadcastLoaded){ renderDireccionBroadcastList(); return; }
@@ -11225,6 +11225,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       updateViewInfo();
       updateUndoRedoUI();
       updateSyncStatus('off','');
+      loadDireccionBroadcastPanel();
     } else {
       if (!loadStateFromStorage()){
         createTeatroOperacionesLayer();
@@ -11257,7 +11258,12 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     });
 
     setInterval(function(){
-      if (githubConfigured() && githubConfig.autoSync && !githubPushTimer &&
+      // El modo vista de DIRECCIÓN no tiene un estado "propio" que sincronizar (sus capas son
+      // una superposición en memoria de las aulas, refrescadas por su propio mecanismo) — al
+      // ejecutar aquí el pull genérico igual se corría el riesgo de reconstruir esa superposición
+      // desde una ruta que nunca se guarda de verdad, haciendo que las capas visibles
+      // "desaparecieran" tras un rato de inactividad. Por eso se excluye por completo.
+      if (!isReadOnlyMode() && githubConfigured() && githubConfig.autoSync && !githubPushTimer &&
           !activeToolName && !moveModeShape && !editingFieldFocused && !selectedShape &&
           (Date.now()-lastLocalEditTime > 20000)){
         githubPull(false, true);
