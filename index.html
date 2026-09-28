@@ -2958,7 +2958,7 @@
     aspc:'ASPC', biter:'BITER', ggcar:'GGCAR', ggmag:'GGMAG', bapom:'BAPOM',
     biacm:'BIACM', futam:'FUTAM', udiv:'U/DIV', gmar:'GMAR', imi:'IMI',
     bafur:'BAFUR', ev:'EV', ggsan:'GGSAN', ggmmag:'GGMMAG', badre:'BADRE',
-    badra:'BADRA', gtm:'GTM', evipe:'EVIPE', accionintegral:'AI'
+    badra:'BADRA', gtm:'GTM', evipe:'EVIPE', accionintegral:'AI', brlog:'BRLOG'
   };
   var MIL_BASE_UNITS = [
     ['generic','Genérica / sin especificar'],
@@ -3042,6 +3042,8 @@
       ['ammodepot','Depósito de municiones'],
       ['udiv','U/DIV'],
       ['abastecimiento','Abastecimiento'],
+      ['intendencia','Intendencia'],
+      ['brlog','BRLOG'],
       ['claseI','Abastecimiento Clase I'],
       ['claseII','Abastecimiento Clase II'],
       ['claseIII','Abastecimiento Clase III'],
@@ -3459,8 +3461,12 @@
                '<line x1="42" y1="21.7" x2="42" y2="35.3" stroke="'+g+'" stroke-width="1.8" stroke-linecap="round"/>';
       case 'commandpost':
         return '<line x1="30" y1="12" x2="30" y2="46" stroke="'+g+'" stroke-width="2.2"/><polygon points="30,12 46,17.5 30,23" fill="'+g+'"/>';
-      case 'medical':
-        return '<line x1="30" y1="18" x2="30" y2="42" stroke="'+g+'" stroke-width="4.2" stroke-linecap="round"/><line x1="18" y1="30" x2="42" y2="30" stroke="'+g+'" stroke-width="4.2" stroke-linecap="round"/>';
+      case 'medical': {
+        var mb = frameBoundsForAffiliation(affiliation);
+        var mv = frameVerticalExtent(affiliation);
+        return '<line x1="30" y1="'+mv.y1+'" x2="30" y2="'+mv.y2+'" stroke="'+g+'" stroke-width="2.4"/>' +
+               '<line x1="'+mb.x1+'" y1="30" x2="'+mb.x2+'" y2="30" stroke="'+g+'" stroke-width="2.4"/>';
+      }
       case 'logistics':
         return '<rect x="18" y="20" width="24" height="20" fill="none" stroke="'+g+'" stroke-width="2.2"/>';
       case 'abastecimiento': {
@@ -3479,6 +3485,15 @@
           '<line x1="'+(lp.cx-5)+'" y1="'+lp.cyU+'" x2="'+(lp.cx+8)+'" y2="'+lp.cyU+'" stroke="'+g+'" stroke-width="1.8"/>' +
           '<line x1="'+(lp.cx+8)+'" y1="'+lp.cyU+'" x2="'+(lp.cx+8)+'" y2="'+(lp.cyU+3.5)+'" stroke="'+g+'" stroke-width="1.8"/>' +
           '<line x1="'+(lp.cx+4.5)+'" y1="'+lp.cyU+'" x2="'+(lp.cx+4.5)+'" y2="'+(lp.cyU+2.5)+'" stroke="'+g+'" stroke-width="1.8"/>';
+      }
+      case 'intendencia': {
+        // Igual al símbolo de Abastecimiento Clase II (llave), pero sin la línea del tercio
+        // inferior y con la llave centrada en vez de desplazada hacia la izquierda.
+        var lp = logisticsFrameParts(affiliation);
+        return '<circle cx="'+(lp.cx-6)+'" cy="'+lp.cyU+'" r="3.2" fill="none" stroke="'+g+'" stroke-width="1.8"/>' +
+          '<line x1="'+(lp.cx-3)+'" y1="'+lp.cyU+'" x2="'+(lp.cx+10)+'" y2="'+lp.cyU+'" stroke="'+g+'" stroke-width="1.8"/>' +
+          '<line x1="'+(lp.cx+10)+'" y1="'+lp.cyU+'" x2="'+(lp.cx+10)+'" y2="'+(lp.cyU+3.5)+'" stroke="'+g+'" stroke-width="1.8"/>' +
+          '<line x1="'+(lp.cx+6.5)+'" y1="'+lp.cyU+'" x2="'+(lp.cx+6.5)+'" y2="'+(lp.cyU+2.5)+'" stroke="'+g+'" stroke-width="1.8"/>';
       }
       case 'claseIII': {
         var lp = logisticsFrameParts(affiliation);
@@ -3580,8 +3595,14 @@
         return '<line x1="16" y1="40" x2="42" y2="16" stroke="'+g+'" stroke-width="2.6" stroke-linecap="round"/><polygon points="42,16 34,18 40,24" fill="'+g+'"/>';
       case 'transporte':
         return '<circle cx="30" cy="30" r="11" fill="none" stroke="'+g+'" stroke-width="2"/><line x1="30" y1="19" x2="30" y2="41" stroke="'+g+'" stroke-width="1.6"/><line x1="19" y1="30" x2="41" y2="30" stroke="'+g+'" stroke-width="1.6"/><line x1="22.2" y1="22.2" x2="37.8" y2="37.8" stroke="'+g+'" stroke-width="1.6"/><line x1="37.8" y1="22.2" x2="22.2" y2="37.8" stroke="'+g+'" stroke-width="1.6"/>';
-      case 'mantenimiento':
-        return '<circle cx="20" cy="20" r="5" fill="none" stroke="'+g+'" stroke-width="2.2"/><line x1="24" y1="24" x2="36" y2="36" stroke="'+g+'" stroke-width="2.6" stroke-linecap="round"/><circle cx="40" cy="40" r="5" fill="none" stroke="'+g+'" stroke-width="2.2"/>';
+      case 'mantenimiento': {
+        // Llave de doble boca en horizontal: dos bocas abiertas (una a cada extremo,
+        // apuntando hacia afuera) unidas por una barra central.
+        var jr = 6.5;
+        return '<path d="M 17,'+(30-jr)+' A '+jr+' '+jr+' 0 0 1 17,'+(30+jr)+'" fill="none" stroke="'+g+'" stroke-width="2.2"/>' +
+          '<path d="M 43,'+(30-jr)+' A '+jr+' '+jr+' 0 0 0 43,'+(30+jr)+'" fill="none" stroke="'+g+'" stroke-width="2.2"/>' +
+          '<rect x="23.5" y="27" width="13" height="6" fill="none" stroke="'+g+'" stroke-width="2.2"/>';
+      }
       case 'policiamilitar':
         return '<path d="M30,14 L42,19 V30 C42,38 36,43 30,46 C24,43 18,38 18,30 V19 Z" fill="none" stroke="'+g+'" stroke-width="2"/>';
       case 'circo':
