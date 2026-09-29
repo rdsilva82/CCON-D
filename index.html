@@ -5861,21 +5861,32 @@
     var segLen = Math.sqrt(segDx*segDx+segDy*segDy) || 1;
     var segN = { x:-segDy/segLen, y:segDx/segLen };
     var tip = pts[N];
-    return { tail: tail, shaftEndPt: shaftEndPt, segN: segN, tip: tip };
+    return { tail: tail, shaftEndPt: shaftEndPt, segN: segN, tip: tip, headLen: headLen };
   }
 
   // Segunda punta de "Ataque principal": un chevrón abierto (mismo grosor/color que la
-  // flecha) cuyo vértice coincide con la punta real y cuyos dos brazos terminan EXACTAMENTE
-  // donde terminan las líneas paralelas del asta (ancho de flecha), para que haya
-  // continuidad visual sin espacio entre el asta y la segunda punta.
+  // flecha), con sus brazos anclados EXACTAMENTE donde terminan las líneas paralelas del
+  // asta (ancho de flecha, para que haya continuidad sin espacio con el asta), pero con un
+  // vértice SEPARADO de la punta real: se calcula como un triángulo semejante al de la
+  // cabeza real (mismo ángulo/pendiente en sus lados, por lo tanto paralelo a las líneas de
+  // la cabeza real), solo que partiendo del ancho del asta (más angosto que el ancho de
+  // cabeza), lo que retrasa su vértice respecto de la punta real.
   function computeMainAttackWedge(arrow){
     var geo = computeArrowHeadGeometry(arrow);
     var sw = arrow.shaftWidth/2;
+    var hw = Math.max(arrow.headWidth/2, 0.001);
     var backLeft = { x: geo.shaftEndPt.x + geo.segN.x*sw, y: geo.shaftEndPt.y + geo.segN.y*sw };
     var backRight = { x: geo.shaftEndPt.x - geo.segN.x*sw, y: geo.shaftEndPt.y - geo.segN.y*sw };
+    var fdx = geo.tip.x - geo.shaftEndPt.x, fdy = geo.tip.y - geo.shaftEndPt.y;
+    var flen = Math.sqrt(fdx*fdx+fdy*fdy) || 1;
+    var fux = fdx/flen, fuy = fdy/flen;
+    // Triángulo semejante: mismo ángulo de apertura que la cabeza real (base hw a distancia
+    // headLen del vértice), pero con base sw -> el vértice queda a distancia headLen*(sw/hw).
+    var apexDist = geo.headLen * (sw/hw);
+    var apex = { x: geo.shaftEndPt.x + fux*apexDist, y: geo.shaftEndPt.y + fuy*apexDist };
     return [
       fromLocalXY(geo.tail, backLeft.x, backLeft.y),
-      fromLocalXY(geo.tail, geo.tip.x, geo.tip.y),
+      fromLocalXY(geo.tail, apex.x, apex.y),
       fromLocalXY(geo.tail, backRight.x, backRight.y)
     ];
   }
