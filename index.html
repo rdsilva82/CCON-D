@@ -1056,9 +1056,9 @@
         </button>
       </div>
       <div id="lineaofensiva-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:160px;">
-        <button class="tool-btn" data-tool="arrow" title="Flecha vectorial: arrastre para trazarla; luego seleccione y arrastre sus puntos (incluido el punto dorado de curvatura) para editarla">
+        <button class="tool-btn" data-tool="arrow" title="Ataque: arrastre para trazarla; luego seleccione y arrastre sus puntos (incluido el punto dorado de curvatura) para editarla">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg>
-          <span>Flecha</span>
+          <span>Ataque</span>
         </button>
         <button class="tool-btn" data-tool="lineaofensiva:emboscada" title="Emboscada: arco con líneas paralelas y flecha de salida; largo, ancho, largo de flecha y rotación editables">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2" y1="6" x2="9" y2="6"/><line x1="2" y1="9" x2="9" y2="9"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="2" y1="15" x2="9" y2="15"/><line x1="2" y1="18" x2="9" y2="18"/><path d="M9,4 A8,8 0 0,1 9,20" stroke-width="1.8"/><line x1="12" y1="12" x2="21" y2="12" stroke-width="1.8"/><polyline points="17,8 21,12 17,16" stroke-width="1.8"/></svg>
@@ -2990,6 +2990,8 @@
       if (corM){ if (visible) corM.addTo(map); else map.removeLayer(corM); }
       var corC = arrowCorridorChevrons[s._shapeId];
       if (corC){ if (visible){ corC.start.addTo(map); corC.end.addTo(map); } else { map.removeLayer(corC.start); map.removeLayer(corC.end); } }
+      var maM = arrowMainAttackMarks[s._shapeId];
+      if (maM){ if (visible) maM.addTo(map); else map.removeLayer(maM); }
       var limL = limiteLines[s._shapeId];
       if (limL){ if (visible) limL.addTo(map); else map.removeLayer(limL); }
       var limM = limiteMagnitudes[s._shapeId];
@@ -5737,7 +5739,7 @@
     var headLength = Math.max(len*0.3, shaftWidth*2);
     var headWidth = shaftWidth*2.6;
     return { tail:tail, head:head, curve:null, shaftWidth:shaftWidth, headLength:headLength, headWidth:headWidth,
-      tailLeftOffset:null, tailRightOffset:null, corridorEnabled:false, corridorEchelon:'' };
+      tailLeftOffset:null, tailRightOffset:null, corridorEnabled:false, corridorEchelon:'', mainAttack:false };
   }
 
   function computeArrowCenterline(arrow){
@@ -5818,6 +5820,7 @@
     if (shape._arrowHandles) positionArrowHandles(shape);
     syncArrowOutline(shape);
     syncArrowCorridor(shape);
+    syncArrowMainAttack(shape);
   }
 
   function cloneArrowState(a){
@@ -5825,7 +5828,24 @@
       shaftWidth: a.shaftWidth, headWidth: a.headWidth, headLength: a.headLength,
       tailLeftOffset: a.tailLeftOffset ? { x:a.tailLeftOffset.x, y:a.tailLeftOffset.y } : null,
       tailRightOffset: a.tailRightOffset ? { x:a.tailRightOffset.x, y:a.tailRightOffset.y } : null,
-      corridorEnabled: !!a.corridorEnabled, corridorEchelon: a.corridorEchelon || '' };
+      corridorEnabled: !!a.corridorEnabled, corridorEchelon: a.corridorEchelon || '', mainAttack: !!a.mainAttack };
+  }
+
+  function computeArrowTipMark(arrow){
+    var centerData = computeArrowCenterline(arrow);
+    var lp = centerData.localPts;
+    var last = lp.length - 1;
+    var a = lp[Math.max(0, last-1)], b = lp[last];
+    var dx = b.x - a.x, dy = b.y - a.y;
+    var segLen = Math.sqrt(dx*dx + dy*dy) || 1;
+    var ux = dx/segLen, uy = dy/segLen;
+    var tipLocal = localXY(arrow.tail, arrow.head);
+    var offset = Math.max(arrow.headLength * 0.55, 0);
+    var markLocal = { x: tipLocal.x - ux*offset, y: tipLocal.y - uy*offset };
+    return {
+      latlng: fromLocalXY(arrow.tail, markLocal.x, markLocal.y),
+      angleDeg: centerData.endAngleDeg
+    };
   }
 
   /* ---------------- CONTORNO ABIERTO DE LA FLECHA (reverso sin cerrar) ---------------- */
@@ -5875,21 +5895,24 @@
     var chev = arrowCorridorChevrons[shape._shapeId];
     if (chev){ chev.start.remove(); chev.end.remove(); delete arrowCorridorChevrons[shape._shapeId]; }
   }
-  function shaftPixelWidth(shape, atLatLng){
+  function shaftPixelWidth(shape, atLatLng, widthMetersOverride){
     var arrow = shape._arrow;
+    var widthMeters = (widthMetersOverride != null) ? widthMetersOverride : arrow.shaftWidth;
     var vec = localXY(arrow.tail, arrow.head);
     var totalLen = Math.max(Math.sqrt(vec.x*vec.x+vec.y*vec.y), 0.01);
     var ux = vec.x/totalLen, uy = vec.y/totalLen;
     var nx = -uy, ny = ux;
-    var p1 = fromLocalXY(atLatLng, nx*arrow.shaftWidth/2, ny*arrow.shaftWidth/2);
-    var p2 = fromLocalXY(atLatLng, -nx*arrow.shaftWidth/2, -ny*arrow.shaftWidth/2);
+    var p1 = fromLocalXY(atLatLng, nx*widthMeters/2, ny*widthMeters/2);
+    var p2 = fromLocalXY(atLatLng, -nx*widthMeters/2, -ny*widthMeters/2);
     var px1 = map.latLngToContainerPoint(p1), px2 = map.latLngToContainerPoint(p2);
     return Math.max(18, Math.hypot(px2.x-px1.x, px2.y-px1.y));
   }
-  function buildChevronIcon(pxSize, angleDeg){
+  function buildChevronIcon(pxSize, angleDeg, color, weight){
+    color = color || '#000';
+    weight = (weight != null) ? weight : 2.4;
     var html = '<div style="width:' + pxSize + 'px;height:' + pxSize + 'px;transform:rotate(' + angleDeg + 'deg);">' +
       '<svg width="' + pxSize + '" height="' + pxSize + '" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">' +
-      '<path d="M5,3 L15,10 L5,17" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M5,3 L15,10 L5,17" fill="none" stroke="' + color + '" stroke-width="' + weight + '" stroke-linecap="round" stroke-linejoin="round"/>' +
       '</svg></div>';
     return L.divIcon({ className:'', html: html, iconSize:[pxSize, pxSize], iconAnchor:[pxSize/2, pxSize/2] });
   }
@@ -5985,6 +6008,42 @@
       }
     });
     Object.keys(liveIds).forEach(function(id){ syncArrowCorridor(liveIds[id]); });
+  }
+
+  /* ---------------- ATAQUE PRINCIPAL (segunda punta de flecha sobre la punta real) ---------------- */
+  var arrowMainAttackMarks = {};
+  function removeMainAttackMark(shape){
+    var m = arrowMainAttackMarks[shape._shapeId];
+    if (m){ m.remove(); delete arrowMainAttackMarks[shape._shapeId]; }
+  }
+  function syncArrowMainAttack(shape){
+    if (!shape._isArrow) return;
+    var arrow = shape._arrow;
+    if (!arrow.mainAttack){ removeMainAttackMark(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner) return;
+    var mark = computeArrowTipMark(arrow);
+    var pxSize = Math.min(shaftPixelWidth(shape, mark.latlng, arrow.headWidth) * 0.6, 34);
+    var icon = buildChevronIcon(pxSize, mark.angleDeg, shape.options.color, Math.max(shape.options.weight || 2, 2.4));
+    var marker = arrowMainAttackMarks[shape._shapeId];
+    if (!marker){
+      marker = L.marker(mark.latlng, { icon: icon, interactive:false, keyboard:false, zIndexOffset:650 });
+      if (owner.visible) marker.addTo(map);
+      arrowMainAttackMarks[shape._shapeId] = marker;
+    } else {
+      marker.setLatLng(mark.latlng);
+      marker.setIcon(icon);
+    }
+  }
+  function syncAllArrowMainAttacks(){
+    var liveIds = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){ if (s._isArrow && s._arrow.mainAttack) liveIds[s._shapeId] = s; });
+    });
+    Object.keys(arrowMainAttackMarks).forEach(function(id){
+      if (!liveIds[id]){ arrowMainAttackMarks[id].remove(); delete arrowMainAttackMarks[id]; }
+    });
+    Object.keys(liveIds).forEach(function(id){ syncArrowMainAttack(liveIds[id]); });
   }
 
   /* ---------------- LÍMITE (línea de límite con magnitud, para líneas y polígonos) ---------------- */
@@ -7622,7 +7681,7 @@
   }
 
   function defaultShapeName(shape){
-    if (shape._isArrow) return 'Flecha ' + shapeCounter;
+    if (shape._isArrow) return 'Ataque ' + shapeCounter;
     if (shape._isMilSymbol) return 'Unidad ' + shapeCounter;
     if (shape._isEllipse) return 'Elipse ' + shapeCounter;
     if (shape._isText) return 'Texto ' + shapeCounter;
@@ -7760,6 +7819,7 @@
   function applyStrokeColor(shape, color){
     shape.setStyle({ color: color });
     syncArrowOutline(shape);
+    syncArrowMainAttack(shape);
   }
   function applyFillColor(shape, color){
     shape.setStyle({ fillColor: color });
@@ -7775,6 +7835,7 @@
     shape.setStyle({ weight: val });
     syncDoubleLineCompanion(shape);
     syncArrowOutline(shape);
+    syncArrowMainAttack(shape);
   }
   var doubleLineCompanions = {};
   function removeDoubleLineCompanion(shape){
@@ -7887,6 +7948,7 @@
     syncAllLengthLabels();
     syncAllArrowOutlines();
     syncAllArrowCorridors();
+    syncAllArrowMainAttacks();
     syncAllLimiteCompanions();
     syncAllDefensiveLineCompanions();
     syncAllTacticalTaskCompanions();
@@ -8420,7 +8482,7 @@
     var stats = {};
     try{
       if (shape._isArrow){
-        stats.tipo = 'Flecha';
+        stats.tipo = 'Ataque';
         var a = shape._arrow;
         stats.longitud = L.GeometryUtil.readableDistance(distanceMeters(a.tail, a.head), true, false, false);
       } else if (shape._isMilSymbol){
@@ -10178,6 +10240,26 @@
           syncArrowCorridor(shape);
         });
 
+        var mainAttackField = document.createElement('div');
+        mainAttackField.className = 'style-field';
+        mainAttackField.style.cssText = 'padding-top:2px;';
+        var mainAttackLabel = document.createElement('label');
+        mainAttackLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var mainAttackCheck = document.createElement('input');
+        mainAttackCheck.type = 'checkbox';
+        mainAttackCheck.checked = !!shape._arrow.mainAttack;
+        var mainAttackText = document.createElement('span');
+        mainAttackText.textContent = 'Ataque principal';
+        mainAttackLabel.appendChild(mainAttackCheck);
+        mainAttackLabel.appendChild(mainAttackText);
+        mainAttackField.appendChild(mainAttackLabel);
+        styleBlock.appendChild(mainAttackField);
+
+        mainAttackCheck.addEventListener('change', function(ev){
+          shape._arrow.mainAttack = ev.target.checked;
+          syncArrowMainAttack(shape);
+        });
+
         var handleHint = document.createElement('div');
         handleHint.className = 'hint';
         handleHint.style.marginTop = '2px';
@@ -10353,7 +10435,8 @@
           tailLeftOffset: shape._arrow.tailLeftOffset || null,
           tailRightOffset: shape._arrow.tailRightOffset || null,
           corridorEnabled: !!shape._arrow.corridorEnabled,
-          corridorEchelon: shape._arrow.corridorEchelon || ''
+          corridorEchelon: shape._arrow.corridorEchelon || '',
+          mainAttack: !!shape._arrow.mainAttack
         };
       }
       if (shape && shape._isTacticalTask){
@@ -10586,7 +10669,8 @@
             tailLeftOffset: p.arrow.tailLeftOffset || null,
             tailRightOffset: p.arrow.tailRightOffset || null,
             corridorEnabled: !!p.arrow.corridorEnabled,
-            corridorEchelon: p.arrow.corridorEchelon || ''
+            corridorEchelon: p.arrow.corridorEchelon || '',
+            mainAttack: !!p.arrow.mainAttack
           };
           rebuildArrow(layer);
         }
@@ -11671,6 +11755,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
     map.on('moveend zoomend', scheduleSave);
     map.on('zoomend', syncAllArrowCorridors);
+    map.on('zoomend', syncAllArrowMainAttacks);
     map.on('zoomend', syncAllLimiteCompanions);
     map.on('zoomend', syncAllDefensiveLineCompanions);
     map.on('zoomend', syncAllTacticalTaskCompanions);
