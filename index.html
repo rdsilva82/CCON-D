@@ -5831,21 +5831,53 @@
       corridorEnabled: !!a.corridorEnabled, corridorEchelon: a.corridorEchelon || '', mainAttack: !!a.mainAttack };
   }
 
-  function computeArrowTipMark(arrow){
-    var centerData = computeArrowCenterline(arrow);
-    var lp = centerData.localPts;
-    var last = lp.length - 1;
-    var a = lp[Math.max(0, last-1)], b = lp[last];
-    var dx = b.x - a.x, dy = b.y - a.y;
-    var segLen = Math.sqrt(dx*dx + dy*dy) || 1;
-    var ux = dx/segLen, uy = dy/segLen;
-    var tipLocal = localXY(arrow.tail, arrow.head);
-    var offset = Math.max(arrow.headLength * 0.55, 0);
-    var markLocal = { x: tipLocal.x - ux*offset, y: tipLocal.y - uy*offset };
-    return {
-      latlng: fromLocalXY(arrow.tail, markLocal.x, markLocal.y),
-      angleDeg: centerData.endAngleDeg
-    };
+  // Replica exactamente el cálculo geométrico de computeArrowPoints (bezier, arco, punto
+  // donde termina el asta y empieza la cabeza, y la normal en ese punto) para poder anclar
+  // la segunda punta de "Ataque principal" EXACTAMENTE donde terminan las líneas paralelas
+  // del asta, sin aproximaciones ni huecos.
+  function computeArrowHeadGeometry(arrow){
+    var tail = arrow.tail, head = arrow.head;
+    var curveLatLng = arrow.curve || midLocal(tail, head);
+    var P0 = { x:0, y:0 };
+    var P1 = localXY(tail, head);
+    var C  = localXY(tail, curveLatLng);
+    var N = ARROW_CURVE_SEGMENTS;
+    var pts = [];
+    for (var i=0;i<=N;i++){ pts.push(bezierXY(P0, C, P1, i/N)); }
+    var s = [0];
+    for (var i=1;i<=N;i++){
+      var dx = pts[i].x-pts[i-1].x, dy = pts[i].y-pts[i-1].y;
+      s.push(s[i-1] + Math.sqrt(dx*dx+dy*dy));
+    }
+    var totalLen = s[N] || 0.0001;
+    var headLen = Math.min(arrow.headLength, totalLen*0.9);
+    var shaftEndArc = totalLen - headLen;
+    var j = 0;
+    while (j < N-1 && s[j+1] < shaftEndArc) j++;
+    var segSpan = s[j+1]-s[j];
+    var segFrac = segSpan > 0 ? (shaftEndArc-s[j])/segSpan : 0;
+    var shaftEndPt = { x: pts[j].x + (pts[j+1].x-pts[j].x)*segFrac, y: pts[j].y + (pts[j+1].y-pts[j].y)*segFrac };
+    var segDx = pts[j+1].x-pts[j].x, segDy = pts[j+1].y-pts[j].y;
+    var segLen = Math.sqrt(segDx*segDx+segDy*segDy) || 1;
+    var segN = { x:-segDy/segLen, y:segDx/segLen };
+    var tip = pts[N];
+    return { tail: tail, shaftEndPt: shaftEndPt, segN: segN, tip: tip };
+  }
+
+  // Segunda punta de "Ataque principal": un chevrón abierto (mismo grosor/color que la
+  // flecha) cuyo vértice coincide con la punta real y cuyos dos brazos terminan EXACTAMENTE
+  // donde terminan las líneas paralelas del asta (ancho de flecha), para que haya
+  // continuidad visual sin espacio entre el asta y la segunda punta.
+  function computeMainAttackWedge(arrow){
+    var geo = computeArrowHeadGeometry(arrow);
+    var sw = arrow.shaftWidth/2;
+    var backLeft = { x: geo.shaftEndPt.x + geo.segN.x*sw, y: geo.shaftEndPt.y + geo.segN.y*sw };
+    var backRight = { x: geo.shaftEndPt.x - geo.segN.x*sw, y: geo.shaftEndPt.y - geo.segN.y*sw };
+    return [
+      fromLocalXY(geo.tail, backLeft.x, backLeft.y),
+      fromLocalXY(geo.tail, geo.tip.x, geo.tip.y),
+      fromLocalXY(geo.tail, backRight.x, backRight.y)
+    ];
   }
 
   /* ---------------- CONTORNO ABIERTO DE LA FLECHA (reverso sin cerrar) ---------------- */
@@ -6022,17 +6054,20 @@
     if (!arrow.mainAttack){ removeMainAttackMark(shape); return; }
     var owner = findLayerOfShape(shape);
     if (!owner) return;
-    var mark = computeArrowTipMark(arrow);
-    var pxSize = Math.min(shaftPixelWidth(shape, mark.latlng, arrow.headWidth) * 0.6, 34);
-    var icon = buildChevronIcon(pxSize, mark.angleDeg, shape.options.color, Math.max(shape.options.weight || 2, 2.4));
-    var marker = arrowMainAttackMarks[shape._shapeId];
-    if (!marker){
-      marker = L.marker(mark.latlng, { icon: icon, interactive:false, keyboard:false, zIndexOffset:650 });
-      if (owner.visible) marker.addTo(map);
-      arrowMainAttackMarks[shape._shapeId] = marker;
+    var pts = computeMainAttackWedge(arrow);
+    var style = {
+      color: shape.options.color, weight: shape.options.weight,
+      opacity: shape.options.opacity != null ? shape.options.opacity : 1,
+      dashArray: shape.options.dashArray, interactive:false, keyboard:false
+    };
+    var mark = arrowMainAttackMarks[shape._shapeId];
+    if (!mark){
+      mark = L.polyline(pts, style);
+      if (owner.visible) mark.addTo(map);
+      arrowMainAttackMarks[shape._shapeId] = mark;
     } else {
-      marker.setLatLng(mark.latlng);
-      marker.setIcon(icon);
+      mark.setLatLngs(pts);
+      mark.setStyle(style);
     }
   }
   function syncAllArrowMainAttacks(){
@@ -7827,6 +7862,7 @@
   function applyStrokeOpacity(shape, val){
     shape.setStyle({ opacity: val });
     syncArrowOutline(shape);
+    syncArrowMainAttack(shape);
   }
   function applyFillOpacity(shape, val){
     shape.setStyle({ fillOpacity: val });
@@ -7872,6 +7908,7 @@
       shape.setStyle({ dashArray: dash || null });
     }
     syncArrowOutline(shape);
+    syncArrowMainAttack(shape);
   }
 
   /* ---------------- LAYER LIST UI ---------------- */
