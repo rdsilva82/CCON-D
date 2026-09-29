@@ -10748,8 +10748,16 @@
         }
       });
     });
-    fc.properties = { capa: layerObj.name, color: layerObj.color, generado: new Date().toISOString() };
+    fc.properties = { capa: layerObj.name, color: layerObj.color, aula: currentUserLabel(), generado: new Date().toISOString() };
     return fc;
+  }
+
+  // Identificador de quién exporta (p. ej. "aula-a", "direccion"), para que los archivos
+  // descargados por distintas aulas o por Dirección nunca se sobreescriban entre sí y se
+  // puedan reconocer de un vistazo en la carpeta de descargas.
+  function exportOwnerSlug(){
+    var label = currentUserLabel();
+    return label ? slug(label) : 'ccon-d';
   }
 
   document.getElementById('export-active-btn').addEventListener('click', function(){
@@ -10758,7 +10766,7 @@
       alert('La capa activa no tiene elementos para exportar.'); return;
     }
     var fc = layerToGeoJSON(active);
-    download(JSON.stringify(fc, null, 2), slug(active.name) + '.geojson', 'application/geo+json');
+    download(JSON.stringify(fc, null, 2), exportOwnerSlug() + '_' + slug(active.name) + '.geojson', 'application/geo+json');
   });
 
   document.getElementById('export-all-btn').addEventListener('click', function(){
@@ -10770,11 +10778,12 @@
       version: 1,
       generado: new Date().toISOString(),
       fuente: 'Sistema de Anotación Cartográfica - División de Ejército III',
+      aula: currentUserLabel(),
       layers: layers.map(function(l){
         return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, parentId: l.parentId, sortIndex: l.sortIndex, geojson: layerToGeoJSON(l) };
       })
     };
-    download(JSON.stringify(payload, null, 2), 'norte-de-santander-todas-las-capas.geojson', 'application/geo+json');
+    download(JSON.stringify(payload, null, 2), exportOwnerSlug() + '_todas-las-capas.geojson', 'application/geo+json');
   });
 
   function slug(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'capa'; }
