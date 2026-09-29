@@ -2113,9 +2113,21 @@
     var indexSig = indexContentSignature();
     var topLevelIds = getRootLayers().map(function(l){ return l.id; });
 
+    // Orden deliberado de las tareas: el contenido de las capas (que puede crecer al mover
+    // una subcapa a otro grupo raíz) siempre se sube ANTES que el índice, y el índice
+    // siempre ANTES que el borrado de archivos de capas que dejaron de ser raíz. Así, si la
+    // subida se interrumpe a mitad de camino (se recarga la página, se corta la conexión, u
+    // otro equipo descarga justo en ese momento), lo peor que puede pasar es que la
+    // reorganización de capas no se refleje todavía remotamente — nunca que una capa quede
+    // vacía. Antes, el índice se subía primero: si la subida se cortaba justo después,
+    // quedaba en GitHub una estructura nueva (la capa ya "mudada" a su nuevo grupo) sin que
+    // el contenido de esa capa hubiera llegado todavía a su nuevo archivo, y al descargar se
+    // reconstruía una capa fantasma sin datos. Ver también el aviso al cerrar/recargar la
+    // pestaña mientras hay una subida en curso.
     var tasks = [];
-    if (indexSig !== lastPushedIndexSig){
-      tasks.push({ kind:'index', path: githubIndexPath(), content: indexObj, sig: indexSig });
+    var enfoqueSig = enfoqueImageDataUrl || '';
+    if (enfoqueSig !== lastPushedEnfoqueSig){
+      tasks.push({ kind:'enfoque', path: githubEnfoquePath(), content: { image: enfoqueImageDataUrl }, sig: enfoqueSig });
     }
     getRootLayers().forEach(function(l){
       var sig = layerContentSignature(l);
@@ -2123,15 +2135,14 @@
         tasks.push({ kind:'layer', id:l.id, path: githubLayerFilePath(l.id), content: buildLayerFileObject(l), sig: sig });
       }
     });
+    if (indexSig !== lastPushedIndexSig){
+      tasks.push({ kind:'index', path: githubIndexPath(), content: indexObj, sig: indexSig });
+    }
     Object.keys(lastPushedLayerSig).forEach(function(id){
       if (topLevelIds.indexOf(id) === -1 && githubShas.layers[id]){
         tasks.push({ kind:'deleteLayer', id:id, path: githubLayerFilePath(id) });
       }
     });
-    var enfoqueSig = enfoqueImageDataUrl || '';
-    if (enfoqueSig !== lastPushedEnfoqueSig){
-      tasks.push({ kind:'enfoque', path: githubEnfoquePath(), content: { image: enfoqueImageDataUrl }, sig: enfoqueSig });
-    }
 
     if (!tasks.length){
       syncInProgress = false;
@@ -11518,6 +11529,17 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     setInterval(saveStateToStorage, 8000);
     if (typeof computeOverlapClusters === 'function') setTimeout(computeOverlapClusters, 800);
     window.addEventListener('beforeunload', saveStateToStorage);
+    window.addEventListener('beforeunload', function(ev){
+      // Si hay una subida a GitHub en curso justo cuando se cierra o recarga la pestaña,
+      // avisar al usuario para que espere unos segundos a que termine, en vez de cortarla
+      // a mitad de camino (lo que dejaría el índice y el contenido de las capas
+      // desincronizados entre sí en el repositorio).
+      if (syncInProgress){
+        ev.preventDefault();
+        ev.returnValue = '';
+        return '';
+      }
+    });
     document.addEventListener('visibilitychange', function(){
       if (document.visibilityState === 'hidden'){
         saveStateToStorage();
