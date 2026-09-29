@@ -3680,16 +3680,32 @@
     return '<rect x="8" y="17" width="44" height="26" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
   }
 
-  function milModifierSVG(modifier){
+  function milModifierSVG(modifier, affiliation, echelon){
     switch(modifier){
       case 'staff':
         return '<line x1="8" y1="30" x2="8" y2="54" stroke="#000" stroke-width="2.2"/>';
       case 'dummy':
         return '<path d="M8,16 L30,10 L52,16" fill="none" stroke="#000" stroke-width="2" stroke-dasharray="3,2.5"/>';
-      case 'installation':
-        return '<line x1="30" y1="43" x2="30" y2="55" stroke="#000" stroke-width="2.2"/><line x1="21" y1="55" x2="39" y2="55" stroke="#000" stroke-width="2.2"/>';
-      case 'taskforce':
-        return '<rect x="4" y="-3" width="52" height="16" fill="none" stroke="#000" stroke-width="1.8"/>';
+      case 'installation': {
+        // Rectángulo negro centrado y arriba del símbolo, con un ancho de aproximadamente
+        // el 25% del largo del marco (se solapa levemente con el borde superior, como una
+        // pestaña que "nace" de él, en vez de flotar separado).
+        var ifb = frameBoundsForAffiliation(affiliation);
+        var iw = (ifb.x2 - ifb.x1) * 0.25;
+        var icx = (ifb.x1 + ifb.x2) / 2;
+        var ih = 9;
+        return '<rect x="'+(icx - iw/2)+'" y="'+(ifb.y1 - ih + 2)+'" width="'+iw+'" height="'+ih+'" fill="#000"/>';
+      }
+      case 'taskforce': {
+        // Cuadrado con la base abierta (sin línea inferior) que solo cubre el ancho de las
+        // marcas de magnitud/escalón del elemento, nunca más ancho que el propio símbolo.
+        var tfb = frameBoundsForAffiliation(affiliation);
+        var ext = milEchelonExtent(echelon);
+        var tx1 = Math.max(ext.x1, tfb.x1);
+        var tx2 = Math.min(ext.x2, tfb.x2);
+        var ty1 = -3, ty2 = 13;
+        return '<path d="M '+tx1+','+ty2+' L '+tx1+','+ty1+' L '+tx2+','+ty1+' L '+tx2+','+ty2+'" fill="none" stroke="#000" stroke-width="1.8"/>';
+      }
       case 'direction':
         return '<line x1="30" y1="43" x2="30" y2="58" stroke="#000" stroke-width="2.2"/><polygon points="30,60 25,50 35,50" fill="#000"/>';
       default:
@@ -3963,6 +3979,26 @@
     return marks;
   }
 
+  // Ancho horizontal aproximado (x1..x2) que ocupan las marcas de magnitud/escalón para un
+  // tipo de echelon dado. Se usa para que el modificador "Fuerza de tareas" no sea más ancho
+  // que esas marcas (y nunca más ancho que el propio símbolo).
+  function milEchelonExtent(echelon){
+    switch(echelon){
+      case 'team': return { x1:28, x2:32 };
+      case 'squad': return { x1:24, x2:36 };
+      case 'section': return { x1:20, x2:40 };
+      case 'platoon': return { x1:16, x2:44 };
+      case 'company': return { x1:28, x2:32 };
+      case 'battalion': return { x1:24, x2:36 };
+      case 'regiment': return { x1:20, x2:40 };
+      case 'brigade': return { x1:26, x2:34 };
+      case 'division': return { x1:19, x2:41 };
+      case 'corps': return { x1:12, x2:48 };
+      case 'army': return { x1:6, x2:54 };
+      default: return { x1:26, x2:34 };
+    }
+  }
+
   function buildMilSymbolSVG(mil){
     var glyph;
     if (MIL_OVERLAY_TYPES.indexOf(mil.unitType) !== -1){
@@ -3975,7 +4011,7 @@
       milEchelonSVG(mil.echelon) +
       milFrameSVG(mil.affiliation, mil.condition) +
       glyph +
-      milModifierSVG(mil.modifier) +
+      milModifierSVG(mil.modifier, mil.affiliation, mil.echelon) +
       milConditionOverlaySVG(mil.condition) +
       '</svg>';
   }
