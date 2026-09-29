@@ -1867,6 +1867,50 @@
     try{ localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(githubConfig)); } catch(err){}
   }
 
+  /* ---- Recordar qué fue lo último subido con éxito, para no perderlo al recargar ---- */
+  // Estas firmas (lastPushedIndexSig / lastPushedLayerSig / githubShas) viven en memoria y
+  // por eso, sin esto, cada recarga de página "olvida" si la reorganización que se acaba de
+  // hacer ya llegó a GitHub o no. Al arrancar, si se detecta que hay cambios locales que
+  // todavía no coinciden con lo último subido, se intenta subir esos cambios ANTES de
+  // descargar — así una recarga a mitad de una subida grande (por ejemplo al mover muchas
+  // capas con mucha información) reintenta guardar la reorganización en vez de descartarla.
+  function SYNC_STATE_KEY_FN(){ return 'gh_sync_state_v1__' + currentAulaSlug(); }
+  function persistSyncState(){
+    try{
+      localStorage.setItem(SYNC_STATE_KEY_FN(), JSON.stringify({
+        index: githubShas.index,
+        layers: githubShas.layers,
+        enfoque: githubShas.enfoque,
+        lastPushedIndexSig: lastPushedIndexSig,
+        lastPushedLayerSig: lastPushedLayerSig,
+        lastPushedEnfoqueSig: lastPushedEnfoqueSig
+      }));
+    } catch(err){ /* almacenamiento no disponible */ }
+  }
+  function loadPersistedSyncState(){
+    // Devuelve true solo si este navegador ya tenía un historial de sincronización guardado
+    // para esta aula. Es importante distinguir esto de "no hay nada guardado todavía" (primer
+    // uso de este navegador, o localStorage recién borrado): en ese caso NUNCA se debe
+    // intentar subir antes de descargar, porque se subiría el estado local vacío/por defecto
+    // encima de los datos reales que ya existen en GitHub.
+    try{
+      var raw = localStorage.getItem(SYNC_STATE_KEY_FN());
+      if (!raw) return false;
+      var saved = JSON.parse(raw);
+      if (!saved || !saved.lastPushedIndexSig) return false;
+      githubShas.index = saved.index || null;
+      githubShas.layers = saved.layers || {};
+      githubShas.enfoque = saved.enfoque || null;
+      lastPushedIndexSig = saved.lastPushedIndexSig || null;
+      lastPushedLayerSig = saved.lastPushedLayerSig || {};
+      // Ojo: '' (sin Enfoque Operacional propio) es un valor válido y distinto de "nunca se
+      // subió" — usar "||" aquí lo confundiría con null y generaría una tarea de subida
+      // fantasma en cada arranque.
+      lastPushedEnfoqueSig = (saved.lastPushedEnfoqueSig != null) ? saved.lastPushedEnfoqueSig : null;
+      return true;
+    } catch(err){ return false; }
+  }
+
   function updateSyncStatus(kind, text){
     var el = document.getElementById('gh-status');
     el.className = 'gh-status ' + kind;
@@ -2004,6 +2048,7 @@
                 updateSyncStatus('error', pendingCount + ' capa(s) no se pudieron descargar por completo (¿se cortó la conexión?): ' + incompleteLayerLoadsSummary() + '. No se subirán cambios hasta descargar de nuevo con éxito.');
               } else {
                 updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
+                persistSyncState();
               }
               syncInProgress = false;
               return true;
@@ -2092,38 +2137,23 @@
     });
   }
 
-  function githubPush(){
-    if (isReadOnlyMode()) return Promise.resolve(false);
-    if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
-    if (syncInProgress){ scheduleGithubPush(); return Promise.resolve(false); }
-    var incompleteIds = Object.keys(incompleteLayerLoads);
-    if (incompleteIds.length){
-      // Al menos una capa quedó sin confirmar (una descarga anterior se interrumpió, por
-      // ejemplo por un corte de conexión) y por lo tanto puede estar vacía en este
-      // navegador aunque tenga contenido real en GitHub. Subir ahora arriesgaría
-      // sobrescribir esos datos con una versión vacía, así que se bloquea la subida
-      // hasta lograr una descarga completa y exitosa.
-      updateSyncStatus('error', incompleteIds.length + ' capa(s) sin confirmar tras un corte de conexión (' + incompleteLayerLoadsSummary() + ') — pulse "Descargar última versión" antes de poder subir cambios.');
-      return Promise.resolve(false);
-    }
-    syncInProgress = true;
-    updateSyncStatus('syncing','Subiendo…');
-
+  // Orden deliberado de las tareas: el contenido de las capas (que puede crecer al mover
+  // una subcapa a otro grupo raíz) siempre se sube ANTES que el índice, y el índice
+  // siempre ANTES que el borrado de archivos de capas que dejaron de ser raíz. Así, si la
+  // subida se interrumpe a mitad de camino (se recarga la página, se corta la conexión, u
+  // otro equipo descarga justo en ese momento), lo peor que puede pasar es que la
+  // reorganización de capas no se refleje todavía remotamente — nunca que una capa quede
+  // vacía. Antes, el índice se subía primero: si la subida se cortaba justo después,
+  // quedaba en GitHub una estructura nueva (la capa ya "mudada" a su nuevo grupo) sin que
+  // el contenido de esa capa hubiera llegado todavía a su nuevo archivo, y al descargar se
+  // reconstruía una capa fantasma sin datos. Ver también el aviso al cerrar/recargar la
+  // pestaña mientras hay una subida en curso, y loadPersistedSyncState/hasPendingPushTasks
+  // más abajo para lo que pasa si la recarga ocurre de todas formas.
+  function computeGithubPushTasks(){
     var indexObj = buildIndexObject();
     var indexSig = indexContentSignature();
     var topLevelIds = getRootLayers().map(function(l){ return l.id; });
 
-    // Orden deliberado de las tareas: el contenido de las capas (que puede crecer al mover
-    // una subcapa a otro grupo raíz) siempre se sube ANTES que el índice, y el índice
-    // siempre ANTES que el borrado de archivos de capas que dejaron de ser raíz. Así, si la
-    // subida se interrumpe a mitad de camino (se recarga la página, se corta la conexión, u
-    // otro equipo descarga justo en ese momento), lo peor que puede pasar es que la
-    // reorganización de capas no se refleje todavía remotamente — nunca que una capa quede
-    // vacía. Antes, el índice se subía primero: si la subida se cortaba justo después,
-    // quedaba en GitHub una estructura nueva (la capa ya "mudada" a su nuevo grupo) sin que
-    // el contenido de esa capa hubiera llegado todavía a su nuevo archivo, y al descargar se
-    // reconstruía una capa fantasma sin datos. Ver también el aviso al cerrar/recargar la
-    // pestaña mientras hay una subida en curso.
     var tasks = [];
     var enfoqueSig = enfoqueImageDataUrl || '';
     if (enfoqueSig !== lastPushedEnfoqueSig){
@@ -2143,6 +2173,35 @@
         tasks.push({ kind:'deleteLayer', id:id, path: githubLayerFilePath(id) });
       }
     });
+    return tasks;
+  }
+
+  // ¿Hay cambios locales (reorganizaciones, dibujos, etc.) que todavía no llegaron a
+  // GitHub? Se usa al arrancar la página para decidir si conviene subir primero en vez de
+  // descargar de una vez (ver startApp).
+  function hasPendingPushTasks(){
+    if (!githubConfigured() || isReadOnlyMode()) return false;
+    return computeGithubPushTasks().length > 0;
+  }
+
+  function githubPush(){
+    if (isReadOnlyMode()) return Promise.resolve(false);
+    if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
+    if (syncInProgress){ scheduleGithubPush(); return Promise.resolve(false); }
+    var incompleteIds = Object.keys(incompleteLayerLoads);
+    if (incompleteIds.length){
+      // Al menos una capa quedó sin confirmar (una descarga anterior se interrumpió, por
+      // ejemplo por un corte de conexión) y por lo tanto puede estar vacía en este
+      // navegador aunque tenga contenido real en GitHub. Subir ahora arriesgaría
+      // sobrescribir esos datos con una versión vacía, así que se bloquea la subida
+      // hasta lograr una descarga completa y exitosa.
+      updateSyncStatus('error', incompleteIds.length + ' capa(s) sin confirmar tras un corte de conexión (' + incompleteLayerLoadsSummary() + ') — pulse "Descargar última versión" antes de poder subir cambios.');
+      return Promise.resolve(false);
+    }
+    syncInProgress = true;
+    updateSyncStatus('syncing','Subiendo…');
+
+    var tasks = computeGithubPushTasks();
 
     if (!tasks.length){
       syncInProgress = false;
@@ -2152,7 +2211,7 @@
 
     function runNext(i){
       if (i >= tasks.length) return Promise.resolve(true);
-      return githubPushOneFile(tasks[i]).then(function(){ return runNext(i + 1); });
+      return githubPushOneFile(tasks[i]).then(function(){ persistSyncState(); return runNext(i + 1); });
     }
     return runNext(0).then(function(){
       syncInProgress = false;
@@ -11514,7 +11573,19 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       updateUndoRedoUI();
 
       if (githubConfigured()){
-        githubPull(false);
+        var hadPriorSync = loadPersistedSyncState();
+        if (hadPriorSync && hasPendingPushTasks()){
+          // Lo que está guardado en este navegador (por ejemplo, una reorganización de
+          // capas) todavía no llegó a GitHub la última vez — probablemente la página se
+          // recargó o se cortó la conexión a mitad de una subida. Si en ese caso se
+          // descargara primero, se perdería justo lo que se acaba de guardar localmente.
+          // En vez de eso, se reintenta subir con los datos ya reorganizados que quedaron
+          // en este navegador; recién después se sincroniza con lo que hayan hecho otros.
+          updateSyncStatus('syncing','Reintentando subir cambios pendientes de la sesión anterior…');
+          githubPush().then(function(){ githubPull(false); });
+        } else {
+          githubPull(false);
+        }
       } else {
         updateSyncStatus('off','Sin configurar');
       }
