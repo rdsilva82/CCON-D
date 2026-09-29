@@ -768,6 +768,33 @@
   .gh-status.ok{ background:var(--success-bg); color:var(--success-text); }
   .gh-status.error{ background:var(--danger-tint); color:var(--danger); }
 
+  /* =====================================================================
+     INDICADOR DE CARGA — se muestra sobre el mapa mientras se descargan
+     las capas desde GitHub al abrir/recargar la página.
+     ===================================================================== */
+  #load-progress-overlay{
+    position:absolute; left:50%; top:18px; transform:translateX(-50%) translateY(-8px);
+    z-index:1200; display:flex; align-items:center; gap:10px;
+    background:var(--panel-bg); color:var(--text); border:1px solid var(--border);
+    border-radius:10px; padding:10px 16px; box-shadow:0 6px 18px rgba(0,0,0,.18);
+    font-size:12.5px; font-weight:700; pointer-events:none;
+    opacity:0; visibility:hidden; transition:opacity .18s ease, transform .18s ease;
+  }
+  #load-progress-overlay.show{ opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); }
+  #load-progress-overlay .load-progress-spinner{
+    width:15px; height:15px; border-radius:50%;
+    border:2.5px solid var(--border); border-top-color:var(--gold);
+    animation:load-progress-spin .8s linear infinite; flex-shrink:0;
+  }
+  #load-progress-overlay .load-progress-text{ white-space:nowrap; }
+  #load-progress-overlay .load-progress-track{
+    width:90px; height:5px; border-radius:3px; background:var(--border); overflow:hidden; flex-shrink:0;
+  }
+  #load-progress-overlay .load-progress-fill{
+    height:100%; width:0%; background:var(--gold); border-radius:3px; transition:width .25s ease;
+  }
+  @keyframes load-progress-spin{ to{ transform:rotate(360deg); } }
+
   .history-item{
     border:1px solid var(--border); border-radius:8px; padding:9px 11px;
     display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface-alt);
@@ -1013,6 +1040,11 @@
   <!-- CENTER: MAP -->
   <div id="map-wrapper">
     <div id="map"></div>
+    <div id="load-progress-overlay">
+      <div class="load-progress-spinner"></div>
+      <span class="load-progress-text" id="load-progress-text">Cargando capas…</span>
+      <div class="load-progress-track"><div class="load-progress-fill" id="load-progress-fill"></div></div>
+    </div>
 
     <div id="map-search-control">
       <div id="map-search-box">
@@ -2016,6 +2048,32 @@
     el.textContent = text;
   }
 
+  // ---- Indicador de carga (spinner + porcentaje) mientras se descargan las
+  // capas desde GitHub. Solo se muestra en la descarga "en primer plano" que
+  // ocurre al abrir/recargar la página (isBackground=false); las descargas
+  // periódicas en segundo plano no lo activan, para no ser intrusivas. ----
+  function showLoadProgressOverlay(){
+    var el = document.getElementById('load-progress-overlay');
+    if (!el) return;
+    document.getElementById('load-progress-text').textContent = 'Cargando capas…';
+    document.getElementById('load-progress-fill').style.width = '0%';
+    el.classList.add('show');
+  }
+
+  function updateLoadProgress(current, total){
+    var el = document.getElementById('load-progress-overlay');
+    if (!el) return;
+    var pct = total > 0 ? Math.round((current / total) * 100) : 100;
+    document.getElementById('load-progress-text').textContent = 'Cargando capas… ' + current + '/' + total + ' (' + pct + '%)';
+    document.getElementById('load-progress-fill').style.width = pct + '%';
+  }
+
+  function hideLoadProgressOverlay(){
+    var el = document.getElementById('load-progress-overlay');
+    if (!el) return;
+    el.classList.remove('show');
+  }
+
   function githubConfigured(){
     return !!(githubConfig && githubConfig.token && githubConfig.repo && githubConfig.path);
   }
@@ -2098,9 +2156,13 @@
     if (syncInProgress) return Promise.resolve(false);
     syncInProgress = true;
     updateSyncStatus('syncing','Descargando…');
+    if (!isBackground) showLoadProgressOverlay();
     return fetch(githubContentsUrl(githubIndexPath(), true), { headers: githubAuthHeaders() })
       .then(function(res){
-        if (res.status === 404) return githubMigrateLegacy(isBackground);
+        if (res.status === 404) return githubMigrateLegacy(isBackground).then(function(result){
+          if (!isBackground) hideLoadProgressOverlay();
+          return result;
+        });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json().then(function(data){
           if (isBackground && data.sha === githubShas.index){
@@ -2127,6 +2189,12 @@
             // interrupción de red a mitad de la descarga no deje capas vacías listas para
             // subirse por accidente (ver githubPush).
             rootIds.forEach(function(id){ incompleteLayerLoads[id] = true; });
+            // +1 paso por el Enfoque Operacional, para que el indicador de carga refleje
+            // el trabajo real restante y no se quede "atascado" cerca del 100% mientras
+            // eso todavía se descarga.
+            var progressTotal = rootIds.length + 1;
+            var progressDone = 0;
+            if (!isBackground) updateLoadProgress(progressDone, progressTotal);
             var chain = Promise.resolve();
             rootIds.forEach(function(id){
               chain = chain.then(function(){
@@ -2135,10 +2203,14 @@
                 }).catch(function(err){
                   incompleteLayerLoads[id] = true;
                   // No relanzamos: una capa que falla no debe impedir que se intenten las demás.
+                }).then(function(){
+                  if (!isBackground){ progressDone++; updateLoadProgress(progressDone, progressTotal); }
                 });
               });
             });
-            chain = chain.then(function(){ return githubPullEnfoqueFile(); });
+            chain = chain.then(function(){ return githubPullEnfoqueFile(); }).then(function(){
+              if (!isBackground){ progressDone++; updateLoadProgress(progressDone, progressTotal); }
+            });
             chain = chain.then(restorePendingAulas);
             return chain.then(function(){
               renderLayerList();
@@ -2149,6 +2221,7 @@
                 updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
                 persistSyncState();
               }
+              if (!isBackground) hideLoadProgressOverlay();
               syncInProgress = false;
               return true;
             });
@@ -2157,6 +2230,7 @@
       }).catch(function(err){
         updateSyncStatus('error','Error al descargar: ' + err.message);
         if (showAlertOnError) alert('No se pudo descargar desde GitHub: ' + err.message);
+        if (!isBackground) hideLoadProgressOverlay();
         syncInProgress = false;
         return false;
       });
