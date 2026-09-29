@@ -509,6 +509,8 @@
   .style-field input[type="color"]{ width:26px; height:26px; border:none; border-radius:6px; padding:0; cursor:pointer; }
   .style-field input[type="range"]{ flex:1; margin-left:8px; }
   .style-field .pct{ font-size:11px; color:var(--navy); font-weight:700; width:32px; text-align:right; }
+  .style-field.mil-multiselect-field{ align-items:flex-start; flex-direction:column; gap:4px; }
+  .style-field.mil-multiselect-field small{ font-weight:400; color:var(--muted); }
   .prop-actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .prop-actions button{ flex:1; min-width:78px; }
 
@@ -3433,7 +3435,16 @@
   };
 
   function defaultMilParams(){
-    return { affiliation:'friendly', unitBase:'generic', unitType:'generic', echelon:'', designation:'', modifier:'none', condition:'present' };
+    return { affiliation:'friendly', unitBase:'generic', unitType:'generic', echelon:'', designation:'', modifiers:[], condition:'present' };
+  }
+  // Devuelve la lista de modificadores activos de un símbolo, sin importar si se guardó en
+  // el formato antiguo (un solo "modifier" en texto) o en el nuevo (arreglo "modifiers",
+  // que permite combinar varios al mismo tiempo).
+  function milModifiersOf(mil){
+    if (!mil) return [];
+    if (Array.isArray(mil.modifiers)) return mil.modifiers.filter(function(m){ return m && m !== 'none'; });
+    if (mil.modifier && mil.modifier !== 'none') return [mil.modifier];
+    return [];
   }
   function ensureMilTypeExtras(mil){
     if (mil.unitType === 'obus' && !mil.obus) mil.obus = { radioAccionKm: 50, alturaMaximaKm: 15 };
@@ -3697,12 +3708,14 @@
         return '<rect x="'+(icx - iw/2)+'" y="'+(ifb.y1 - ih + 2)+'" width="'+iw+'" height="'+ih+'" fill="#000"/>';
       }
       case 'taskforce': {
-        // Cuadrado con la base abierta (sin línea inferior) que solo cubre el ancho de las
-        // marcas de magnitud/escalón del elemento, nunca más ancho que el propio símbolo.
+        // Cuadrado con la base abierta (sin línea inferior) que cubre el ancho de las
+        // marcas de magnitud/escalón del elemento con un pequeño margen a cada lado (para
+        // que no se vea pegado a ellas), pero nunca más ancho que el propio símbolo.
         var tfb = frameBoundsForAffiliation(affiliation);
         var ext = milEchelonExtent(echelon);
-        var tx1 = Math.max(ext.x1, tfb.x1);
-        var tx2 = Math.min(ext.x2, tfb.x2);
+        var tfPad = 3;
+        var tx1 = Math.max(ext.x1 - tfPad, tfb.x1);
+        var tx2 = Math.min(ext.x2 + tfPad, tfb.x2);
         var ty1 = -3, ty2 = 13;
         return '<path d="M '+tx1+','+ty2+' L '+tx1+','+ty1+' L '+tx2+','+ty1+' L '+tx2+','+ty2+'" fill="none" stroke="#000" stroke-width="1.8"/>';
       }
@@ -4011,7 +4024,7 @@
       milEchelonSVG(mil.echelon) +
       milFrameSVG(mil.affiliation, mil.condition) +
       glyph +
-      milModifierSVG(mil.modifier, mil.affiliation, mil.echelon) +
+      milModifiersOf(mil).map(function(m){ return milModifierSVG(m, mil.affiliation, mil.echelon); }).join('') +
       milConditionOverlaySVG(mil.condition) +
       '</svg>';
   }
@@ -9206,6 +9219,34 @@
         field.appendChild(select);
         return field;
       }
+
+      // Lista de selección múltiple: a diferencia de milSelectField, permite combinar varios
+      // modificadores a la vez sobre el mismo símbolo (por ejemplo, Puesto de comando +
+      // Instalación al mismo tiempo).
+      function milMultiSelectField(label, options, key){
+        var field = document.createElement('div');
+        field.className = 'style-field mil-multiselect-field';
+        field.innerHTML = '<span>' + label + '<br><small>(Ctrl/Cmd + clic para elegir varios)</small></span>';
+        var select = document.createElement('select');
+        select.multiple = true;
+        select.size = Math.min(options.length, 5);
+        select.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;width:170px;';
+        var current = milModifiersOf(shape._mil);
+        options.forEach(function(opt){
+          var o = document.createElement('option');
+          o.value = opt[0]; o.textContent = opt[1];
+          if (current.indexOf(opt[0]) !== -1) o.selected = true;
+          select.appendChild(o);
+        });
+        select.addEventListener('change', function(ev){
+          shape._mil[key] = Array.from(select.selectedOptions).map(function(o){ return o.value; });
+          delete shape._mil.modifier; // formato antiguo (un solo valor); ya no se usa una vez editado aquí
+          applyMilSymbol(shape);
+          renderLayerList();
+        });
+        field.appendChild(select);
+        return field;
+      }
       if (!shape._mil.unitBase) shape._mil.unitBase = inferUnitBase(shape._mil.unitType);
 
       milBlock.appendChild(milSelectField('Afiliación', MIL_AFFILIATIONS, 'affiliation'));
@@ -9235,7 +9276,7 @@
 
       milBlock.appendChild(milSelectField('Tipo de unidad', MIL_UNIT_TYPES_BY_BASE[shape._mil.unitBase] || MIL_UNIT_TYPES_BY_BASE.generic, 'unitType'));
       milBlock.appendChild(milSelectField('Magnitud', MIL_ECHELONS, 'echelon'));
-      milBlock.appendChild(milSelectField('Modificador', MIL_MODIFIERS, 'modifier'));
+      milBlock.appendChild(milMultiSelectField('Modificador', MIL_MODIFIERS.filter(function(opt){ return opt[0] !== 'none'; }), 'modifiers'));
       milBlock.appendChild(milSelectField('Condición Operacional', MIL_CONDITIONS, 'condition'));
 
       var designField = document.createElement('div');
@@ -10344,7 +10385,7 @@
           unitType: shape._mil.unitType,
           echelon: shape._mil.echelon,
           designation: shape._mil.designation,
-          modifier: shape._mil.modifier,
+          modifiers: milModifiersOf(shape._mil),
           condition: shape._mil.condition,
           obus: shape._mil.obus,
           radarMilitar: shape._mil.radarMilitar
@@ -10470,7 +10511,7 @@
       pointToLayer: function(feature, latlng){
         var p = feature.properties || {};
         if (p.mil){
-          var mil = { affiliation: p.mil.affiliation || 'friendly', unitType: p.mil.unitType || 'generic', echelon: p.mil.echelon || '', designation: p.mil.designation || '', modifier: p.mil.modifier || 'none', condition: p.mil.condition || 'present' };
+          var mil = { affiliation: p.mil.affiliation || 'friendly', unitType: p.mil.unitType || 'generic', echelon: p.mil.echelon || '', designation: p.mil.designation || '', modifiers: milModifiersOf(p.mil), condition: p.mil.condition || 'present' };
           mil.unitBase = p.mil.unitBase || inferUnitBase(mil.unitType);
           if (p.mil.obus) mil.obus = p.mil.obus;
           if (p.mil.radarMilitar) mil.radarMilitar = p.mil.radarMilitar;
