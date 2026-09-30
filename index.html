@@ -1104,7 +1104,7 @@
             <span>Tareas</span>
           </button>
           <button class="tool-btn" data-tool="ingenieros-toggle" title="Ingenieros: Pasajes, Campos Minados, Obstáculos">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="15" y1="20" x2="15" y2="6"/><line x1="15" y1="6" x2="6" y2="6"/><line x1="6" y1="6" x2="6" y2="12"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 19 L5 7 L7.8 7 L7.8 10 L10.6 10 L10.6 7 L13.4 7 L13.4 10 L16.2 10 L16.2 7 L19 7 L19 19 Z"/></svg>
             <span>Ingenieros</span>
           </button>
         </div>
@@ -5010,7 +5010,10 @@
   function defaultTacticalTaskGeom(tipo, base, tip){
     var g = { tipo: tipo, base: base, tip: tip };
     if (tipo === 'bloquear') g.widthRatio = 0.42;
-    if (tipo === 'canalizar') g.widthRatio = 0.85;
+    // "Canalizar" es una "U": dos astas largas con un tick que abre hacia afuera en cada
+    // punta, cerradas por un travesaño corto en la base — las astas deben dominar visualmente
+    // sobre el travesaño, por eso su proporción es bastante mayor a 1.
+    if (tipo === 'canalizar') g.widthRatio = 2.2;
     if (tipo === 'penetrar') g.widthRatio = 0.85;
     if (tipo === 'despejar' || tipo === 'desarticular') g.arrowRatios = [0.55, 0.55, 0.55];
     if (tipo === 'desarticular') g.stubRatio = 0.1;
@@ -5089,13 +5092,16 @@
     }
 
     if (g.tipo === 'bloquear'){
+      // El símbolo OTAN de "Bloquear" lleva la barra perpendicular en el extremo lejano
+      // (la posición que se bloquea), no en el origen: una "T" con el travesaño arriba,
+      // el asta bajando hacia la posición propia y la letra "B" sobre el asta.
       var vHalf = len*(g.widthRatio != null ? g.widthRatio : 0.42);
-      lines.push({ pts: [ taskPt(g.base, dir, perp, 0, -vHalf), taskPt(g.base, dir, perp, 0, vHalf) ] });
+      lines.push({ pts: [ taskPt(g.base, dir, perp, len, -vHalf), taskPt(g.base, dir, perp, len, vHalf) ] });
       addLineWithLabelAt(g.base, g.tip, 0.5);
       label = { pos: taskPt(g.base, dir, perp, len*0.5, 0), text: letter, bearing: taskBearingDeg(dir) };
     }
     else if (g.tipo === 'canalizar'){
-      var armLen = len*(g.widthRatio != null ? g.widthRatio : 0.85), tickLen = len*0.22;
+      var armLen = len*(g.widthRatio != null ? g.widthRatio : 2.2), tickLen = armLen*0.25;
       lines.push({ pts: [ taskPt(g.base, dir, perp, 0, -armLen), g.base ] });
       var bottomTickEnd = taskPt(g.base, dir, perp, -tickLen*0.7, -armLen-tickLen*0.5);
       lines.push({ pts: [ taskPt(g.base, dir, perp, 0, -armLen), bottomTickEnd ] });
@@ -5115,8 +5121,11 @@
         var armLen = len*ratios[idx];
         var outerSign = isDespejar ? -1 : 1;
         var outerPt = taskPt(g.base, dir, perp, len*t, outerSign*armLen);
-        var headPt = isDespejar ? axisPt : outerPt;
-        var tailPt = isDespejar ? outerPt : axisPt;
+        // Ambas variantes ("despejar" y "desarticular") llevan la punta de flecha en el
+        // extremo exterior, apuntando hacia afuera desde la línea base — no convergiendo
+        // hacia ella.
+        var headPt = outerPt;
+        var tailPt = axisPt;
         var hv = localXY(tailPt, headPt);
         var hl = Math.hypot(hv.x, hv.y) || 1;
         var hdir = { x: hv.x/hl, y: hv.y/hl };
@@ -5167,24 +5176,27 @@
     }
 
     if (g.tipo === 'retener' || g.tipo === 'asegurar' || g.tipo === 'aislar' || g.tipo === 'ocupar'){
+      // b1 es el radio real del círculo en AMBOS ejes: usar "len" en un eje y "b1" en el
+      // otro (como antes) dibujaba un óvalo, no un círculo.
       var b1 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
       var gapDeg = 28, gapRad = gapDeg*Math.PI/180;
       var thStart = gapRad/2, thEnd = Math.PI*2 - gapRad/2;
       var labelTheta = Math.PI; // opposite the opening
       var labelGapRad = letter ? (0.5) : 0;
       if (letter){
-        arcWithLabelGap(g.base, dir, perp, len, b1, thStart, thEnd, labelTheta, labelGapRad, 44).forEach(function(seg){ lines.push({ pts: seg }); });
+        arcWithLabelGap(g.base, dir, perp, b1, b1, thStart, thEnd, labelTheta, labelGapRad, 64).forEach(function(seg){ lines.push({ pts: seg }); });
       } else {
-        lines.push({ pts: arcPointsRange(g.base, dir, perp, len, b1, thStart, thEnd, 44) });
+        lines.push({ pts: arcPointsRange(g.base, dir, perp, b1, b1, thStart, thEnd, 64) });
       }
       if (g.tipo === 'retener'){
-        var nTicks = 8, tGapDeg = 42;
+        // Ticks densos y continuos alrededor de todo el anillo, como en el símbolo de referencia.
+        var nTicks = 34, tGapDeg = 12;
         for (var i=0;i<nTicks;i++){
           var th = (tGapDeg/2 + i*((360-tGapDeg)/(nTicks-1))) * Math.PI/180;
-          var p = ellipseBoundaryPt(g.base, dir, perp, len, b1, th);
+          var p = ellipseBoundaryPt(g.base, dir, perp, b1, b1, th);
           var nrm = localXY(g.base, p); var nl = Math.hypot(nrm.x,nrm.y)||1;
           var nUnit = { x:nrm.x/nl, y:nrm.y/nl };
-          var tickLen = len*0.13;
+          var tickLen = len*0.09;
           lines.push({ pts: [ p, fromLocalXY(p, nUnit.x*tickLen, nUnit.y*tickLen) ] });
         }
       }
@@ -5192,7 +5204,7 @@
         var nTri = 8, triGapDeg = 30;
         for (var k=0;k<nTri;k++){
           var th3 = (triGapDeg/2 + k*((360-triGapDeg)/(nTri-1))) * Math.PI/180;
-          var p3 = ellipseBoundaryPt(g.base, dir, perp, len, b1, th3);
+          var p3 = ellipseBoundaryPt(g.base, dir, perp, b1, b1, th3);
           var nrm3 = localXY(g.base, p3); var nl3 = Math.hypot(nrm3.x,nrm3.y)||1;
           var nUnit3 = { x:nrm3.x/nl3, y:nrm3.y/nl3 };
           var tUnit3 = { x:-nUnit3.y, y:nUnit3.x };
@@ -5203,10 +5215,11 @@
           tris.push({ pts: [apex, s1, s2] });
         }
       }
-      var endPt = ellipseBoundaryPt(g.base, dir, perp, len, b1, thEnd);
-      var tangent = ellipseTangentAt(g.base, dir, perp, len, b1, thEnd);
+      var endPt = ellipseBoundaryPt(g.base, dir, perp, b1, b1, thEnd);
+      var tangent = ellipseTangentAt(g.base, dir, perp, b1, b1, thEnd);
       if (g.tipo === 'ocupar'){
-        var crossSize = len*0.08;
+        // Marca de "X" bien visible, sobresaliendo claramente del círculo.
+        var crossSize = len*0.16;
         lines.push({ pts: [ fromLocalXY(endPt,-crossSize,-crossSize), fromLocalXY(endPt,crossSize,crossSize) ] });
         lines.push({ pts: [ fromLocalXY(endPt,crossSize,-crossSize), fromLocalXY(endPt,-crossSize,crossSize) ] });
       } else {
@@ -5216,30 +5229,34 @@
         heads.push(taskArrowHeadPts(arrowTip, tangent, Math.max(len*0.09,4)));
       }
       if (letter){
-        labels.push({ pos: ellipseBoundaryPt(g.base, dir, perp, len, b1, labelTheta), text: letter, bearing: 0 });
+        labels.push({ pos: ellipseBoundaryPt(g.base, dir, perp, b1, b1, labelTheta), text: letter, bearing: 0 });
       }
     }
     else if (g.tipo === 'contener'){
+      // b2 es el radio real del semicírculo en AMBOS ejes (mismo motivo que arriba).
       var b2 = len*(g.widthRatio != null ? g.widthRatio : 0.72);
       var half = Math.PI/2;
       var thStart2 = -half, thEnd2 = half;
       var labelTheta2 = 0;
-      arcWithLabelGap(g.base, dir, perp, len, b2, thStart2, thEnd2, labelTheta2, 0.5, 30).forEach(function(seg){ lines.push({ pts: seg }); });
-      var nTicks2 = 6, tGapDeg2 = 20;
+      arcWithLabelGap(g.base, dir, perp, b2, b2, thStart2, thEnd2, labelTheta2, 0.5, 44).forEach(function(seg){ lines.push({ pts: seg }); });
+      // Ticks densos a lo largo de todo el arco, como en el símbolo de referencia.
+      var nTicks2 = 16, tGapDeg2 = 10;
       for (var j=0;j<nTicks2;j++){
         var th2 = (-half) + (tGapDeg2*Math.PI/180/2) + j*((Math.PI-(tGapDeg2*Math.PI/180))/(nTicks2-1));
-        var p2 = ellipseBoundaryPt(g.base, dir, perp, len, b2, th2);
+        var p2 = ellipseBoundaryPt(g.base, dir, perp, b2, b2, th2);
         var nrm2 = localXY(g.base, p2); var nl2 = Math.hypot(nrm2.x,nrm2.y)||1;
         var nUnit2 = { x:nrm2.x/nl2, y:nrm2.y/nl2 };
-        var tickLen2 = len*0.13;
+        var tickLen2 = len*0.09;
         lines.push({ pts: [ p2, fromLocalXY(p2, -nUnit2.x*tickLen2, -nUnit2.y*tickLen2) ] });
       }
+      // La flecha "ENY" llega hasta el borde del arco (no lo atraviesa hasta el centro).
+      var arcFront = taskPt(g.base, dir, perp, b2, 0);
       var enemyLen = len*(g.enemyRatio != null ? g.enemyRatio : 0.4);
-      var enemyStart = taskPt(g.base, dir, perp, len+enemyLen, 0);
-      lines.push({ pts: [ enemyStart, g.base ] });
-      heads.push(taskArrowHeadPts(g.base, dir, Math.max(len*0.09,4)));
-      labels.push({ pos: ellipseBoundaryPt(g.base, dir, perp, len, b2, labelTheta2), text: letter, bearing: 0 });
-      labels.push({ pos: taskPt(g.base, dir, perp, len+enemyLen*0.5, len*0.12), text: 'ENY', bearing: taskBearingDeg(dir) });
+      var enemyStart = taskPt(g.base, dir, perp, b2+enemyLen, 0);
+      lines.push({ pts: [ enemyStart, arcFront ] });
+      heads.push(taskArrowHeadPts(arcFront, dir, Math.max(len*0.09,4)));
+      labels.push({ pos: ellipseBoundaryPt(g.base, dir, perp, b2, b2, labelTheta2), text: letter, bearing: 0 });
+      labels.push({ pos: taskPt(g.base, dir, perp, b2+enemyLen*0.5, len*0.12), text: 'ENY', bearing: taskBearingDeg(dir) });
     }
     else if (g.tipo === 'fijar'){
       var waveAmp = len*(g.waveWidthRatio != null ? g.waveWidthRatio : 0.18);
@@ -6835,13 +6852,16 @@
         compute: function(){
           var ax = taskAxis(shape._task.base, shape._task.tip);
           var wr = shape._task.widthRatio != null ? shape._task.widthRatio : 0.5;
-          if (t === 'bloquear') return taskPt(shape._task.base, ax.dir, ax.perp, 0, ax.len*wr);
+          // "Bloquear" ahora dibuja su travesaño en el extremo lejano (tip), no en el origen.
+          if (t === 'bloquear') return taskPt(shape._task.base, ax.dir, ax.perp, ax.len, ax.len*wr);
           if (t === 'canalizar') return taskPt(shape._task.base, ax.dir, ax.perp, 0, -ax.len*wr);
           return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, -ax.len*wr);
         },
         onDrag: function(latlng){
           var ax = taskAxis(shape._task.base, shape._task.tip);
-          var refPt = (t === 'penetrar') ? taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, 0) : shape._task.base;
+          var refPt = (t === 'penetrar') ? taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, 0)
+            : (t === 'bloquear') ? shape._task.tip
+            : shape._task.base;
           shape._task.widthRatio = Math.max(distanceMeters(refPt, latlng) / ax.len, 0.05);
         }
       });
@@ -6932,12 +6952,16 @@
         color:'#8B6BB0', size:13, title:'Arrastre para cambiar el largo de la flecha enemiga',
         compute: function(){
           var ax = taskAxis(shape._task.base, shape._task.tip);
+          var wr2 = shape._task.widthRatio != null ? shape._task.widthRatio : 0.72;
+          var b2 = ax.len*wr2;
           var enemyLen = ax.len * (shape._task.enemyRatio != null ? shape._task.enemyRatio : 0.4);
-          return taskPt(shape._task.base, ax.dir, ax.perp, ax.len+enemyLen, 0);
+          return taskPt(shape._task.base, ax.dir, ax.perp, b2+enemyLen, 0);
         },
         onDrag: function(latlng){
           var ax = taskAxis(shape._task.base, shape._task.tip);
-          var d = distanceMeters(shape._task.base, latlng) - ax.len;
+          var wr2 = shape._task.widthRatio != null ? shape._task.widthRatio : 0.72;
+          var b2 = ax.len*wr2;
+          var d = distanceMeters(shape._task.base, latlng) - b2;
           shape._task.enemyRatio = Math.max(d / ax.len, 0.1);
         }
       });
@@ -7803,7 +7827,11 @@
     var c = '#1F3864';
     switch(tipo){
       case 'canalizar':
-        return '<path d="M8,40 L20,40 L20,20" fill="none" stroke="'+c+'" stroke-width="3"/><line x1="20" y1="20" x2="36" y2="12" stroke="'+c+'" stroke-width="3"/><polygon points="41,9 30,11 35,19" fill="'+c+'"/>';
+        // "U" con astas largas y un tick que abre hacia afuera en cada punta, cerrada por
+        // un travesaño corto en la base.
+        return '<line x1="16" y1="46" x2="16" y2="16" stroke="'+c+'" stroke-width="3"/><line x1="16" y1="16" x2="8" y2="8" stroke="'+c+'" stroke-width="3"/>' +
+          '<line x1="44" y1="46" x2="44" y2="16" stroke="'+c+'" stroke-width="3"/><line x1="44" y1="16" x2="52" y2="8" stroke="'+c+'" stroke-width="3"/>' +
+          '<line x1="16" y1="46" x2="44" y2="46" stroke="'+c+'" stroke-width="3"/>';
       case 'despejar':
         return '<line x1="46" y1="30" x2="46" y2="30" stroke="'+c+'"/><line x1="10" y1="30" x2="10" y2="30" stroke="'+c+'"/>' +
           '<line x1="46" y1="12" x2="46" y2="48" stroke="'+c+'" stroke-width="3"/>' +
@@ -7852,8 +7880,8 @@
         return '<circle cx="30" cy="30" r="2" fill="'+c+'"/>' +
           '<path d="M30,29 L18,24 L10,32" fill="none" stroke="'+c+'" stroke-width="2.4"/><polygon points="5,36 12,29 14,37" fill="'+c+'"/>' +
           '<path d="M30,31 L42,36 L50,28" fill="none" stroke="'+c+'" stroke-width="2.4"/><polygon points="55,24 48,31 46,23" fill="'+c+'"/>';
-      default: // bloquear
-        return '<line x1="8" y1="30" x2="50" y2="30" stroke="'+c+'" stroke-width="3"/><line x1="20" y1="12" x2="20" y2="48" stroke="'+c+'" stroke-width="3"/>';
+      default: // bloquear: travesaño en el extremo lejano (arriba) y un solo asta central hacia abajo
+        return '<line x1="8" y1="10" x2="52" y2="10" stroke="'+c+'" stroke-width="3"/><line x1="30" y1="10" x2="30" y2="52" stroke="'+c+'" stroke-width="3"/>';
     }
   }
   function renderTareasSubmenu(){
