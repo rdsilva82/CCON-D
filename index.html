@@ -5083,6 +5083,17 @@
     if (b < 0) b += 360;
     return b;
   }
+  // Ángulo de rotación (en grados, para usar directamente como rotationDeg del ícono de
+  // texto) que deja la BASE de la letra apuntando hacia "center", sin importar cómo esté
+  // orientada la tarea. Mismo cálculo que ya se usa para la "M" de los campos minados
+  // (ver syncCamposMinadosLabels): la rotación del texto es igual al rumbo de la dirección
+  // "hacia afuera" (del centro al punto de la letra), sin el ajuste anti-cabeza-abajo que
+  // usa labelRotationForBearing (ese ajuste invertiría la base hacia el lado equivocado).
+  function taskOutwardRotation(center, pos){
+    var v = localXY(center, pos);
+    var vl = Math.hypot(v.x, v.y) || 1;
+    return taskBearingDeg({ x: v.x/vl, y: v.y/vl });
+  }
   function buildTaskLabelIcon(text, rotationDeg, color){
     var html = '<div style="position:relative;"><div style="position:absolute; left:0; top:0; transform:translate(-50%,-50%) rotate(' + rotationDeg + 'deg); white-space:nowrap; font-family:Calibri,Arial,sans-serif; font-size:14px; font-weight:800; color:' + color + '; text-shadow:0 0 3px #fff, 0 0 4px #fff, 0 0 5px #fff;">' + text + '</div></div>';
     return L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] });
@@ -5190,7 +5201,9 @@
       var a4 = taskPt(g.base, dir, perp, 0, -len);
       lines.push({ pts: [ a3, a1 ] });
       lines.push({ pts: [ a4, a2 ], dash: (g.tipo === 'neutralizar') });
-      label = { pos: g.base, text: letter, bearing: taskBearingDeg(dir) };
+      // La "D"/"N" siempre debe leerse en horizontal respecto a la pantalla, sin rotar con
+      // el eje de la tarea (rot:0 fuerza el ícono a 0°, sin pasar por labelRotationForBearing).
+      label = { pos: g.base, text: letter, rot: 0 };
     }
     else if (g.tipo === 'interdictar'){
       lines.push({ pts: [ g.base, g.tip ] });
@@ -5203,7 +5216,9 @@
       var crossTip = fromLocalXY(crossCenter, crossDir.x*crossLen*0.65, crossDir.y*crossLen*0.65);
       taskSegWithGap(crossTail, crossTip, (crossLen*0.35)/(crossLen), gap*0.8).forEach(function(seg){ lines.push({ pts: seg }); });
       heads.push(taskArrowHeadPts(crossTip, crossDir, Math.max(len*0.09,4)));
-      label = { pos: crossCenter, text: letter, bearing: taskBearingDeg(crossDir) };
+      // La "I" debe leerse en la dirección de la flecha PRINCIPAL (base->punta), no en la
+      // dirección del tramo cruzado.
+      label = { pos: crossCenter, text: letter, bearing: taskBearingDeg(dir) };
     }
 
     if (g.tipo === 'retener' || g.tipo === 'asegurar' || g.tipo === 'aislar' || g.tipo === 'ocupar'){
@@ -5256,7 +5271,11 @@
         heads.push(taskArrowHeadPts(arrowTip, tangent, Math.max(len*0.09,4)));
       }
       if (letter){
-        labels.push({ pos: ellipseBoundaryPt(g.base, dir, perp, len, b1, labelTheta), text: letter, bearing: 0 });
+        // La base de la letra siempre debe apuntar hacia el centro del círculo (g.base):
+        // se usa la rotación "hacia afuera" desde el centro hasta la posición de la letra,
+        // en vez de una rotación fija que no seguía la orientación real de la tarea.
+        var arcLabelPos = ellipseBoundaryPt(g.base, dir, perp, len, b1, labelTheta);
+        labels.push({ pos: arcLabelPos, text: letter, rot: taskOutwardRotation(g.base, arcLabelPos) });
       }
     }
     else if (g.tipo === 'contener'){
@@ -5274,12 +5293,22 @@
         var tickLen2 = len*0.13;
         lines.push({ pts: [ p2, fromLocalXY(p2, -nUnit2.x*tickLen2, -nUnit2.y*tickLen2) ] });
       }
+      // La flecha ENY debe entrar por el lado ABIERTO del semicírculo (detrás del domo, es
+      // decir del lado opuesto a donde apunta +dir) y dirigirse hacia el centro (g.base),
+      // que es de donde nace el radio del semicírculo — antes entraba por encima del domo.
       var enemyLen = len*(g.enemyRatio != null ? g.enemyRatio : 0.4);
-      var enemyStart = taskPt(g.base, dir, perp, len+enemyLen, 0);
-      lines.push({ pts: [ enemyStart, g.base ] });
+      var enemyStart = taskPt(g.base, dir, perp, -enemyLen, 0);
+      var enemyMid = taskPt(g.base, dir, perp, -enemyLen*0.5, 0);
+      var enemyLabelGap = Math.max(len*0.16, 6);
+      taskSegWithGap(enemyStart, g.base, 0.5, enemyLabelGap).forEach(function(seg){ lines.push({ pts: seg }); });
       heads.push(taskArrowHeadPts(g.base, dir, Math.max(len*0.09,4)));
-      labels.push({ pos: ellipseBoundaryPt(g.base, dir, perp, len, b2, labelTheta2), text: letter, bearing: 0 });
-      labels.push({ pos: taskPt(g.base, dir, perp, len+enemyLen*0.5, len*0.12), text: 'ENY', bearing: taskBearingDeg(dir) });
+      // La "C" también debe tener su base apuntando hacia el centro (hacia donde apunta la
+      // flecha), igual que en retener/aislar/ocupar/asegurar.
+      var contLabelPos = ellipseBoundaryPt(g.base, dir, perp, len, b2, labelTheta2);
+      labels.push({ pos: contLabelPos, text: letter, rot: taskOutwardRotation(g.base, contLabelPos) });
+      // "ENY" debe quedar cortando la línea de la flecha (por eso el hueco arriba, centrado
+      // en el punto medio del tramo, en vez de ir a un lado de la línea).
+      labels.push({ pos: enemyMid, text: 'ENY', bearing: taskBearingDeg(dir) });
     }
     else if (g.tipo === 'fijar'){
       var waveAmp = len*(g.waveWidthRatio != null ? g.waveWidthRatio : 0.18);
@@ -5467,7 +5496,11 @@
       L.polygon(tri.pts, { color:color, weight:weight, fill:false, interactive:false, keyboard:false }).addTo(group);
     });
     (parts.labels || []).forEach(function(lbl){
-      var rotDeg = labelRotationForBearing(lbl.bearing || 0);
+      // lbl.rot es una rotación exacta ya calculada (por ejemplo, para que la base de una
+      // letra apunte a un centro concreto); si viene, se usa tal cual, sin pasar por el
+      // ajuste anti-cabeza-abajo de labelRotationForBearing (ese ajuste podría invertir la
+      // orientación que se buscaba).
+      var rotDeg = (lbl.rot != null) ? lbl.rot : labelRotationForBearing(lbl.bearing || 0);
       var icon = buildTaskLabelIcon(lbl.text, rotDeg, color);
       L.marker(lbl.pos, { icon:icon, interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
     });
@@ -7657,6 +7690,21 @@
     submenuEl.style.top = top + 'px';
   }
 
+  // Todos los cuadros flotantes de herramientas anidadas (Táctica > Tareas/Línea of./Ingenieros >
+  // Pasajes/Campos Minados/Obstáculos). Antes, cada rama solo cerraba las cajas de SU propio
+  // camino (por ejemplo, elegir una tarea de "Tareas" no cerraba "Ingenieros" ni "Pasajes" si
+  // habían quedado abiertos de una navegación previa), así que un cuadro flotante podía quedar
+  // pegado en pantalla al cambiar de herramienta. Ahora se centraliza en una sola función.
+  var ALL_TOOL_SUBMENU_IDS = ['tactica-wrap','tactica-submenu','tareas-submenu','lineaofensiva-submenu','pasajes-submenu','ingenieros-submenu','camposminados-submenu','obstaculos-submenu'];
+  function closeToolSubmenus(keepIds){
+    keepIds = keepIds || [];
+    ALL_TOOL_SUBMENU_IDS.forEach(function(id){
+      if (keepIds.indexOf(id) !== -1) return;
+      var el = document.getElementById(id);
+      if (el) el.classList.remove('open');
+    });
+  }
+
   document.querySelectorAll('#draw-toolbar .tool-btn').forEach(function(btn){
     btn.addEventListener('click', function(ev){
       var tool = btn.getAttribute('data-tool');
@@ -7665,13 +7713,10 @@
         var wrap = document.getElementById('tactica-wrap');
         var submenu = document.getElementById('tactica-submenu');
         var nowOpen = !submenu.classList.contains('open');
+        closeToolSubmenus(nowOpen ? ['tactica-wrap','tactica-submenu'] : []);
         wrap.classList.toggle('open', nowOpen);
         submenu.classList.toggle('open', nowOpen);
-        if (nowOpen){
-          positionFloatingSubmenu(submenu, btn);
-        } else {
-          document.getElementById('tareas-submenu').classList.remove('open');
-        }
+        if (nowOpen) positionFloatingSubmenu(submenu, btn);
         return;
       }
       if (tool === 'tareas-toggle'){
@@ -7679,108 +7724,84 @@
         renderTareasSubmenu();
         var tareasSubmenu = document.getElementById('tareas-submenu');
         var nowOpenT = !tareasSubmenu.classList.contains('open');
+        closeToolSubmenus(nowOpenT ? ['tactica-wrap','tactica-submenu','tareas-submenu'] : []);
         tareasSubmenu.classList.toggle('open', nowOpenT);
-        if (nowOpenT){
-          positionFloatingSubmenu(tareasSubmenu, btn);
-        }
+        if (nowOpenT) positionFloatingSubmenu(tareasSubmenu, btn);
         return;
       }
       if (tool === 'pasajes-toggle'){
         ev.stopPropagation();
         var pasajesSubmenu = document.getElementById('pasajes-submenu');
         var nowOpenP = !pasajesSubmenu.classList.contains('open');
+        closeToolSubmenus(nowOpenP ? ['tactica-wrap','tactica-submenu','ingenieros-submenu','pasajes-submenu'] : []);
         pasajesSubmenu.classList.toggle('open', nowOpenP);
-        if (nowOpenP){
-          positionFloatingSubmenu(pasajesSubmenu, btn);
-        }
+        if (nowOpenP) positionFloatingSubmenu(pasajesSubmenu, btn);
         return;
       }
       if (tool === 'ingenieros-toggle'){
         ev.stopPropagation();
         var ingenierosSubmenu = document.getElementById('ingenieros-submenu');
         var nowOpenI = !ingenierosSubmenu.classList.contains('open');
+        closeToolSubmenus(nowOpenI ? ['tactica-wrap','tactica-submenu','ingenieros-submenu'] : []);
         ingenierosSubmenu.classList.toggle('open', nowOpenI);
-        if (nowOpenI){
-          positionFloatingSubmenu(ingenierosSubmenu, btn);
-        } else {
-          document.getElementById('pasajes-submenu').classList.remove('open');
-          document.getElementById('camposminados-submenu').classList.remove('open');
-          document.getElementById('obstaculos-submenu').classList.remove('open');
-        }
+        if (nowOpenI) positionFloatingSubmenu(ingenierosSubmenu, btn);
         return;
       }
       if (tool === 'camposminados-toggle'){
         ev.stopPropagation();
         var cmSubmenu = document.getElementById('camposminados-submenu');
         var nowOpenC = !cmSubmenu.classList.contains('open');
+        closeToolSubmenus(nowOpenC ? ['tactica-wrap','tactica-submenu','ingenieros-submenu','camposminados-submenu'] : []);
         cmSubmenu.classList.toggle('open', nowOpenC);
-        if (nowOpenC){
-          positionFloatingSubmenu(cmSubmenu, btn);
-        }
+        if (nowOpenC) positionFloatingSubmenu(cmSubmenu, btn);
         return;
       }
       if (tool === 'obstaculos-toggle'){
         ev.stopPropagation();
         var obsSubmenu = document.getElementById('obstaculos-submenu');
         var nowOpenO = !obsSubmenu.classList.contains('open');
+        closeToolSubmenus(nowOpenO ? ['tactica-wrap','tactica-submenu','ingenieros-submenu','obstaculos-submenu'] : []);
         obsSubmenu.classList.toggle('open', nowOpenO);
-        if (nowOpenO){
-          positionFloatingSubmenu(obsSubmenu, btn);
-        }
+        if (nowOpenO) positionFloatingSubmenu(obsSubmenu, btn);
         return;
       }
       if (tool === 'lineaofensiva-toggle'){
         ev.stopPropagation();
         var loSubmenu = document.getElementById('lineaofensiva-submenu');
         var nowOpenL = !loSubmenu.classList.contains('open');
+        closeToolSubmenus(nowOpenL ? ['tactica-wrap','tactica-submenu','lineaofensiva-submenu'] : []);
         loSubmenu.classList.toggle('open', nowOpenL);
-        if (nowOpenL){
-          positionFloatingSubmenu(loSubmenu, btn);
-        }
+        if (nowOpenL) positionFloatingSubmenu(loSubmenu, btn);
         return;
       }
       if (tool && tool.indexOf('lineaofensiva:') === 0){
         ev.stopPropagation();
         activateTacticalTaskTool(tool.split(':')[1]);
-        document.getElementById('lineaofensiva-submenu').classList.remove('open');
-        document.getElementById('tactica-wrap').classList.remove('open');
-        document.getElementById('tactica-submenu').classList.remove('open');
+        closeToolSubmenus();
         return;
       }
       if (tool && tool.indexOf('pasajes:') === 0){
         ev.stopPropagation();
         activateTacticalTaskTool(tool.split(':')[1]);
-        document.getElementById('pasajes-submenu').classList.remove('open');
-        document.getElementById('ingenieros-submenu').classList.remove('open');
-        document.getElementById('tactica-wrap').classList.remove('open');
-        document.getElementById('tactica-submenu').classList.remove('open');
+        closeToolSubmenus();
         return;
       }
       if (tool && tool.indexOf('obstaculos:') === 0){
         ev.stopPropagation();
         activateTacticalTaskTool(tool.split(':')[1]);
-        document.getElementById('obstaculos-submenu').classList.remove('open');
-        document.getElementById('ingenieros-submenu').classList.remove('open');
-        document.getElementById('tactica-wrap').classList.remove('open');
-        document.getElementById('tactica-submenu').classList.remove('open');
+        closeToolSubmenus();
         return;
       }
       if (tool === 'camposminados:minas'){
         ev.stopPropagation();
         activateTacticalTaskTool('minas');
-        document.getElementById('camposminados-submenu').classList.remove('open');
-        document.getElementById('ingenieros-submenu').classList.remove('open');
-        document.getElementById('tactica-wrap').classList.remove('open');
-        document.getElementById('tactica-submenu').classList.remove('open');
+        closeToolSubmenus();
         return;
       }
       if (tool === 'camposminados:campominado'){
         ev.stopPropagation();
         activateCamposMinadosTool();
-        document.getElementById('camposminados-submenu').classList.remove('open');
-        document.getElementById('ingenieros-submenu').classList.remove('open');
-        document.getElementById('tactica-wrap').classList.remove('open');
-        document.getElementById('tactica-submenu').classList.remove('open');
+        closeToolSubmenus();
         return;
       }
       if (tool === 'edit') activateEdit();
@@ -7797,13 +7818,7 @@
       else if (tool === 'undo') doUndo();
       else if (tool === 'redo') doRedo();
       else activateDrawTool(tool);
-      document.getElementById('tactica-wrap').classList.remove('open');
-      document.getElementById('tactica-submenu').classList.remove('open');
-      document.getElementById('lineaofensiva-submenu').classList.remove('open');
-      document.getElementById('pasajes-submenu').classList.remove('open');
-      document.getElementById('ingenieros-submenu').classList.remove('open');
-      document.getElementById('camposminados-submenu').classList.remove('open');
-      document.getElementById('obstaculos-submenu').classList.remove('open');
+      closeToolSubmenus();
     });
   });
   document.addEventListener('click', function(ev){
@@ -7933,9 +7948,7 @@
       btn.addEventListener('click', function(ev){
         ev.stopPropagation();
         activateTacticalTaskTool(opt[0]);
-        document.getElementById('tareas-submenu').classList.remove('open');
-        document.getElementById('tactica-wrap').classList.remove('open');
-        document.getElementById('tactica-submenu').classList.remove('open');
+        closeToolSubmenus();
       });
       container.appendChild(btn);
     });
