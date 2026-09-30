@@ -11771,6 +11771,34 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     window._coaResizeTimer = setTimeout(fitAllCoaBoxes, 200);
   });
 
+  // ---- Rotación de pantalla (tablets/celulares) ----
+  // Leaflet no vuelve a medir su contenedor por sí solo cuando el navegador cambia de
+  // tamaño (por ejemplo, al girar el dispositivo de vertical a horizontal o viceversa):
+  // se queda con las medidas viejas y el paneo, los clics y la posición de los símbolos
+  // empiezan a desajustarse respecto a lo que se ve en pantalla ("comportamiento errático").
+  // Además, cualquier cuadro flotante de herramientas que estuviera abierto (Táctica,
+  // Tareas, Ingenieros, etc.) quedó posicionado para el tamaño anterior de la pantalla, así
+  // que ya no tiene sentido dejarlo abierto en el nuevo marco.
+  var orientationFixTimer = null;
+  function handleViewportOrientationChange(){
+    if (typeof closeToolSubmenus === 'function') closeToolSubmenus();
+    if (typeof hideFloatingTooltip === 'function') hideFloatingTooltip();
+    if (map) map.invalidateSize();
+    // En muchos navegadores móviles el viewport tarda un instante en terminar de
+    // reacomodarse tras la rotación, así que se vuelve a invalidar poco después para
+    // quedar con la medida definitiva (y de paso reajustar los cuadros de texto del COA).
+    clearTimeout(orientationFixTimer);
+    orientationFixTimer = setTimeout(function(){
+      if (map) map.invalidateSize();
+      fitAllCoaBoxes();
+    }, 300);
+  }
+  window.addEventListener('orientationchange', handleViewportOrientationChange);
+  if (window.screen && window.screen.orientation && window.screen.orientation.addEventListener){
+    window.screen.orientation.addEventListener('change', handleViewportOrientationChange);
+  }
+  window.addEventListener('resize', handleViewportOrientationChange);
+
   document.getElementById('reset-storage-btn').addEventListener('click', function(){
     showConfirm('¿Borrar todos los datos guardados en este navegador y reiniciar el mapa? Esta acción no se puede deshacer (considere exportar antes).', function(){
       try{ localStorage.removeItem(STORAGE_KEY_FN()); }catch(err){}
