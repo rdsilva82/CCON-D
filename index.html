@@ -11799,6 +11799,30 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
   window.addEventListener('resize', handleViewportOrientationChange);
 
+  // Respaldo más confiable que los eventos de arriba: en algunos navegadores móviles
+  // (Safari/iPadOS en particular) 'resize' y 'orientationchange' no siempre se disparan de
+  // forma consistente al girar la pantalla, o llegan antes de que el navegador termine de
+  // recalcular el tamaño real de los elementos. ResizeObserver, en cambio, avisa apenas el
+  // contenedor del mapa CAMBIA DE TAMAÑO DE VERDAD, sin importar qué lo causó ni cuándo
+  // termina de acomodarse el navegador, así que es la forma más robusta de detectar la
+  // rotación y volver a medir el mapa.
+  if (typeof ResizeObserver !== 'undefined'){
+    var mapEl = document.getElementById('map');
+    if (mapEl){
+      var mapResizeObserver = new ResizeObserver(function(){
+        if (map) map.invalidateSize();
+      });
+      mapResizeObserver.observe(mapEl);
+    }
+    var appGridEl = document.querySelector('.app-grid');
+    if (appGridEl){
+      var gridResizeObserver = new ResizeObserver(function(){
+        handleViewportOrientationChange();
+      });
+      gridResizeObserver.observe(appGridEl);
+    }
+  }
+
   document.getElementById('reset-storage-btn').addEventListener('click', function(){
     showConfirm('¿Borrar todos los datos guardados en este navegador y reiniciar el mapa? Esta acción no se puede deshacer (considere exportar antes).', function(){
       try{ localStorage.removeItem(STORAGE_KEY_FN()); }catch(err){}
