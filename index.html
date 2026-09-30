@@ -1209,9 +1209,21 @@
           <span>Apoyo fuego</span>
         </button>
       </div>
-      <button class="tool-btn" data-tool="elements" title="Elementos: unidades y símbolos militares tipo NATO (APP-6)">
+      <button class="tool-btn" data-tool="unidades" title="Unidades: unidades y símbolos militares tipo NATO (APP-6)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="7" width="16" height="10"/><path d="M4 7l16 10M20 7L4 17" stroke-width="1.6"/></svg>
-        <span>Elementos</span>
+        <span>Unidades</span>
+      </button>
+      <button class="tool-btn" data-tool="equipos" title="Equipos: punto para marcar un equipo (características por definir)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a3 3 0 00-4.2 4.2L3 18v3h3l7.5-7.5a3 3 0 004.2-4.2l-2.2 2.2-2-2z"/></svg>
+        <span>Equipos</span>
+      </button>
+      <button class="tool-btn" data-tool="vehiculos" title="Vehículos: punto para marcar un vehículo (características por definir)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16v-3.5l1.7-4.2A1.5 1.5 0 016.6 7.3h9.3a1.5 1.5 0 011.4 1l1.7 4.2H21v3.5"/><path d="M3.5 16h17" /><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/></svg>
+        <span>Vehículos</span>
+      </button>
+      <button class="tool-btn" data-tool="armas" title="Armas: punto para marcar un arma/sistema de armas (características por definir)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l7-7"/><path d="M12.5 5.5l6 6-2 2-1.5-1.5-2 2 1.5 1.5-2 2-6-6z"/><path d="M15 3l1.5 1.5"/><path d="M19.5 7.5L21 9"/></svg>
+        <span>Armas</span>
       </button>
       <button class="tool-btn" data-tool="text" title="Cuadro de texto editable">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M8 11h8M8 14h5"/></svg>
@@ -3413,7 +3425,7 @@
     return L.divIcon({ className:'', html: html, iconSize:[30,30], iconAnchor:[15,15] });
   }
 
-  /* ---------------- ELEMENTOS: simbología militar tipo NATO / APP-6 ---------------- */
+  /* ---------------- UNIDADES: simbología militar tipo NATO / APP-6 ---------------- */
   var MIL_AFFILIATIONS = [
     ['friendly','Amigo'],
     ['hostile','Enemigo'],
@@ -4317,20 +4329,20 @@
     }
   }
 
-  var elementsClickHandler = null;
-  function stopElementsTool(){
-    if (elementsClickHandler){ map.off('click', elementsClickHandler); elementsClickHandler = null; }
+  var unidadesClickHandler = null;
+  function stopUnidadesTool(){
+    if (unidadesClickHandler){ map.off('click', unidadesClickHandler); unidadesClickHandler = null; }
     mapContainer.style.cursor = '';
   }
-  function activateElementsTool(){
-    if (activeToolName === 'elements'){ disableAllTools(); return; }
+  function activateUnidadesTool(){
+    if (activeToolName === 'unidades'){ disableAllTools(); return; }
     var active = getActiveLayer();
-    if (!active){ alert('Cree o seleccione una capa antes de colocar un elemento.'); return; }
+    if (!active){ alert('Cree o seleccione una capa antes de colocar una unidad.'); return; }
     disableAllTools();
-    activeToolName = 'elements';
+    activeToolName = 'unidades';
     updateToolbarUI();
     mapContainer.style.cursor = 'crosshair';
-    elementsClickHandler = function(e){
+    unidadesClickHandler = function(e){
       var activeNow = getActiveLayer();
       if (!activeNow) return;
       var mil = defaultMilParams();
@@ -4347,7 +4359,139 @@
       showProperties(layer, activeNow);
       disableAllTools();
     };
-    map.on('click', elementsClickHandler);
+    map.on('click', unidadesClickHandler);
+  }
+
+  /* ---------------- EQUIPOS / VEHÍCULOS / ARMAS ----------------
+     Herramientas nuevas, generadas a partir de "Elementos" (ahora "Unidades") a pedido del
+     usuario. Por ahora son un punto simple con un ícono genérico distinto por categoría y sin
+     campos propios más allá del nombre; sus características específicas (ficha de datos, tipos,
+     íconos definitivos, etc.) quedan pendientes de que el usuario las defina. */
+  function defaultEquipoParams(){ return { tipo:'' }; }
+  function buildEquipoIcon(){
+    var c = '#5B6B73';
+    var html =
+      '<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+        '<circle cx="15" cy="15" r="13" fill="' + c + '" stroke="#fff" stroke-width="2"/>' +
+        '<path d="M18.4 9.9a3.6 3.6 0 00-5 5l-8.2 8.2 1.7 1.7 8.2-8.2a3.6 3.6 0 005-5l-2.6 2.6-2.4-2.4z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+    return L.divIcon({ className:'', html: html, iconSize:[30,30], iconAnchor:[15,15] });
+  }
+  var equiposClickHandler = null;
+  function stopEquiposTool(){
+    if (equiposClickHandler){ map.off('click', equiposClickHandler); equiposClickHandler = null; }
+    mapContainer.style.cursor = '';
+  }
+  function activateEquiposTool(){
+    if (activeToolName === 'equipos'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar un equipo.'); return; }
+    disableAllTools();
+    activeToolName = 'equipos';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    equiposClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var eq = defaultEquipoParams();
+      var layer = L.marker(e.latlng, { icon: buildEquipoIcon(eq) });
+      layer._isEquipo = true;
+      layer._equipo = eq;
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', equiposClickHandler);
+  }
+
+  function defaultVehiculoParams(){ return { tipo:'' }; }
+  function buildVehiculoIcon(){
+    var c = '#5D7052';
+    var html =
+      '<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+        '<circle cx="15" cy="15" r="13" fill="' + c + '" stroke="#fff" stroke-width="2"/>' +
+        '<path d="M8 18v-3.4l1.5-3.7a1.4 1.4 0 011.3-.9h8.4a1.4 1.4 0 011.3.9l1.5 3.7V18" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+        '<line x1="8" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>' +
+        '<circle cx="11" cy="18.4" r="1.5" fill="' + c + '" stroke="#fff" stroke-width="1.3"/>' +
+        '<circle cx="19" cy="18.4" r="1.5" fill="' + c + '" stroke="#fff" stroke-width="1.3"/>' +
+      '</svg>';
+    return L.divIcon({ className:'', html: html, iconSize:[30,30], iconAnchor:[15,15] });
+  }
+  var vehiculosClickHandler = null;
+  function stopVehiculosTool(){
+    if (vehiculosClickHandler){ map.off('click', vehiculosClickHandler); vehiculosClickHandler = null; }
+    mapContainer.style.cursor = '';
+  }
+  function activateVehiculosTool(){
+    if (activeToolName === 'vehiculos'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar un vehículo.'); return; }
+    disableAllTools();
+    activeToolName = 'vehiculos';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    vehiculosClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var veh = defaultVehiculoParams();
+      var layer = L.marker(e.latlng, { icon: buildVehiculoIcon(veh) });
+      layer._isVehiculo = true;
+      layer._vehiculo = veh;
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', vehiculosClickHandler);
+  }
+
+  function defaultArmaParams(){ return { tipo:'' }; }
+  function buildArmaIcon(){
+    var c = '#8B4A3A';
+    var html =
+      '<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+        '<circle cx="15" cy="15" r="13" fill="' + c + '" stroke="#fff" stroke-width="2"/>' +
+        '<path d="M9 21l6-6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>' +
+        '<path d="M15.3 9.3l5.4 5.4-1.8 1.8-1.3-1.3-1.8 1.8 1.3 1.3-1.8 1.8-5.4-5.4z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+    return L.divIcon({ className:'', html: html, iconSize:[30,30], iconAnchor:[15,15] });
+  }
+  var armasClickHandler = null;
+  function stopArmasTool(){
+    if (armasClickHandler){ map.off('click', armasClickHandler); armasClickHandler = null; }
+    mapContainer.style.cursor = '';
+  }
+  function activateArmasTool(){
+    if (activeToolName === 'armas'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar un arma.'); return; }
+    disableAllTools();
+    activeToolName = 'armas';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    armasClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var arm = defaultArmaParams();
+      var layer = L.marker(e.latlng, { icon: buildArmaIcon(arm) });
+      layer._isArma = true;
+      layer._arma = arm;
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', armasClickHandler);
   }
 
   var textClickHandler = null;
@@ -4682,7 +4826,10 @@
     if (freePolyActive) stopFreePolygonMode();
     if (cmPolyActive) stopCamposMinadosMode();
     if (arrowActive) stopArrowTool();
-    stopElementsTool();
+    stopUnidadesTool();
+    stopEquiposTool();
+    stopVehiculosTool();
+    stopArmasTool();
     stopTextTool();
     stopTargetTool();
     stopInfraTool();
@@ -7894,7 +8041,10 @@
       else if (tool === 'freepolygon') activateFreePolygon();
       else if (tool === 'arrow') activateArrowTool();
       else if (tool === 'defensiveline') activateDefensiveLineTool();
-      else if (tool === 'elements') activateElementsTool();
+      else if (tool === 'unidades') activateUnidadesTool();
+      else if (tool === 'equipos') activateEquiposTool();
+      else if (tool === 'vehiculos') activateVehiculosTool();
+      else if (tool === 'armas') activateArmasTool();
       else if (tool === 'text') activateTextTool();
       else if (tool === 'target') activateTargetTool();
       else if (tool === 'infra') activateInfraTool();
@@ -8050,7 +8200,10 @@
     }
     if (shape._isMilSymbol && shape._supply == null) shape._supply = 100;
     shape.on('click', function(e){
-      if (activeToolName === 'elements' && elementsClickHandler){ elementsClickHandler(e); return; }
+      if (activeToolName === 'unidades' && unidadesClickHandler){ unidadesClickHandler(e); return; }
+      if (activeToolName === 'equipos' && equiposClickHandler){ equiposClickHandler(e); return; }
+      if (activeToolName === 'vehiculos' && vehiculosClickHandler){ vehiculosClickHandler(e); return; }
+      if (activeToolName === 'armas' && armasClickHandler){ armasClickHandler(e); return; }
       if (activeToolName === 'text' && textClickHandler){ textClickHandler(e); return; }
       if (activeToolName === 'target' && targetClickHandler){ targetClickHandler(e); return; }
       if (activeToolName === 'infra' && infraClickHandler){ infraClickHandler(e); return; }
@@ -8074,6 +8227,9 @@
     if (shape._isText) return 'Texto ' + shapeCounter;
     if (shape._isTarget) return 'Blanco ' + shapeCounter;
     if (shape._isInfra) return 'Infraestructura ' + shapeCounter;
+    if (shape._isEquipo) return 'Equipo ' + shapeCounter;
+    if (shape._isVehiculo) return 'Vehículo ' + shapeCounter;
+    if (shape._isArma) return 'Arma ' + shapeCounter;
     if (shape._isImageOverlay) return 'Imagen ' + shapeCounter;
     if (shape._isRectangle) return 'Rectángulo ' + shapeCounter;
     if (shape instanceof L.Marker) return 'Punto ' + shapeCounter;
@@ -8089,6 +8245,9 @@
     if (shape._isText) return 'text';
     if (shape._isTarget) return 'target';
     if (shape._isInfra) return 'infra';
+    if (shape._isEquipo) return 'equipo';
+    if (shape._isVehiculo) return 'vehiculo';
+    if (shape._isArma) return 'arma';
     if (shape._isTacticalTask) return 'tacticaltask';
     if (shape._isImageOverlay) return 'image';
     if (shape instanceof L.Marker) return 'marker';
@@ -8108,6 +8267,9 @@
       text: '<rect x="3" y="6" width="18" height="12" rx="1"/><path d="M8 10h8M8 13h5"/>',
       target: '<line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/>',
       infra: '<path d="M4 19h16M6 19v-6l4 3v-3l4 3v-3l4 3v6" stroke-linecap="round"/>',
+      equipo: '<path d="M14.7 6.3a3 3 0 00-4.2 4.2L3 18v3h3l7.5-7.5a3 3 0 004.2-4.2l-2.2 2.2-2-2z"/>',
+      vehiculo: '<path d="M3.5 16v-3.5l1.7-4.2A1.5 1.5 0 016.6 7.3h9.3a1.5 1.5 0 011.4 1l1.7 4.2H21v3.5"/><path d="M3.5 16h17"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/>',
+      arma: '<path d="M3 21l7-7"/><path d="M12.5 5.5l6 6-2 2-1.5-1.5-2 2 1.5 1.5-2 2-6-6z"/>',
       image: '<rect x="3" y="4" width="18" height="16" rx="1.5"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5.5-5.5L8 18"/>',
       arrow: '<path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/>'
     };
@@ -8916,6 +9078,12 @@
         stats.tipo = 'Blanco';
       } else if (shape._isInfra){
         stats.tipo = 'Infraestructura';
+      } else if (shape._isEquipo){
+        stats.tipo = 'Equipo';
+      } else if (shape._isVehiculo){
+        stats.tipo = 'Vehículo';
+      } else if (shape._isArma){
+        stats.tipo = 'Arma';
       } else if (shape instanceof L.Circle){
         stats.tipo = 'Círculo';
         stats.radio = L.GeometryUtil.readableDistance(shape.getRadius(), true, false, false);
@@ -10922,6 +11090,15 @@
       if (shape && shape._isInfra){
         f.properties.infra = shape._infra;
       }
+      if (shape && shape._isEquipo){
+        f.properties.equipo = shape._equipo;
+      }
+      if (shape && shape._isVehiculo){
+        f.properties.vehiculo = shape._vehiculo;
+      }
+      if (shape && shape._isArma){
+        f.properties.arma = shape._arma;
+      }
     });
     imageShapes.forEach(function(shape){
       var b = shape.getBounds();
@@ -11054,6 +11231,27 @@
           ig._infra = inf;
           updateInfraTooltip(ig);
           return ig;
+        }
+        if (p.equipo){
+          var eq = Object.assign(defaultEquipoParams(), p.equipo);
+          var eqm = L.marker(latlng, { icon: buildEquipoIcon(eq) });
+          eqm._isEquipo = true;
+          eqm._equipo = eq;
+          return eqm;
+        }
+        if (p.vehiculo){
+          var veh = Object.assign(defaultVehiculoParams(), p.vehiculo);
+          var vm = L.marker(latlng, { icon: buildVehiculoIcon(veh) });
+          vm._isVehiculo = true;
+          vm._vehiculo = veh;
+          return vm;
+        }
+        if (p.arma){
+          var arm = Object.assign(defaultArmaParams(), p.arma);
+          var am = L.marker(latlng, { icon: buildArmaIcon(arm) });
+          am._isArma = true;
+          am._arma = arm;
+          return am;
         }
         return L.marker(latlng, {
           icon: buildPointIcon(p.pointColor || p.color || targetLayerObj.color, p.pointShape || 'target')
