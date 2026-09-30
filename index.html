@@ -307,7 +307,14 @@
   }
   .layer-row button:hover{ color:var(--danger); background:var(--danger-tint); }
   .layer-row .vis-btn{ display:inline-flex; align-items:center; justify-content:center; }
-  .layer-row .vis-btn:hover{ color:var(--navy); background:var(--hover-tint); }
+  /* Antes el ícono solo tomaba color al pasar el mouse por encima (:hover), así que si el cursor
+     no estaba justo ahí se veía "apagado" aunque la capa SÍ estuviera visible, dando una sensación
+     de resaltado inconsistente/al azar. Ahora el color queda fijo según el estado real de la capa
+     (visible = color navy/azul de acento, oculta = gris apagado), en los dos temas; el :hover solo
+     agrega el tinte de fondo como antes. */
+  .layer-row .vis-btn.is-visible{ color:var(--navy); }
+  .layer-row .vis-btn:hover{ background:var(--hover-tint); }
+  .layer-row .vis-btn:not(.is-visible):hover{ color:var(--navy); }
   .layer-row .reorder-btn{ font-size:9px; padding:2px 3px; }
   .layer-row .reorder-btn:hover{ color:var(--navy); background:var(--hover-tint); }
   .expand-btn{ font-size:11px; width:18px; text-align:center; transition:transform .15s; }
@@ -8412,7 +8419,7 @@
     downBtn.addEventListener('click', function(ev){ ev.stopPropagation(); moveSibling(l.id, 1); });
 
     var visBtn = document.createElement('button');
-    visBtn.className = 'vis-btn';
+    visBtn.className = 'vis-btn' + (l.visible ? ' is-visible' : '');
     visBtn.title = l.visible ? 'Ocultar capa (y sus subcapas)' : 'Mostrar capa (y sus subcapas)';
     visBtn.innerHTML = l.visible ? VIS_EYE_OPEN_SVG : VIS_EYE_OFF_SVG;
     visBtn.addEventListener('click', function(ev){
