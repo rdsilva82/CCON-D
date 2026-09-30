@@ -4236,6 +4236,34 @@
     updateMilSymbolTooltip(shape);
   }
 
+  /* Leaflet.draw (SimpleShape, base de Rectángulo y Círculo) agrega mientras la herramienta está
+     activa un listener de "touchstart" sobre TODO el documento que llama preventDefault() en
+     cualquier toque, sin importar dónde ocurra (pensado para bloquear el scroll/zoom del navegador
+     mientras se dibuja sobre el mapa). En una tablet esto también suprime el "click" sintético que
+     generan los navegadores móviles al tocar CUALQUIER otro botón de la barra de herramientas,
+     dejando Rectángulo/Círculo "atascados": no se podía cambiar de herramienta tocando otro botón,
+     solo terminando la forma o con la tecla Escape (que sí funciona porque es un evento de teclado,
+     no de toque). Se reemplaza ese listener global por uno equivalente pero acotado al contenedor
+     del mapa, para que los toques fuera del mapa (la barra de herramientas) no se vean afectados. */
+  if (L.Draw && L.Draw.SimpleShape && !L.Draw.SimpleShape.prototype._touchstartScopePatched){
+    var _origSimpleShapeAddHooks = L.Draw.SimpleShape.prototype.addHooks;
+    var _origSimpleShapeRemoveHooks = L.Draw.SimpleShape.prototype.removeHooks;
+    L.Draw.SimpleShape.prototype.addHooks = function(){
+      _origSimpleShapeAddHooks.call(this);
+      if (this._map){
+        document.removeEventListener('touchstart', L.DomEvent.preventDefault);
+        this._map.getContainer().addEventListener('touchstart', L.DomEvent.preventDefault, { passive:false });
+      }
+    };
+    L.Draw.SimpleShape.prototype.removeHooks = function(){
+      if (this._map){
+        this._map.getContainer().removeEventListener('touchstart', L.DomEvent.preventDefault);
+      }
+      _origSimpleShapeRemoveHooks.call(this);
+    };
+    L.Draw.SimpleShape.prototype._touchstartScopePatched = true;
+  }
+
   function buildDrawHandlers(){
     var active = getActiveLayer();
     if (!active) return;
@@ -4251,6 +4279,16 @@
     document.querySelectorAll('#draw-toolbar .tool-btn').forEach(function(btn){
       btn.classList.toggle('active', btn.getAttribute('data-tool') === activeToolName);
     });
+    /* Las herramientas del submenú "Táctica" (Tareas, Línea of., Pasajes, Campos Min., Obstáculos)
+       no usan un data-tool propio en activeToolName: todas comparten 'tacticaltask', y "Campo
+       minado" usa 'camposminados', así que ninguna coincidía con el botón "Táctica" y este nunca
+       se resaltaba mientras una de esas herramientas seguía activa (a diferencia de las demás,
+       que sí quedan iluminadas todo el tiempo que están seleccionadas). Se ilumina el botón
+       "Táctica" mismo tiempo que cualquiera de sus herramientas descendientes esté en uso. */
+    var tacticaToggleBtn = document.querySelector('#draw-toolbar [data-tool="tactica-toggle"]');
+    if (tacticaToggleBtn){
+      tacticaToggleBtn.classList.toggle('active', activeToolName === 'tacticaltask' || activeToolName === 'camposminados');
+    }
   }
 
   var elementsClickHandler = null;
@@ -4546,12 +4584,25 @@
   }
 
   function activateImageTool(){
+    // Antes nunca marcaba activeToolName ni llamaba updateToolbarUI(), así que el botón "Imagen"
+    // nunca se resaltaba como las demás herramientas al presionarlo.
+    if (activeToolName === 'image'){ disableAllTools(); return; }
+    disableAllTools();
+    activeToolName = 'image';
+    updateToolbarUI();
     document.getElementById('image-insert-input').click();
   }
   document.getElementById('image-insert-input').addEventListener('change', function(ev){
     var file = ev.target.files[0];
     ev.target.value = '';
+    if (activeToolName === 'image'){ activeToolName = null; updateToolbarUI(); }
     if (file) insertImageFromFile(file);
+  });
+  // El evento 'cancel' se dispara cuando el usuario cierra el selector de archivos sin elegir uno
+  // (soportado en navegadores modernos); sin esto, el botón "Imagen" quedaba resaltado para siempre
+  // si se cancelaba el selector.
+  document.getElementById('image-insert-input').addEventListener('cancel', function(){
+    if (activeToolName === 'image'){ activeToolName = null; updateToolbarUI(); }
   });
 
   var singleShapeEditingShape = null;
@@ -7862,7 +7913,11 @@
     ['frentedefuego','Frente de fuego']
   ];
   function tareaIconSVG(tipo){
-    var c = '#1F3864';
+    // 'currentColor' toma el color CSS del botón (.tarea-icon-btn{ color:var(--navy) }), que
+    // cambia según el tema. Antes estaba fijo en el navy del tema Clásico (#1F3864), así que
+    // en el tema Digital (donde --navy pasa a un azul claro sobre fondo oscuro) los íconos de
+    // Tareas se veían apagados/de bajo contraste en vez de iluminarse como los demás.
+    var c = 'currentColor';
     switch(tipo){
       case 'canalizar':
         // "U" con astas largas y un tick que abre hacia afuera en cada punta, cerrada por
