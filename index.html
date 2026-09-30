@@ -309,10 +309,13 @@
   .layer-row .vis-btn{ display:inline-flex; align-items:center; justify-content:center; }
   /* Antes el ícono solo tomaba color al pasar el mouse por encima (:hover), así que si el cursor
      no estaba justo ahí se veía "apagado" aunque la capa SÍ estuviera visible, dando una sensación
-     de resaltado inconsistente/al azar. Ahora el color queda fijo según el estado real de la capa
-     (visible = color navy/azul de acento, oculta = gris apagado), en los dos temas; el :hover solo
-     agrega el tinte de fondo como antes. */
-  .layer-row .vis-btn.is-visible{ color:var(--navy); }
+     de resaltado inconsistente/al azar. Ahora el color queda fijo según el estado real (visible u
+     oculta), sin depender del mouse. Se usa var(--gold) (el color de acento/resaltado que ya usa
+     el resto de la app para "activo") en vez de var(--navy): en el tema Clásico, navy (#1F3864)
+     es un azul oscuro muy parecido en luminosidad al gris apagado (--muted), así que casi no se
+     notaba el cambio; gold sí contrasta con claridad en los dos temas (dorado sobre claro en
+     Clásico, cian sobre oscuro en Digital). El :hover solo agrega el tinte de fondo como antes. */
+  .layer-row .vis-btn.is-visible{ color:var(--gold); }
   .layer-row .vis-btn:hover{ background:var(--hover-tint); }
   .layer-row .vis-btn:not(.is-visible):hover{ color:var(--navy); }
   .layer-row .reorder-btn{ font-size:9px; padding:2px 3px; }
@@ -8358,6 +8361,16 @@
   var VIS_EYE_OPEN_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
   var VIS_EYE_OFF_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a17.7 17.7 0 0 1-3.15 4.19M6.6 6.6C3.68 8.5 2 12 2 12s4 7 11 7c1.09 0 2.13-.14 3.09-.4"/><path d="M10.6 10.6a3 3 0 0 0 4.24 4.24"/></svg>';
 
+  // Cada subcapa es su propio grupo independiente en el mapa (map.addLayer/removeLayer según su
+  // PROPIO l.visible), así que una subcapa se puede mostrar aunque la capa padre esté marcada como
+  // oculta. Antes el ícono de la capa padre solo miraba su propio l.visible, así que parecía
+  // "apagada" aunque en el mapa siguiera viéndose contenido de una de sus subcapas. Ahora se revisa
+  // todo el subárbol (la capa misma y todas sus subcapas, recursivamente).
+  function subtreeHasVisible(l, childrenFn){
+    if (l.visible) return true;
+    return childrenFn(l.id).some(function(child){ return subtreeHasVisible(child, childrenFn); });
+  }
+
   function buildLayerCard(l, depth, opts){
     opts = opts || {};
     var childrenFn = opts.getChildren || getChildren;
@@ -8418,10 +8431,11 @@
     downBtn.className = 'reorder-btn'; downBtn.textContent = '▼'; downBtn.title = 'Bajar de orden';
     downBtn.addEventListener('click', function(ev){ ev.stopPropagation(); moveSibling(l.id, 1); });
 
+    var effectivelyVisible = subtreeHasVisible(l, childrenFn);
     var visBtn = document.createElement('button');
-    visBtn.className = 'vis-btn' + (l.visible ? ' is-visible' : '');
+    visBtn.className = 'vis-btn' + (effectivelyVisible ? ' is-visible' : '');
     visBtn.title = l.visible ? 'Ocultar capa (y sus subcapas)' : 'Mostrar capa (y sus subcapas)';
-    visBtn.innerHTML = l.visible ? VIS_EYE_OPEN_SVG : VIS_EYE_OFF_SVG;
+    visBtn.innerHTML = effectivelyVisible ? VIS_EYE_OPEN_SVG : VIS_EYE_OFF_SVG;
     visBtn.addEventListener('click', function(ev){
       ev.stopPropagation();
       setVisibilityFn(l.id, !l.visible);
