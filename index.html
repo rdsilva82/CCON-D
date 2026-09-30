@@ -2887,7 +2887,14 @@
     loadDireccionBroadcastPanel();
   });
 
-  document.getElementById('gh-push-btn').addEventListener('click', function(){ githubPush(); });
+  document.getElementById('gh-push-btn').addEventListener('click', function(){
+    githubPush().then(function(ok){
+      if (!ok){
+        var statusEl = document.getElementById('gh-status');
+        alert('No se pudo subir los cambios a GitHub.\n\n' + (statusEl ? statusEl.textContent : 'Error desconocido') + '\n\nSus cambios siguen guardados en este navegador; puede volver a intentar "Subir cambios" más tarde, pero no cierre ni recargue la página mientras tanto para no perderlos.');
+      }
+    });
+  });
   document.getElementById('gh-pull-btn').addEventListener('click', function(){
     showConfirm('Esto reemplazará lo que ve en pantalla por la última versión guardada en GitHub. ¿Continuar?', function(){ githubPull(true); });
   });
@@ -4459,15 +4466,48 @@
     reader.onload = function(){
       var img = new Image();
       img.onload = function(){
-        var maxDim = 1600;
+        // La imagen se guarda como texto (dataURL) dentro de la capa, tanto en este
+        // navegador como al subirla a GitHub. La API de GitHub para guardar archivos
+        // rechaza los que superan ~1 MB, así que aquí se comprime lo necesario para
+        // que quepa: primero se intenta como PNG (mejor para diagramas con
+        // transparencia); si sigue siendo demasiado grande (lo típico en fotografías)
+        // se recomprime como JPEG, bajando calidad y luego tamaño hasta que quepa.
+        // Sin esto, una imagen pesada se insertaba igual en el mapa pero luego
+        // "Subir cambios" fallaba en silencio (o la sincronización periódica terminaba
+        // reemplazando la pantalla por la última versión guardada en GitHub, dando la
+        // sensación de que la imagen nunca se guardó).
+        var MAX_DATAURL_CHARS = 900000; // margen de seguridad bajo el límite de ~1MB de GitHub
         var w = img.naturalWidth, h = img.naturalHeight;
-        var scale = Math.min(1, maxDim / Math.max(w, h));
-        var canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(w * scale));
-        canvas.height = Math.max(1, Math.round(h * scale));
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        function renderAt(dim){
+          var scale = Math.min(1, dim / Math.max(w, h));
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(w * scale));
+          c.height = Math.max(1, Math.round(h * scale));
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          return c;
+        }
+
+        var canvas = renderAt(1600);
         var dataUrl = canvas.toDataURL('image/png');
+
+        if (dataUrl.length > MAX_DATAURL_CHARS){
+          var qualitySteps = [0.85, 0.7, 0.55, 0.4];
+          var dimSteps = [1600, 1200, 900, 700, 500];
+          findSize:
+          for (var di = 0; di < dimSteps.length; di++){
+            var candidateCanvas = renderAt(dimSteps[di]);
+            for (var qi = 0; qi < qualitySteps.length; qi++){
+              var candidate = candidateCanvas.toDataURL('image/jpeg', qualitySteps[qi]);
+              canvas = candidateCanvas;
+              dataUrl = candidate;
+              if (candidate.length <= MAX_DATAURL_CHARS) break findSize;
+            }
+          }
+          if (dataUrl.length > MAX_DATAURL_CHARS){
+            alert('Esta imagen sigue siendo muy pesada incluso después de comprimirla, y podría no lograr subirse a GitHub (límite aproximado de 1 MB por archivo). Se insertó de todas formas, pero si "Subir cambios" no la guarda, use una imagen más pequeña o con menos detalle.');
+          }
+        }
 
         var center = map.getCenter();
         var aspect = canvas.width / canvas.height;
@@ -12046,7 +12086,13 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       if (!isReadOnlyMode() && githubConfigured() && githubConfig.autoSync && !githubPushTimer &&
           !activeToolName && !moveModeShape && !editingFieldFocused && !selectedShape &&
           (Date.now()-lastLocalEditTime > 20000)){
-        githubPull(false, true);
+        // Si quedaron cambios locales sin subir (por ejemplo, una subida anterior falló por
+        // el tamaño de una imagen), no se debe descargar la versión remota todavía: eso
+        // reemplazaría lo que hay en pantalla por la última versión guardada en GitHub y el
+        // cambio local se perdería sin aviso, dando la sensación de que la página "se reinició"
+        // antes de guardar. En ese caso se reintenta subir primero.
+        if (hasPendingPushTasks()) githubPush();
+        else githubPull(false, true);
       }
     }, 60000);
 
