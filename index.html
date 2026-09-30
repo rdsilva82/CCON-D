@@ -11823,6 +11823,27 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     }
   }
 
+  // La API "visual viewport" a veces avisa de cambios de tamaño en casos donde 'resize' del
+  // window no lo hace (notablemente, algunas versiones de Chrome para iOS/iPadOS).
+  if (window.visualViewport && window.visualViewport.addEventListener){
+    window.visualViewport.addEventListener('resize', handleViewportOrientationChange);
+  }
+
+  // Último respaldo, pensado específicamente para navegadores donde NINGUNO de los mecanismos
+  // anteriores avisa de forma confiable al girar la pantalla (se ha reportado en algunas
+  // versiones de Chrome para iOS/iPadOS, a diferencia de Safari). En vez de depender de que
+  // el navegador dispare algún evento, se compara el tamaño real de la ventana un par de
+  // veces por segundo; si cambió, se dispara el mismo reajuste. Es una comprobación muy barata
+  // (una resta de números), así que no afecta el rendimiento.
+  var lastKnownViewportSize = window.innerWidth + 'x' + window.innerHeight;
+  setInterval(function(){
+    var current = window.innerWidth + 'x' + window.innerHeight;
+    if (current !== lastKnownViewportSize){
+      lastKnownViewportSize = current;
+      handleViewportOrientationChange();
+    }
+  }, 500);
+
   document.getElementById('reset-storage-btn').addEventListener('click', function(){
     showConfirm('¿Borrar todos los datos guardados en este navegador y reiniciar el mapa? Esta acción no se puede deshacer (considere exportar antes).', function(){
       try{ localStorage.removeItem(STORAGE_KEY_FN()); }catch(err){}
