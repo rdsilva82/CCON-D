@@ -548,8 +548,14 @@
     }
     #left-panel{ left:0; transform:translateX(-105%); }
     #right-panel{ right:0; transform:translateX(105%); }
+    /* El panel de Capas de Dirección es un tercer cajón, no una columna aparte de la
+       cuadrícula: sin esta regla se quedaba fijo y siempre visible, sin forma de ocultarlo
+       ni de distinguirlo del panel izquierdo (ambos terminaban superpuestos en el borde
+       izquierdo). Ahora se desliza igual que los otros dos, con su propio botón. */
+    #direccion-panel{ left:0; transform:translateX(-105%); z-index:1501; }
     #left-panel.open{ transform:translateX(0); }
     #right-panel.open{ transform:translateX(0); }
+    #direccion-panel.open{ transform:translateX(0); }
     header .panel-toggles{ display:flex; }
     #map-wrapper{ grid-column:1; }
   }
@@ -895,6 +901,7 @@
     </div>
     <div class="panel-toggles">
       <button class="toggle-btn" id="toggle-left">☰</button>
+      <button class="toggle-btn" id="toggle-direccion" style="display:none;" title="Mostrar/ocultar Capas de Dirección">🗂️</button>
       <button class="toggle-btn" id="toggle-right">▤</button>
     </div>
   </div>
@@ -11283,22 +11290,37 @@
   /* ---------------- RESPONSIVE PANEL TOGGLES ---------------- */
   var leftPanel = document.getElementById('left-panel');
   var rightPanel = document.getElementById('right-panel');
+  var direccionPanelEl = document.getElementById('direccion-panel');
+  var toggleDireccionBtn = document.getElementById('toggle-direccion');
   var scrim = document.getElementById('scrim');
 
   function closePanels(){
     leftPanel.classList.remove('open');
     rightPanel.classList.remove('open');
+    direccionPanelEl.classList.remove('open');
     scrim.classList.remove('show');
   }
   document.getElementById('toggle-left').addEventListener('click', function(){
     rightPanel.classList.remove('open');
+    direccionPanelEl.classList.remove('open');
     leftPanel.classList.toggle('open');
     scrim.classList.toggle('show', leftPanel.classList.contains('open'));
   });
   document.getElementById('toggle-right').addEventListener('click', function(){
     leftPanel.classList.remove('open');
+    direccionPanelEl.classList.remove('open');
     rightPanel.classList.toggle('open');
     scrim.classList.toggle('show', rightPanel.classList.contains('open'));
+  });
+  // Cajón de "Capas de Dirección" en pantallas angostas: antes no tenía botón propio ni
+  // clase "open" que lo deslizara fuera de pantalla, así que quedaba fijo y superpuesto con
+  // el panel izquierdo, sin forma de ocultarlo (ver regla #direccion-panel en el media query
+  // de arriba). Se comporta igual que los otros dos cajones: exclusivo entre sí.
+  toggleDireccionBtn.addEventListener('click', function(){
+    leftPanel.classList.remove('open');
+    rightPanel.classList.remove('open');
+    direccionPanelEl.classList.toggle('open');
+    scrim.classList.toggle('show', direccionPanelEl.classList.contains('open'));
   });
   scrim.addEventListener('click', closePanels);
 
@@ -11716,11 +11738,13 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     panelState.direccion.el.style.display = '';
     panelState.direccion.tab.style.display = 'flex';
     panelState.direccion.tab.textContent = panelState.direccion.collapsed ? '›' : '‹';
+    if (toggleDireccionBtn) toggleDireccionBtn.style.display = '';
     applyPanelWidths();
   }
   function hideDireccionPanel(){
     panelState.direccion.el.style.display = 'none';
     panelState.direccion.tab.style.display = 'none';
+    if (toggleDireccionBtn){ toggleDireccionBtn.style.display = 'none'; direccionPanelEl.classList.remove('open'); }
     applyPanelWidths();
   }
 
