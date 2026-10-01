@@ -6650,22 +6650,27 @@
       return { x: -dy/len, y: dx/len };
     }
 
-    // "Av Aprox Aérea": el ancho del asta se interpola de +sw (sin cruzar) en la cola a -sw
-    // (cruzado) justo donde el asta se une con la cabeza, de modo que el borde que iba por la
-    // izquierda termina conectándose al lado derecho de la cabeza y viceversa — produciendo el
-    // cruce en X que pide el usuario, sin tocar la cabeza (que se arma igual que siempre).
+    // "Av Aprox Aérea": el ancho del asta se acerca suavemente (coseno, no en línea recta) desde
+    // +sw (sin cruzar) en la cola hasta 0 (sobre el eje central) justo donde el asta se une con
+    // la cabeza. Ahí, en ese único punto sobre el eje, el borde que venía por la izquierda pasa a
+    // conectarse con la esquina DERECHA de la base de la cabeza y viceversa — produciendo un cruce
+    // limpio en ese punto, sin crear ninguna forma ni cierre adicional, y dejando la cabeza en sí
+    // (el triángulo real, con su base abierta) exactamente igual que en la flecha original.
     var twist = !!arrow.avAproxAerea;
     var jSafe = Math.max(j, 1);
-    var TWIST_RAMP_START = 0.7; // el cruce ocurre solo en el último tramo, cerca de la cabeza
+    var TWIST_RAMP_START = 0.7; // el acercamiento al cruce ocurre solo en el último tramo
+
+    function twistFactor(t){
+      if (!twist) return 1;
+      if (t <= TWIST_RAMP_START) return 1;
+      var u = (t - TWIST_RAMP_START)/(1-TWIST_RAMP_START);
+      return Math.cos(u * Math.PI/2); // suave: 1 -> 0, sin tramo recto ni rebote tras el cruce
+    }
 
     var left = [], right = [];
     for (var i=0;i<=j;i++){
       var n = normalAt(i);
-      var factor = 1;
-      if (twist){
-        var t = i/jSafe;
-        factor = (t <= TWIST_RAMP_START) ? 1 : (1 - 2*((t-TWIST_RAMP_START)/(1-TWIST_RAMP_START)));
-      }
+      var factor = twistFactor(i/jSafe);
       if (i === 0 && (arrow.tailLeftOffset || arrow.tailRightOffset)){
         left.push(arrow.tailLeftOffset ? { x: pts[0].x+arrow.tailLeftOffset.x, y: pts[0].y+arrow.tailLeftOffset.y } : { x: pts[0].x+n.x*sw, y: pts[0].y+n.y*sw });
         right.push(arrow.tailRightOffset ? { x: pts[0].x+arrow.tailRightOffset.x, y: pts[0].y+arrow.tailRightOffset.y } : { x: pts[0].x-n.x*sw, y: pts[0].y-n.y*sw });
@@ -6677,14 +6682,20 @@
     var segDx = pts[j+1].x-pts[j].x, segDy = pts[j+1].y-pts[j].y;
     var segLen = Math.sqrt(segDx*segDx+segDy*segDy) || 1;
     var segN = { x:-segDy/segLen, y:segDx/segLen };
-    var endFactor = twist ? -1 : 1;
+    var endFactor = twistFactor(1);
     left.push({ x: shaftEndPt.x+segN.x*sw*endFactor, y: shaftEndPt.y+segN.y*sw*endFactor });
     right.push({ x: shaftEndPt.x-segN.x*sw*endFactor, y: shaftEndPt.y-segN.y*sw*endFactor });
     var headBaseLeft = { x: shaftEndPt.x+segN.x*hw, y: shaftEndPt.y+segN.y*hw };
     var headBaseRight = { x: shaftEndPt.x-segN.x*hw, y: shaftEndPt.y-segN.y*hw };
     var tip = pts[N];
 
-    var polyLocal = left.concat([headBaseLeft, tip, headBaseRight]).concat(right.reverse());
+    // La cabeza en sí no cambia de forma; con el cruce activado, simplemente se intercambia a
+    // cuál esquina de su base se conecta cada lado del asta (el que venía por la izquierda entra
+    // por la derecha y viceversa).
+    var headLeftCorner = twist ? headBaseRight : headBaseLeft;
+    var headRightCorner = twist ? headBaseLeft : headBaseRight;
+
+    var polyLocal = left.concat([headLeftCorner, tip, headRightCorner]).concat(right.reverse());
     return polyLocal.map(function(p){ return fromLocalXY(tail, p.x, p.y); });
   }
 
