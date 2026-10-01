@@ -564,6 +564,22 @@
   .prop-actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .prop-actions button{ flex:1; min-width:78px; }
 
+  /* ---------- Vehículos: botones de afiliación/condición/categoría/tipo ---------- */
+  .veh-pick-row{ display:flex; gap:6px; flex-wrap:wrap; }
+  .veh-pick-btn{ border:2px solid var(--border); border-radius:8px; background:var(--surface-alt); padding:3px; cursor:pointer; width:38px; height:38px; display:flex; align-items:center; justify-content:center; }
+  .veh-pick-btn.selected{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-light) inset; }
+  .veh-pick-btn svg{ display:block; }
+  .veh-preview-box{ display:flex; justify-content:center; padding:6px 0; }
+  .veh-category-row{ display:flex; gap:6px; }
+  .veh-category-btn{ flex:1; border:1px solid var(--border); border-radius:6px; background:var(--surface-alt); padding:6px 4px; font-size:11.5px; font-weight:600; color:var(--navy); cursor:pointer; font-family:inherit; }
+  .veh-category-btn.selected{ border-color:var(--gold); background:var(--highlight-tint); }
+  .veh-type-row{ display:flex; gap:6px; flex-wrap:wrap; padding-top:4px; }
+  .veh-type-btn{ border:2px solid var(--border); border-radius:8px; background:var(--surface-alt); padding:3px; cursor:pointer; width:40px; height:40px; display:flex; align-items:center; justify-content:center; }
+  .veh-type-btn.selected{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-light) inset; }
+  .veh-type-btn svg{ display:block; }
+  .veh-type-empty{ font-size:11.5px; color:var(--muted); padding:6px 0; }
+  .veh-section-label{ font-size:11px; color:var(--muted); margin:4px 0 2px; }
+
   /* ---------- RESPONSIVE (iPad / narrow) ---------- */
   @media (max-width: 980px){
     .app-grid{ grid-template-columns: 1fr; }
@@ -4408,18 +4424,195 @@
     map.on('click', equiposClickHandler);
   }
 
-  function defaultVehiculoParams(){ return { tipo:'' }; }
-  function buildVehiculoIcon(){
-    var c = '#5D7052';
-    var html =
-      '<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-        '<circle cx="15" cy="15" r="13" fill="' + c + '" stroke="#fff" stroke-width="2"/>' +
-        '<path d="M8 18v-3.4l1.5-3.7a1.4 1.4 0 011.3-.9h8.4a1.4 1.4 0 011.3.9l1.5 3.7V18" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
-        '<line x1="8" y1="18" x2="22" y2="18" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>' +
-        '<circle cx="11" cy="18.4" r="1.5" fill="' + c + '" stroke="#fff" stroke-width="1.3"/>' +
-        '<circle cx="19" cy="18.4" r="1.5" fill="' + c + '" stroke="#fff" stroke-width="1.3"/>' +
+  /* ---------------- SÍMBOLOS MILITARES DE VEHÍCULOS (estándar OTAN, esquema propio) ----------------
+     Sistema paralelo e independiente al de "Unidades" (milFrameSVG, etc.): comparte la paleta de
+     colores por afiliación (MIL_AFFILIATION_COLORS) y la lógica de condición/"simulado", pero usa
+     una asignación de FORMA DE MARCO distinta y deliberada para Vehículos:
+       Amigo = círculo, Enemigo = rombo, Neutral = cuadrado, Desconocido = cuatrifolio (4 lóbulos).
+     Esto es intencionalmente diferente de "Unidades" (donde Amigo=rectángulo, Desconocido=círculo),
+     así que NO debe tocarse milFrameSVG ni reutilizarse para Vehículos. */
+  var VEH_CONDITIONS = [
+    ['present','Presente'],
+    ['planned','Futuro'],
+    ['dummy','Simulado']
+  ];
+  var VEH_CATEGORIES = [
+    ['combate','Combate'],
+    ['ingenieros','Ingenieros'],
+    ['logisticos','Logísticos']
+  ];
+  var VEH_TYPES_COMBATE = [
+    ['uso_general','Vehículo de uso general'],
+    ['rueda','Vehículo a rueda'],
+    ['todo_terreno_blindado','Vehículo todo terreno con protección blindada'],
+    ['tanque','Tanque'],
+    ['tanque_liviano','Tanque liviano'],
+    ['tanque_mediano','Tanque mediano'],
+    ['tanque_pesado','Tanque pesado'],
+    ['tanque_rueda','Tanque a rueda'],
+    ['tanque_mediano_rueda','Tanque mediano a rueda'],
+    ['tanque_pesado_rueda','Tanque pesado a rueda'],
+    ['vctp','Vehículo de combate de transporte de personal'],
+    ['vctp_rueda','Vehículo de combate de transporte de personal a rueda'],
+    ['vci','Vehículo de combate de infantería'],
+    ['vci_rueda','Vehículo de combate de infantería a rueda'],
+    ['vcrt','Vehículo de combate recuperador de tanque'],
+    ['vcrt_liviano','Vehículo de combate recuperador de tanque liviano'],
+    ['vcrt_mediano','Vehículo de combate recuperador de tanque mediano'],
+    ['vcrt_pesado','Vehículo de combate recuperador de tanque pesado'],
+    ['vctp_recuperador','VCTP recuperador']
+  ];
+  var VEH_TYPES_INGENIEROS = [];
+  var VEH_TYPES_LOGISTICOS = [];
+  var VEH_TYPES_BY_CATEGORY = {
+    combate: VEH_TYPES_COMBATE,
+    ingenieros: VEH_TYPES_INGENIEROS,
+    logisticos: VEH_TYPES_LOGISTICOS
+  };
+
+  function defaultVehiculoParams(){
+    return { affiliation:'friendly', condition:'present', category:'combate', tipo:'uso_general' };
+  }
+
+  // Marco según afiliación (y achurado punteado si la condición es "planned"/Futuro), paralelo a
+  // milFrameSVG pero con la asignación de formas propia de Vehículos descrita arriba.
+  function vehFrameSVG(affiliation, condition){
+    var fill = MIL_AFFILIATION_COLORS[affiliation] || MIL_AFFILIATION_COLORS.friendly;
+    var dash = condition === 'planned' ? ' stroke-dasharray="5,3"' : '';
+    if (affiliation === 'hostile'){
+      return '<polygon points="30,8 52,30 30,52 8,30" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+    }
+    if (affiliation === 'neutral'){
+      return '<rect x="12" y="12" width="36" height="36" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+    }
+    if (affiliation === 'unknown'){
+      return '<path d="M30,10 Q37.1,22.9 50,30 Q37.1,37.1 30,50 Q22.9,37.1 10,30 Q22.9,22.9 30,10 Z" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+    }
+    return '<circle cx="30" cy="30" r="20" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+  }
+
+  // "Sombrero" punteado sobre el marco para la condición Simulado, igual al usado por el
+  // modificador "dummy" de Unidades (milModifierSVG), reutilizado aquí como condición propia.
+  function vehDummyOverlaySVG(condition){
+    if (condition !== 'dummy') return '';
+    return '<path d="M8,16 L30,10 L52,16" fill="none" stroke="#000" stroke-width="2" stroke-dasharray="3,2.5"/>';
+  }
+
+  /* ---- Piezas reutilizables de los glifos de vehículos de combate ---- */
+  function vehHullRect(){
+    return '<rect x="19" y="25" width="22" height="10" fill="none" stroke="#000" stroke-width="2"/>';
+  }
+  function vehEars(){
+    return '<rect x="14" y="27.5" width="5" height="5" fill="none" stroke="#000" stroke-width="1.8"/>' +
+           '<rect x="41" y="27.5" width="5" height="5" fill="none" stroke="#000" stroke-width="1.8"/>';
+  }
+  function vehDividerLines(n){
+    if (!n) return '';
+    var xs = (n === 1) ? [30] : (n === 2) ? [26,34] : [24,30,36];
+    return xs.map(function(x){ return '<line x1="'+x+'" y1="25" x2="'+x+'" y2="35" stroke="#000" stroke-width="1.6"/>'; }).join('');
+  }
+  function vehWheels3(cy){
+    cy = cy || 41;
+    var circles = [22,30,38].map(function(x){ return '<circle cx="'+x+'" cy="'+cy+'" r="2.3" fill="none" stroke="#000" stroke-width="1.6"/>'; }).join('');
+    return '<line x1="20" y1="'+cy+'" x2="40" y2="'+cy+'" stroke="#000" stroke-width="1.4"/>' + circles;
+  }
+  function vehWheels2(cy){
+    cy = cy || 38;
+    var circles = [24,36].map(function(x){ return '<circle cx="'+x+'" cy="'+cy+'" r="2.6" fill="none" stroke="#000" stroke-width="1.6"/>'; }).join('');
+    return '<line x1="22" y1="'+cy+'" x2="38" y2="'+cy+'" stroke="#000" stroke-width="1.4"/>' + circles;
+  }
+  function vehRecuperadorDiamond(){
+    return '<polygon points="30,22 38,30 30,38 22,30" fill="none" stroke="#000" stroke-width="2"/>';
+  }
+
+  // Glifo interno (el "dibujo" propio de cada tipo de vehículo), independiente de la afiliación:
+  // se dibuja siempre en negro sobre el marco de color correspondiente, igual que milGlyphSVG.
+  function vehTypeGlyphSVG(tipo){
+    switch(tipo){
+      case 'uso_general':
+        return '<path d="M21,20 L21,36 L39,36 L39,20" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+      case 'rueda':
+        return '<rect x="20" y="22" width="20" height="10" rx="5" fill="none" stroke="#000" stroke-width="2"/>' + vehWheels2(38);
+      case 'todo_terreno_blindado':
+        return '<rect x="20" y="23" width="20" height="9" rx="4.5" fill="none" stroke="#000" stroke-width="2"/>' +
+               '<path d="M24,23 Q30,17 36,23" fill="none" stroke="#000" stroke-width="1.8"/>' + vehWheels2(37);
+      case 'tanque':
+        return vehHullRect() + vehEars();
+      case 'tanque_liviano':
+        return vehHullRect() + vehEars() + vehDividerLines(1);
+      case 'tanque_mediano':
+        return vehHullRect() + vehEars() + vehDividerLines(2);
+      case 'tanque_pesado':
+        return vehHullRect() + vehEars() + vehDividerLines(3);
+      case 'tanque_rueda':
+        return vehHullRect() + vehEars() + vehWheels3();
+      case 'tanque_mediano_rueda':
+        return vehHullRect() + vehEars() + vehDividerLines(2) + vehWheels3();
+      case 'tanque_pesado_rueda':
+        return vehHullRect() + vehEars() + vehDividerLines(3) + vehWheels3();
+      case 'vctp':
+        return '<path d="M19,36 L19,28 L30,20 L41,28 L41,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>';
+      case 'vctp_rueda':
+        return '<path d="M19,34 L19,27 L30,20 L41,27 L41,34 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' + vehWheels3(40);
+      case 'vci':
+        return vehEars() + '<line x1="20" y1="24" x2="40" y2="36" stroke="#000" stroke-width="2.2"/><line x1="40" y1="24" x2="20" y2="36" stroke="#000" stroke-width="2.2"/>';
+      case 'vci_rueda':
+        return vehEars() + '<line x1="20" y1="22" x2="40" y2="34" stroke="#000" stroke-width="2.2"/><line x1="40" y1="22" x2="20" y2="34" stroke="#000" stroke-width="2.2"/>' + vehWheels3(41);
+      case 'vcrt':
+        return vehEars() + vehRecuperadorDiamond();
+      case 'vcrt_liviano':
+        return vehEars() + vehRecuperadorDiamond() + '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>';
+      case 'vcrt_mediano':
+        return vehEars() + vehRecuperadorDiamond() +
+          '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>' +
+          '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
+      case 'vcrt_pesado':
+        return vehEars() + vehRecuperadorDiamond() +
+          '<line x1="18" y1="27" x2="22" y2="27" stroke="#000" stroke-width="1.8"/>' +
+          '<line x1="18" y1="33" x2="22" y2="33" stroke="#000" stroke-width="1.8"/>' +
+          '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
+      case 'vctp_recuperador':
+        return '<path d="M19,36 L19,28 L30,21 L41,28 L41,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
+          '<polygon points="30,27 35,32 30,37 25,32" fill="none" stroke="#000" stroke-width="1.6"/>' +
+          '<line x1="16" y1="32" x2="19" y2="32" stroke="#000" stroke-width="1.6"/><line x1="41" y1="32" x2="44" y2="32" stroke="#000" stroke-width="1.6"/>';
+      default:
+        return '';
+    }
+  }
+
+  function buildVehiculoSVG(veh){
+    veh = veh || defaultVehiculoParams();
+    return '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+      vehFrameSVG(veh.affiliation, veh.condition) +
+      vehTypeGlyphSVG(veh.tipo) +
+      vehDummyOverlaySVG(veh.condition) +
       '</svg>';
-    return L.divIcon({ className:'', html: html, iconSize:[30,30], iconAnchor:[15,15] });
+  }
+  function buildVehiculoIcon(veh){
+    return L.divIcon({ className:'', html: buildVehiculoSVG(veh), iconSize:[60,60], iconAnchor:[30,30] });
+  }
+  function applyVehiculoSymbol(shape){
+    shape.setIcon(buildVehiculoIcon(shape._vehiculo));
+  }
+
+  // Íconos pequeños (36x36, reutilizando el viewBox de 60x60) para los botones del panel de
+  // propiedades: afiliación, condición y selector de tipo dentro de cada categoría.
+  function vehAffiliationIconSVG(affiliation){
+    return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">' +
+      vehFrameSVG(affiliation, 'present') +
+      '</svg>';
+  }
+  function vehConditionIconSVG(condition){
+    return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">' +
+      vehFrameSVG('friendly', condition) +
+      vehDummyOverlaySVG(condition) +
+      '</svg>';
+  }
+  function vehTypeIconSVG(tipo){
+    return '<svg width="32" height="32" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">' +
+      vehFrameSVG('friendly', 'present') +
+      vehTypeGlyphSVG(tipo) +
+      '</svg>';
   }
   var vehiculosClickHandler = null;
   function stopVehiculosTool(){
@@ -9784,6 +9977,105 @@
     });
     body.appendChild(nameLabel);
     body.appendChild(nameInput);
+
+    if (shape._isVehiculo){
+      var veh = shape._vehiculo;
+
+      function vehPickRow(options, currentValue, iconFn, onPick){
+        var row = document.createElement('div');
+        row.className = 'veh-pick-row';
+        options.forEach(function(opt){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'veh-pick-btn' + (currentValue === opt[0] ? ' selected' : '');
+          btn.title = opt[1];
+          btn.innerHTML = iconFn(opt[0]);
+          btn.addEventListener('click', function(){ onPick(opt[0]); });
+          row.appendChild(btn);
+        });
+        return row;
+      }
+
+      var vehBlock = document.createElement('div');
+      vehBlock.className = 'style-block';
+
+      var affLabel = document.createElement('div');
+      affLabel.className = 'veh-section-label';
+      affLabel.textContent = 'Afiliación';
+      vehBlock.appendChild(affLabel);
+      vehBlock.appendChild(vehPickRow(MIL_AFFILIATIONS, veh.affiliation, vehAffiliationIconSVG, function(val){
+        veh.affiliation = val;
+        applyVehiculoSymbol(shape);
+        renderLayerList();
+        showProperties(shape, layerObj);
+      }));
+
+      var condLabel = document.createElement('div');
+      condLabel.className = 'veh-section-label';
+      condLabel.textContent = 'Condición';
+      vehBlock.appendChild(condLabel);
+      vehBlock.appendChild(vehPickRow(VEH_CONDITIONS, veh.condition, vehConditionIconSVG, function(val){
+        veh.condition = val;
+        applyVehiculoSymbol(shape);
+        renderLayerList();
+        showProperties(shape, layerObj);
+      }));
+
+      var vehPreview = document.createElement('div');
+      vehPreview.className = 'veh-preview-box';
+      vehPreview.innerHTML = buildVehiculoSVG(veh).replace('width="60" height="60"', 'width="64" height="64"');
+      vehBlock.appendChild(vehPreview);
+
+      var catRow = document.createElement('div');
+      catRow.className = 'veh-category-row';
+      VEH_CATEGORIES.forEach(function(opt){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'veh-category-btn' + (veh.category === opt[0] ? ' selected' : '');
+        btn.textContent = opt[1];
+        btn.addEventListener('click', function(){
+          if (veh.category === opt[0]) return;
+          veh.category = opt[0];
+          var typesNow = VEH_TYPES_BY_CATEGORY[veh.category] || [];
+          if (typesNow.length && !typesNow.some(function(t){ return t[0] === veh.tipo; })){
+            veh.tipo = typesNow[0][0];
+          }
+          applyVehiculoSymbol(shape);
+          renderLayerList();
+          showProperties(shape, layerObj);
+        });
+        catRow.appendChild(btn);
+      });
+      vehBlock.appendChild(catRow);
+
+      var typesForCategory = VEH_TYPES_BY_CATEGORY[veh.category] || [];
+      if (typesForCategory.length){
+        var typeRow = document.createElement('div');
+        typeRow.className = 'veh-type-row';
+        typesForCategory.forEach(function(opt){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'veh-type-btn' + (veh.tipo === opt[0] ? ' selected' : '');
+          btn.title = opt[1];
+          btn.innerHTML = vehTypeIconSVG(opt[0]);
+          btn.addEventListener('click', function(){
+            veh.tipo = opt[0];
+            applyVehiculoSymbol(shape);
+            renderLayerList();
+            showProperties(shape, layerObj);
+          });
+          typeRow.appendChild(btn);
+        });
+        vehBlock.appendChild(typeRow);
+      } else {
+        var emptyTypes = document.createElement('div');
+        emptyTypes.className = 'veh-type-empty';
+        emptyTypes.textContent = 'Próximamente.';
+        vehBlock.appendChild(emptyTypes);
+      }
+
+      body.appendChild(vehBlock);
+    }
 
     if (shape._isMilSymbol){
       var supplyField = document.createElement('div');
