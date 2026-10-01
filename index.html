@@ -4699,16 +4699,204 @@
     map.on('click', vehiculosClickHandler);
   }
 
-  function defaultArmaParams(){ return { tipo:'' }; }
-  function buildArmaIcon(){
-    var c = '#8B4A3A';
-    var html =
-      '<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-        '<circle cx="15" cy="15" r="13" fill="' + c + '" stroke="#fff" stroke-width="2"/>' +
-        '<path d="M9 21l6-6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>' +
-        '<path d="M15.3 9.3l5.4 5.4-1.8 1.8-1.3-1.3-1.8 1.8 1.3 1.3-1.8 1.8-5.4-5.4z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+  var ARMA_CATEGORIES = [
+    ['portatiles','Portátiles'],
+    ['apoyo_fuego','Apoyo de Fuego'],
+    ['equipos','Equipos']
+  ];
+  var ARMA_TYPES_PORTATILES = [
+    ['fusil_generico','Fusil (Genérico)'],
+    ['fusil','Fusil'],
+    ['fusil_semiautomatico','Fusil Semiautomático (FAL)'],
+    ['fusil_automatico','Fusil Automático (FAP)'],
+    ['ametralladora_generico','Ametralladora (Genérico)'],
+    ['ametralladora_liviana','Ametralladora (Liviana)'],
+    ['ametralladora_mediana','Ametralladora Mediana'],
+    ['ametralladora_pesada','Ametralladora Pesada'],
+    ['arma_antitanque','Arma antitanque'],
+    ['arma_antitanque_liviana','Arma Antitanque Liviana'],
+    ['arma_antitanque_mediana','Arma Antitanque Mediana'],
+    ['arma_antitanque_pesada','Arma Antitanque Pesada'],
+    ['arma_antitanque_sin_retroceso','Arma Antitanque sin Retroceso'],
+    ['lanzacohetes','Lanzacohetes'],
+    ['lanzacohetes_liviano','Lanzacohetes Liviano'],
+    ['lanzacohetes_mediano','Lanzacohetes mediano'],
+    ['lanzacohetes_pesado','Lanzacohetes Pesado'],
+    ['lanzagranadas','Lanzagranadas'],
+    ['lanzagranadas_liviano','Lanzagranadas Liviano'],
+    ['lanzagranadas_mediano','Lanzagranadas Mediano'],
+    ['lanzagranadas_pesado','Lanzagranadas Pesado'],
+    ['misil_antitanque','Misil Antitanque'],
+    ['misil_antitanque_liviano','Misil Antitanque Liviano'],
+    ['misil_antitanque_mediano','Misil Antitanque Mediano'],
+    ['misil_antitanque_pesado','Misil Antitanque Pesado'],
+    ['mortero','Mortero'],
+    ['mortero_liviano','Mortero Liviano'],
+    ['mortero_mediano','Mortero Mediano'],
+    ['mortero_pesado','Mortero Pesado']
+  ];
+  var ARMA_TYPES_APOYO_FUEGO = [];
+  var ARMA_TYPES_EQUIPOS = [];
+  var ARMA_TYPES_BY_CATEGORY = {
+    portatiles: ARMA_TYPES_PORTATILES,
+    apoyo_fuego: ARMA_TYPES_APOYO_FUEGO,
+    equipos: ARMA_TYPES_EQUIPOS
+  };
+
+  function defaultArmaParams(){
+    return { affiliation:'friendly', condition:'present', category:'portatiles', tipo:'fusil_generico' };
+  }
+
+  /* ---- Piezas reutilizables de los glifos de armas portátiles ---- */
+  function armaShaftLine(y1, y2){
+    return '<line x1="30" y1="'+y1+'" x2="30" y2="'+y2+'" stroke="#000" stroke-width="2"/>';
+  }
+  // Cabeza en V simple (abierta, no triángulo relleno), común a Fusil, Ametralladora,
+  // Lanzagranadas, Mortero y Arma Antitanque sin Retroceso.
+  function armaOpenHead(){
+    return '<path d="M21,26 L30,14 L39,26" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  // Doble V apilada (cabeza de cohete), usada por la familia Lanzacohetes.
+  function armaDoubleHead(){
+    return '<path d="M21,24 L30,14 L39,24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M22,32 L30,23 L38,32" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  // Línea base al pie del asta (familia Ametralladora).
+  function armaBaseLine(){
+    return '<line x1="22" y1="46" x2="38" y2="46" stroke="#000" stroke-width="2"/>';
+  }
+  // Travesaños horizontales centrados sobre el asta: n=1 uno solo, n=2 un par cercano al centro,
+  // n=3 tres agrupados — mismo criterio de agrupamiento hacia el centro que vehDividerLines.
+  function armaMidBars(n, yCenter, spread, halfWidth){
+    if (!n) return '';
+    var ys = (n === 1) ? [yCenter] : (n === 2) ? [yCenter - spread, yCenter + spread] : [yCenter - spread*1.6, yCenter, yCenter + spread*1.6];
+    return ys.map(function(y){ return '<line x1="'+(30-halfWidth)+'" y1="'+y+'" x2="'+(30+halfWidth)+'" y2="'+y+'" stroke="#000" stroke-width="1.8"/>'; }).join('');
+  }
+  // Base en Y (sin la línea vertical superior) de la familia Arma Antitanque / Misil Antitanque.
+  function armaYSplitBase(){
+    return '<path d="M30,34 L23,46 M30,34 L37,46" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/>';
+  }
+  // Dos líneas verticales laterales, separadas del asta central (familia Arma Antitanque).
+  function armaFlanks(){
+    return '<line x1="19" y1="20" x2="19" y2="44" stroke="#000" stroke-width="2"/>' +
+      '<line x1="41" y1="20" x2="41" y2="44" stroke="#000" stroke-width="2"/>';
+  }
+  // Travesaños horizontales que conectan las dos líneas laterales con el eje central
+  // (progresión Liviana/Mediana/Pesada de Arma Antitanque).
+  function armaAntitanqueBars(n){
+    if (!n) return '';
+    var ys = (n === 1) ? [32] : (n === 2) ? [28,36] : [25,32,39];
+    return ys.map(function(y){ return '<line x1="19" y1="'+y+'" x2="41" y2="'+y+'" stroke="#000" stroke-width="1.8"/>'; }).join('');
+  }
+  // Arco superior que une las dos líneas laterales (en vez del tope recto de Arma Antitanque),
+  // con una línea central que baja desde la cúspide del arco — familia Misil Antitanque.
+  function armaArchTop(){
+    return '<path d="M19,34 L19,22 A11,11 0 0 1 41,22 L41,34" fill="none" stroke="#000" stroke-width="2"/>' +
+      '<line x1="30" y1="11" x2="30" y2="34" stroke="#000" stroke-width="2"/>';
+  }
+  // Travesaños horizontales dentro del arco (progresión Liviana/Mediana/Pesada de Misil Antitanque).
+  function armaMisilBars(n){
+    if (!n) return '';
+    var ys = (n === 1) ? [28] : (n === 2) ? [25,31] : [23,28,33];
+    return ys.map(function(y){ return '<line x1="19" y1="'+y+'" x2="41" y2="'+y+'" stroke="#000" stroke-width="1.8"/>'; }).join('');
+  }
+  // Líneas horizontales cortas por debajo del círculo del asta (familias Lanzagranadas y Mortero).
+  function armaBelowBars(n){
+    if (!n) return '';
+    var ys = (n === 1) ? [40] : (n === 2) ? [38,42] : [37,40,43];
+    return ys.map(function(y){ return '<line x1="23" y1="'+y+'" x2="37" y2="'+y+'" stroke="#000" stroke-width="1.8"/>'; }).join('');
+  }
+
+  // Glifo interno de cada tipo de arma, independiente de la afiliación (igual criterio que
+  // vehTypeGlyphSVG): se dibuja siempre en negro sobre el marco de color correspondiente.
+  function armaTypeGlyphSVG(tipo){
+    switch(tipo){
+      case 'fusil_generico':
+        return armaOpenHead() + armaShaftLine(14,46);
+      case 'fusil':
+        return armaOpenHead() + armaShaftLine(14,46) + armaMidBars(1, 38, 4, 7);
+      case 'fusil_semiautomatico':
+        return armaOpenHead() + armaShaftLine(14,46) + armaMidBars(2, 37, 3, 7);
+      case 'fusil_automatico':
+        return armaOpenHead() + armaShaftLine(14,46) + armaMidBars(3, 37, 4, 7);
+      case 'ametralladora_generico':
+        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine();
+      case 'ametralladora_liviana':
+        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine() + armaMidBars(1, 32, 4, 7);
+      case 'ametralladora_mediana':
+        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine() + armaMidBars(2, 31, 4, 7);
+      case 'ametralladora_pesada':
+        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine() + armaMidBars(3, 31, 5, 7);
+      case 'arma_antitanque':
+        return armaShaftLine(14,34) + armaYSplitBase() + armaFlanks();
+      case 'arma_antitanque_liviana':
+        return armaShaftLine(14,34) + armaYSplitBase() + armaFlanks() + armaAntitanqueBars(1);
+      case 'arma_antitanque_mediana':
+        return armaShaftLine(14,34) + armaYSplitBase() + armaFlanks() + armaAntitanqueBars(2);
+      case 'arma_antitanque_pesada':
+        return armaShaftLine(14,34) + armaYSplitBase() + armaFlanks() + armaAntitanqueBars(3);
+      case 'arma_antitanque_sin_retroceso':
+        return armaOpenHead() + armaShaftLine(14,46) + armaFlanks();
+      case 'lanzacohetes':
+        return armaDoubleHead() + armaShaftLine(23,46);
+      case 'lanzacohetes_liviano':
+        return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(1, 37, 4, 7);
+      case 'lanzacohetes_mediano':
+        return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(2, 36, 4, 7);
+      case 'lanzacohetes_pesado':
+        return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(3, 36, 5, 7);
+      case 'lanzagranadas':
+        return armaOpenHead() + armaShaftLine(14,46) + '<circle cx="30" cy="30" r="5" fill="none" stroke="#000" stroke-width="2"/>';
+      case 'lanzagranadas_liviano':
+        return armaTypeGlyphSVG('lanzagranadas') + armaBelowBars(1);
+      case 'lanzagranadas_mediano':
+        return armaTypeGlyphSVG('lanzagranadas') + armaBelowBars(2);
+      case 'lanzagranadas_pesado':
+        return armaTypeGlyphSVG('lanzagranadas') + armaBelowBars(3);
+      case 'misil_antitanque':
+        return armaArchTop() + armaYSplitBase();
+      case 'misil_antitanque_liviano':
+        return armaArchTop() + armaYSplitBase() + armaMisilBars(1);
+      case 'misil_antitanque_mediano':
+        return armaArchTop() + armaYSplitBase() + armaMisilBars(2);
+      case 'misil_antitanque_pesado':
+        return armaArchTop() + armaYSplitBase() + armaMisilBars(3);
+      case 'mortero':
+        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="2"/>';
+      case 'mortero_liviano':
+        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="2"/>' + armaMidBars(1, 34, 4, 7);
+      case 'mortero_mediano':
+        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="2"/>' + armaMidBars(2, 33, 4, 7);
+      case 'mortero_pesado':
+        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="2"/>' + armaMidBars(3, 33, 5, 7);
+      default:
+        return '';
+    }
+  }
+
+  // Marco y achurado de "Simulado" reutilizados tal cual de Vehículos: mismo esquema de
+  // afiliación/condición pedido por el usuario para Armas.
+  function buildArmaSVG(arm){
+    arm = arm || defaultArmaParams();
+    return '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+      vehFrameSVG(arm.affiliation, arm.condition) +
+      armaTypeGlyphSVG(arm.tipo) +
+      vehDummyOverlaySVG(arm.condition) +
       '</svg>';
-    return L.divIcon({ className:'', html: html, iconSize:[30,30], iconAnchor:[15,15] });
+  }
+  function buildArmaIcon(arm){
+    return L.divIcon({ className:'', html: buildArmaSVG(arm), iconSize:[60,60], iconAnchor:[30,30] });
+  }
+  function applyArmaSymbol(shape){
+    shape.setIcon(buildArmaIcon(shape._arma));
+  }
+  // Ícono del selector de tipo, sensible a la afiliación actual (a diferencia de vehTypeIconSVG):
+  // al cambiar la afiliación, los símbolos de la grilla de tipos se repintan con el marco nuevo.
+  function armaTypeIconSVG(tipo, affiliation){
+    return '<svg width="100%" height="100%" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+      vehFrameSVG(affiliation || 'friendly', 'present') +
+      armaTypeGlyphSVG(tipo) +
+      '</svg>';
   }
   var armasClickHandler = null;
   function stopArmasTool(){
@@ -9078,7 +9266,7 @@
     top.appendChild(delBtn);
     row.appendChild(top);
 
-    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo'){
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo' && kind !== 'arma'){
       var controls = document.createElement('div');
       controls.className = 'style-controls';
 
@@ -10131,6 +10319,105 @@
       body.appendChild(vehBlock);
     }
 
+    if (shape._isArma){
+      var arm = shape._arma;
+
+      function armaPickRow(options, currentValue, iconFn, onPick){
+        var row = document.createElement('div');
+        row.className = 'veh-pick-row';
+        options.forEach(function(opt){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'veh-pick-btn' + (currentValue === opt[0] ? ' selected' : '');
+          btn.title = opt[1];
+          btn.innerHTML = iconFn(opt[0]);
+          btn.addEventListener('click', function(){ onPick(opt[0]); });
+          row.appendChild(btn);
+        });
+        return row;
+      }
+
+      var armaBlock = document.createElement('div');
+      armaBlock.className = 'style-block';
+
+      var armaAffLabel = document.createElement('div');
+      armaAffLabel.className = 'veh-section-label';
+      armaAffLabel.textContent = 'Afiliación';
+      armaBlock.appendChild(armaAffLabel);
+      armaBlock.appendChild(armaPickRow(MIL_AFFILIATIONS, arm.affiliation, vehAffiliationIconSVG, function(val){
+        arm.affiliation = val;
+        applyArmaSymbol(shape);
+        renderLayerList();
+        showProperties(shape, layerObj);
+      }));
+
+      var armaCondLabel = document.createElement('div');
+      armaCondLabel.className = 'veh-section-label';
+      armaCondLabel.textContent = 'Condición';
+      armaBlock.appendChild(armaCondLabel);
+      armaBlock.appendChild(armaPickRow(VEH_CONDITIONS, arm.condition, vehConditionIconSVG, function(val){
+        arm.condition = val;
+        applyArmaSymbol(shape);
+        renderLayerList();
+        showProperties(shape, layerObj);
+      }));
+
+      var armaPreview = document.createElement('div');
+      armaPreview.className = 'veh-preview-box';
+      armaPreview.innerHTML = buildArmaSVG(arm).replace('width="60" height="60"', 'width="96" height="96"');
+      armaBlock.appendChild(armaPreview);
+
+      var armaCatRow = document.createElement('div');
+      armaCatRow.className = 'veh-category-row';
+      ARMA_CATEGORIES.forEach(function(opt){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'veh-category-btn' + (arm.category === opt[0] ? ' selected' : '');
+        btn.textContent = opt[1];
+        btn.addEventListener('click', function(){
+          if (arm.category === opt[0]) return;
+          arm.category = opt[0];
+          var typesNow = ARMA_TYPES_BY_CATEGORY[arm.category] || [];
+          if (typesNow.length && !typesNow.some(function(t){ return t[0] === arm.tipo; })){
+            arm.tipo = typesNow[0][0];
+          }
+          applyArmaSymbol(shape);
+          renderLayerList();
+          showProperties(shape, layerObj);
+        });
+        armaCatRow.appendChild(btn);
+      });
+      armaBlock.appendChild(armaCatRow);
+
+      var armaTypesForCategory = ARMA_TYPES_BY_CATEGORY[arm.category] || [];
+      if (armaTypesForCategory.length){
+        var armaTypeRow = document.createElement('div');
+        armaTypeRow.className = 'veh-type-row';
+        armaTypesForCategory.forEach(function(opt){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'veh-type-btn' + (arm.tipo === opt[0] ? ' selected' : '');
+          btn.title = opt[1];
+          btn.innerHTML = armaTypeIconSVG(opt[0], arm.affiliation);
+          btn.addEventListener('click', function(){
+            arm.tipo = opt[0];
+            applyArmaSymbol(shape);
+            renderLayerList();
+            showProperties(shape, layerObj);
+          });
+          armaTypeRow.appendChild(btn);
+        });
+        armaBlock.appendChild(armaTypeRow);
+      } else {
+        var armaEmptyTypes = document.createElement('div');
+        armaEmptyTypes.className = 'veh-type-empty';
+        armaEmptyTypes.textContent = 'Próximamente.';
+        armaBlock.appendChild(armaEmptyTypes);
+      }
+
+      body.appendChild(armaBlock);
+    }
+
     if (shape._isMilSymbol){
       var supplyField = document.createElement('div');
       supplyField.className = 'style-field';
@@ -10333,7 +10620,7 @@
       body.appendChild(milBlock);
     }
 
-    if (kind === 'marker' && !shape._isMilSymbol && !shape._isVehiculo){
+    if (kind === 'marker' && !shape._isMilSymbol && !shape._isVehiculo && !shape._isArma){
       var pointBlock = document.createElement('div');
       pointBlock.className = 'style-block';
 
@@ -10845,7 +11132,7 @@
       body.appendChild(lengthBlock);
     }
 
-    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo'){
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo' && kind !== 'arma'){
       var styleBlock = document.createElement('div');
       styleBlock.className = 'style-block';
 
