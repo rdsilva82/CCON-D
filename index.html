@@ -4749,67 +4749,81 @@
 
   /* ---- Piezas reutilizables de los glifos de armas portátiles ---- */
   function armaShaftLine(y1, y2){
-    return '<line x1="30" y1="'+y1+'" x2="30" y2="'+y2+'" stroke="#000" stroke-width="2"/>';
+    return '<line x1="30" y1="'+y1+'" x2="30" y2="'+y2+'" stroke="#000" stroke-width="1.6"/>';
   }
   // Cabeza en V simple (abierta, no triángulo relleno), común a Fusil, Ametralladora,
   // Lanzagranadas, Mortero y Arma Antitanque sin Retroceso.
   function armaOpenHead(){
-    return '<path d="M21,26 L30,14 L39,26" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    return '<path d="M21,26 L30,14 L39,26" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
   }
   // Doble V apilada (cabeza de cohete), usada por la familia Lanzacohetes.
   function armaDoubleHead(){
-    return '<path d="M21,24 L30,14 L39,24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<path d="M22,32 L30,23 L38,32" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    return '<path d="M21,24 L30,14 L39,24" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M22,32 L30,23 L38,32" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
   }
   // Línea base al pie del asta (familia Ametralladora).
   function armaBaseLine(){
-    return '<line x1="22" y1="46" x2="38" y2="46" stroke="#000" stroke-width="2"/>';
+    return '<line x1="22" y1="46" x2="38" y2="46" stroke="#000" stroke-width="1.6"/>';
   }
   // Travesaños horizontales centrados sobre el asta: n=1 uno solo, n=2 un par cercano al centro,
   // n=3 tres agrupados — mismo criterio de agrupamiento hacia el centro que vehDividerLines.
   function armaMidBars(n, yCenter, spread, halfWidth){
     if (!n) return '';
     var ys = (n === 1) ? [yCenter] : (n === 2) ? [yCenter - spread, yCenter + spread] : [yCenter - spread*1.6, yCenter, yCenter + spread*1.6];
-    return ys.map(function(y){ return '<line x1="'+(30-halfWidth)+'" y1="'+y+'" x2="'+(30+halfWidth)+'" y2="'+y+'" stroke="#000" stroke-width="1.8"/>'; }).join('');
+    return ys.map(function(y){ return '<line x1="'+(30-halfWidth)+'" y1="'+y+'" x2="'+(30+halfWidth)+'" y2="'+y+'" stroke="#000" stroke-width="1.4"/>'; }).join('');
   }
   // Base en Y (sin la línea vertical superior) de la familia Arma Antitanque / Misil Antitanque.
   function armaYSplitBase(){
-    return '<path d="M30,34 L23,46 M30,34 L37,46" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/>';
+    return '<path d="M30,34 L23,46 M30,34 L37,46" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round"/>';
   }
-  // Dos líneas verticales laterales, separadas del asta central (familia Arma Antitanque).
+  // Dos líneas verticales laterales, separadas del asta central (familia Arma Antitanque): más
+  // cortas que la versión original y alineadas por arriba con la altura a la que terminan los
+  // vértices de la cabeza en V (y=26), en vez de arrancar más arriba, a la altura del marco.
   function armaFlanks(){
-    return '<line x1="19" y1="20" x2="19" y2="44" stroke="#000" stroke-width="2"/>' +
-      '<line x1="41" y1="20" x2="41" y2="44" stroke="#000" stroke-width="2"/>';
+    return '<line x1="19" y1="27" x2="19" y2="43" stroke="#000" stroke-width="1.6"/>' +
+      '<line x1="41" y1="27" x2="41" y2="43" stroke="#000" stroke-width="1.6"/>';
   }
   // Travesaños horizontales que conectan las dos líneas laterales con el eje central
-  // (progresión Liviana/Mediana/Pesada de Arma Antitanque).
+  // (progresión Liviana/Mediana/Pesada de Arma Antitanque): más angostos que la versión original
+  // (no llegan hasta las líneas laterales) para no verse tan anchos.
   function armaAntitanqueBars(n){
     if (!n) return '';
     var ys = (n === 1) ? [32] : (n === 2) ? [28,36] : [25,32,39];
-    return ys.map(function(y){ return '<line x1="19" y1="'+y+'" x2="41" y2="'+y+'" stroke="#000" stroke-width="1.8"/>'; }).join('');
+    return ys.map(function(y){ return '<line x1="23" y1="'+y+'" x2="37" y2="'+y+'" stroke="#000" stroke-width="1.4"/>'; }).join('');
   }
   // Arco superior que une las dos líneas laterales (en vez del tope recto de Arma Antitanque),
-  // con una línea central que baja desde la cúspide del arco — familia Misil Antitanque.
+  // con una línea central que baja desde la cúspide del arco — familia Misil Antitanque. Más
+  // angosto que la versión original (x 22/38 en vez de 19/41) para que no se vea tan ancho.
   function armaArchTop(){
-    return '<path d="M19,34 L19,22 A11,11 0 0 1 41,22 L41,34" fill="none" stroke="#000" stroke-width="2"/>' +
-      '<line x1="30" y1="11" x2="30" y2="34" stroke="#000" stroke-width="2"/>';
+    return '<path d="M22,34 L22,22 A8,8 0 0 1 38,22 L38,34" fill="none" stroke="#000" stroke-width="1.6"/>' +
+      '<line x1="30" y1="14" x2="30" y2="34" stroke="#000" stroke-width="1.6"/>';
   }
-  // Travesaños horizontales dentro del arco (progresión Liviana/Mediana/Pesada de Misil Antitanque).
+  // Travesaños horizontales dentro del arco (progresión Liviana/Mediana/Pesada de Misil
+  // Antitanque), angostos igual que armaAntitanqueBars.
   function armaMisilBars(n){
     if (!n) return '';
     var ys = (n === 1) ? [28] : (n === 2) ? [25,31] : [23,28,33];
-    return ys.map(function(y){ return '<line x1="19" y1="'+y+'" x2="41" y2="'+y+'" stroke="#000" stroke-width="1.8"/>'; }).join('');
+    return ys.map(function(y){ return '<line x1="23" y1="'+y+'" x2="37" y2="'+y+'" stroke="#000" stroke-width="1.4"/>'; }).join('');
   }
-  // Líneas horizontales cortas por debajo del círculo del asta (familias Lanzagranadas y Mortero).
+  // Líneas horizontales cortas por debajo del círculo del asta (familia Lanzagranadas).
   function armaBelowBars(n){
     if (!n) return '';
     var ys = (n === 1) ? [40] : (n === 2) ? [38,42] : [37,40,43];
-    return ys.map(function(y){ return '<line x1="23" y1="'+y+'" x2="37" y2="'+y+'" stroke="#000" stroke-width="1.8"/>'; }).join('');
+    return ys.map(function(y){ return '<line x1="23" y1="'+y+'" x2="37" y2="'+y+'" stroke="#000" stroke-width="1.4"/>'; }).join('');
+  }
+  // Líneas horizontales de la familia Mortero: más juntas entre sí que armaMidBars genérico y
+  // ubicadas en una franja estrecha (30 a 38) para no tocar ni la cabeza en V (que termina en
+  // y=26) ni el círculo inferior (cuyo borde superior está en y=40).
+  function armaMorteroBars(n){
+    return armaMidBars(n, 34, 2, 7);
   }
 
   // Glifo interno de cada tipo de arma, independiente de la afiliación (igual criterio que
   // vehTypeGlyphSVG): se dibuja siempre en negro sobre el marco de color correspondiente.
   function armaTypeGlyphSVG(tipo){
+    return '<g transform="translate(30,30) scale(0.9) translate(-30,-30)">' + armaTypeGlyphInnerSVG(tipo) + '</g>';
+  }
+  function armaTypeGlyphInnerSVG(tipo){
     switch(tipo){
       case 'fusil_generico':
         return armaOpenHead() + armaShaftLine(14,46);
@@ -4846,13 +4860,13 @@
       case 'lanzacohetes_pesado':
         return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(3, 36, 5, 7);
       case 'lanzagranadas':
-        return armaOpenHead() + armaShaftLine(14,46) + '<circle cx="30" cy="30" r="5" fill="none" stroke="#000" stroke-width="2"/>';
+        return armaOpenHead() + armaShaftLine(14,46) + '<circle cx="30" cy="30" r="5" fill="none" stroke="#000" stroke-width="1.6"/>';
       case 'lanzagranadas_liviano':
-        return armaTypeGlyphSVG('lanzagranadas') + armaBelowBars(1);
+        return armaTypeGlyphInnerSVG('lanzagranadas') + armaBelowBars(1);
       case 'lanzagranadas_mediano':
-        return armaTypeGlyphSVG('lanzagranadas') + armaBelowBars(2);
+        return armaTypeGlyphInnerSVG('lanzagranadas') + armaBelowBars(2);
       case 'lanzagranadas_pesado':
-        return armaTypeGlyphSVG('lanzagranadas') + armaBelowBars(3);
+        return armaTypeGlyphInnerSVG('lanzagranadas') + armaBelowBars(3);
       case 'misil_antitanque':
         return armaArchTop() + armaYSplitBase();
       case 'misil_antitanque_liviano':
@@ -4862,13 +4876,13 @@
       case 'misil_antitanque_pesado':
         return armaArchTop() + armaYSplitBase() + armaMisilBars(3);
       case 'mortero':
-        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="2"/>';
+        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="1.6"/>';
       case 'mortero_liviano':
-        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="2"/>' + armaMidBars(1, 34, 4, 7);
+        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="1.6"/>' + armaMorteroBars(1);
       case 'mortero_mediano':
-        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="2"/>' + armaMidBars(2, 33, 4, 7);
+        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="1.6"/>' + armaMorteroBars(2);
       case 'mortero_pesado':
-        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="2"/>' + armaMidBars(3, 33, 5, 7);
+        return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="1.6"/>' + armaMorteroBars(3);
       default:
         return '';
     }
