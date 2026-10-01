@@ -6651,20 +6651,21 @@
     }
 
     // "Av Aprox Aérea": el ancho del asta se acerca suavemente (coseno, no en línea recta) desde
-    // +sw (sin cruzar) en la cola hasta 0 (sobre el eje central) justo donde el asta se une con
-    // la cabeza. Ahí, en ese único punto sobre el eje, el borde que venía por la izquierda pasa a
-    // conectarse con la esquina DERECHA de la base de la cabeza y viceversa — produciendo un cruce
-    // limpio en ese punto, sin crear ninguna forma ni cierre adicional, y dejando la cabeza en sí
-    // (el triángulo real, con su base abierta) exactamente igual que en la flecha original.
+    // +sw en la cola hasta -sw (cruzado) donde el asta se une con la cabeza, pasando por 0 (el
+    // cruce en X) en un punto CLARAMENTE SEPARADO de la cabeza, no pegado a ella — como muestra
+    // la referencia del usuario, donde el cruce ocurre antes del arranque de la punta, no al
+    // mismo tiempo. El borde que venía por la izquierda termina conectado a la esquina DERECHA
+    // de la base de la cabeza y viceversa, pero la cabeza en sí (el triángulo real, con su base
+    // abierta) no cambia de forma respecto de la flecha original.
     var twist = !!arrow.avAproxAerea;
     var jSafe = Math.max(j, 1);
-    var TWIST_RAMP_START = 0.7; // el acercamiento al cruce ocurre solo en el último tramo
+    var TWIST_RAMP_START = 0.55; // el giro ocupa el último 45% del asta, no solo el tramo final
 
     function twistFactor(t){
       if (!twist) return 1;
       if (t <= TWIST_RAMP_START) return 1;
       var u = (t - TWIST_RAMP_START)/(1-TWIST_RAMP_START);
-      return Math.cos(u * Math.PI/2); // suave: 1 -> 0, sin tramo recto ni rebote tras el cruce
+      return Math.cos(u * Math.PI); // suave: 1 -> 0 (cruce, a mitad del tramo) -> -1 (cruzado del todo)
     }
 
     var left = [], right = [];
