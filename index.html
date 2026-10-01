@@ -5987,6 +5987,11 @@
     if (tipo === 'vadeofacil' || tipo === 'puente') g.widthRatio = 0.4;
     if (tipo === 'demoliciones'){ g.widthRatio = 0.35; g.estado = 'planeada'; }
     if (tipo === 'minas') g.widthRatio = 0.45;
+    if (tipo === 'seguridad'){
+      g.widthRatio = 0.46;
+      g.arrow1End = { d:-0.9, p:-0.7 };
+      g.arrow2End = { d:1.9, p:-0.7 };
+    }
     return g;
   }
   function taskLetter(tipo){
@@ -6378,6 +6383,56 @@
       [0.2, 0.5, 0.8].forEach(function(t){
         tris.push({ pts: ellipseRing(taskPt(g.base, dir, perp, len*t, 0), dir, perp, circR, circR, 20), circle:true });
       });
+    }
+    // ---- Seguridad: rectángulo central (largo = eje base→punta, ancho editable con su propia
+    // manija) con una caja cuadrada "S" pegada a cada lado, de la que nace una flecha quebrada en
+    // 3 segmentos (como un rayo), con largo y dirección editables por separado para cada una. ----
+    else if (g.tipo === 'seguridad'){
+      var segHalfH = len*(g.widthRatio != null ? g.widthRatio : 0.46)/2;
+      var sA = taskPt(g.base, dir, perp, 0, -segHalfH), sB = taskPt(g.base, dir, perp, len, -segHalfH),
+          sC = taskPt(g.base, dir, perp, len, segHalfH), sD = taskPt(g.base, dir, perp, 0, segHalfH);
+      lines.push({ pts: [sA, sB, sC, sD, sA] });
+
+      var sBoxH = segHalfH*2*0.82, sBoxW = sBoxH*0.62;
+      // Caja izquierda, pegada al lado de d=0.
+      var lOuterD = -sBoxW, lInnerD = 0;
+      var l1 = taskPt(g.base, dir, perp, lOuterD, -sBoxH/2), l2 = taskPt(g.base, dir, perp, lInnerD, -sBoxH/2),
+          l3 = taskPt(g.base, dir, perp, lInnerD, sBoxH/2), l4 = taskPt(g.base, dir, perp, lOuterD, sBoxH/2);
+      lines.push({ pts: [l1, l2, l3, l4, l1] });
+      labels.push({ pos: taskPt(g.base, dir, perp, (lOuterD+lInnerD)/2, 0), text:'S', bearing: taskBearingDeg(dir) });
+
+      // Caja derecha, pegada al lado de d=len.
+      var rInnerD = len, rOuterD = len+sBoxW;
+      var r1b = taskPt(g.base, dir, perp, rInnerD, -sBoxH/2), r2b = taskPt(g.base, dir, perp, rOuterD, -sBoxH/2),
+          r3b = taskPt(g.base, dir, perp, rOuterD, sBoxH/2), r4b = taskPt(g.base, dir, perp, rInnerD, sBoxH/2);
+      lines.push({ pts: [r1b, r2b, r3b, r4b, r1b] });
+      labels.push({ pos: taskPt(g.base, dir, perp, (rInnerD+rOuterD)/2, 0), text:'S', bearing: taskBearingDeg(dir) });
+
+      // Flecha quebrada en 3 segmentos (tipo "rayo"): nace del borde exterior de la caja y
+      // termina en el punto editable arrow1End/arrow2End (largo y dirección libres).
+      function securitySegLightning(p1, p2){
+        var v = localXY(p1, p2); var vl = Math.hypot(v.x, v.y) || 1;
+        var vd = { x:v.x/vl, y:v.y/vl }; var vp = { x:-vd.y, y:vd.x };
+        var amp = vl*0.14;
+        var m1 = taskPt(p1, vd, vp, vl*0.38, amp);
+        var m2 = taskPt(p1, vd, vp, vl*0.55, -amp*0.4);
+        return [p1, m1, m2, p2];
+      }
+      var leftAnchor = taskPt(g.base, dir, perp, lOuterD, 0);
+      var a1 = g.arrow1End || { d:-0.9, p:-0.7 };
+      var leftEnd = taskPt(g.base, dir, perp, len*a1.d, len*a1.p);
+      var zzL = securitySegLightning(leftAnchor, leftEnd);
+      lines.push({ pts: zzL });
+      var dvL = localXY(zzL[zzL.length-2], zzL[zzL.length-1]); var dvLl = Math.hypot(dvL.x, dvL.y) || 1;
+      heads.push(taskArrowHeadPts(leftEnd, { x:dvL.x/dvLl, y:dvL.y/dvLl }, Math.max(len*0.09,4)));
+
+      var rightAnchor = taskPt(g.base, dir, perp, rOuterD, 0);
+      var a2 = g.arrow2End || { d:1.9, p:-0.7 };
+      var rightEnd = taskPt(g.base, dir, perp, len*a2.d, len*a2.p);
+      var zzR = securitySegLightning(rightAnchor, rightEnd);
+      lines.push({ pts: zzR });
+      var dvR = localXY(zzR[zzR.length-2], zzR[zzR.length-1]); var dvRl = Math.hypot(dvR.x, dvR.y) || 1;
+      heads.push(taskArrowHeadPts(rightEnd, { x:dvR.x/dvRl, y:dvR.y/dvRl }, Math.max(len*0.09,4)));
     }
 
     if (label) labels.push(label);
@@ -8054,6 +8109,39 @@
         });
       });
     }
+    if (t === 'seguridad'){
+      extraDefs.push({
+        color:'#5B8A72', size:13, title:'Arrastre para cambiar el ancho del rectángulo',
+        compute: function(){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var wr = shape._task.widthRatio != null ? shape._task.widthRatio : 0.46;
+          return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, ax.len*wr/2);
+        },
+        onDrag: function(latlng){
+          var ax = taskAxis(shape._task.base, shape._task.tip);
+          var refPt = taskPt(shape._task.base, ax.dir, ax.perp, ax.len*0.5, 0);
+          shape._task.widthRatio = Math.max((distanceMeters(refPt, latlng)*2) / ax.len, 0.08);
+        }
+      });
+      [['arrow1End','#8B6BB0'], ['arrow2End','#5B8A72']].forEach(function(cfg){
+        var key = cfg[0], color = cfg[1];
+        extraDefs.push({
+          color: color, size:13, title:'Arrastre para cambiar el largo y la dirección de esta flecha',
+          compute: function(){
+            var ax = taskAxis(shape._task.base, shape._task.tip);
+            var r = shape._task[key];
+            return taskPt(shape._task.base, ax.dir, ax.perp, ax.len*r.d, ax.len*r.p);
+          },
+          onDrag: function(latlng){
+            var ax = taskAxis(shape._task.base, shape._task.tip);
+            var loc = localXY(shape._task.base, latlng);
+            var d = loc.x*ax.dir.x + loc.y*ax.dir.y;
+            var p = loc.x*ax.perp.x + loc.y*ax.perp.y;
+            shape._task[key] = { d: d/ax.len, p: p/ax.len };
+          }
+        });
+      });
+    }
 
     var extraMarkers = extraDefs.map(function(def){
       var m = L.marker(def.compute(), { draggable:true, icon: makeHandleIcon(def.color, def.size), zIndexOffset:2000, title: def.title }).addTo(map);
@@ -8797,7 +8885,8 @@
     ['aislar','Aislar'],
     ['ocupar','Ocupar'],
     ['asegurar','Asegurar'],
-    ['frentedefuego','Frente de fuego']
+    ['frentedefuego','Frente de fuego'],
+    ['seguridad','Seguridad']
   ];
   function tareaIconSVG(tipo){
     // 'currentColor' toma el color CSS del botón (.tarea-icon-btn{ color:var(--navy) }), que
@@ -8882,6 +8971,16 @@
         return '<circle cx="30" cy="30" r="2" fill="'+c+'"/>' +
           '<path d="M30,29 L18,24 L10,32" fill="none" stroke="'+c+'" stroke-width="2.4"/><polygon points="5,36 12,29 14,37" fill="'+c+'"/>' +
           '<path d="M30,31 L42,36 L50,28" fill="none" stroke="'+c+'" stroke-width="2.4"/><polygon points="55,24 48,31 46,23" fill="'+c+'"/>';
+      case 'seguridad':
+        // Rectángulo central con una caja "S" a cada lado, de la que nace una flecha quebrada
+        // en 3 segmentos (como un rayo).
+        return '<rect x="19" y="20" width="22" height="20" fill="none" stroke="'+c+'" stroke-width="2.4"/>' +
+          '<rect x="9" y="23" width="10" height="14" fill="none" stroke="'+c+'" stroke-width="2.2"/>' +
+          '<text x="14" y="34.5" text-anchor="middle" font-family="Calibri,Arial,sans-serif" font-size="11" font-weight="800" fill="'+c+'">S</text>' +
+          '<rect x="41" y="23" width="10" height="14" fill="none" stroke="'+c+'" stroke-width="2.2"/>' +
+          '<text x="46" y="34.5" text-anchor="middle" font-family="Calibri,Arial,sans-serif" font-size="11" font-weight="800" fill="'+c+'">S</text>' +
+          '<path d="M9,30 L2,36 L7,32 L1,15" fill="none" stroke="'+c+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="2,8 0,17 7,13" fill="'+c+'"/>' +
+          '<path d="M51,30 L58,36 L53,32 L59,15" fill="none" stroke="'+c+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="58,8 53,13 60,17" fill="'+c+'"/>';
       default: // bloquear: travesaño en el extremo lejano (arriba) y un solo asta central hacia abajo
         return '<line x1="8" y1="10" x2="52" y2="10" stroke="'+c+'" stroke-width="3"/><line x1="30" y1="10" x2="30" y2="52" stroke="'+c+'" stroke-width="3"/>';
     }
