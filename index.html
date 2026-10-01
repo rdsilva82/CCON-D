@@ -4783,13 +4783,20 @@
     return '<line x1="19" y1="27" x2="19" y2="43" stroke="#000" stroke-width="1.6"/>' +
       '<line x1="41" y1="27" x2="41" y2="43" stroke="#000" stroke-width="1.6"/>';
   }
+  // Dos líneas verticales laterales de Arma Antitanque (variante en Y), pegadas al eje central
+  // y recortadas para coincidir con el tramo donde van los travesaños (justo encima del punto
+  // donde el asta se abre en Y), según la referencia del usuario.
+  function armaAntitanqueFlanks(){
+    return '<line x1="24" y1="22" x2="24" y2="34" stroke="#000" stroke-width="1.6"/>' +
+      '<line x1="36" y1="22" x2="36" y2="34" stroke="#000" stroke-width="1.6"/>';
+  }
   // Travesaños horizontales que conectan las dos líneas laterales con el eje central
-  // (progresión Liviana/Mediana/Pesada de Arma Antitanque): más angostos que la versión original
-  // (no llegan hasta las líneas laterales) para no verse tan anchos.
+  // (progresión Liviana/Mediana/Pesada de Arma Antitanque): agrupados en una franja angosta
+  // justo encima del punto de apertura en Y, para no superponerse con ese "chevron" inferior.
   function armaAntitanqueBars(n){
     if (!n) return '';
-    var ys = (n === 1) ? [32] : (n === 2) ? [28,36] : [25,32,39];
-    return ys.map(function(y){ return '<line x1="23" y1="'+y+'" x2="37" y2="'+y+'" stroke="#000" stroke-width="1.4"/>'; }).join('');
+    var ys = (n === 1) ? [29] : (n === 2) ? [27,31] : [25.8,29,32.2];
+    return ys.map(function(y){ return '<line x1="24" y1="'+y+'" x2="36" y2="'+y+'" stroke="#000" stroke-width="1.4"/>'; }).join('');
   }
   // Arco superior que une las dos líneas laterales (en vez del tope recto de Arma Antitanque),
   // con una línea central que baja desde la cúspide del arco — familia Misil Antitanque. Más
@@ -4836,29 +4843,29 @@
       case 'ametralladora_generico':
         return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine();
       case 'ametralladora_liviana':
-        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine() + armaMidBars(1, 32, 4, 7);
+        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine() + armaMidBars(1, 36, 2, 7);
       case 'ametralladora_mediana':
-        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine() + armaMidBars(2, 31, 4, 7);
+        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine() + armaMidBars(2, 36, 2, 7);
       case 'ametralladora_pesada':
-        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine() + armaMidBars(3, 31, 5, 7);
+        return armaOpenHead() + armaShaftLine(14,46) + armaBaseLine() + armaMidBars(3, 36, 2, 7);
       case 'arma_antitanque':
-        return armaShaftLine(14,34) + armaYSplitBase() + armaFlanks();
+        return armaShaftLine(14,34) + armaYSplitBase() + armaAntitanqueFlanks();
       case 'arma_antitanque_liviana':
-        return armaShaftLine(14,34) + armaYSplitBase() + armaFlanks() + armaAntitanqueBars(1);
+        return armaShaftLine(14,34) + armaYSplitBase() + armaAntitanqueFlanks() + armaAntitanqueBars(1);
       case 'arma_antitanque_mediana':
-        return armaShaftLine(14,34) + armaYSplitBase() + armaFlanks() + armaAntitanqueBars(2);
+        return armaShaftLine(14,34) + armaYSplitBase() + armaAntitanqueFlanks() + armaAntitanqueBars(2);
       case 'arma_antitanque_pesada':
-        return armaShaftLine(14,34) + armaYSplitBase() + armaFlanks() + armaAntitanqueBars(3);
+        return armaShaftLine(14,34) + armaYSplitBase() + armaAntitanqueFlanks() + armaAntitanqueBars(3);
       case 'arma_antitanque_sin_retroceso':
         return armaOpenHead() + armaShaftLine(14,46) + armaFlanks();
       case 'lanzacohetes':
         return armaDoubleHead() + armaShaftLine(23,46);
       case 'lanzacohetes_liviano':
-        return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(1, 37, 4, 7);
+        return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(1, 38, 2, 7);
       case 'lanzacohetes_mediano':
-        return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(2, 36, 4, 7);
+        return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(2, 38, 2, 7);
       case 'lanzacohetes_pesado':
-        return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(3, 36, 5, 7);
+        return armaDoubleHead() + armaShaftLine(23,46) + armaMidBars(3, 38, 2, 7);
       case 'lanzagranadas':
         return armaOpenHead() + armaShaftLine(14,46) + '<circle cx="30" cy="30" r="5" fill="none" stroke="#000" stroke-width="1.6"/>';
       case 'lanzagranadas_liviano':
