@@ -532,13 +532,14 @@
   }
   .mil-symbol-label::before{ display:none !important; }
 
-  /* Cuadro de texto a la izquierda de las armas de "Apoyo de Fuego" (ej. identificador de batería),
-     vacío por defecto. Altura de letra fija en 15px: 25% de los 60px de alto del ícono del arma. */
+  /* Texto ("Tipo") a la izquierda de las armas de "Apoyo de Fuego", vacío por defecto. Sin
+     recuadro, fondo transparente. Altura de letra fija en 15px: 25% de los 60px de alto del
+     ícono del arma. */
   .arma-left-box{
-    background:#fff !important; border:1.3px solid #000 !important; box-shadow:none !important;
-    border-radius:2px; color:var(--navy-deep); font-family:Calibri,'Segoe UI',Arial,sans-serif;
-    font-weight:700; font-size:15px; line-height:1.1; text-align:center; padding:1px 5px !important;
-    min-width:14px; min-height:15px;
+    background:transparent !important; border:none !important; box-shadow:none !important;
+    color:var(--navy-deep); font-family:Calibri,'Segoe UI',Arial,sans-serif;
+    font-weight:700; font-size:15px; line-height:1.1; text-align:center; padding:0 !important;
+    text-shadow:0 0 3px #fff, 0 0 4px #fff, 0 0 5px #fff;
   }
   .arma-left-box::before{ display:none !important; }
 
@@ -4891,12 +4892,18 @@
   // vertical que ocupan las líneas laterales (22 a 34) para no tocar ni la línea central ni el
   // círculo inferior; también reutilizados por Cañón de Defensa Antiaérea (misma geometría lateral).
   function armaObusBars(n){
-    return armaMidBars(n, 28, 3.5, 6);
+    return armaMidBars(n, 28, 2.5, 6);
   }
   // Base tipo "cápsula" (rectángulo de extremos redondeados) para las variantes autopropulsadas:
   // se apoya justo debajo del círculo del asta, superponiéndose levemente con su borde inferior.
   function armaAutopropulsadoBase(){
-    return '<rect x="16" y="44" width="28" height="7" rx="3.5" ry="3.5" fill="none" stroke="#000" stroke-width="1.6"/>';
+    return '<rect x="18" y="43" width="24" height="6" rx="3" ry="3" fill="none" stroke="#000" stroke-width="1.6"/>';
+  }
+  // Las variantes autopropulsadas (asta + travesaños + base) se dibujan un 15% más pequeñas y
+  // centradas en el marco, para que la base quede completamente dentro del círculo contenedor
+  // (antes sobresalía por fuera).
+  function armaAutopropulsadoWrap(inner){
+    return '<g transform="translate(30,30) scale(0.85) translate(-30,-30)">' + inner + '</g>';
   }
 
   // ---- Lanzamisiles Superficie-Superficie: arco superior ancho (cubre 3 líneas, no 2 como el de
@@ -4909,7 +4916,7 @@
   // Travesaños que cruzan las 3 líneas (corto=1, mediano=2, largo=3), ubicados entre el arco
   // (termina en y=24) y el extremo inferior de las líneas (y=46).
   function armaLanzamisilesSSBars(n){
-    return armaMidBars(n, 35, 4, 10);
+    return armaMidBars(n, 35, 2.8, 10);
   }
 
   // ---- Lanzamisiles de Defensa Antiaérea (S-A): mismo arco superior angosto que Misil Antitanque
@@ -4917,31 +4924,36 @@
   // simétrico al arco de arriba. La línea central llega hasta el borde plano del domo, sin entrar
   // en la curva. ----
   function armaSADomeGlyph(){
-    return '<path d="M22,38 L22,22 A8,8 0 0 1 38,22 L38,38" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<path d="M22,38 A8,8 0 0 0 38,38" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+    return '<path d="M22,46 L22,22 A8,8 0 0 1 38,22 L38,46" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M22,46 A8,8 0 0 1 38,46 Z" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<line x1="30" y1="14" x2="30" y2="38" stroke="#000" stroke-width="1.6"/>';
   }
   // Travesaños dentro del tramo recto entre el arco superior (termina en y=22) y el domo inferior
   // (empieza en y=38): corto=1, mediano=2, largo=3.
   function armaSABars(n){
-    return armaMidBars(n, 30, 4, 8);
+    return armaMidBars(n, 30, 2.8, 8);
   }
 
   // ---- Cañón de Defensa Antiaérea: igual criterio que Obús (3 líneas colgando, sin arco superior)
   // pero la central remata en un domo semicircular (curva hacia abajo, borde plano arriba) en vez
   // de un círculo cerrado. ----
-  function armaDomeArc(r, y){
-    return '<path d="M'+(30-r)+','+y+' A'+r+','+r+' 0 0 0 '+(30+r)+','+y+'" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
+  // Domo cerrado: línea plana en la base (y = yFlatBase) + arco que se curva hacia ARRIBA desde
+  // esa línea, cerrado con "Z" — equivalente a una letra "D" rotada 90° a la izquierda (base
+  // plana abajo, remate redondeado arriba).
+  function armaDomeArc(r, yFlatBase){
+    return '<path d="M'+(30-r)+','+yFlatBase+' A'+r+','+r+' 0 0 1 '+(30+r)+','+yFlatBase+' Z" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
   }
   function armaCanonDAAGlyph(){
-    return armaShaftLine(14,40) + armaDomeArc(6,40) + armaObusSideLines();
+    return armaShaftLine(14,40) + armaDomeArc(6,46) + armaObusSideLines();
   }
 
   // ---- Radar: "rayo" en zigzag con un arco abierto que envuelve parcialmente su base, simulando
   // las ondas de detección. ----
   function armaRadarGlyph(){
-    return '<path d="M18,38 L33,20 L27,30 L43,16" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<path d="M32,16 A14,14 0 0 1 21,40" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round"/>';
+    // Arco grande sobre el lado izquierdo del círculo, del que nace (en su extremo superior) un
+    // segmento quebrado en tres partes que cruza hacia la derecha, simulando el "rayo" del radar.
+    return '<path d="M28,12 A20,20 0 0 0 28,48" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<path d="M28,14 L19,32 L26,26 L44,14" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
   }
 
   // ---- Sensor: estrella cóncava de 4 puntas (destello), rellena en negro. ----
@@ -4952,10 +4964,10 @@
   // ---- Sistemas aéreos no tripulados: chevron ancho relleno (ala fija), con un "moño" adicional
   // debajo (ala rotativa, simulando las aspas). ----
   function armaUasWingChevron(){
-    return '<path d="M15,21 L30,33 L45,21 L45,27 L30,40 L15,27 Z" fill="#000" stroke="#000" stroke-width="1"/>';
+    return '<path d="M17,20 L30,32 L43,20 L43,25 L30,37 L17,25 Z" fill="#000" stroke="#000" stroke-width="1"/>';
   }
   function armaUasRotorBowtie(){
-    return '<path d="M15,37 L30,43 L15,49 Z M45,37 L30,43 L45,49 Z" fill="#000" stroke="#000" stroke-width="1"/>';
+    return '<path d="M20,38 L30,42 L20,46 Z M40,38 L30,42 L40,46 Z" fill="#000" stroke="#000" stroke-width="1"/>';
   }
 
   // ---- Glifos de texto (siglas inscriptas), mismo criterio que MIL_TEXT_UNIT_CODES en Unidades
@@ -5041,15 +5053,15 @@
       case 'obus_liviano':
         return armaObusGlyph() + armaObusBars(1);
       case 'obus_liviano_autopropulsado':
-        return armaObusGlyph() + armaObusBars(1) + armaAutopropulsadoBase();
+        return armaAutopropulsadoWrap(armaObusGlyph() + armaObusBars(1) + armaAutopropulsadoBase());
       case 'obus_mediano':
         return armaObusGlyph() + armaObusBars(2);
       case 'obus_mediano_autopropulsado':
-        return armaObusGlyph() + armaObusBars(2) + armaAutopropulsadoBase();
+        return armaAutopropulsadoWrap(armaObusGlyph() + armaObusBars(2) + armaAutopropulsadoBase());
       case 'obus_pesado':
         return armaObusGlyph() + armaObusBars(3);
       case 'obus_pesado_autopropulsado':
-        return armaObusGlyph() + armaObusBars(3) + armaAutopropulsadoBase();
+        return armaAutopropulsadoWrap(armaObusGlyph() + armaObusBars(3) + armaAutopropulsadoBase());
       case 'lanzamisiles_ss':
         return armaWideArchTop();
       case 'lanzamisiles_ss_corto':
@@ -10709,11 +10721,6 @@
           radioKmWrap.appendChild(radioKmUnit);
           radioKmField.appendChild(radioKmWrap);
           armaBlock.appendChild(radioKmField);
-
-          var radioHint = document.createElement('div');
-          radioHint.className = 'hint';
-          radioHint.textContent = 'El radio de acción se dibuja en rojo (30% de transparencia) alrededor del elemento.';
-          armaBlock.appendChild(radioHint);
         }
 
         radioCheck.addEventListener('change', function(ev){
@@ -10725,7 +10732,7 @@
 
         var leftLabelField = document.createElement('div');
         leftLabelField.className = 'style-field';
-        leftLabelField.innerHTML = '<span>Texto (cuadro izquierdo)</span>';
+        leftLabelField.innerHTML = '<span>Tipo</span>';
         var leftLabelInput = document.createElement('input');
         leftLabelInput.type = 'text';
         leftLabelInput.placeholder = 'ej. A-1';
@@ -10737,11 +10744,6 @@
         });
         leftLabelField.appendChild(leftLabelInput);
         armaBlock.appendChild(leftLabelField);
-
-        var leftLabelHint = document.createElement('div');
-        leftLabelHint.className = 'hint';
-        leftLabelHint.textContent = 'Se muestra en un cuadro a la izquierda del símbolo (vacío por defecto).';
-        armaBlock.appendChild(leftLabelHint);
       }
 
       body.appendChild(armaBlock);
