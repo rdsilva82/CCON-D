@@ -532,6 +532,16 @@
   }
   .mil-symbol-label::before{ display:none !important; }
 
+  /* Cuadro de texto a la izquierda de las armas de "Apoyo de Fuego" (ej. identificador de batería),
+     vacío por defecto. Altura de letra fija en 15px: 25% de los 60px de alto del ícono del arma. */
+  .arma-left-box{
+    background:#fff !important; border:1.3px solid #000 !important; box-shadow:none !important;
+    border-radius:2px; color:var(--navy-deep); font-family:Calibri,'Segoe UI',Arial,sans-serif;
+    font-weight:700; font-size:15px; line-height:1.1; text-align:center; padding:1px 5px !important;
+    min-width:14px; min-height:15px;
+  }
+  .arma-left-box::before{ display:none !important; }
+
   .declutter-highlight{
     filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 6px #fff) drop-shadow(0 0 9px rgba(255,196,0,.9));
   }
@@ -3878,15 +3888,18 @@
     if (c){ c.remove(); delete milRadiusLayers[shape._shapeId]; }
   }
   function syncMilRadius(shape){
-    if (!shape || !shape._isMilSymbol){ removeMilRadius(shape); return; }
+    if (!shape || !(shape._isMilSymbol || shape._isArma)){ removeMilRadius(shape); return; }
     var km = null, style = null;
-    if (shape._mil.unitType === 'obus' && shape._mil.obus){
+    if (shape._isMilSymbol && shape._mil.unitType === 'obus' && shape._mil.obus){
       km = parseFloat(shape._mil.obus.radioAccionKm);
       style = { color:'#C62828', weight:1.5, fillColor:'#C62828', fillOpacity:.25 };
-    } else if (shape._mil.unitType === 'radarmilitar' && shape._mil.radarMilitar){
+    } else if (shape._isMilSymbol && shape._mil.unitType === 'radarmilitar' && shape._mil.radarMilitar){
       var nm = parseFloat(shape._mil.radarMilitar.radioDeteccionNm);
       km = (nm > 0) ? nm * 1.852 : null;
       style = { color:'#1F3864', weight:1.5, fillColor:'#1F3864', fillOpacity:.08 };
+    } else if (shape._isArma && shape._arma && shape._arma.radioAccionEnabled){
+      km = parseFloat(shape._arma.radioAccionKm);
+      style = { color:'#D32F2F', weight:1.5, fillColor:'#D32F2F', fillOpacity:.3 };
     }
     if (!km || km <= 0){ removeMilRadius(shape); return; }
     var owner = findLayerOfShape(shape);
@@ -3909,6 +3922,7 @@
     layers.forEach(function(l){
       l.group.eachLayer(function(s){
         if (s._isMilSymbol && s._mil && (s._mil.unitType === 'obus' || s._mil.unitType === 'radarmilitar')) liveIds[s._shapeId] = s;
+        else if (s._isArma && s._arma && s._arma.radioAccionEnabled) liveIds[s._shapeId] = s;
       });
     });
     Object.keys(milRadiusLayers).forEach(function(id){
@@ -4742,7 +4756,34 @@
     ['mortero_mediano','Mortero Mediano'],
     ['mortero_pesado','Mortero Pesado']
   ];
-  var ARMA_TYPES_APOYO_FUEGO = [];
+  var ARMA_TYPES_APOYO_FUEGO = [
+    ['obus','Obús'],
+    ['obus_liviano','Obús Liviano'],
+    ['obus_liviano_autopropulsado','Obús Liviano Autopropulsado'],
+    ['obus_mediano','Obús Mediano'],
+    ['obus_mediano_autopropulsado','Obús Mediano Autopropulsado'],
+    ['obus_pesado','Obús Pesado'],
+    ['obus_pesado_autopropulsado','Obús Pesado Autopropulsado'],
+    ['lanzamisiles_ss','Lanzamisiles Superficie-Superficie'],
+    ['lanzamisiles_ss_corto','Lanzamisiles S-S Corto Alcance'],
+    ['lanzamisiles_ss_mediano','Lanzamisiles S-S Mediano Alcance'],
+    ['lanzamisiles_ss_largo','Lanzamisiles S-S Largo Alcance'],
+    ['lanzamisiles_daa','Lanzamisiles de Defensa Antiaérea'],
+    ['lanzamisiles_saa_corto','Lanzamisiles S-A Corto Alcance'],
+    ['lanzamisiles_saa_mediano','Lanzamisiles S-A Mediano Alcance'],
+    ['lanzamisiles_saa_largo','Lanzamisiles S-A Largo Alcance'],
+    ['canon_daa','Cañón de Defensa Antiaérea'],
+    ['canon_daa_liviano','Cañón DAA Liviano'],
+    ['canon_daa_mediano','Cañón DAA Mediano'],
+    ['canon_daa_pesado','Cañón DAA Pesado'],
+    ['radar','Radar'],
+    ['sensor','Sensor'],
+    ['uas_ala_fija','Sistema Aéreo No Tripulado de Ala Fija'],
+    ['uas_ala_rotativa','Sistema Aéreo No Tripulado de Ala Rotativa'],
+    ['met','Estación Meteorológica'],
+    ['of_enlace','Oficial de Enlace'],
+    ['oea','Oficial de Enlace de Artillería']
+  ];
   var ARMA_TYPES_EQUIPOS = [];
   var ARMA_TYPES_BY_CATEGORY = {
     portatiles: ARMA_TYPES_PORTATILES,
@@ -4751,7 +4792,7 @@
   };
 
   function defaultArmaParams(){
-    return { affiliation:'friendly', condition:'present', category:'portatiles', tipo:'fusil_generico' };
+    return { affiliation:'friendly', condition:'present', category:'portatiles', tipo:'fusil_generico', radioAccionEnabled:false, radioAccionKm:5, leftLabel:'' };
   }
 
   /* ---- Piezas reutilizables de los glifos de armas portátiles ---- */
@@ -4832,6 +4873,104 @@
     return armaMidBars(n, 34, 2, 7);
   }
 
+  // ---- Piezas de la familia "Apoyo de Fuego" ----
+  // Obús: tres líneas verticales colgando desde la parte superior del marco (sin cabeza en V,
+  // a diferencia de las armas portátiles): la central, más larga, remata en un pequeño círculo
+  // abierto; las dos laterales, más cortas y a ambos lados del eje, quedan "flotando" sin tocar
+  // ni el círculo ni el borde del marco.
+  function armaObusSideLines(){
+    return '<line x1="24" y1="22" x2="24" y2="34" stroke="#000" stroke-width="1.6"/>' +
+           '<line x1="36" y1="22" x2="36" y2="34" stroke="#000" stroke-width="1.6"/>';
+  }
+  function armaObusGlyph(){
+    return armaShaftLine(14,38) +
+      '<circle cx="30" cy="42" r="4" fill="none" stroke="#000" stroke-width="1.6"/>' +
+      armaObusSideLines();
+  }
+  // Travesaños de la familia Obús (liviano=1, mediano=2, pesado=3), agrupados en la misma franja
+  // vertical que ocupan las líneas laterales (22 a 34) para no tocar ni la línea central ni el
+  // círculo inferior; también reutilizados por Cañón de Defensa Antiaérea (misma geometría lateral).
+  function armaObusBars(n){
+    return armaMidBars(n, 28, 3.5, 6);
+  }
+  // Base tipo "cápsula" (rectángulo de extremos redondeados) para las variantes autopropulsadas:
+  // se apoya justo debajo del círculo del asta, superponiéndose levemente con su borde inferior.
+  function armaAutopropulsadoBase(){
+    return '<rect x="16" y="44" width="28" height="7" rx="3.5" ry="3.5" fill="none" stroke="#000" stroke-width="1.6"/>';
+  }
+
+  // ---- Lanzamisiles Superficie-Superficie: arco superior ancho (cubre 3 líneas, no 2 como el de
+  // Misil Antitanque) + tres líneas verticales paralelas que llegan todas al mismo nivel inferior,
+  // sin base ni círculo. ----
+  function armaWideArchTop(){
+    return '<path d="M20,46 L20,24 A10,10 0 0 1 40,24 L40,46" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<line x1="30" y1="14" x2="30" y2="46" stroke="#000" stroke-width="1.6"/>';
+  }
+  // Travesaños que cruzan las 3 líneas (corto=1, mediano=2, largo=3), ubicados entre el arco
+  // (termina en y=24) y el extremo inferior de las líneas (y=46).
+  function armaLanzamisilesSSBars(n){
+    return armaMidBars(n, 35, 4, 10);
+  }
+
+  // ---- Lanzamisiles de Defensa Antiaérea (S-A): mismo arco superior angosto que Misil Antitanque
+  // (2 líneas), pero en vez de base en Y, remata en un domo semicircular que se curva hacia abajo,
+  // simétrico al arco de arriba. La línea central llega hasta el borde plano del domo, sin entrar
+  // en la curva. ----
+  function armaSADomeGlyph(){
+    return '<path d="M22,38 L22,22 A8,8 0 0 1 38,22 L38,38" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M22,38 A8,8 0 0 0 38,38" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<line x1="30" y1="14" x2="30" y2="38" stroke="#000" stroke-width="1.6"/>';
+  }
+  // Travesaños dentro del tramo recto entre el arco superior (termina en y=22) y el domo inferior
+  // (empieza en y=38): corto=1, mediano=2, largo=3.
+  function armaSABars(n){
+    return armaMidBars(n, 30, 4, 8);
+  }
+
+  // ---- Cañón de Defensa Antiaérea: igual criterio que Obús (3 líneas colgando, sin arco superior)
+  // pero la central remata en un domo semicircular (curva hacia abajo, borde plano arriba) en vez
+  // de un círculo cerrado. ----
+  function armaDomeArc(r, y){
+    return '<path d="M'+(30-r)+','+y+' A'+r+','+r+' 0 0 0 '+(30+r)+','+y+'" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  function armaCanonDAAGlyph(){
+    return armaShaftLine(14,40) + armaDomeArc(6,40) + armaObusSideLines();
+  }
+
+  // ---- Radar: "rayo" en zigzag con un arco abierto que envuelve parcialmente su base, simulando
+  // las ondas de detección. ----
+  function armaRadarGlyph(){
+    return '<path d="M18,38 L33,20 L27,30 L43,16" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M32,16 A14,14 0 0 1 21,40" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round"/>';
+  }
+
+  // ---- Sensor: estrella cóncava de 4 puntas (destello), rellena en negro. ----
+  function armaSensorGlyph(){
+    return '<path d="M30,12 Q34,28 48,30 Q34,32 30,48 Q26,32 12,30 Q26,28 30,12 Z" fill="#000" stroke="#000" stroke-width="1"/>';
+  }
+
+  // ---- Sistemas aéreos no tripulados: chevron ancho relleno (ala fija), con un "moño" adicional
+  // debajo (ala rotativa, simulando las aspas). ----
+  function armaUasWingChevron(){
+    return '<path d="M15,21 L30,33 L45,21 L45,27 L30,40 L15,27 Z" fill="#000" stroke="#000" stroke-width="1"/>';
+  }
+  function armaUasRotorBowtie(){
+    return '<path d="M15,37 L30,43 L15,49 Z M45,37 L30,43 L45,49 Z" fill="#000" stroke="#000" stroke-width="1"/>';
+  }
+
+  // ---- Glifos de texto (siglas inscriptas), mismo criterio que MIL_TEXT_UNIT_CODES en Unidades
+  // pero siempre en negro (igual que el resto de los glifos de Armas). ----
+  function armaTextGlyph(lines, fontSize){
+    var fs = fontSize || 10.5;
+    if (lines.length === 1){
+      return '<text x="30" y="34" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="' + fs + '" font-weight="800" fill="#000">' + lines[0] + '</text>';
+    }
+    var startY = 30 - (lines.length - 1) * 6;
+    return lines.map(function(line, i){
+      return '<text x="30" y="' + (startY + i * 12) + '" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="' + fs + '" font-weight="800" fill="#000">' + line + '</text>';
+    }).join('');
+  }
+
   // Glifo interno de cada tipo de arma, independiente de la afiliación (igual criterio que
   // vehTypeGlyphSVG): se dibuja siempre en negro sobre el marco de color correspondiente.
   function armaTypeGlyphSVG(tipo){
@@ -4897,6 +5036,58 @@
         return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="1.6"/>' + armaMorteroBars(2);
       case 'mortero_pesado':
         return armaOpenHead() + armaShaftLine(14,40) + '<circle cx="30" cy="45" r="5" fill="none" stroke="#000" stroke-width="1.6"/>' + armaMorteroBars(3);
+      case 'obus':
+        return armaObusGlyph();
+      case 'obus_liviano':
+        return armaObusGlyph() + armaObusBars(1);
+      case 'obus_liviano_autopropulsado':
+        return armaObusGlyph() + armaObusBars(1) + armaAutopropulsadoBase();
+      case 'obus_mediano':
+        return armaObusGlyph() + armaObusBars(2);
+      case 'obus_mediano_autopropulsado':
+        return armaObusGlyph() + armaObusBars(2) + armaAutopropulsadoBase();
+      case 'obus_pesado':
+        return armaObusGlyph() + armaObusBars(3);
+      case 'obus_pesado_autopropulsado':
+        return armaObusGlyph() + armaObusBars(3) + armaAutopropulsadoBase();
+      case 'lanzamisiles_ss':
+        return armaWideArchTop();
+      case 'lanzamisiles_ss_corto':
+        return armaWideArchTop() + armaLanzamisilesSSBars(1);
+      case 'lanzamisiles_ss_mediano':
+        return armaWideArchTop() + armaLanzamisilesSSBars(2);
+      case 'lanzamisiles_ss_largo':
+        return armaWideArchTop() + armaLanzamisilesSSBars(3);
+      case 'lanzamisiles_daa':
+        return armaSADomeGlyph();
+      case 'lanzamisiles_saa_corto':
+        return armaSADomeGlyph() + armaSABars(1);
+      case 'lanzamisiles_saa_mediano':
+        return armaSADomeGlyph() + armaSABars(2);
+      case 'lanzamisiles_saa_largo':
+        return armaSADomeGlyph() + armaSABars(3);
+      case 'canon_daa':
+        return armaCanonDAAGlyph();
+      case 'canon_daa_liviano':
+        return armaCanonDAAGlyph() + armaObusBars(1);
+      case 'canon_daa_mediano':
+        return armaCanonDAAGlyph() + armaObusBars(2);
+      case 'canon_daa_pesado':
+        return armaCanonDAAGlyph() + armaObusBars(3);
+      case 'radar':
+        return armaRadarGlyph();
+      case 'sensor':
+        return armaSensorGlyph();
+      case 'uas_ala_fija':
+        return armaUasWingChevron();
+      case 'uas_ala_rotativa':
+        return armaUasWingChevron() + armaUasRotorBowtie();
+      case 'met':
+        return armaTextGlyph(['MET']);
+      case 'of_enlace':
+        return armaTextGlyph(['Of','Enl'], 11);
+      case 'oea':
+        return armaTextGlyph(['OEA']);
       default:
         return '';
     }
@@ -4917,6 +5108,17 @@
   }
   function applyArmaSymbol(shape){
     shape.setIcon(buildArmaIcon(shape._arma));
+    updateArmaLeftLabel(shape);
+  }
+  // Cuadro de texto a la izquierda del símbolo, propio de "Apoyo de Fuego": se muestra siempre
+  // (aunque esté vacío) mientras el arma pertenezca a esa categoría, y se quita por completo en
+  // cualquier otra categoría.
+  function updateArmaLeftLabel(shape){
+    if (shape._arma && shape._arma.category === 'apoyo_fuego'){
+      shape.bindTooltip(shape._arma.leftLabel || '', { permanent:true, direction:'left', offset:[-26,0], className:'arma-left-box' });
+    } else if (shape.getTooltip()){
+      shape.unbindTooltip();
+    }
   }
   // Ícono del selector de tipo, sensible a la afiliación actual (a diferencia de vehTypeIconSVG):
   // al cambiar la afiliación, los símbolos de la grilla de tipos se repintan con el marco nuevo.
@@ -4946,6 +5148,7 @@
       var layer = L.marker(e.latlng, { icon: buildArmaIcon(arm) });
       layer._isArma = true;
       layer._arma = arm;
+      updateArmaLeftLabel(layer);
       activeNow.group.addLayer(layer);
       attachShapeInteractivity(layer, activeNow);
       recordAddShape(activeNow, layer);
@@ -10470,6 +10673,77 @@
         armaBlock.appendChild(armaEmptyTypes);
       }
 
+      if (arm.category === 'apoyo_fuego'){
+        var radioField = document.createElement('div');
+        radioField.className = 'style-field';
+        var radioLabel = document.createElement('label');
+        radioLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var radioCheck = document.createElement('input');
+        radioCheck.type = 'checkbox';
+        radioCheck.checked = !!arm.radioAccionEnabled;
+        var radioText = document.createElement('span');
+        radioText.textContent = 'Radio de acción';
+        radioLabel.appendChild(radioCheck);
+        radioLabel.appendChild(radioText);
+        radioField.appendChild(radioLabel);
+        armaBlock.appendChild(radioField);
+
+        if (arm.radioAccionEnabled){
+          var radioKmField = document.createElement('div');
+          radioKmField.className = 'style-field';
+          radioKmField.innerHTML = '<span>Distancia</span>';
+          var radioKmWrap = document.createElement('div');
+          radioKmWrap.style.cssText = 'display:flex;align-items:center;gap:5px;';
+          var radioKmInput = document.createElement('input');
+          radioKmInput.type = 'number'; radioKmInput.min = 0; radioKmInput.step = 'any';
+          radioKmInput.value = arm.radioAccionKm;
+          radioKmInput.style.cssText = 'width:70px;border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-family:inherit;font-size:12px;text-align:right;';
+          radioKmInput.addEventListener('input', function(ev){
+            arm.radioAccionKm = parseFloat(ev.target.value) || 0;
+            syncMilRadius(shape);
+          });
+          var radioKmUnit = document.createElement('span');
+          radioKmUnit.style.cssText = 'font-size:11px;color:var(--muted);';
+          radioKmUnit.textContent = 'km';
+          radioKmWrap.appendChild(radioKmInput);
+          radioKmWrap.appendChild(radioKmUnit);
+          radioKmField.appendChild(radioKmWrap);
+          armaBlock.appendChild(radioKmField);
+
+          var radioHint = document.createElement('div');
+          radioHint.className = 'hint';
+          radioHint.textContent = 'El radio de acción se dibuja en rojo (30% de transparencia) alrededor del elemento.';
+          armaBlock.appendChild(radioHint);
+        }
+
+        radioCheck.addEventListener('change', function(ev){
+          arm.radioAccionEnabled = ev.target.checked;
+          syncMilRadius(shape);
+          renderLayerList();
+          showProperties(shape, layerObj);
+        });
+
+        var leftLabelField = document.createElement('div');
+        leftLabelField.className = 'style-field';
+        leftLabelField.innerHTML = '<span>Texto (cuadro izquierdo)</span>';
+        var leftLabelInput = document.createElement('input');
+        leftLabelInput.type = 'text';
+        leftLabelInput.placeholder = 'ej. A-1';
+        leftLabelInput.value = arm.leftLabel || '';
+        leftLabelInput.style.cssText = 'width:90px;border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-family:inherit;font-size:12px;text-align:right;';
+        leftLabelInput.addEventListener('input', function(ev){
+          arm.leftLabel = ev.target.value;
+          updateArmaLeftLabel(shape);
+        });
+        leftLabelField.appendChild(leftLabelInput);
+        armaBlock.appendChild(leftLabelField);
+
+        var leftLabelHint = document.createElement('div');
+        leftLabelHint.className = 'hint';
+        leftLabelHint.textContent = 'Se muestra en un cuadro a la izquierda del símbolo (vacío por defecto).';
+        armaBlock.appendChild(leftLabelHint);
+      }
+
       body.appendChild(armaBlock);
     }
 
@@ -11960,6 +12234,7 @@
           var am = L.marker(latlng, { icon: buildArmaIcon(arm) });
           am._isArma = true;
           am._arma = arm;
+          updateArmaLeftLabel(am);
           return am;
         }
         return L.marker(latlng, {
