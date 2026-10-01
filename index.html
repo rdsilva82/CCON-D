@@ -573,11 +573,12 @@
   .veh-category-row{ display:flex; gap:6px; }
   .veh-category-btn{ flex:1; border:1px solid var(--border); border-radius:6px; background:var(--surface-alt); padding:6px 4px; font-size:11.5px; font-weight:600; color:var(--navy); cursor:pointer; font-family:inherit; }
   .veh-category-btn.selected{ border-color:var(--gold); background:var(--highlight-tint); }
-  /* Exactamente 3 filas: los 19 (o más) íconos de tipo se reparten en 3 filas por columna,
-     generando tantas columnas como haga falta (scroll horizontal si no caben), en vez de
-     envolver línea por línea como antes — así cada ícono puede dibujarse más grande. */
-  .veh-type-row{ display:grid; grid-template-rows:repeat(3, 1fr); grid-auto-flow:column; grid-auto-columns:56px; gap:6px; padding-top:4px; overflow-x:auto; }
-  .veh-type-btn{ border:2px solid var(--border); border-radius:8px; background:var(--surface-alt); padding:3px; cursor:pointer; width:56px; height:56px; display:flex; align-items:center; justify-content:center; }
+  /* Exactamente 3 columnas: todos los íconos de tipo (los 19 de Combate y los que se agreguen a
+     futuro) se acomodan en 3 por fila y el resto continúa hacia abajo, sin límite de filas ni
+     barra de desplazamiento propia — el panel de propiedades ya se desplaza verticalmente con la
+     rueda del mouse, así que todos los vehículos quedan accesibles simplemente bajando. */
+  .veh-type-row{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; padding-top:4px; }
+  .veh-type-btn{ border:2px solid var(--border); border-radius:8px; background:var(--surface-alt); padding:3px; cursor:pointer; width:100%; aspect-ratio:1; display:flex; align-items:center; justify-content:center; }
   .veh-type-btn.selected{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-light) inset; }
   .veh-type-btn svg{ display:block; }
   .veh-type-empty{ font-size:11.5px; color:var(--muted); padding:6px 0; }
@@ -4531,32 +4532,47 @@
     return '<line x1="18" y1="53" x2="42" y2="53" stroke="#000" stroke-width="1.6"/>' + circles;
   }
   // Cápsula (cuerpo "estadio": rectángulo con extremos semicirculares) apoyada directamente sobre
-  // una línea base, con 2 ruedas debajo tocando esa línea. Usada por "Vehículo a rueda" y, con un
-  // elemento adicional encima, por "Vehículo todo terreno con protección blindada".
+  // una línea base, con 2 ruedas debajo de esa línea (la línea pasa por la parte SUPERIOR de la
+  // rueda, no por su centro). Usada por "Vehículo a rueda" y, con un elemento adicional encima,
+  // por "Vehículo todo terreno con protección blindada".
   function vehCapsuleOnWheels(){
     return '<rect x="18" y="23" width="24" height="10" rx="5" ry="5" fill="none" stroke="#000" stroke-width="2"/>' +
       '<line x1="14" y1="33" x2="46" y2="33" stroke="#000" stroke-width="1.6"/>' +
-      '<circle cx="20" cy="33" r="4" fill="none" stroke="#000" stroke-width="1.6"/>' +
-      '<circle cx="40" cy="33" r="4" fill="none" stroke="#000" stroke-width="1.6"/>';
+      '<circle cx="20" cy="36.5" r="3.5" fill="none" stroke="#000" stroke-width="1.6"/>' +
+      '<circle cx="40" cy="36.5" r="3.5" fill="none" stroke="#000" stroke-width="1.6"/>';
   }
-  // Símbolo central de la familia "recuperador de tanque": una línea horizontal con un gancho en
-  // cada extremo (uno abriendo hacia la derecha, el otro hacia la izquierda), en vez del rombo.
+  // Símbolo central de la familia "recuperador de tanque" (idéntico al de "Mantenimiento" de
+  // Unidades): una línea recta con un semicírculo en cada extremo, abriendo hacia AFUERA (lejos
+  // del centro), igual que esos dos arcos de milGlyphSVG('mantenimiento', ...) pero a una escala
+  // que encaja dentro del casco del tanque (x 24↔36, igual que el alto del casco 25↔35).
   function vehRecuperadorHooks(){
-    return '<path d="M25,26 Q20,30 25,34" fill="none" stroke="#000" stroke-width="1.8"/>' +
-      '<path d="M35,26 Q40,30 35,34" fill="none" stroke="#000" stroke-width="1.8"/>' +
-      '<line x1="25" y1="30" x2="35" y2="30" stroke="#000" stroke-width="1.8"/>';
+    var jr = 5, cy = 30;
+    return '<path d="M 24,'+(cy-jr)+' A '+jr+' '+jr+' 0 0 1 24,'+(cy+jr)+'" fill="none" stroke="#000" stroke-width="1.8"/>' +
+      '<path d="M 36,'+(cy-jr)+' A '+jr+' '+jr+' 0 0 0 36,'+(cy+jr)+'" fill="none" stroke="#000" stroke-width="1.8"/>' +
+      '<line x1="24" y1="'+cy+'" x2="36" y2="'+cy+'" stroke="#000" stroke-width="1.8"/>';
   }
-  // Misma pieza que vehRecuperadorHooks(), a menor escala, para encajar dentro del techo más
+  // Misma pieza que vehRecuperadorHooks(), a menor escala, para encajar dentro del casco más
   // angosto de "VCTP recuperador".
   function vehRecuperadorHooksSmall(){
-    return '<path d="M27,28.5 Q23.5,32 27,35.5" fill="none" stroke="#000" stroke-width="1.5"/>' +
-      '<path d="M33,28.5 Q36.5,32 33,35.5" fill="none" stroke="#000" stroke-width="1.5"/>' +
-      '<line x1="27" y1="32" x2="33" y2="32" stroke="#000" stroke-width="1.5"/>';
+    var jr = 3.5, cy = 30;
+    return '<path d="M 26,'+(cy-jr)+' A '+jr+' '+jr+' 0 0 1 26,'+(cy+jr)+'" fill="none" stroke="#000" stroke-width="1.5"/>' +
+      '<path d="M 34,'+(cy-jr)+' A '+jr+' '+jr+' 0 0 0 34,'+(cy+jr)+'" fill="none" stroke="#000" stroke-width="1.5"/>' +
+      '<line x1="26" y1="'+cy+'" x2="34" y2="'+cy+'" stroke="#000" stroke-width="1.5"/>';
   }
-  // Rombo cuyas puntas izquierda/derecha tocan las "orejas" (líneas verticales) del casco; usado
-  // por la familia "vehículo de combate de infantería" en vez de la X.
+  // Rombo cuyas puntas (arriba/abajo/izquierda/derecha) tocan exactamente los extremos de las
+  // "orejas" (líneas verticales) del casco — tan alto como esas líneas, no achatado — usado por
+  // la familia "vehículo de combate de infantería" en vez de la X.
   function vehInfantryDiamond(){
-    return '<polygon points="30,25 41,30 30,35 19,30" fill="none" stroke="#000" stroke-width="2"/>';
+    return '<polygon points="30,19 41,30 30,41 19,30" fill="none" stroke="#000" stroke-width="2"/>';
+  }
+  // Líneas verticales + techo en punta + base, compartidos por "VCTP", "VCTP a rueda" y "VCTP
+  // recuperador": las líneas sobresalen hacia ARRIBA (del lado del techo, pasando el punto donde
+  // se une la línea diagonal), al ras con la base abajo (sin sobresalir hacia abajo).
+  function vehRoofWithPosts(){
+    return '<line x1="19" y1="13" x2="19" y2="35" stroke="#000" stroke-width="2"/>' +
+      '<line x1="41" y1="13" x2="41" y2="35" stroke="#000" stroke-width="2"/>' +
+      '<path d="M19,21 L30,13 L41,21" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
+      '<line x1="19" y1="35" x2="41" y2="35" stroke="#000" stroke-width="2"/>';
   }
 
   // Glifo interno (el "dibujo" propio de cada tipo de vehículo), independiente de la afiliación:
@@ -4564,7 +4580,9 @@
   function vehTypeGlyphSVG(tipo){
     switch(tipo){
       case 'uso_general':
-        return '<path d="M21,20 Q30,14 39,20 L39,36 L21,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        // Un solo arco cuyo radio "mira hacia arriba" (el centro del círculo queda por encima
+        // del arco), por lo que la curva se hunde hacia abajo en el centro, no dos jorobas.
+        return '<path d="M21,20 Q30,27 39,20 L39,36 L21,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
       case 'rueda':
         return vehCapsuleOnWheels();
       case 'todo_terreno_blindado':
@@ -4584,32 +4602,28 @@
       case 'tanque_pesado_rueda':
         return vehHullRect() + vehEars() + vehDividerLines(3) + vehWheelsBelowFrame();
       case 'vctp':
-        return vehEars() + '<path d="M19,25 L19,21 L30,13 L41,21 L41,25" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
-          '<line x1="19" y1="35" x2="41" y2="35" stroke="#000" stroke-width="2"/>';
+        return vehRoofWithPosts();
       case 'vctp_rueda':
-        return vehEars() + '<path d="M19,25 L19,21 L30,13 L41,21 L41,25" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
-          '<line x1="19" y1="35" x2="41" y2="35" stroke="#000" stroke-width="2"/>' + vehWheelsBelowFrame();
+        return vehRoofWithPosts() + vehWheelsBelowFrame();
       case 'vci':
         return vehEars() + vehInfantryDiamond();
       case 'vci_rueda':
         return vehEars() + vehInfantryDiamond() + vehWheelsBelowFrame();
       case 'vcrt':
-        return vehEars() + vehRecuperadorHooks();
+        return vehHullRect() + vehEars() + vehRecuperadorHooks();
       case 'vcrt_liviano':
-        return vehEars() + vehRecuperadorHooks() + '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>';
+        return vehHullRect() + vehEars() + vehRecuperadorHooks() + '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>';
       case 'vcrt_mediano':
-        return vehEars() + vehRecuperadorHooks() +
+        return vehHullRect() + vehEars() + vehRecuperadorHooks() +
           '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>' +
           '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
       case 'vcrt_pesado':
-        return vehEars() + vehRecuperadorHooks() +
+        return vehHullRect() + vehEars() + vehRecuperadorHooks() +
           '<line x1="18" y1="27" x2="22" y2="27" stroke="#000" stroke-width="1.8"/>' +
           '<line x1="18" y1="33" x2="22" y2="33" stroke="#000" stroke-width="1.8"/>' +
           '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
       case 'vctp_recuperador':
-        return '<path d="M19,36 L19,28 L30,21 L41,28 L41,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
-          vehRecuperadorHooksSmall() +
-          '<line x1="16" y1="32" x2="19" y2="32" stroke="#000" stroke-width="1.6"/><line x1="41" y1="32" x2="44" y2="32" stroke="#000" stroke-width="1.6"/>';
+        return vehRoofWithPosts() + vehRecuperadorHooksSmall();
       default:
         return '';
     }
@@ -4647,7 +4661,9 @@
       '</svg>';
   }
   function vehTypeIconSVG(tipo){
-    return '<svg width="46" height="46" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
+    // width/height 100% (en vez de un tamaño fijo en px) para que el ícono llene el botón,
+    // que ahora ocupa un tercio del ancho del panel (3 columnas) en vez de un tamaño fijo chico.
+    return '<svg width="100%" height="100%" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
       vehFrameSVG('friendly', 'present') +
       vehTypeGlyphSVG(tipo) +
       '</svg>';
@@ -9062,7 +9078,7 @@
     top.appendChild(delBtn);
     row.appendChild(top);
 
-    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra'){
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo'){
       var controls = document.createElement('div');
       controls.className = 'style-controls';
 
@@ -10829,7 +10845,7 @@
       body.appendChild(lengthBlock);
     }
 
-    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra'){
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo'){
       var styleBlock = document.createElement('div');
       styleBlock.className = 'style-block';
 
