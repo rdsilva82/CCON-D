@@ -3503,7 +3503,8 @@
     aspc:'ASPC', biter:'BITER', ggcar:'GGCAR', ggmag:'GGMAG', bapom:'BAPOM',
     biacm:'BIACM', futam:'FUTAM', udiv:'U/DIV', gmar:'GMAR', imi:'IMI',
     bafur:'BAFUR', ev:'EV', ggsan:'GGSAN', ggmmag:'GGMMAG', badre:'BADRE',
-    badra:'BADRA', gtm:'GTM', evipe:'EVIPE', accionintegral:'AI', brlog:'BRLOG'
+    badra:'BADRA', gtm:'GTM', evipe:'EVIPE', accionintegral:'AI', brlog:'BRLOG',
+    baid:'BAID', cpaid:'CPAID'
   };
   var MIL_BASE_UNITS = [
     ['generic','Genérica / sin especificar'],
@@ -3519,7 +3520,8 @@
     ['sanidad','Sanidad'],
     ['mantenimiento','Mantenimiento'],
     ['transporte','Transporte'],
-    ['policiamilitar','Policía Militar']
+    ['policiamilitar','Policía Militar'],
+    ['accion_integral','Acción Integral']
   ];
 
   // Cada "Unidad base" agrupa sus propios tipos particulares (mecanizado/motorizado/blindado
@@ -3616,6 +3618,10 @@
     policiamilitar: [
       ['policiamilitar','General'],
       ['bapom','BAPOM']
+    ],
+    accion_integral: [
+      ['baid','BAID'],
+      ['cpaid','CPAID']
     ]
   };
   // Blindada, Aerotransportada, Anfibios, Motorizada y Desconocido son comunes a todas las unidades base.
@@ -3658,7 +3664,8 @@
     sanidad: 'medical',
     mantenimiento: 'mantenimiento',
     transporte: 'transporte',
-    policiamilitar: 'policiamilitar'
+    policiamilitar: 'policiamilitar',
+    accion_integral: 'generic'
   };
 
   var MIL_ECHELONS = [
@@ -6643,22 +6650,36 @@
       return { x: -dy/len, y: dx/len };
     }
 
+    // "Av Aprox Aérea": el ancho del asta se interpola de +sw (sin cruzar) en la cola a -sw
+    // (cruzado) justo donde el asta se une con la cabeza, de modo que el borde que iba por la
+    // izquierda termina conectándose al lado derecho de la cabeza y viceversa — produciendo el
+    // cruce en X que pide el usuario, sin tocar la cabeza (que se arma igual que siempre).
+    var twist = !!arrow.avAproxAerea;
+    var jSafe = Math.max(j, 1);
+    var TWIST_RAMP_START = 0.7; // el cruce ocurre solo en el último tramo, cerca de la cabeza
+
     var left = [], right = [];
     for (var i=0;i<=j;i++){
       var n = normalAt(i);
+      var factor = 1;
+      if (twist){
+        var t = i/jSafe;
+        factor = (t <= TWIST_RAMP_START) ? 1 : (1 - 2*((t-TWIST_RAMP_START)/(1-TWIST_RAMP_START)));
+      }
       if (i === 0 && (arrow.tailLeftOffset || arrow.tailRightOffset)){
         left.push(arrow.tailLeftOffset ? { x: pts[0].x+arrow.tailLeftOffset.x, y: pts[0].y+arrow.tailLeftOffset.y } : { x: pts[0].x+n.x*sw, y: pts[0].y+n.y*sw });
         right.push(arrow.tailRightOffset ? { x: pts[0].x+arrow.tailRightOffset.x, y: pts[0].y+arrow.tailRightOffset.y } : { x: pts[0].x-n.x*sw, y: pts[0].y-n.y*sw });
         continue;
       }
-      left.push({ x: pts[i].x+n.x*sw, y: pts[i].y+n.y*sw });
-      right.push({ x: pts[i].x-n.x*sw, y: pts[i].y-n.y*sw });
+      left.push({ x: pts[i].x+n.x*sw*factor, y: pts[i].y+n.y*sw*factor });
+      right.push({ x: pts[i].x-n.x*sw*factor, y: pts[i].y-n.y*sw*factor });
     }
     var segDx = pts[j+1].x-pts[j].x, segDy = pts[j+1].y-pts[j].y;
     var segLen = Math.sqrt(segDx*segDx+segDy*segDy) || 1;
     var segN = { x:-segDy/segLen, y:segDx/segLen };
-    left.push({ x: shaftEndPt.x+segN.x*sw, y: shaftEndPt.y+segN.y*sw });
-    right.push({ x: shaftEndPt.x-segN.x*sw, y: shaftEndPt.y-segN.y*sw });
+    var endFactor = twist ? -1 : 1;
+    left.push({ x: shaftEndPt.x+segN.x*sw*endFactor, y: shaftEndPt.y+segN.y*sw*endFactor });
+    right.push({ x: shaftEndPt.x-segN.x*sw*endFactor, y: shaftEndPt.y-segN.y*sw*endFactor });
     var headBaseLeft = { x: shaftEndPt.x+segN.x*hw, y: shaftEndPt.y+segN.y*hw };
     var headBaseRight = { x: shaftEndPt.x-segN.x*hw, y: shaftEndPt.y-segN.y*hw };
     var tip = pts[N];
@@ -6673,7 +6694,7 @@
     var headLength = Math.max(len*0.3, shaftWidth*2);
     var headWidth = shaftWidth*2.6;
     return { tail:tail, head:head, curve:null, shaftWidth:shaftWidth, headLength:headLength, headWidth:headWidth,
-      tailLeftOffset:null, tailRightOffset:null, corridorEnabled:false, corridorEchelon:'', mainAttack:false };
+      tailLeftOffset:null, tailRightOffset:null, corridorEnabled:false, corridorEchelon:'', mainAttack:false, avAproxAerea:false };
   }
 
   function computeArrowCenterline(arrow){
@@ -6762,7 +6783,8 @@
       shaftWidth: a.shaftWidth, headWidth: a.headWidth, headLength: a.headLength,
       tailLeftOffset: a.tailLeftOffset ? { x:a.tailLeftOffset.x, y:a.tailLeftOffset.y } : null,
       tailRightOffset: a.tailRightOffset ? { x:a.tailRightOffset.x, y:a.tailRightOffset.y } : null,
-      corridorEnabled: !!a.corridorEnabled, corridorEchelon: a.corridorEchelon || '', mainAttack: !!a.mainAttack };
+      corridorEnabled: !!a.corridorEnabled, corridorEchelon: a.corridorEchelon || '', mainAttack: !!a.mainAttack,
+      avAproxAerea: !!a.avAproxAerea };
   }
 
   // Replica exactamente el cálculo geométrico de computeArrowPoints (bezier, arco, punto
@@ -11498,6 +11520,26 @@
           syncArrowMainAttack(shape);
         });
 
+        var avAproxField = document.createElement('div');
+        avAproxField.className = 'style-field';
+        avAproxField.style.cssText = 'padding-top:2px;';
+        var avAproxLabel = document.createElement('label');
+        avAproxLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var avAproxCheck = document.createElement('input');
+        avAproxCheck.type = 'checkbox';
+        avAproxCheck.checked = !!shape._arrow.avAproxAerea;
+        var avAproxText = document.createElement('span');
+        avAproxText.textContent = 'Av Aprox Aérea';
+        avAproxLabel.appendChild(avAproxCheck);
+        avAproxLabel.appendChild(avAproxText);
+        avAproxField.appendChild(avAproxLabel);
+        styleBlock.appendChild(avAproxField);
+
+        avAproxCheck.addEventListener('change', function(ev){
+          shape._arrow.avAproxAerea = ev.target.checked;
+          rebuildArrow(shape);
+        });
+
         var handleHint = document.createElement('div');
         handleHint.className = 'hint';
         handleHint.style.marginTop = '2px';
@@ -11674,7 +11716,8 @@
           tailRightOffset: shape._arrow.tailRightOffset || null,
           corridorEnabled: !!shape._arrow.corridorEnabled,
           corridorEchelon: shape._arrow.corridorEchelon || '',
-          mainAttack: !!shape._arrow.mainAttack
+          mainAttack: !!shape._arrow.mainAttack,
+          avAproxAerea: !!shape._arrow.avAproxAerea
         };
       }
       if (shape && shape._isTacticalTask){
@@ -11947,7 +11990,8 @@
             tailRightOffset: p.arrow.tailRightOffset || null,
             corridorEnabled: !!p.arrow.corridorEnabled,
             corridorEchelon: p.arrow.corridorEchelon || '',
-            mainAttack: !!p.arrow.mainAttack
+            mainAttack: !!p.arrow.mainAttack,
+            avAproxAerea: !!p.arrow.avAproxAerea
           };
           rebuildArrow(layer);
         }
