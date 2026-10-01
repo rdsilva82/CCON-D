@@ -573,8 +573,11 @@
   .veh-category-row{ display:flex; gap:6px; }
   .veh-category-btn{ flex:1; border:1px solid var(--border); border-radius:6px; background:var(--surface-alt); padding:6px 4px; font-size:11.5px; font-weight:600; color:var(--navy); cursor:pointer; font-family:inherit; }
   .veh-category-btn.selected{ border-color:var(--gold); background:var(--highlight-tint); }
-  .veh-type-row{ display:flex; gap:6px; flex-wrap:wrap; padding-top:4px; }
-  .veh-type-btn{ border:2px solid var(--border); border-radius:8px; background:var(--surface-alt); padding:3px; cursor:pointer; width:40px; height:40px; display:flex; align-items:center; justify-content:center; }
+  /* Exactamente 3 filas: los 19 (o más) íconos de tipo se reparten en 3 filas por columna,
+     generando tantas columnas como haga falta (scroll horizontal si no caben), en vez de
+     envolver línea por línea como antes — así cada ícono puede dibujarse más grande. */
+  .veh-type-row{ display:grid; grid-template-rows:repeat(3, 1fr); grid-auto-flow:column; grid-auto-columns:56px; gap:6px; padding-top:4px; overflow-x:auto; }
+  .veh-type-btn{ border:2px solid var(--border); border-radius:8px; background:var(--surface-alt); padding:3px; cursor:pointer; width:56px; height:56px; display:flex; align-items:center; justify-content:center; }
   .veh-type-btn.selected{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-light) inset; }
   .veh-type-btn svg{ display:block; }
   .veh-type-empty{ font-size:11.5px; color:var(--muted); padding:6px 0; }
@@ -4486,43 +4489,74 @@
       return '<rect x="12" y="12" width="36" height="36" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
     }
     if (affiliation === 'unknown'){
-      return '<path d="M30,10 Q37.1,22.9 50,30 Q37.1,37.1 30,50 Q22.9,37.1 10,30 Q22.9,22.9 30,10 Z" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+      // Cuatrifolio real (4 círculos superpuestos): un cuadrado de "medio ancho" 10 centrado en
+      // (30,30) cuyos 4 lados se reemplazan por semicírculos de radio 10 que abultan hacia afuera,
+      // dejando una muesca cóncava en cada una de las 4 esquinas (a 45°). Las 4 esquinas del
+      // cuadrado interno quedan en (20,20) (40,20) (40,40) (20,40).
+      return '<path d="M 40,20 A 10,10 0 0,1 40,40 A 10,10 0 0,1 20,40 A 10,10 0 0,1 20,20 A 10,10 0 0,1 40,20 Z" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
     }
     return '<circle cx="30" cy="30" r="20" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
   }
 
-  // "Sombrero" punteado sobre el marco para la condición Simulado, igual al usado por el
-  // modificador "dummy" de Unidades (milModifierSVG), reutilizado aquí como condición propia.
+  // "Sombrero" punteado sobre el marco para la condición Simulado: más ancho, más grueso y
+  // claramente separado por encima del marco (a diferencia del modificador "dummy" de Unidades,
+  // que queda pegado al borde superior del símbolo).
   function vehDummyOverlaySVG(condition){
     if (condition !== 'dummy') return '';
-    return '<path d="M8,16 L30,10 L52,16" fill="none" stroke="#000" stroke-width="2" stroke-dasharray="3,2.5"/>';
+    return '<path d="M4,6 L30,-6 L56,6" fill="none" stroke="#000" stroke-width="2.5" stroke-dasharray="7,5" stroke-linecap="round"/>';
   }
 
   /* ---- Piezas reutilizables de los glifos de vehículos de combate ---- */
   function vehHullRect(){
     return '<rect x="19" y="25" width="22" height="10" fill="none" stroke="#000" stroke-width="2"/>';
   }
+  // "Orejas" de la familia tanque: dos líneas verticales sobre los bordes izquierdo y derecho del
+  // casco, que sobresalen tanto por arriba como por abajo del rectángulo (no rectángulos laterales).
   function vehEars(){
-    return '<rect x="14" y="27.5" width="5" height="5" fill="none" stroke="#000" stroke-width="1.8"/>' +
-           '<rect x="41" y="27.5" width="5" height="5" fill="none" stroke="#000" stroke-width="1.8"/>';
+    return '<line x1="19" y1="19" x2="19" y2="41" stroke="#000" stroke-width="2"/>' +
+           '<line x1="41" y1="19" x2="41" y2="41" stroke="#000" stroke-width="2"/>';
   }
+  // Líneas divisorias internas (liviano=1, mediano=2, pesado=3): agrupadas hacia el centro del
+  // casco en vez de repartidas equidistantes de borde a borde.
   function vehDividerLines(n){
     if (!n) return '';
-    var xs = (n === 1) ? [30] : (n === 2) ? [26,34] : [24,30,36];
+    var xs = (n === 1) ? [30] : (n === 2) ? [28,32] : [27,30,33];
     return xs.map(function(x){ return '<line x1="'+x+'" y1="25" x2="'+x+'" y2="35" stroke="#000" stroke-width="1.6"/>'; }).join('');
   }
-  function vehWheels3(cy){
-    cy = cy || 41;
-    var circles = [22,30,38].map(function(x){ return '<circle cx="'+x+'" cy="'+cy+'" r="2.3" fill="none" stroke="#000" stroke-width="1.6"/>'; }).join('');
-    return '<line x1="20" y1="'+cy+'" x2="40" y2="'+cy+'" stroke="#000" stroke-width="1.4"/>' + circles;
+  // Tres ruedas por FUERA del marco (por debajo de él), usadas por todas las variantes "a rueda"
+  // salvo "Vehículo a rueda" y "Vehículo todo terreno con protección blindada" (que llevan la
+  // rueda integrada a su propio glifo de cápsula).
+  function vehWheelsBelowFrame(){
+    var circles = [20,30,40].map(function(x){ return '<circle cx="'+x+'" cy="57" r="3" fill="none" stroke="#000" stroke-width="1.6"/>'; }).join('');
+    return '<line x1="18" y1="53" x2="42" y2="53" stroke="#000" stroke-width="1.6"/>' + circles;
   }
-  function vehWheels2(cy){
-    cy = cy || 38;
-    var circles = [24,36].map(function(x){ return '<circle cx="'+x+'" cy="'+cy+'" r="2.6" fill="none" stroke="#000" stroke-width="1.6"/>'; }).join('');
-    return '<line x1="22" y1="'+cy+'" x2="38" y2="'+cy+'" stroke="#000" stroke-width="1.4"/>' + circles;
+  // Cápsula (cuerpo "estadio": rectángulo con extremos semicirculares) apoyada directamente sobre
+  // una línea base, con 2 ruedas debajo tocando esa línea. Usada por "Vehículo a rueda" y, con un
+  // elemento adicional encima, por "Vehículo todo terreno con protección blindada".
+  function vehCapsuleOnWheels(){
+    return '<rect x="18" y="23" width="24" height="10" rx="5" ry="5" fill="none" stroke="#000" stroke-width="2"/>' +
+      '<line x1="14" y1="33" x2="46" y2="33" stroke="#000" stroke-width="1.6"/>' +
+      '<circle cx="20" cy="33" r="4" fill="none" stroke="#000" stroke-width="1.6"/>' +
+      '<circle cx="40" cy="33" r="4" fill="none" stroke="#000" stroke-width="1.6"/>';
   }
-  function vehRecuperadorDiamond(){
-    return '<polygon points="30,22 38,30 30,38 22,30" fill="none" stroke="#000" stroke-width="2"/>';
+  // Símbolo central de la familia "recuperador de tanque": una línea horizontal con un gancho en
+  // cada extremo (uno abriendo hacia la derecha, el otro hacia la izquierda), en vez del rombo.
+  function vehRecuperadorHooks(){
+    return '<path d="M25,26 Q20,30 25,34" fill="none" stroke="#000" stroke-width="1.8"/>' +
+      '<path d="M35,26 Q40,30 35,34" fill="none" stroke="#000" stroke-width="1.8"/>' +
+      '<line x1="25" y1="30" x2="35" y2="30" stroke="#000" stroke-width="1.8"/>';
+  }
+  // Misma pieza que vehRecuperadorHooks(), a menor escala, para encajar dentro del techo más
+  // angosto de "VCTP recuperador".
+  function vehRecuperadorHooksSmall(){
+    return '<path d="M27,28.5 Q23.5,32 27,35.5" fill="none" stroke="#000" stroke-width="1.5"/>' +
+      '<path d="M33,28.5 Q36.5,32 33,35.5" fill="none" stroke="#000" stroke-width="1.5"/>' +
+      '<line x1="27" y1="32" x2="33" y2="32" stroke="#000" stroke-width="1.5"/>';
+  }
+  // Rombo cuyas puntas izquierda/derecha tocan las "orejas" (líneas verticales) del casco; usado
+  // por la familia "vehículo de combate de infantería" en vez de la X.
+  function vehInfantryDiamond(){
+    return '<polygon points="30,25 41,30 30,35 19,30" fill="none" stroke="#000" stroke-width="2"/>';
   }
 
   // Glifo interno (el "dibujo" propio de cada tipo de vehículo), independiente de la afiliación:
@@ -4530,12 +4564,11 @@
   function vehTypeGlyphSVG(tipo){
     switch(tipo){
       case 'uso_general':
-        return '<path d="M21,20 L21,36 L39,36 L39,20" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        return '<path d="M21,20 Q30,14 39,20 L39,36 L21,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
       case 'rueda':
-        return '<rect x="20" y="22" width="20" height="10" rx="5" fill="none" stroke="#000" stroke-width="2"/>' + vehWheels2(38);
+        return vehCapsuleOnWheels();
       case 'todo_terreno_blindado':
-        return '<rect x="20" y="23" width="20" height="9" rx="4.5" fill="none" stroke="#000" stroke-width="2"/>' +
-               '<path d="M24,23 Q30,17 36,23" fill="none" stroke="#000" stroke-width="1.8"/>' + vehWheels2(37);
+        return vehCapsuleOnWheels() + '<rect x="25" y="15" width="10" height="6" rx="2" fill="none" stroke="#000" stroke-width="1.6"/>';
       case 'tanque':
         return vehHullRect() + vehEars();
       case 'tanque_liviano':
@@ -4545,35 +4578,37 @@
       case 'tanque_pesado':
         return vehHullRect() + vehEars() + vehDividerLines(3);
       case 'tanque_rueda':
-        return vehHullRect() + vehEars() + vehWheels3();
+        return vehHullRect() + vehEars() + vehWheelsBelowFrame();
       case 'tanque_mediano_rueda':
-        return vehHullRect() + vehEars() + vehDividerLines(2) + vehWheels3();
+        return vehHullRect() + vehEars() + vehDividerLines(2) + vehWheelsBelowFrame();
       case 'tanque_pesado_rueda':
-        return vehHullRect() + vehEars() + vehDividerLines(3) + vehWheels3();
+        return vehHullRect() + vehEars() + vehDividerLines(3) + vehWheelsBelowFrame();
       case 'vctp':
-        return '<path d="M19,36 L19,28 L30,20 L41,28 L41,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>';
+        return vehEars() + '<path d="M19,25 L19,21 L30,13 L41,21 L41,25" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
+          '<line x1="19" y1="35" x2="41" y2="35" stroke="#000" stroke-width="2"/>';
       case 'vctp_rueda':
-        return '<path d="M19,34 L19,27 L30,20 L41,27 L41,34 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' + vehWheels3(40);
+        return vehEars() + '<path d="M19,25 L19,21 L30,13 L41,21 L41,25" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
+          '<line x1="19" y1="35" x2="41" y2="35" stroke="#000" stroke-width="2"/>' + vehWheelsBelowFrame();
       case 'vci':
-        return vehEars() + '<line x1="20" y1="24" x2="40" y2="36" stroke="#000" stroke-width="2.2"/><line x1="40" y1="24" x2="20" y2="36" stroke="#000" stroke-width="2.2"/>';
+        return vehEars() + vehInfantryDiamond();
       case 'vci_rueda':
-        return vehEars() + '<line x1="20" y1="22" x2="40" y2="34" stroke="#000" stroke-width="2.2"/><line x1="40" y1="22" x2="20" y2="34" stroke="#000" stroke-width="2.2"/>' + vehWheels3(41);
+        return vehEars() + vehInfantryDiamond() + vehWheelsBelowFrame();
       case 'vcrt':
-        return vehEars() + vehRecuperadorDiamond();
+        return vehEars() + vehRecuperadorHooks();
       case 'vcrt_liviano':
-        return vehEars() + vehRecuperadorDiamond() + '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>';
+        return vehEars() + vehRecuperadorHooks() + '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>';
       case 'vcrt_mediano':
-        return vehEars() + vehRecuperadorDiamond() +
+        return vehEars() + vehRecuperadorHooks() +
           '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>' +
           '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
       case 'vcrt_pesado':
-        return vehEars() + vehRecuperadorDiamond() +
+        return vehEars() + vehRecuperadorHooks() +
           '<line x1="18" y1="27" x2="22" y2="27" stroke="#000" stroke-width="1.8"/>' +
           '<line x1="18" y1="33" x2="22" y2="33" stroke="#000" stroke-width="1.8"/>' +
           '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
       case 'vctp_recuperador':
         return '<path d="M19,36 L19,28 L30,21 L41,28 L41,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
-          '<polygon points="30,27 35,32 30,37 25,32" fill="none" stroke="#000" stroke-width="1.6"/>' +
+          vehRecuperadorHooksSmall() +
           '<line x1="16" y1="32" x2="19" y2="32" stroke="#000" stroke-width="1.6"/><line x1="41" y1="32" x2="44" y2="32" stroke="#000" stroke-width="1.6"/>';
       default:
         return '';
@@ -4598,18 +4633,21 @@
   // Íconos pequeños (36x36, reutilizando el viewBox de 60x60) para los botones del panel de
   // propiedades: afiliación, condición y selector de tipo dentro de cada categoría.
   function vehAffiliationIconSVG(affiliation){
-    return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">' +
+    return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
       vehFrameSVG(affiliation, 'present') +
       '</svg>';
   }
   function vehConditionIconSVG(condition){
-    return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">' +
+    // style="overflow:visible" es necesario aquí: el "sombrero" de Simulado dibuja por fuera
+    // del viewBox (y negativo) y, a diferencia del ícono grande del mapa, este SVG pequeño no
+    // tenía esa propiedad, por lo que el navegador lo recortaba en el botón del panel.
+    return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
       vehFrameSVG('friendly', condition) +
       vehDummyOverlaySVG(condition) +
       '</svg>';
   }
   function vehTypeIconSVG(tipo){
-    return '<svg width="32" height="32" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">' +
+    return '<svg width="46" height="46" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
       vehFrameSVG('friendly', 'present') +
       vehTypeGlyphSVG(tipo) +
       '</svg>';
@@ -10023,7 +10061,7 @@
 
       var vehPreview = document.createElement('div');
       vehPreview.className = 'veh-preview-box';
-      vehPreview.innerHTML = buildVehiculoSVG(veh).replace('width="60" height="60"', 'width="64" height="64"');
+      vehPreview.innerHTML = buildVehiculoSVG(veh).replace('width="60" height="60"', 'width="96" height="96"');
       vehBlock.appendChild(vehPreview);
 
       var catRow = document.createElement('div');
@@ -10279,7 +10317,7 @@
       body.appendChild(milBlock);
     }
 
-    if (kind === 'marker' && !shape._isMilSymbol){
+    if (kind === 'marker' && !shape._isMilSymbol && !shape._isVehiculo){
       var pointBlock = document.createElement('div');
       pointBlock.className = 'style-block';
 
