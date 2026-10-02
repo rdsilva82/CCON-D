@@ -4661,10 +4661,11 @@
       return '<path d="M 12,50 L 12,10 L 48,10 L 48,50" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
     }
     if (affiliation === 'unknown'){
-      // Nube real de 3 lóbulos (izquierdo, central más grande, derecho) en un único trazo continuo,
-      // igual que en la imagen de referencia: dos jorobas bajas a los costados y una joroba más
-      // alta y ancha en el centro.
-      return '<path d="M 16,47 A 11,11 0 0 1 14,27 A 15,15 0 0 1 44,25 A 11,11 0 0 1 44,47" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+      // Exactamente el mismo cuatrifolio de Vehículos Terrestres (vehFrameSVG), pero sin su lóbulo
+      // inferior: se recorren los mismos 3 arcos (izquierdo, superior, derecho) partiendo de la
+      // esquina inferior izquierda (20,40) y terminando en la inferior derecha (40,40) SIN el arco
+      // que normalmente los uniría por abajo, dejando esa base abierta.
+      return '<path d="M 20,40 A 10,10 0 0,1 20,20 A 10,10 0 0,1 40,20 A 10,10 0 0,1 40,40" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
     }
     return '<path d="M 12,50 L 12,32 Q 12,10 30,10 Q 48,10 48,32 L 48,50" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
   }
@@ -4781,12 +4782,6 @@
   function vehChevronGlyph(cy, half, stroke){
     cy = cy || 28; half = half || 16; stroke = stroke || 7;
     return '<polyline points="' + (30 - half) + ',' + (cy - 8) + ' 30,' + (cy + 6) + ' ' + (30 + half) + ',' + (cy - 8) + '" fill="none" stroke="#000" stroke-width="' + stroke + '" stroke-linecap="round" stroke-linejoin="round"/>';
-  }
-  // Mismo chevron, sin relleno/más fino, usado junto con el anterior para el indicador doble de
-  // UAV de ala rotatoria.
-  function vehChevronOutlineGlyph(cy, half, stroke){
-    cy = cy || 28; half = half || 13; stroke = stroke || 2.5;
-    return '<polyline points="' + (30 - half) + ',' + (cy - 6) + ' 30,' + (cy + 5) + ' ' + (30 + half) + ',' + (cy - 6) + '" fill="none" stroke="#000" stroke-width="' + stroke + '" stroke-linecap="round" stroke-linejoin="round"/>';
   }
 
   // Glifo interno "crudo" (el "dibujo" propio de cada tipo de vehículo), independiente de la
@@ -4919,9 +4914,12 @@
       /* ---- Aéreos: UAV (chevron = indicador de No Tripulado; sumado al glifo de la familia
          correspondiente cuando el dron es de ala rotatoria) ---- */
       case 'uav_ala_fija':
-        return vehChevronGlyph(28, 16, 7);
+        return vehChevronGlyph(27, 12, 5);
       case 'uav_ala_rotatoria':
-        return vehBowtieGlyph(40) + vehChevronGlyph(18, 8, 4) + vehChevronOutlineGlyph(25, 13, 2.5);
+        // El de ala rotatoria es el moño del rotor con UN solo chevron (más chico) encima, no dos
+        // ni una "V" doble: mismo criterio que una letra de función sobre el moño (p.ej. ar_ataque),
+        // pero con el chevron de "No Tripulado" en vez de una letra.
+        return vehBowtieGlyph(34) + vehChevronGlyph(19, 9, 4);
 
       default:
         return '';
