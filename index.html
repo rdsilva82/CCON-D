@@ -4508,7 +4508,11 @@
     ['ingenieros','Ingenieros'],
     ['logisticos','Logísticos']
   ];
-  var VEH_CATEGORIES_AEREO = [];
+  var VEH_CATEGORIES_AEREO = [
+    ['ala_fija','Ala Fija'],
+    ['ala_rotatoria','Ala Rotatoria'],
+    ['uav','UAV']
+  ];
   var VEH_CATEGORIES_NAVAL = [];
   var VEH_CATEGORIES_BY_TIPOVEHICULO = {
     terrestre: VEH_CATEGORIES_TERRESTRE,
@@ -4543,9 +4547,64 @@
     ingenieros: VEH_TYPES_INGENIEROS,
     logisticos: VEH_TYPES_LOGISTICOS
   };
+
+  // ---- Aéreos: Ala Fija, Ala Rotatoria y UAV. Los códigos de tipo llevan el prefijo de su
+  // categoría (af_/ar_/uav_) porque vehTypeGlyphSVG(tipo) despacha por un único string global, y
+  // varias categorías reutilizan la misma letra de función (p.ej. "H"=CSAR tanto en Ala Fija como
+  // en Ala Rotatoria) con glifos distintos.
+  var VEH_TYPES_ALA_FIJA = [
+    ['af_generico','Vehículo aéreo'],
+    ['af_militar','Vehículo aéreo militar'],
+    ['af_fijo','Vehículo aéreo de ala fija'],
+    ['af_bombardero','Bombardero'],
+    ['af_caza','Caza'],
+    ['af_interceptor','Interceptor'],
+    ['af_entrenamiento','Entrenamiento'],
+    ['af_ataque','Ataque'],
+    ['af_vstol','VSTOL'],
+    ['af_tanker','Tanker'],
+    ['af_carga','Carga'],
+    ['af_cme','Contramedidas Electrónicas'],
+    ['af_medevac','MEDEVAC'],
+    ['af_reconocimiento','Reconocimiento'],
+    ['af_alerta_temprana','Alerta temprana'],
+    ['af_reconocimiento_electronico','Reconocimiento electrónico'],
+    ['af_reconocimiento_fotografico','Reconocimiento fotográfico'],
+    ['af_patrulla','Patrulla'],
+    ['af_asuw','ASUW'],
+    ['af_contraminas','Contraminas'],
+    ['af_utilitario','Utilitario'],
+    ['af_c3i','C3I'],
+    ['af_csar','CSAR'],
+    ['af_puesto_comando','Puesto Comando'],
+    ['af_sof','SOF']
+  ];
+  var VEH_TYPES_ALA_ROTATORIA = [
+    ['ar_generico','Vehículo de ala rotatoria'],
+    ['ar_ataque','De ataque'],
+    ['ar_asw','De guerra antisubmarina'],
+    ['ar_utilitario','Utilitario'],
+    ['ar_csar','CSAR'],
+    ['ar_reconocimiento','De Reconocimiento'],
+    ['ar_carga','De Carga'],
+    ['ar_medevac','MEDEVAC'],
+    ['ar_entrenamiento','De Entrenamiento'],
+    ['ar_sof','De SOF'],
+    ['ar_puesto_comando','De Puesto Comando']
+  ];
+  var VEH_TYPES_UAV = [
+    ['uav_ala_fija','Dron de Ala Fija'],
+    ['uav_ala_rotatoria','Dron de Ala Rotatoria']
+  ];
+  var VEH_TYPES_BY_CATEGORY_AEREO = {
+    ala_fija: VEH_TYPES_ALA_FIJA,
+    ala_rotatoria: VEH_TYPES_ALA_ROTATORIA,
+    uav: VEH_TYPES_UAV
+  };
+
   var VEH_TYPES_BY_CATEGORY_BY_TIPOVEHICULO = {
     terrestre: VEH_TYPES_BY_CATEGORY_TERRESTRE,
-    aereo: {},
+    aereo: VEH_TYPES_BY_CATEGORY_AEREO,
     naval: {}
   };
 
@@ -4583,6 +4642,31 @@
       return '<path d="M 40,20 A 10,10 0 0,1 40,40 A 10,10 0 0,1 20,40 A 10,10 0 0,1 20,20 A 10,10 0 0,1 40,20 Z" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
     }
     return '<circle cx="30" cy="30" r="20" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+  }
+
+  // Marco de los vehículos Aéreos: formas de "pista aérea" (afiliación) en vez de las formas de
+  // Vehículos Terrestres — amigo = domo de techo redondeado, enemigo = casa/pentágono en punta,
+  // neutral = cuadrado, desconocido = nube con 3 jorobas — igual criterio de color/"planned" que
+  // vehFrameSVG.
+  function vehAirFrameSVG(affiliation, condition){
+    var fill = MIL_AFFILIATION_COLORS[affiliation] || MIL_AFFILIATION_COLORS.friendly;
+    var dash = condition === 'planned' ? ' stroke-dasharray="5,3"' : '';
+    if (affiliation === 'hostile'){
+      return '<polygon points="12,50 12,26 30,10 48,26 48,50" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+    }
+    if (affiliation === 'neutral'){
+      return '<rect x="12" y="10" width="36" height="40" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+    }
+    if (affiliation === 'unknown'){
+      return '<path d="M 14,48 A 7,7 0 0 1 14,34 A 8,8 0 0 1 22,20 A 8,8 0 0 1 38,20 A 8,8 0 0 1 46,34 A 7,7 0 0 1 46,48 Z" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+    }
+    return '<path d="M 12,50 L 12,32 Q 12,10 30,10 Q 48,10 48,32 L 48,50 Z" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
+  }
+  // Elige el marco de afiliación correcto según el tipo de vehículo: Aéreos usa vehAirFrameSVG,
+  // el resto (Terrestres/Navales, y por compatibilidad las Armas que reutilizan este mismo marco)
+  // sigue usando vehFrameSVG sin cambios.
+  function vehFrameSVGFor(tipoVehiculo, affiliation, condition){
+    return tipoVehiculo === 'aereo' ? vehAirFrameSVG(affiliation, condition) : vehFrameSVG(affiliation, condition);
   }
 
   // "Sombrero" punteado sobre el marco para la condición Simulado: más ancho, más grueso y
@@ -4661,6 +4745,44 @@
       '<line x1="19" y1="35" x2="41" y2="35" stroke="#000" stroke-width="2"/>';
   }
 
+  /* ---- Piezas reutilizables de los glifos de vehículos Aéreos (Ala Fija / Ala Rotatoria / UAV) ---- */
+  // Letra o código de función inscripto (igual criterio que milGlyphSVG con MIL_TEXT_UNIT_CODES):
+  // centrado horizontalmente, con el tamaño de letra ajustado según la longitud del texto.
+  function vehAirLetterGlyph(txt, y, fs){
+    y = y || 37;
+    fs = fs || (txt.length >= 3 ? 12 : (txt.length === 2 ? 16 : 20));
+    return '<text x="30" y="' + y + '" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="' + fs + '" font-weight="800" fill="#000">' + txt + '</text>';
+  }
+  // Cruz de MEDEVAC, centrada en (30,cy), de "half" unidades de brazo.
+  function vehAirCrossGlyph(cy, half, stroke){
+    cy = cy || 30; half = half || 8; stroke = stroke || 4;
+    return '<line x1="30" y1="' + (cy - half) + '" x2="30" y2="' + (cy + half) + '" stroke="#000" stroke-width="' + stroke + '"/>' +
+      '<line x1="' + (30 - half) + '" y1="' + cy + '" x2="' + (30 + half) + '" y2="' + cy + '" stroke="#000" stroke-width="' + stroke + '"/>';
+  }
+  // Silueta de avión de ala fija (fuselaje en punta + alas en flecha + cola en V), estilo ícono de
+  // aeropuerto, usada como glifo genérico de "Vehículo aéreo de ala fija".
+  function vehAirplaneGlyph(){
+    return '<polygon points="30,13 33,27 50,35 33,31 32,41 40,38 30,34 20,38 28,41 27,31 10,35 27,27" fill="#000"/>';
+  }
+  // "Moño" (dos triángulos opuestos por el vértice) = símbolo de ala rotatoria, centrado en
+  // (30,cy); misma forma que milGlyphSVG('rotarywing', ...) para Unidades.
+  function vehBowtieGlyph(cy){
+    cy = cy || 30;
+    return '<polygon points="14,' + (cy - 10) + ' 30,' + cy + ' 14,' + (cy + 10) + '" fill="#000"/>' +
+      '<polygon points="46,' + (cy - 10) + ' 30,' + cy + ' 46,' + (cy + 10) + '" fill="#000"/>';
+  }
+  // Chevron grueso en "V" (indicador de No Tripulado/UAV), relleno y centrado en (30,cy).
+  function vehChevronGlyph(cy, half, stroke){
+    cy = cy || 28; half = half || 16; stroke = stroke || 7;
+    return '<polyline points="' + (30 - half) + ',' + (cy - 8) + ' 30,' + (cy + 6) + ' ' + (30 + half) + ',' + (cy - 8) + '" fill="none" stroke="#000" stroke-width="' + stroke + '" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  // Mismo chevron, sin relleno/más fino, usado junto con el anterior para el indicador doble de
+  // UAV de ala rotatoria.
+  function vehChevronOutlineGlyph(cy, half, stroke){
+    cy = cy || 28; half = half || 13; stroke = stroke || 2.5;
+    return '<polyline points="' + (30 - half) + ',' + (cy - 6) + ' 30,' + (cy + 5) + ' ' + (30 + half) + ',' + (cy - 6) + '" fill="none" stroke="#000" stroke-width="' + stroke + '" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+
   // Glifo interno (el "dibujo" propio de cada tipo de vehículo), independiente de la afiliación:
   // se dibuja siempre en negro sobre el marco de color correspondiente, igual que milGlyphSVG.
   function vehTypeGlyphSVG(tipo){
@@ -4710,6 +4832,91 @@
           '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
       case 'vctp_recuperador':
         return vehRoofWithPosts() + vehRecuperadorHooksSmall();
+
+      /* ---- Aéreos: Ala Fija (letra/código de función inscripto; sin modificador = genérico) ---- */
+      case 'af_generico':
+        return '';
+      case 'af_militar':
+        return vehAirLetterGlyph('MIL', 36, 13);
+      case 'af_fijo':
+        return vehAirplaneGlyph();
+      case 'af_bombardero':
+        return vehAirLetterGlyph('B');
+      case 'af_caza':
+        return vehAirLetterGlyph('F');
+      case 'af_interceptor':
+        return vehAirLetterGlyph('I');
+      case 'af_entrenamiento':
+        return vehAirLetterGlyph('T');
+      case 'af_ataque':
+        return vehAirLetterGlyph('A');
+      case 'af_vstol':
+        return vehAirLetterGlyph('L');
+      case 'af_tanker':
+        return vehAirLetterGlyph('K');
+      case 'af_carga':
+        return vehAirLetterGlyph('C');
+      case 'af_cme':
+        return vehAirLetterGlyph('J');
+      case 'af_medevac':
+        return vehAirCrossGlyph(30, 10, 4);
+      case 'af_reconocimiento':
+        return vehAirLetterGlyph('R');
+      case 'af_alerta_temprana':
+        return vehAirLetterGlyph('W', 36, 16);
+      case 'af_reconocimiento_electronico':
+        return vehAirLetterGlyph('Z');
+      case 'af_reconocimiento_fotografico':
+        return vehAirLetterGlyph('X');
+      case 'af_patrulla':
+        return vehAirLetterGlyph('P');
+      case 'af_asuw':
+        return vehAirLetterGlyph('N');
+      case 'af_contraminas':
+        return vehAirLetterGlyph('MCM', 35, 11);
+      case 'af_utilitario':
+        return vehAirLetterGlyph('U');
+      case 'af_c3i':
+        return vehAirLetterGlyph('Y');
+      case 'af_csar':
+        return vehAirLetterGlyph('H');
+      case 'af_puesto_comando':
+        return vehAirLetterGlyph('D');
+      case 'af_sof':
+        return vehAirLetterGlyph('M');
+
+      /* ---- Aéreos: Ala Rotatoria (moño del rotor; letra/cruz de función por encima cuando
+         corresponde, salvo el genérico que lleva el moño centrado solo) ---- */
+      case 'ar_generico':
+        return vehBowtieGlyph(30);
+      case 'ar_ataque':
+        return vehBowtieGlyph(34) + vehAirLetterGlyph('A', 20, 14);
+      case 'ar_asw':
+        return vehBowtieGlyph(34) + vehAirLetterGlyph('S', 20, 14);
+      case 'ar_utilitario':
+        return vehBowtieGlyph(34) + vehAirLetterGlyph('U', 20, 14);
+      case 'ar_csar':
+        return vehBowtieGlyph(34) + vehAirLetterGlyph('H', 20, 14);
+      case 'ar_reconocimiento':
+        return vehBowtieGlyph(34) + vehAirLetterGlyph('R', 20, 14);
+      case 'ar_carga':
+        return vehBowtieGlyph(34) + vehAirLetterGlyph('C', 20, 14);
+      case 'ar_medevac':
+        return vehBowtieGlyph(34) + vehAirCrossGlyph(19, 6, 3);
+      case 'ar_entrenamiento':
+        return vehBowtieGlyph(34) + vehAirLetterGlyph('T', 20, 14);
+      case 'ar_sof':
+        return vehBowtieGlyph(34) + vehAirLetterGlyph('M', 20, 14);
+      case 'ar_puesto_comando':
+        return vehBowtieGlyph(34) + vehAirLetterGlyph('D', 20, 14);
+
+      /* ---- Aéreos: UAV (chevron = indicador de No Tripulado; sumado al glifo de la familia
+         correspondiente cuando el dron es de ala rotatoria) ---- */
+      case 'uav_ala_fija':
+        return vehChevronGlyph(28, 16, 7);
+      case 'uav_ala_rotatoria':
+        return vehBowtieGlyph(40) + vehChevronGlyph(18, 8, 4) + vehChevronOutlineGlyph(25, 13, 2.5);
+
       default:
         return '';
     }
@@ -4718,7 +4925,7 @@
   function buildVehiculoSVG(veh){
     veh = veh || defaultVehiculoParams();
     return '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVG(veh.affiliation, veh.condition) +
+      vehFrameSVGFor(veh.tipoVehiculo, veh.affiliation, veh.condition) +
       vehTypeGlyphSVG(veh.tipo) +
       vehDummyOverlaySVG(veh.condition) +
       '</svg>';
@@ -4742,28 +4949,30 @@
   }
 
   // Íconos pequeños (36x36, reutilizando el viewBox de 60x60) para los botones del panel de
-  // propiedades: afiliación, condición y selector de tipo dentro de cada categoría.
-  function vehAffiliationIconSVG(affiliation){
+  // propiedades: afiliación, condición y selector de tipo dentro de cada categoría. El parámetro
+  // "tipoVehiculo" es opcional (lo pasa Vehículos, no Armas, que reutiliza estas tres funciones
+  // sin ese tercer argumento y por lo tanto sigue viendo siempre el marco de Vehículos Terrestres).
+  function vehAffiliationIconSVG(affiliation, tipoVehiculo){
     return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVG(affiliation, 'present') +
+      vehFrameSVGFor(tipoVehiculo, affiliation, 'present') +
       '</svg>';
   }
-  function vehConditionIconSVG(condition){
+  function vehConditionIconSVG(condition, tipoVehiculo){
     // style="overflow:visible" es necesario aquí: el "sombrero" de Simulado dibuja por fuera
     // del viewBox (y negativo) y, a diferencia del ícono grande del mapa, este SVG pequeño no
     // tenía esa propiedad, por lo que el navegador lo recortaba en el botón del panel.
     return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVG('friendly', condition) +
+      vehFrameSVGFor(tipoVehiculo, 'friendly', condition) +
       vehDummyOverlaySVG(condition) +
       '</svg>';
   }
-  function vehTypeIconSVG(tipo, affiliation){
+  function vehTypeIconSVG(tipo, affiliation, tipoVehiculo){
     // width/height 100% (en vez de un tamaño fijo en px) para que el ícono llene el botón,
     // que ahora ocupa un tercio del ancho del panel (3 columnas) en vez de un tamaño fijo chico.
     // Sensible a la afiliación actual (igual que armaTypeIconSVG): al cambiar la afiliación, los
     // símbolos de la grilla de tipos se repintan con el marco nuevo.
     return '<svg width="100%" height="100%" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVG(affiliation || 'friendly', 'present') +
+      vehFrameSVGFor(tipoVehiculo, affiliation || 'friendly', 'present') +
       vehTypeGlyphSVG(tipo) +
       '</svg>';
   }
@@ -10721,7 +10930,7 @@
       affLabel.className = 'veh-section-label';
       affLabel.textContent = 'Afiliación';
       vehBlock.appendChild(affLabel);
-      vehBlock.appendChild(vehPickRow(MIL_AFFILIATIONS, veh.affiliation, vehAffiliationIconSVG, function(val){
+      vehBlock.appendChild(vehPickRow(MIL_AFFILIATIONS, veh.affiliation, function(val){ return vehAffiliationIconSVG(val, veh.tipoVehiculo); }, function(val){
         veh.affiliation = val;
         applyVehiculoSymbol(shape);
         renderLayerList();
@@ -10732,7 +10941,7 @@
       condLabel.className = 'veh-section-label';
       condLabel.textContent = 'Condición';
       vehBlock.appendChild(condLabel);
-      vehBlock.appendChild(vehPickRow(VEH_CONDITIONS, veh.condition, vehConditionIconSVG, function(val){
+      vehBlock.appendChild(vehPickRow(VEH_CONDITIONS, veh.condition, function(val){ return vehConditionIconSVG(val, veh.tipoVehiculo); }, function(val){
         veh.condition = val;
         applyVehiculoSymbol(shape);
         renderLayerList();
@@ -10780,7 +10989,7 @@
           btn.type = 'button';
           btn.className = 'veh-type-btn' + (veh.tipo === opt[0] ? ' selected' : '');
           btn.title = opt[1];
-          btn.innerHTML = vehTypeIconSVG(opt[0], veh.affiliation);
+          btn.innerHTML = vehTypeIconSVG(opt[0], veh.affiliation, veh.tipoVehiculo);
           btn.addEventListener('click', function(){
             veh.tipo = opt[0];
             applyVehiculoSymbol(shape);
