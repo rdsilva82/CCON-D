@@ -6394,15 +6394,19 @@
       lines.push({ pts: [sA, sB, sC, sD, sA] });
 
       var sBoxH = segHalfH*2*0.82, sBoxW = sBoxH*0.62;
-      // Caja izquierda, pegada al lado de d=0.
-      var lOuterD = -sBoxW, lInnerD = 0;
+      // Pequeña separación entre el rectángulo central y cada caja "S", y entre cada caja y su
+      // flecha (en vez de quedar pegadas/tocándose).
+      var sBoxGap = Math.max(len*0.035, sBoxW*0.25);
+      var sArrowGap = sBoxGap;
+      // Caja izquierda, separada del lado de d=0.
+      var lInnerD = -sBoxGap, lOuterD = lInnerD - sBoxW;
       var l1 = taskPt(g.base, dir, perp, lOuterD, -sBoxH/2), l2 = taskPt(g.base, dir, perp, lInnerD, -sBoxH/2),
           l3 = taskPt(g.base, dir, perp, lInnerD, sBoxH/2), l4 = taskPt(g.base, dir, perp, lOuterD, sBoxH/2);
       lines.push({ pts: [l1, l2, l3, l4, l1] });
       labels.push({ pos: taskPt(g.base, dir, perp, (lOuterD+lInnerD)/2, 0), text:'S', bearing: taskBearingDeg(dir) });
 
-      // Caja derecha, pegada al lado de d=len.
-      var rInnerD = len, rOuterD = len+sBoxW;
+      // Caja derecha, separada del lado de d=len.
+      var rInnerD = len + sBoxGap, rOuterD = rInnerD + sBoxW;
       var r1b = taskPt(g.base, dir, perp, rInnerD, -sBoxH/2), r2b = taskPt(g.base, dir, perp, rOuterD, -sBoxH/2),
           r3b = taskPt(g.base, dir, perp, rOuterD, sBoxH/2), r4b = taskPt(g.base, dir, perp, rInnerD, sBoxH/2);
       lines.push({ pts: [r1b, r2b, r3b, r4b, r1b] });
@@ -6418,7 +6422,7 @@
         var m2 = taskPt(p1, vd, vp, vl*0.55, -amp*0.4);
         return [p1, m1, m2, p2];
       }
-      var leftAnchor = taskPt(g.base, dir, perp, lOuterD, 0);
+      var leftAnchor = taskPt(g.base, dir, perp, lOuterD - sArrowGap, 0);
       var a1 = g.arrow1End || { d:-0.9, p:-0.7 };
       var leftEnd = taskPt(g.base, dir, perp, len*a1.d, len*a1.p);
       var zzL = securitySegLightning(leftAnchor, leftEnd);
@@ -6426,7 +6430,7 @@
       var dvL = localXY(zzL[zzL.length-2], zzL[zzL.length-1]); var dvLl = Math.hypot(dvL.x, dvL.y) || 1;
       heads.push(taskArrowHeadPts(leftEnd, { x:dvL.x/dvLl, y:dvL.y/dvLl }, Math.max(len*0.09,4)));
 
-      var rightAnchor = taskPt(g.base, dir, perp, rOuterD, 0);
+      var rightAnchor = taskPt(g.base, dir, perp, rOuterD + sArrowGap, 0);
       var a2 = g.arrow2End || { d:1.9, p:-0.7 };
       var rightEnd = taskPt(g.base, dir, perp, len*a2.d, len*a2.p);
       var zzR = securitySegLightning(rightAnchor, rightEnd);
