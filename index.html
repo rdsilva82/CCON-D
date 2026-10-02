@@ -543,6 +543,17 @@
   }
   .arma-left-box::before{ display:none !important; }
 
+  /* Texto ("Tipo") a la izquierda de los vehículos Terrestres, vacío por defecto. Sin recuadro,
+     fondo transparente. Altura de letra fija en 15px: 25% de los 60px de alto del ícono del
+     vehículo (mismo criterio que .arma-left-box). */
+  .veh-left-box{
+    background:transparent !important; border:none !important; box-shadow:none !important;
+    color:var(--navy-deep); font-family:Calibri,'Segoe UI',Arial,sans-serif;
+    font-weight:700; font-size:15px; line-height:1.1; text-align:center; padding:0 !important;
+    text-shadow:0 0 3px #fff, 0 0 4px #fff, 0 0 5px #fff;
+  }
+  .veh-left-box::before{ display:none !important; }
+
   .declutter-highlight{
     filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 6px #fff) drop-shadow(0 0 9px rgba(255,196,0,.9));
   }
@@ -1248,10 +1259,26 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a3 3 0 00-4.2 4.2L3 18v3h3l7.5-7.5a3 3 0 004.2-4.2l-2.2 2.2-2-2z"/></svg>
         <span>Equipos</span>
       </button>
-      <button class="tool-btn" data-tool="vehiculos" title="Vehículos: punto para marcar un vehículo (características por definir)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16v-3.5l1.7-4.2A1.5 1.5 0 016.6 7.3h9.3a1.5 1.5 0 011.4 1l1.7 4.2H21v3.5"/><path d="M3.5 16h17" /><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/></svg>
-        <span>Vehículos</span>
-      </button>
+      <div class="tool-btn-wrap" id="vehiculos-wrap">
+        <button class="tool-btn" data-tool="vehiculos-toggle" title="Vehículos: Terrestres, Aéreos, Navales">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16v-3.5l1.7-4.2A1.5 1.5 0 016.6 7.3h9.3a1.5 1.5 0 011.4 1l1.7 4.2H21v3.5"/><path d="M3.5 16h17" /><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/></svg>
+          <span>Vehículos</span>
+        </button>
+        <div class="tool-submenu-row" id="vehiculos-submenu" style="flex-wrap:wrap; max-width:160px;">
+          <button class="tool-btn" data-tool="vehiculos:terrestre" title="Vehículos terrestres: tanques, VCTP, VCI, recuperadores, etc.">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16v-3.5l1.7-4.2A1.5 1.5 0 016.6 7.3h9.3a1.5 1.5 0 011.4 1l1.7 4.2H21v3.5"/><path d="M3.5 16h17" /><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/></svg>
+            <span>Terrestres</span>
+          </button>
+          <button class="tool-btn" data-tool="vehiculos:aereo" title="Vehículos aéreos (próximamente)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 L12 21.5"/><path d="M3 9.5 L21 14.5"/><path d="M8 16 L5 20 M16 16 L19 20"/></svg>
+            <span>Aéreos</span>
+          </button>
+          <button class="tool-btn" data-tool="vehiculos:naval" title="Vehículos navales (próximamente)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15 L20 15 L18 20 L6 20 Z"/><path d="M8 15 V8 L16 8 V15"/><path d="M12 8 V4"/></svg>
+            <span>Navales</span>
+          </button>
+        </div>
+      </div>
       <button class="tool-btn" data-tool="armas" title="Armas: punto para marcar un arma/sistema de armas (características por definir)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l7-7"/><path d="M12.5 5.5l6 6-2 2-1.5-1.5-2 2 1.5 1.5-2 2-6-6z"/><path d="M15 3l1.5 1.5"/><path d="M19.5 7.5L21 9"/></svg>
         <span>Armas</span>
@@ -4369,6 +4396,13 @@
     if (tacticaToggleBtn){
       tacticaToggleBtn.classList.toggle('active', activeToolName === 'tacticaltask' || activeToolName === 'camposminados');
     }
+    // "Vehículos" pasó a ser un botón con submenú (Terrestres/Aéreos/Navales), cuyas opciones usan
+    // data-tool="vehiculos:<tipo>" en vez de "vehiculos" a secas: se resalta el botón contenedor
+    // mientras cualquiera de ellas esté activa, igual que "Táctica" arriba.
+    var vehToggleBtn = document.querySelector('#draw-toolbar [data-tool="vehiculos-toggle"]');
+    if (vehToggleBtn){
+      vehToggleBtn.classList.toggle('active', activeToolName === 'vehiculos');
+    }
   }
 
   var unidadesClickHandler = null;
@@ -4462,11 +4496,25 @@
     ['planned','Futuro'],
     ['dummy','Simulado']
   ];
-  var VEH_CATEGORIES = [
+  // Tipos de vehículo de más alto nivel: Terrestres (lo que ya existía), Aéreos y Navales (por
+  // definir, de momento sin categorías/tipos propios — se muestran como "Próximamente").
+  var VEH_TIPOVEHICULO = [
+    ['terrestre','Terrestres'],
+    ['aereo','Aéreos'],
+    ['naval','Navales']
+  ];
+  var VEH_CATEGORIES_TERRESTRE = [
     ['combate','Combate'],
     ['ingenieros','Ingenieros'],
     ['logisticos','Logísticos']
   ];
+  var VEH_CATEGORIES_AEREO = [];
+  var VEH_CATEGORIES_NAVAL = [];
+  var VEH_CATEGORIES_BY_TIPOVEHICULO = {
+    terrestre: VEH_CATEGORIES_TERRESTRE,
+    aereo: VEH_CATEGORIES_AEREO,
+    naval: VEH_CATEGORIES_NAVAL
+  };
   var VEH_TYPES_COMBATE = [
     ['uso_general','Vehículo de uso general'],
     ['rueda','Vehículo a rueda'],
@@ -4490,14 +4538,30 @@
   ];
   var VEH_TYPES_INGENIEROS = [];
   var VEH_TYPES_LOGISTICOS = [];
-  var VEH_TYPES_BY_CATEGORY = {
+  var VEH_TYPES_BY_CATEGORY_TERRESTRE = {
     combate: VEH_TYPES_COMBATE,
     ingenieros: VEH_TYPES_INGENIEROS,
     logisticos: VEH_TYPES_LOGISTICOS
   };
+  var VEH_TYPES_BY_CATEGORY_BY_TIPOVEHICULO = {
+    terrestre: VEH_TYPES_BY_CATEGORY_TERRESTRE,
+    aereo: {},
+    naval: {}
+  };
 
-  function defaultVehiculoParams(){
-    return { affiliation:'friendly', condition:'present', category:'combate', tipo:'uso_general' };
+  function vehDefaultCategoryForTipoVehiculo(tipoVehiculo){
+    var cats = VEH_CATEGORIES_BY_TIPOVEHICULO[tipoVehiculo] || [];
+    return cats.length ? cats[0][0] : '';
+  }
+  function vehDefaultTipoForCategory(tipoVehiculo, category){
+    var typesByCat = VEH_TYPES_BY_CATEGORY_BY_TIPOVEHICULO[tipoVehiculo] || {};
+    var types = typesByCat[category] || [];
+    return types.length ? types[0][0] : '';
+  }
+  function defaultVehiculoParams(tipoVehiculo){
+    var tv = tipoVehiculo || 'terrestre';
+    var cat = vehDefaultCategoryForTipoVehiculo(tv);
+    return { affiliation:'friendly', condition:'present', tipoVehiculo: tv, category: cat, tipo: vehDefaultTipoForCategory(tv, cat), leftLabel:'' };
   }
 
   // Marco según afiliación (y achurado punteado si la condición es "planned"/Futuro), paralelo a
@@ -4664,6 +4728,17 @@
   }
   function applyVehiculoSymbol(shape){
     shape.setIcon(buildVehiculoIcon(shape._vehiculo));
+    updateVehLeftLabel(shape);
+  }
+  // Cuadro de texto a la izquierda del símbolo, propio de los vehículos "Terrestres" (mismo
+  // criterio que updateArmaLeftLabel para Armas / Apoyo de Fuego): se muestra siempre (aunque
+  // esté vacío) mientras el vehículo sea Terrestre, y se quita por completo en Aéreos/Navales.
+  function updateVehLeftLabel(shape){
+    if (shape._vehiculo && shape._vehiculo.tipoVehiculo === 'terrestre'){
+      shape.bindTooltip(shape._vehiculo.leftLabel || '', { permanent:true, direction:'left', offset:[-26,0], className:'veh-left-box' });
+    } else if (shape.getTooltip()){
+      shape.unbindTooltip();
+    }
   }
 
   // Íconos pequeños (36x36, reutilizando el viewBox de 60x60) para los botones del panel de
@@ -4682,11 +4757,13 @@
       vehDummyOverlaySVG(condition) +
       '</svg>';
   }
-  function vehTypeIconSVG(tipo){
+  function vehTypeIconSVG(tipo, affiliation){
     // width/height 100% (en vez de un tamaño fijo en px) para que el ícono llene el botón,
     // que ahora ocupa un tercio del ancho del panel (3 columnas) en vez de un tamaño fijo chico.
+    // Sensible a la afiliación actual (igual que armaTypeIconSVG): al cambiar la afiliación, los
+    // símbolos de la grilla de tipos se repintan con el marco nuevo.
     return '<svg width="100%" height="100%" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVG('friendly', 'present') +
+      vehFrameSVG(affiliation || 'friendly', 'present') +
       vehTypeGlyphSVG(tipo) +
       '</svg>';
   }
@@ -4695,21 +4772,23 @@
     if (vehiculosClickHandler){ map.off('click', vehiculosClickHandler); vehiculosClickHandler = null; }
     mapContainer.style.cursor = '';
   }
-  function activateVehiculosTool(){
-    if (activeToolName === 'vehiculos'){ disableAllTools(); return; }
+  var vehiculosActiveTipo = 'terrestre';
+  function activateVehiculosTool(tipoVehiculo){
     var active = getActiveLayer();
     if (!active){ alert('Cree o seleccione una capa antes de colocar un vehículo.'); return; }
     disableAllTools();
+    vehiculosActiveTipo = tipoVehiculo || 'terrestre';
     activeToolName = 'vehiculos';
     updateToolbarUI();
     mapContainer.style.cursor = 'crosshair';
     vehiculosClickHandler = function(e){
       var activeNow = getActiveLayer();
       if (!activeNow) return;
-      var veh = defaultVehiculoParams();
+      var veh = defaultVehiculoParams(vehiculosActiveTipo);
       var layer = L.marker(e.latlng, { icon: buildVehiculoIcon(veh) });
       layer._isVehiculo = true;
       layer._vehiculo = veh;
+      updateVehLeftLabel(layer);
       activeNow.group.addLayer(layer);
       attachShapeInteractivity(layer, activeNow);
       recordAddShape(activeNow, layer);
@@ -8729,7 +8808,7 @@
   // camino (por ejemplo, elegir una tarea de "Tareas" no cerraba "Ingenieros" ni "Pasajes" si
   // habían quedado abiertos de una navegación previa), así que un cuadro flotante podía quedar
   // pegado en pantalla al cambiar de herramienta. Ahora se centraliza en una sola función.
-  var ALL_TOOL_SUBMENU_IDS = ['tactica-wrap','tactica-submenu','tareas-submenu','lineaofensiva-submenu','pasajes-submenu','ingenieros-submenu','camposminados-submenu','obstaculos-submenu'];
+  var ALL_TOOL_SUBMENU_IDS = ['tactica-wrap','tactica-submenu','tareas-submenu','lineaofensiva-submenu','pasajes-submenu','ingenieros-submenu','camposminados-submenu','obstaculos-submenu','vehiculos-wrap','vehiculos-submenu'];
   function closeToolSubmenus(keepIds){
     keepIds = keepIds || [];
     ALL_TOOL_SUBMENU_IDS.forEach(function(id){
@@ -8799,6 +8878,23 @@
         if (nowOpenO) positionFloatingSubmenu(obsSubmenu, btn);
         return;
       }
+      if (tool === 'vehiculos-toggle'){
+        ev.stopPropagation();
+        var vehWrap = document.getElementById('vehiculos-wrap');
+        var vehSubmenu = document.getElementById('vehiculos-submenu');
+        var nowOpenV = !vehSubmenu.classList.contains('open');
+        closeToolSubmenus(nowOpenV ? ['vehiculos-wrap','vehiculos-submenu'] : []);
+        vehWrap.classList.toggle('open', nowOpenV);
+        vehSubmenu.classList.toggle('open', nowOpenV);
+        if (nowOpenV) positionFloatingSubmenu(vehSubmenu, btn);
+        return;
+      }
+      if (tool && tool.indexOf('vehiculos:') === 0){
+        ev.stopPropagation();
+        activateVehiculosTool(tool.split(':')[1]);
+        closeToolSubmenus();
+        return;
+      }
       if (tool === 'lineaofensiva-toggle'){
         ev.stopPropagation();
         var loSubmenu = document.getElementById('lineaofensiva-submenu');
@@ -8846,7 +8942,6 @@
       else if (tool === 'defensiveline') activateDefensiveLineTool();
       else if (tool === 'unidades') activateUnidadesTool();
       else if (tool === 'equipos') activateEquiposTool();
-      else if (tool === 'vehiculos') activateVehiculosTool();
       else if (tool === 'armas') activateArmasTool();
       else if (tool === 'text') activateTextTool();
       else if (tool === 'target') activateTargetTool();
@@ -8867,7 +8962,9 @@
     var ingenierosSub = document.getElementById('ingenieros-submenu');
     var cmSub = document.getElementById('camposminados-submenu');
     var obsSub = document.getElementById('obstaculos-submenu');
-    var allSubs = [wrap, tacticaSub, tareasSub, loSub, pasajesSub, ingenierosSub, cmSub, obsSub];
+    var vehWrapEl = document.getElementById('vehiculos-wrap');
+    var vehSub = document.getElementById('vehiculos-submenu');
+    var allSubs = [wrap, tacticaSub, tareasSub, loSub, pasajesSub, ingenierosSub, cmSub, obsSub, vehWrapEl, vehSub];
     var insideAny = allSubs.some(function(el){ return el && el.contains(ev.target); });
     if (!insideAny){
       allSubs.forEach(function(el){ if (el) el.classList.remove('open'); });
@@ -10647,29 +10744,34 @@
       vehPreview.innerHTML = buildVehiculoSVG(veh).replace('width="60" height="60"', 'width="96" height="96"');
       vehBlock.appendChild(vehPreview);
 
-      var catRow = document.createElement('div');
-      catRow.className = 'veh-category-row';
-      VEH_CATEGORIES.forEach(function(opt){
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'veh-category-btn' + (veh.category === opt[0] ? ' selected' : '');
-        btn.textContent = opt[1];
-        btn.addEventListener('click', function(){
-          if (veh.category === opt[0]) return;
-          veh.category = opt[0];
-          var typesNow = VEH_TYPES_BY_CATEGORY[veh.category] || [];
-          if (typesNow.length && !typesNow.some(function(t){ return t[0] === veh.tipo; })){
-            veh.tipo = typesNow[0][0];
-          }
-          applyVehiculoSymbol(shape);
-          renderLayerList();
-          showProperties(shape, layerObj);
-        });
-        catRow.appendChild(btn);
-      });
-      vehBlock.appendChild(catRow);
+      var vehCategoriesNow = VEH_CATEGORIES_BY_TIPOVEHICULO[veh.tipoVehiculo] || [];
+      var vehTypesByCategoryNow = VEH_TYPES_BY_CATEGORY_BY_TIPOVEHICULO[veh.tipoVehiculo] || {};
 
-      var typesForCategory = VEH_TYPES_BY_CATEGORY[veh.category] || [];
+      if (vehCategoriesNow.length){
+        var catRow = document.createElement('div');
+        catRow.className = 'veh-category-row';
+        vehCategoriesNow.forEach(function(opt){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'veh-category-btn' + (veh.category === opt[0] ? ' selected' : '');
+          btn.textContent = opt[1];
+          btn.addEventListener('click', function(){
+            if (veh.category === opt[0]) return;
+            veh.category = opt[0];
+            var typesNow = vehTypesByCategoryNow[veh.category] || [];
+            if (typesNow.length && !typesNow.some(function(t){ return t[0] === veh.tipo; })){
+              veh.tipo = typesNow[0][0];
+            }
+            applyVehiculoSymbol(shape);
+            renderLayerList();
+            showProperties(shape, layerObj);
+          });
+          catRow.appendChild(btn);
+        });
+        vehBlock.appendChild(catRow);
+      }
+
+      var typesForCategory = vehTypesByCategoryNow[veh.category] || [];
       if (typesForCategory.length){
         var typeRow = document.createElement('div');
         typeRow.className = 'veh-type-row';
@@ -10678,7 +10780,7 @@
           btn.type = 'button';
           btn.className = 'veh-type-btn' + (veh.tipo === opt[0] ? ' selected' : '');
           btn.title = opt[1];
-          btn.innerHTML = vehTypeIconSVG(opt[0]);
+          btn.innerHTML = vehTypeIconSVG(opt[0], veh.affiliation);
           btn.addEventListener('click', function(){
             veh.tipo = opt[0];
             applyVehiculoSymbol(shape);
@@ -10693,6 +10795,23 @@
         emptyTypes.className = 'veh-type-empty';
         emptyTypes.textContent = 'Próximamente.';
         vehBlock.appendChild(emptyTypes);
+      }
+
+      if (veh.tipoVehiculo === 'terrestre'){
+        var vehLeftLabelField = document.createElement('div');
+        vehLeftLabelField.className = 'style-field';
+        vehLeftLabelField.innerHTML = '<span>Tipo</span>';
+        var vehLeftLabelInput = document.createElement('input');
+        vehLeftLabelInput.type = 'text';
+        vehLeftLabelInput.placeholder = 'ej. A-1';
+        vehLeftLabelInput.value = veh.leftLabel || '';
+        vehLeftLabelInput.style.cssText = 'width:90px;border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-family:inherit;font-size:12px;text-align:right;';
+        vehLeftLabelInput.addEventListener('input', function(ev){
+          veh.leftLabel = ev.target.value;
+          updateVehLeftLabel(shape);
+        });
+        vehLeftLabelField.appendChild(vehLeftLabelInput);
+        vehBlock.appendChild(vehLeftLabelField);
       }
 
       body.appendChild(vehBlock);
@@ -12334,10 +12453,11 @@
           return eqm;
         }
         if (p.vehiculo){
-          var veh = Object.assign(defaultVehiculoParams(), p.vehiculo);
+          var veh = Object.assign(defaultVehiculoParams(p.vehiculo.tipoVehiculo), p.vehiculo);
           var vm = L.marker(latlng, { icon: buildVehiculoIcon(veh) });
           vm._isVehiculo = true;
           vm._vehiculo = veh;
+          updateVehLeftLabel(vm);
           return vm;
         }
         if (p.arma){
