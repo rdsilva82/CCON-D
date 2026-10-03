@@ -6867,8 +6867,16 @@
       var pxCenter = map.latLngToContainerPoint(centerPt), pxEdge = map.latLngToContainerPoint(edgePt);
       var sizePx = Math.max(16, Math.min(70, Math.hypot(pxEdge.x-pxCenter.x, pxEdge.y-pxCenter.y) * 2));
       var mil = shape._task.mil || defaultMilParams();
-      var unitHtml = '<div style="width:' + sizePx + 'px;height:' + sizePx + 'px;">' + frenteCubiertoUnitInnerSVG(mil, sizePx) + '</div>';
-      var unitIcon = L.divIcon({ className:'', html: unitHtml, iconSize:[sizePx,sizePx], iconAnchor:[sizePx/2,sizePx/2] });
+      // La designación se agrega como una etiqueta debajo del glifo (igual que la herramienta
+      // "Unidades" la muestra con un tooltip permanente), no dentro del SVG de 60x60 del glifo
+      // (que es muy pequeño para incluir texto legible junto al marco/escalón/modificadores).
+      var fcDesigFs = Math.max(8, Math.min(sizePx*0.24, 13));
+      var fcLabelH = mil.designation ? Math.ceil(fcDesigFs*1.3)+2 : 0;
+      var unitHtml = '<div style="width:' + sizePx + 'px;height:' + (sizePx+fcLabelH) + 'px;display:flex;flex-direction:column;align-items:center;">' +
+        frenteCubiertoUnitInnerSVG(mil, sizePx) +
+        (mil.designation ? '<div style="font-family:Calibri,Arial,sans-serif;font-size:' + fcDesigFs + 'px;font-weight:700;color:#000;line-height:1.1;white-space:nowrap;">' + escapeHtmlText(mil.designation) + '</div>' : '') +
+        '</div>';
+      var unitIcon = L.divIcon({ className:'', html: unitHtml, iconSize:[sizePx, sizePx+fcLabelH], iconAnchor:[sizePx/2, sizePx/2] });
       L.marker(centerPt, { icon: unitIcon, interactive:false, keyboard:false, zIndexOffset:660 }).addTo(group);
     }
     (parts.labels || []).forEach(function(lbl){
@@ -7619,6 +7627,42 @@
     return [segA, segB];
   }
 
+  /* ---- "Dirección de ataque": geometría DISTINTA a la del resto de las flechas — una única
+     polilínea delgada de ancho uniforme (centerline del bezier tail->head, SIN asta ancha de
+     polígono) que termina en una punta de flecha ABIERTA de dos trazos simples en "V" (no un
+     triángulo relleno), según la imagen de referencia "BRAVO". Reutiliza el mismo bezier
+     (tail/curve/head) que el resto de las flechas para poder rotar/curvar/escalar igual. ---- */
+  function computeDireccionAtaqueCenterline(arrow){
+    var tail = arrow.tail, head = arrow.head;
+    var curveLatLng = arrow.curve || midLocal(tail, head);
+    var P0 = { x:0, y:0 };
+    var P1 = localXY(tail, head);
+    var C  = localXY(tail, curveLatLng);
+    var N = ARROW_CURVE_SEGMENTS;
+    var pts = [];
+    for (var i=0;i<=N;i++){ pts.push(bezierXY(P0, C, P1, i/N)); }
+    var totalLen = 0;
+    for (var i=1;i<=N;i++){ var ddx=pts[i].x-pts[i-1].x, ddy=pts[i].y-pts[i-1].y; totalLen += Math.sqrt(ddx*ddx+ddy*ddy); }
+    var tip = pts[N];
+    var prev = pts[Math.max(0,N-1)];
+    var dx = tip.x-prev.x, dy = tip.y-prev.y, dlen = Math.sqrt(dx*dx+dy*dy) || 1;
+    var ux = dx/dlen, uy = dy/dlen;
+    var nx = -uy, ny = ux;
+    var headLen = Math.max(Math.min(arrow.headLength || 20, totalLen*0.35), 1);
+    var hw = Math.max((arrow.headWidth || 10)/2, 2);
+    var backPt = { x: tip.x - ux*headLen, y: tip.y - uy*headLen };
+    var leftArm = { x: backPt.x + nx*hw, y: backPt.y + ny*hw };
+    var rightArm = { x: backPt.x - nx*hw, y: backPt.y - ny*hw };
+    function toLL(p){ return fromLocalXY(tail, p.x, p.y); }
+    return {
+      tail: tail,
+      centerline: pts.map(toLL),
+      tip: toLL(tip),
+      leftArm: toLL(leftArm),
+      rightArm: toLL(rightArm)
+    };
+  }
+
   /* ---------------- CONTORNO ABIERTO DE LA FLECHA (reverso sin cerrar) ---------------- */
   var arrowOutlines = {};
   function syncArrowOutline(shape){
@@ -7628,21 +7672,26 @@
     var style = {
       color: shape.options.color, weight: shape.options.weight,
       opacity: shape.options.opacity != null ? shape.options.opacity : 1,
-      dashArray: shape.options.dashArray, interactive:false, keyboard:false
+      dashArray: shape.options.dashArray, interactive:false, keyboard:false, fill:false
     };
     var pts;
-    // "Dirección de ataque": el texto no debe superponerse al asta — se le corta un hueco al
-    // trazo del asta en la posición del texto, igual que el mecanismo de corte de línea usado
-    // por "Límite entre elementos" / el nombre de "Vía de infiltración".
-    if (arrow.mccKind === 'direccionataque' && arrow.labelText){
-      var edges = computeArrowShaftEdges(arrow);
-      var midPt = edges.leftLatLngs[Math.floor(edges.leftLatLngs.length/2)];
-      var mpp = metersPerPixel(midPt.lat, map.getZoom());
-      var approxPx = (String(arrow.labelText).length * 7.5) + 12;
-      var gapHalfM = Math.max(10*mpp, (approxPx/2) * mpp);
-      var leftCut = gapCutPath(edges.leftLatLngs, 0.5, gapHalfM);
-      var rightCut = gapCutPath(edges.rightLatLngs, 0.5, gapHalfM);
-      pts = [leftCut[0], leftCut[1], [edges.headLeftCorner, edges.tip, edges.headRightCorner], rightCut[1].slice().reverse(), rightCut[0].slice().reverse()];
+    if (arrow.mccKind === 'direccionataque'){
+      // Línea simple de un solo trazo (fill:none) + cabeza en "V" abierta — geometría distinta
+      // de computeArrowPoints (que genera el asta ancha tipo polígono de las demás flechas).
+      var dgeo = computeDireccionAtaqueCenterline(arrow);
+      var vHead = [dgeo.leftArm, dgeo.tip, dgeo.rightArm];
+      if (arrow.labelText){
+        // El texto corta un hueco en la línea (mismo mecanismo que Límite entre elementos /
+        // Vía de infiltración), ahora aplicado al centerline en vez de a los bordes del asta.
+        var midPt = dgeo.centerline[Math.floor(dgeo.centerline.length/2)];
+        var mpp = metersPerPixel(midPt.lat, map.getZoom());
+        var approxPx = (String(arrow.labelText).length * 7.5) + 12;
+        var gapHalfM = Math.max(10*mpp, (approxPx/2) * mpp);
+        var cut = gapCutPath(dgeo.centerline, 0.5, gapHalfM);
+        pts = [cut[0], cut[1], vHead];
+      } else {
+        pts = [dgeo.centerline, vHead];
+      }
     } else {
       pts = computeArrowPoints(arrow);
     }
@@ -8382,6 +8431,9 @@
       otherHandlesShapeRef = shape;
     } else if (shape._mccText && shape._mccText.enabled && (shape._isMccPolygon || (shape._isArrow && shape._arrow && shape._arrow.mccKind === 'ejeavance'))){
       otherHandlesCleanup = createMccTextRotationHandle(shape);
+      otherHandlesShapeRef = shape;
+    } else if (shape._isMccLine && shape._mcc && shape._mcc.type === 'via'){
+      otherHandlesCleanup = createMccViaGapHandle(shape);
       otherHandlesShapeRef = shape;
     }
   }
@@ -12224,6 +12276,44 @@
       mpScaleField.appendChild(mpScalePct);
       mpBlock.appendChild(mpScaleField);
 
+      // Color configurable del trazo/símbolo — antes ninguna de las 5 herramientas "Punto de..."
+      // lo tenía, quedando siempre fijas al color de la capa activa.
+      var mpColorField = document.createElement('div');
+      mpColorField.className = 'style-field';
+      mpColorField.innerHTML = '<span>Color</span>';
+      var mpColorInput = document.createElement('input');
+      mpColorInput.type = 'color';
+      mpColorInput.value = shape._mcc.color || '#1F3864';
+      mpColorInput.addEventListener('input', function(ev){
+        shape._mcc.color = ev.target.value;
+        shape.setIcon(buildMccPointIcon(shape._mcc));
+      });
+      mpColorField.appendChild(mpColorInput);
+      mpBlock.appendChild(mpColorField);
+
+      // Opacidad del relleno — solo aplica a Punto de control y Punto de contacto, cuyo relleno
+      // es blanco por defecto (las otras 3 no tienen relleno propio, son solo trazo).
+      if (shape._mcc.type === 'control' || shape._mcc.type === 'contacto'){
+        if (shape._mcc.fillOpacity == null) shape._mcc.fillOpacity = 1;
+        var mpFillField = document.createElement('div');
+        mpFillField.className = 'style-field';
+        mpFillField.innerHTML = '<span>Opacidad del relleno</span>';
+        var mpFillInput = document.createElement('input');
+        mpFillInput.type = 'range'; mpFillInput.min = 0; mpFillInput.max = 1; mpFillInput.step = 0.05;
+        mpFillInput.value = shape._mcc.fillOpacity;
+        var mpFillPct = document.createElement('span');
+        mpFillPct.className = 'pct';
+        mpFillPct.textContent = Math.round(shape._mcc.fillOpacity*100) + '%';
+        mpFillInput.addEventListener('input', function(ev){
+          shape._mcc.fillOpacity = parseFloat(ev.target.value);
+          shape.setIcon(buildMccPointIcon(shape._mcc));
+          mpFillPct.textContent = Math.round(shape._mcc.fillOpacity*100) + '%';
+        });
+        mpFillField.appendChild(mpFillInput);
+        mpFillField.appendChild(mpFillPct);
+        mpBlock.appendChild(mpFillField);
+      }
+
       body.appendChild(mpBlock);
     }
 
@@ -12323,15 +12413,24 @@
       }
       if (shape._mcc.type === 'limitecombate'){
         mlBlock.appendChild(mccCheckboxField('Puntos de coordinación en extremos', function(){ return !!shape._mcc.coordPoints; }, function(v){ shape._mcc.coordPoints = v; }));
-        mlBlock.appendChild(mccRangeField('Tamaño del punto de coordinación', function(){ return shape._mcc.coordScale||1; }, function(v){ shape._mcc.coordScale = v; }, 0.5, 3, 0.1));
+        // El tamaño ahora se controla en metros reales de terreno (mínimo 100m), no con un
+        // multiplicador abstracto, para que el rango cubra desde un tamaño mínimo realista
+        // hasta uno bastante grande, y para que el control realmente cambie lo renderizado.
+        mlBlock.appendChild(mccRangeField('Tamaño del punto de coordinación (m)', function(){ return shape._mcc.coordSizeM||150; }, function(v){ shape._mcc.coordSizeM = v; }, 100, 2000, 25));
         mlBlock.appendChild(mccCheckboxField('Texto en los extremos', function(){ return !!shape._mcc.textEnabled; }, function(v){ shape._mcc.textEnabled = v; }));
-        mlBlock.appendChild(mccRangeField('Tamaño del texto', function(){ return shape._mcc.textScale||1; }, function(v){ shape._mcc.textScale = v; }, 0.5, 3, 0.1));
+        mlBlock.appendChild(mccRangeField('Tamaño del texto (m)', function(){ return shape._mcc.textSizeM||110; }, function(v){ shape._mcc.textSizeM = v; }, 100, 1500, 25));
         mlBlock.appendChild(mccCheckboxField('Línea de Contacto', function(){ return !!shape._mcc.contacto; }, function(v){ shape._mcc.contacto = v; }));
         mlBlock.appendChild(mccRangeField('Alto de la onda', function(){ return shape._mcc.waveHeight||1; }, function(v){ shape._mcc.waveHeight = v; }, 0.3, 3, 0.1));
         mlBlock.appendChild(mccRangeField('Ancho de la onda', function(){ return shape._mcc.waveWidth||1; }, function(v){ shape._mcc.waveWidth = v; }, 0.3, 3, 0.1));
       }
       if (shape._mcc.type === 'via'){
-        mlBlock.appendChild(mccRangeField('Separación entre las dos líneas (px)', function(){ return shape._mcc.viaGapPx != null ? shape._mcc.viaGapPx : 6; }, function(v){ shape._mcc.viaGapPx = v; }, 2, 30, 1));
+        // La separación entre las dos líneas ya NO se ajusta con un control numérico: se
+        // arrastra directamente la manija verde que aparece sobre el mapa al seleccionar la vía
+        // (ver createMccViaGapHandle / syncOtherHandlesForSelection).
+        var viaGapHint = document.createElement('div');
+        viaGapHint.className = 'hint';
+        viaGapHint.textContent = 'Arrastre la manija verde sobre el mapa para separar/acercar las dos líneas.';
+        mlBlock.appendChild(viaGapHint);
       }
       if (shape._mcc.type === 'via' || shape._mcc.type === 'camino'){
         mlBlock.appendChild(mccCheckboxField('Opacar fondo del nombre', function(){ return !!shape._mcc.opacarFondo; }, function(v){ shape._mcc.opacarFondo = v; }));
@@ -14594,7 +14693,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
   /* ================================  5 "PUNTO DE..." (markers)  ================================ */
   function defaultMccPointParams(type){
-    return { type: type, text: '', scale: 1, color: '#1F3864' };
+    return { type: type, text: '', scale: 1, color: '#1F3864', fillOpacity: 1 };
   }
   function buildMccPointIcon(mp){
     var scale = mp.scale || 1;
@@ -14615,24 +14714,36 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
         '</svg>';
       return L.divIcon({ className:'', html: html, iconSize:[s,s], iconAnchor:[s/2,s/2] });
     }
+    var fillOp = (mp.fillOpacity != null ? mp.fillOpacity : 1);
     if (mp.type === 'control'){
-      var w = 56*scale, h = 32*scale, triH = 20*scale;
+      // Cuadrado con un triángulo invertido DEBAJO cuya base es igual al ancho del cuadrado
+      // (nace del borde inferior completo), como una bandera/pin. Relleno blanco por defecto,
+      // con opacidad configurable desde el panel.
+      var w = 56*scale, h = 32*scale, triH = 22*scale;
       var fs2 = mccAutoFitFontSize(text, w*0.85, h*0.7, 13*scale);
       var totalH = h + triH;
       var html2 = '<svg width="' + w + '" height="' + totalH + '" viewBox="0 0 ' + w + ' ' + totalH + '" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect x="1" y="1" width="' + (w-2) + '" height="' + (h-2) + '" fill="#fff" stroke="' + color + '" stroke-width="2"/>' +
-        '<polygon points="' + (w*0.5 - triH*0.4) + ',' + h + ' ' + (w*0.5 + triH*0.4) + ',' + h + ' ' + (w*0.5) + ',' + totalH + '" fill="' + color + '" stroke="' + color + '" stroke-width="1"/>' +
+        '<polygon points="0,' + h + ' ' + w + ',' + h + ' ' + (w/2) + ',' + totalH + '" fill="#fff" fill-opacity="' + fillOp + '" stroke="' + color + '" stroke-width="2" stroke-linejoin="round"/>' +
+        '<rect x="1" y="1" width="' + (w-2) + '" height="' + (h-2) + '" fill="#fff" fill-opacity="' + fillOp + '" stroke="' + color + '" stroke-width="2"/>' +
         '<text x="' + w/2 + '" y="' + (h/2 + fs2*0.35) + '" text-anchor="middle" font-family="Calibri,Arial,sans-serif" font-size="' + fs2 + '" font-weight="700" fill="' + color + '">' + escapeHtmlText(text) + '</text>' +
         '</svg>';
       // El ancla geográfico es el VÉRTICE INFERIOR del triángulo (como un pin de mapa).
       return L.divIcon({ className:'', html: html2, iconSize:[w, totalH], iconAnchor:[w/2, totalH] });
     }
     if (mp.type === 'contacto'){
-      var w2 = 56*scale, h2 = 32*scale, lineH = 18*scale;
-      var fs3 = mccAutoFitFontSize(text, w2*0.85, h2*0.7, 13*scale);
+      // Figura MÁS CUADRADA (proporción cercana a 1:1), con una pequeña abertura en el centro
+      // del borde superior. Relleno blanco por defecto, con opacidad configurable; la línea
+      // vertical colgante en la parte inferior se mantiene, con el ancla en su extremo.
+      var w2 = 44*scale, h2 = 40*scale, lineH = 16*scale;
+      var gap = Math.max(6*scale, 4);
+      var fs3 = mccAutoFitFontSize(text, w2*0.8, h2*0.6, 12*scale);
       var totalH2 = h2 + lineH;
+      var gapStart = w2/2 - gap/2, gapEnd = w2/2 + gap/2;
       var html3 = '<svg width="' + w2 + '" height="' + totalH2 + '" viewBox="0 0 ' + w2 + ' ' + totalH2 + '" xmlns="http://www.w3.org/2000/svg">' +
-        '<rect x="1" y="1" width="' + (w2-2) + '" height="' + (h2-2) + '" fill="#fff" stroke="' + color + '" stroke-width="2"/>' +
+        '<rect x="1" y="1" width="' + (w2-2) + '" height="' + (h2-2) + '" fill="#fff" fill-opacity="' + fillOp + '" stroke="none"/>' +
+        '<path d="M1,1 L1,' + (h2-1) + ' L' + (w2-1) + ',' + (h2-1) + ' L' + (w2-1) + ',1" fill="none" stroke="' + color + '" stroke-width="2"/>' +
+        '<line x1="1" y1="1" x2="' + gapStart + '" y2="1" stroke="' + color + '" stroke-width="2"/>' +
+        '<line x1="' + gapEnd + '" y1="1" x2="' + (w2-1) + '" y2="1" stroke="' + color + '" stroke-width="2"/>' +
         '<line x1="' + w2/2 + '" y1="' + h2 + '" x2="' + w2/2 + '" y2="' + totalH2 + '" stroke="' + color + '" stroke-width="2.4"/>' +
         '<text x="' + w2/2 + '" y="' + (h2/2 + fs3*0.35) + '" text-anchor="middle" font-family="Calibri,Arial,sans-serif" font-size="' + fs3 + '" font-weight="700" fill="' + color + '">' + escapeHtmlText(text) + '</text>' +
         '</svg>';
@@ -14681,8 +14792,12 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var p = { type: type };
     if (type === 'limiteelementos'){ p.showLabel = true; }
     if (type === 'limitecombate'){
-      p.coordPoints = false; p.coordScale = 1;
-      p.textEnabled = false; p.textScale = 1;
+      // El tamaño del punto de coordinación y del texto se define en METROS reales de terreno
+      // (no en un multiplicador atado a un zoom de referencia fijo), para que el control de
+      // tamaño cubra de forma realista desde un mínimo visible (~100m) hasta un máximo grande,
+      // y para que el valor elegido efectivamente cambie el tamaño renderizado en cualquier zoom.
+      p.coordPoints = false; p.coordSizeM = 150;
+      p.textEnabled = false; p.textSizeM = 110;
       p.contacto = false; p.waveHeight = 1; p.waveWidth = 1;
     }
     if (type === 'via' || type === 'camino'){ p.opacarFondo = false; p.repetirNombre = false; }
@@ -14818,15 +14933,26 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var g = mccLineCompanions[shape._shapeId];
     if (g){ g.remove(); delete mccLineCompanions[shape._shapeId]; }
   }
-  function mccBorderlessLabelIcon(text, bearingDeg, color, opaque, fontSize){
+  function mccBorderlessLabelIcon(text, bearingDeg, color, opaque, fontSize, liftPx){
     // bearingDeg llega como un rumbo (atan2 este/norte, igual convención que taskBearingDeg);
     // labelRotationForBearing lo convierte en la rotación CSS correcta para que el texto quede
     // EN LÍNEA con esa dirección (tangente) y no perpendicular a ella, además de evitarle quedar
     // cabeza abajo — mismo mecanismo ya usado por las etiquetas de longitud de línea.
     var rot = labelRotationForBearing(bearingDeg);
-    var html = '<div style="transform:rotate(' + rot + 'deg);transform-origin:50% 50%;white-space:nowrap;' +
+    // liftPx (opcional) desplaza el texto a lo largo del eje PERPENDICULAR a la línea, en el
+    // propio sistema de coordenadas rotado, para que quede POR ENCIMA de la línea en su
+    // dirección real y no con un offset fijo de pantalla. Usado por "Camino" para que el nombre
+    // quede arriba del trazo en vez de abajo.
+    var lift = liftPx || 0;
+    // Estructura de dos divs: el exterior solo rota alrededor del punto de anclaje (0,0, el
+    // punto real sobre la línea); el interior se centra EXACTAMENTE sobre ese punto con
+    // translate(-50%,-50%) (más el "lift"), según su propio tamaño renderizado. Antes el texto
+    // no tenía ningún centrado: al crecer hacia abajo-derecha desde el punto de anclaje, quedaba
+    // visiblemente desplazado hacia abajo de la línea en vez de centrado/encima de ella.
+    var html = '<div style="transform:rotate(' + rot + 'deg);transform-origin:0 0;">' +
+      '<div style="display:inline-block;white-space:nowrap;transform:translate(-50%, calc(-50% - ' + lift + 'px));' +
       'font-family:Calibri,Arial,sans-serif;font-size:' + (fontSize||12) + 'px;font-weight:700;color:' + color + ';' +
-      (opaque ? 'background:rgba(255,255,255,.85);padding:1px 4px;border-radius:3px;' : '') + '">' + escapeHtmlText(text) + '</div>';
+      (opaque ? 'background:rgba(255,255,255,.85);padding:1px 4px;border-radius:3px;' : '') + '">' + escapeHtmlText(text) + '</div></div>';
     return L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] });
   }
   function syncMccLineCompanion(shape){
@@ -14850,10 +14976,35 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
     if (mcc.type === 'limiteelementos'){
       if (mcc.showLabel !== false && shape._customName){
-        var midIdx = Math.floor((n-1)/2);
-        var mid = latlngs[midIdx], next = latlngs[Math.min(n-1, midIdx+1)];
-        var brng = taskBearingDeg(localXY(mid, next));
-        L.marker(mid, { icon: mccBorderlessLabelIcon(shape._customName, brng, color, false), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
+        // La etiqueta debe quedar EXACTAMENTE sobre la línea, en el punto medio real (por
+        // longitud de arco, no solo por índice de vértice) y rotada según la tangente ahí mismo
+        // (mismo patrón que corrige Límite de combate/Vía/Camino con labelRotationForBearing).
+        // Además la línea se CORTA con un hueco donde se muestra el texto, igual que el
+        // mecanismo ya usado por Límite de combate/Vía/Camino/Dirección de ataque (gapCutPath).
+        var cum = [0];
+        for (var ci=1; ci<n; ci++){ cum.push(cum[ci-1] + distanceMeters(latlngs[ci-1], latlngs[ci])); }
+        var total = cum[n-1] || 0.0001;
+        var half = total*0.5;
+        var k = 0;
+        while (k < n-2 && cum[k+1] < half) k++;
+        var span = cum[k+1]-cum[k];
+        var f = span > 0 ? (half-cum[k])/span : 0;
+        var a = latlngs[k], b = latlngs[Math.min(n-1,k+1)];
+        var midPt = L.latLng(a.lat + (b.lat-a.lat)*f, a.lng + (b.lng-a.lng)*f);
+        var brng = taskBearingDeg(localXY(a, b));
+        var mppMid2 = metersPerPixel(midPt.lat, map.getZoom());
+        var approxPxLbl = (String(shape._customName).length * 7.5) + 12;
+        var gapHalfMLbl = Math.max(8*mppMid2, (approxPxLbl/2) * mppMid2);
+        var cutSegs = gapCutPath(latlngs, 0.5, gapHalfMLbl);
+        shape.setStyle({ stroke: false });
+        L.polyline(cutSegs, {
+          color: shape.options.color, weight: shape.options.weight,
+          opacity: shape.options.opacity != null ? shape.options.opacity : 1,
+          dashArray: shape.options.dashArray, interactive:false, keyboard:false
+        }).addTo(group);
+        L.marker(midPt, { icon: mccBorderlessLabelIcon(shape._customName, brng, color, false), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
+      } else {
+        shape.setStyle({ stroke: true });
       }
     }
     else if (mcc.type === 'limitecombate'){
@@ -14865,27 +15016,45 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
         L.polyline(redLine, { color:'#C62828', weight:2.4, interactive:false, keyboard:false }).addTo(group);
         L.polyline(blackLine, { color:'#111', weight:2.4, interactive:false, keyboard:false }).addTo(group);
       }
+      var lcZoom = map.getZoom();
       if (mcc.coordPoints){
         // El centro del glifo "punto de coordinación" debe coincidir EXACTAMENTE con el
         // vértice inicial/final real de la línea (antes quedaba desplazado hacia afuera).
-        var csize = 26 * (mcc.coordScale || 1) * zf;
+        // Tamaño en metros reales de terreno (ver nota en defaultMccLineParams) para que el
+        // control de tamaño alcance un mínimo realista (~100m) y realmente se note al cambiarlo.
+        var coordDiamM = Math.max(mcc.coordSizeM || 150, 1);
         [latlngs[0], latlngs[n-1]].forEach(function(c){
+          var mppc = metersPerPixel(c.lat, lcZoom);
+          var csize = Math.max(coordDiamM / mppc, 4);
           var icon = L.divIcon({ className:'', html: mccCoordGlyphSVG(csize, color), iconSize:[csize,csize], iconAnchor:[csize/2,csize/2] });
           L.marker(c, { icon: icon, interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
         });
       }
       if (mcc.textEnabled && shape._customName){
-        var tfs = 12 * (mcc.textScale || 1) * zf;
+        var textSizeM = Math.max(mcc.textSizeM || 110, 1);
+        var coordDiamM2 = Math.max(mcc.coordSizeM || 150, 1);
         var tanStart = taskBearingDeg(localXY(latlngs[0], latlngs[Math.min(1,n-1)]));
         var tanEnd = taskBearingDeg(localXY(latlngs[n-1], latlngs[Math.max(0,n-2)]));
-        [[latlngs[0], tanStart], [latlngs[n-1], tanEnd]].forEach(function(pair){
-          L.marker(pair[0], { icon: mccBorderlessLabelIcon(shape._customName, pair[1], color, false, tfs), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
+        // El texto se ubica en el MEDIO del tramo entre el punto de coordinación y el resto de
+        // la línea: afuera del círculo, desplazado a lo largo de la continuación de la dirección
+        // del trazo que sale de él (como en la referencia "LAC"), nunca encima/tocando el punto.
+        [[0, Math.min(1,n-1), tanStart], [n-1, Math.max(0,n-2), tanEnd]].forEach(function(cfg){
+          var endPt = latlngs[cfg[0]], towardPt = latlngs[cfg[1]], tangent = cfg[2];
+          var mppT = metersPerPixel(endPt.lat, lcZoom);
+          var tfs = Math.max(textSizeM / mppT, 6);
+          var coordPx = mcc.coordPoints ? (coordDiamM2 / mppT) : 0;
+          var inward = localXY(endPt, towardPt);
+          var ilen = Math.hypot(inward.x, inward.y) || 1;
+          var awayX = -inward.x/ilen, awayY = -inward.y/ilen;
+          var offsetM = (coordPx/2 + tfs*0.8 + 6) * mppT;
+          var labelPos = fromLocalXY(endPt, awayX*offsetM, awayY*offsetM);
+          L.marker(labelPos, { icon: mccBorderlessLabelIcon(shape._customName, tangent, color, false, tfs), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
         });
       }
     }
     else if (mcc.type === 'via' || mcc.type === 'camino'){
+      var gapPx = (mcc.viaGapPx != null ? mcc.viaGapPx : 6);
       if (mcc.type === 'via'){
-        var gapPx = (mcc.viaGapPx != null ? mcc.viaGapPx : 6);
         var offsetLatLngs = offsetLineLatLngsPx(latlngs, gapPx);
         L.polyline(offsetLatLngs, { color: color, weight: shape.options.weight || 3, opacity: shape.options.opacity, interactive:false, keyboard:false }).addTo(group);
       }
@@ -14893,22 +15062,39 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       if (nameText){
         var idxList = [];
         if (mcc.repetirNombre){
-          var reps = Math.max(3, Math.min(6, n));
-          for (var i=1;i<reps;i++){ idxList.push(Math.floor((n-1)*i/reps)); }
+          // El intervalo entre repeticiones debe ser PROPORCIONAL al largo real de la línea (en
+          // metros), no un número fijo de repeticiones basado en la cantidad de vértices: antes
+          // una línea corta con solo 2-3 vértices igual forzaba 3 repeticiones (amontonadas), y
+          // una línea larga con muchos vértices de trazo a mano alzada también quedaba fija en
+          // el mismo rango, sin relación con cuánto espacio real había disponible.
+          var totalLenM = 0;
+          for (var li=1; li<n; li++){ totalLenM += distanceMeters(latlngs[li-1], latlngs[li]); }
+          var midLL = latlngs[Math.floor(n/2)];
+          var mppMid = metersPerPixel(midLL.lat, map.getZoom());
+          var labelPx = (String(nameText).length * 7.5) + 24;
+          var naturalSpacingM = Math.max(labelPx * 3, 90) * mppMid;
+          var reps = Math.max(1, Math.min(6, Math.floor(totalLenM / naturalSpacingM)));
+          if (reps <= 1){ idxList = [Math.floor((n-1)/2)]; }
+          else { for (var ri=0; ri<reps; ri++){ idxList.push(Math.round((n-1)*(ri+0.5)/reps)); } }
         } else {
           idxList = [Math.floor((n-1)/2)];
         }
         // Para "Vía", el texto se ubica EN LÍNEA con el eje y a medio camino entre las dos
         // líneas que la forman (desplazado la mitad del hueco hacia el lado de la línea
-        // compañera); para "Camino" (una sola línea) se queda directamente sobre ella.
-        var halfGapPx = (mcc.type === 'via') ? (mcc.viaGapPx != null ? mcc.viaGapPx : 6) / 2 : 0;
-        var tfsVia = 12 * zf;
+        // compañera); su tamaño de fuente se DERIVA de esa separación (no es independiente): a
+        // mayor separación entre líneas, texto más grande, y viceversa, para que siempre quepa.
+        // Para "Camino" (una sola línea), el texto queda ENCIMA de la línea (no debajo), elevado
+        // en el eje perpendicular de su propio sistema de coordenadas rotado.
+        var halfGapPx = (mcc.type === 'via') ? gapPx / 2 : 0;
+        var tfsVia = Math.max(8, Math.min(gapPx * 1.6, 26));
+        var caminoLiftPx = 9;
         idxList.forEach(function(idx){
           var pos = latlngs[idx], nxt = latlngs[Math.min(n-1, idx+1)];
           var brng2 = taskBearingDeg(localXY(pos, nxt));
           if (halfGapPx){ pos = offsetLineLatLngsPx(latlngs, halfGapPx)[idx]; }
           var fsOpt = (mcc.type === 'via') ? tfsVia : 12;
-          L.marker(pos, { icon: mccBorderlessLabelIcon(nameText, brng2, color, !!mcc.opacarFondo, fsOpt), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
+          var lift = (mcc.type === 'camino') ? caminoLiftPx : 0;
+          L.marker(pos, { icon: mccBorderlessLabelIcon(nameText, brng2, color, !!mcc.opacarFondo, fsOpt, lift), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
         });
       }
     }
@@ -14924,6 +15110,37 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     Object.keys(mccLineCompanions).forEach(function(id){
       if (!liveIds[id]){ mccLineCompanions[id].remove(); delete mccLineCompanions[id]; }
     });
+  }
+
+  /* ---- "Vía de infiltración": manija arrastrable para la separación entre las dos líneas,
+     en vez de un control numérico. Se activa/desactiva junto con la selección, igual que las
+     demás manijas "otras" (rotación de texto, elipse, rectángulo, etc.). ---- */
+  function mccViaGapHandlePos(shape){
+    var latlngs = shape.getLatLngs();
+    var n = latlngs.length;
+    var midIdx = Math.floor((n-1)/2);
+    var gapPx = (shape._mcc.viaGapPx != null ? shape._mcc.viaGapPx : 6);
+    return offsetLineLatLngsPx(latlngs, gapPx)[midIdx];
+  }
+  function createMccViaGapHandle(shape){
+    var marker = L.marker(mccViaGapHandlePos(shape), { draggable:true, icon: makeHandleIcon('#4C7A57',14), zIndexOffset:2000, title:'Arrastre para separar/acercar las dos líneas' }).addTo(map);
+    marker.on('drag', function(){
+      var latlngs = shape.getLatLngs();
+      var n = latlngs.length;
+      var midIdx = Math.floor((n-1)/2);
+      var mid = latlngs[midIdx], next = latlngs[Math.min(n-1, midIdx+1)];
+      var midPx = map.latLngToContainerPoint(mid), nextPx = map.latLngToContainerPoint(next);
+      var dx = nextPx.x-midPx.x, dy = nextPx.y-midPx.y, len = Math.hypot(dx,dy) || 1;
+      var nx = -dy/len, ny = dx/len;
+      var markerPx = map.latLngToContainerPoint(marker.getLatLng());
+      var rel = { x: markerPx.x-midPx.x, y: markerPx.y-midPx.y };
+      var perp = rel.x*nx + rel.y*ny;
+      shape._mcc.viaGapPx = Math.max(2, Math.min(40, Math.abs(perp)));
+      syncMccLineCompanion(shape);
+      marker.setLatLng(mccViaGapHandlePos(shape));
+    });
+    marker.on('dragend', function(){ if (typeof scheduleSave === 'function') scheduleSave(); });
+    return function cleanup(){ map.removeLayer(marker); };
   }
 
   /* ================================  ZONA (polígono libre + límite único + texto interno)  ================================ */
@@ -15061,14 +15278,15 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     return best;
   }
   function buildZonaMagnitudeIcon(bearingDeg, color, echelon){
-    // El triángulo es solo el soporte visual del límite de Zona; el símbolo de magnitud/escalón
-    // real (puntos, barras o X según MIL_ECHELONS) se dibuja encima, igual que en el resto de
-    // la simbología OTAN de la app, y se elige con el selector "Escalón / tamaño" del panel.
+    // El límite de Zona debe verse y comportarse EXACTAMENTE como el símbolo de magnitud/escalón
+    // del Límite genérico (Polígono libre): el glifo de milEchelonSVG dibujado directamente, al
+    // mismo tamaño que usa syncLimiteCompanion (pxH=26, pxW=pxH*2.8), SIN envolverlo en un
+    // triángulo ni reducirlo con un transform de escala.
     var marks = milEchelonSVG(echelon || '');
-    var html = '<div style="width:22px;height:26px;transform:rotate(' + bearingDeg + 'deg);transform-origin:50% 50%;">' +
-      '<svg width="22" height="26" viewBox="0 0 22 26" xmlns="http://www.w3.org/2000/svg"><polygon points="11,2 20,22 2,22" fill="#fff" stroke="' + color + '" stroke-width="2.2" stroke-linejoin="round"/>' +
-      '<svg x="1" y="15" width="20" height="8" viewBox="0 0 60 10">' + marks + '</svg></svg></div>';
-    return L.divIcon({ className:'', html: html, iconSize:[22,26], iconAnchor:[11,13] });
+    var pxH = 26, pxW = pxH * 2.8;
+    var innerHtml = '<svg width="100%" height="100%" viewBox="0 0 60 14" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,3)">' + marks + '</g></svg>';
+    var html = '<div style="width:' + pxW + 'px;height:' + pxH + 'px;display:flex;align-items:center;transform:rotate(' + bearingDeg + 'deg);transform-origin:50% 50%;">' + innerHtml + '</div>';
+    return L.divIcon({ className:'', html: html, iconSize:[pxW,pxH], iconAnchor:[pxW/2,pxH/2] });
   }
 
   var mccZonaCompanions = {};
@@ -15090,16 +15308,29 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var entry = mccZonaCompanions[shape._shapeId];
     if (!entry){
       var marker = L.marker(pos, { icon: buildZonaMagnitudeIcon(bearing-180, color, shape._mcc.echelon), draggable:true, zIndexOffset:650, title:'Arrastre para reposicionar el límite sobre el borde de la zona' });
+      // IMPORTANTE: el boundary y el centroide se calculan UNA SOLA VEZ al iniciar el arrastre
+      // (no en cada evento 'drag'), porque polygonCentroidLatLng usa turf.centroid sobre el
+      // polígono completo — recalcularlo en cada pixel de movimiento, sobre un polígono de
+      // muchos vértices (dibujado a mano alzada), es lo que hacía que la manija se sintiera
+      // "trabada"/con saltos ("no funciona bien"). El polígono no cambia durante este arrastre,
+      // así que cachear ambos valores es seguro y evita ese costo repetido.
+      marker.on('dragstart', function(){
+        marker._zonaDragBoundary = zonaBoundaryLatLngs(shape);
+        marker._zonaDragCentroid = polygonCentroidLatLng(shape);
+      });
       marker.on('drag', function(){
-        var bshape = zonaBoundaryLatLngs(shape);
+        var bshape = marker._zonaDragBoundary || zonaBoundaryLatLngs(shape);
         var f = nearestPerimeterFraction(bshape, marker.getLatLng());
         shape._mcc.limiteArc = f;
         var p2 = pointAtPerimeterFraction(bshape, f);
         marker.setLatLng(p2);
-        var c2 = polygonCentroidLatLng(shape);
+        var c2 = marker._zonaDragCentroid || polygonCentroidLatLng(shape);
         marker.setIcon(buildZonaMagnitudeIcon(taskBearingDeg(localXY(p2,c2))-180, color, shape._mcc.echelon));
       });
-      marker.on('dragend', function(){ if (typeof scheduleSave === 'function') scheduleSave(); });
+      marker.on('dragend', function(){
+        marker._zonaDragBoundary = null; marker._zonaDragCentroid = null;
+        if (typeof scheduleSave === 'function') scheduleSave();
+      });
       if (owner.visible) marker.addTo(map);
       mccZonaCompanions[shape._shapeId] = { marker: marker };
     } else {
@@ -15125,13 +15356,15 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     return null;
   }
   function buildMccTextIcon(t){
-    // El ancho/alto guardados en t.boxWidth/boxHeight representan el tamaño "de referencia" a
-    // MCC_SCALE_REF_ZOOM; se reescalan según el zoom actual del mapa para que el cuadro de texto
-    // mantenga su proporción con el polígono/flecha (en vez de quedar fijo en píxeles de pantalla
-    // y terminar saliéndose del símbolo al hacer zoom in, o viéndose minúsculo al hacer zoom out).
-    var zf = mccZoomScaleFactor();
-    var w = Math.max((t.boxWidth || 140) * zf, 10), h = Math.max((t.boxHeight || 40) * zf, 8);
-    var fs = Math.max(6, Math.min(h*0.45, 400));
+    // El cuadro de texto interno de Zona/Eje de Avance debe comportarse EXACTAMENTE como la
+    // etiqueta de nombre de "Trazo libre" (sin marco, fondo transparente, tamaño de pantalla
+    // fijo en píxeles) — NO como un símbolo táctico que deba reescalarse con el zoom. La versión
+    // anterior multiplicaba boxWidth/boxHeight por mccZoomScaleFactor() (referenciado a zoom 16),
+    // lo que en el zoom de trabajo habitual (9–13) dejaba el cuadro con un tamaño de apenas
+    // fracciones de píxel — prácticamente invisible; por eso "no funcionaba". Ahora boxWidth/
+    // boxHeight son directamente píxeles de pantalla, igual que cualquier otra etiqueta de la app.
+    var w = Math.max(t.boxWidth || 140, 10), h = Math.max(t.boxHeight || 40, 8);
+    var fs = Math.max(8, Math.min(h*0.45, 60));
     var html = '<div style="width:100%;height:100%;transform:rotate(' + (t.rotation||0) + 'deg);transform-origin:50% 50%;' +
       'background:transparent;border:none;padding:2px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;' +
       'font-family:Calibri,Arial,sans-serif;font-size:' + fs + 'px;font-weight:700;color:' + (t.color||'#1A1A1A') + ';white-space:pre-wrap;overflow:hidden;">' +
@@ -15187,8 +15420,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var anchor = mccTextAnchor(shape);
     var t = shape._mccText;
     var pos = fromLocalXY(anchor, t.offsetX||0, t.offsetY||0);
-    var zf = mccZoomScaleFactor();
-    var boxHpx = Math.max((t.boxHeight||40)*zf, 8);
+    var boxHpx = Math.max(t.boxHeight||40, 8);
     var mpp = metersPerPixel(pos.lat, map.getZoom());
     var dist = (boxHpx/2 + 22) * mpp;
     var rad = (t.rotation||0) * Math.PI/180;
@@ -15385,6 +15617,10 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
   /* ================================  FRENTE CUBIERTO: glifo de Unidad embebido  ================================ */
   function frenteCubiertoUnitInnerSVG(mil, size){
+    // Antes solo dibujaba el marco + el glifo central, por lo que el escalón/magnitud, los
+    // modificadores y la designación elegidos en el panel quedaban guardados pero NUNCA se
+    // veían sobre el mapa. Ahora se arma igual que buildMilSymbolSVG (la herramienta "Unidades"
+    // original): escalón ENCIMA del marco, marco, glifo y modificadores — en el mismo orden.
     var glyph;
     if (MIL_OVERLAY_TYPES.indexOf(mil.unitType) !== -1){
       var baseGlyphKey = MIL_BASE_PRIMARY_GLYPH[mil.unitBase] || 'generic';
@@ -15392,8 +15628,12 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     } else {
       glyph = milGlyphSVG(mil.unitType, mil.affiliation);
     }
+    var modifiers = milModifiersOf(mil).map(function(m){ return milModifierSVG(m, mil.affiliation, mil.echelon); }).join('');
     return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      milFrameSVG(mil.affiliation, mil.condition) + glyph + '</svg>';
+      milEchelonSVG(mil.echelon) +
+      milFrameSVG(mil.affiliation, mil.condition) + glyph + modifiers +
+      milConditionOverlaySVG(mil.condition) +
+      '</svg>';
   }
 
   function startApp(){
