@@ -7544,17 +7544,108 @@
     ];
   }
 
+  /* ---- Bordes del asta (solo las dos líneas paralelas del asta, sin la cabeza), duplicando la
+     geometría de computeArrowPoints, para poder cortarles un hueco donde se ubica el texto de
+     "Dirección de ataque" sin tocar el contorno general (usado por TODAS las flechas). ---- */
+  function computeArrowShaftEdges(arrow){
+    var tail = arrow.tail, head = arrow.head;
+    var curveLatLng = arrow.curve || midLocal(tail, head);
+    var P0 = { x:0, y:0 };
+    var P1 = localXY(tail, head);
+    var C  = localXY(tail, curveLatLng);
+    var N = ARROW_CURVE_SEGMENTS;
+    var pts = [];
+    for (var i=0;i<=N;i++){ pts.push(bezierXY(P0, C, P1, i/N)); }
+    var s = [0];
+    for (var i=1;i<=N;i++){ var dx=pts[i].x-pts[i-1].x, dy=pts[i].y-pts[i-1].y; s.push(s[i-1]+Math.sqrt(dx*dx+dy*dy)); }
+    var totalLen = s[N] || 0.0001;
+    var headLen = Math.min(arrow.headLength, totalLen*0.9);
+    var shaftEndArc = totalLen - headLen;
+    var j = 0;
+    while (j < N-1 && s[j+1] < shaftEndArc) j++;
+    var segSpan = s[j+1]-s[j];
+    var segFrac = segSpan>0 ? (shaftEndArc-s[j])/segSpan : 0;
+    var shaftEndPt = { x: pts[j].x+(pts[j+1].x-pts[j].x)*segFrac, y: pts[j].y+(pts[j+1].y-pts[j].y)*segFrac };
+    var sw = arrow.shaftWidth/2;
+    function normalAt(idx){
+      var a = pts[Math.max(0,idx-1)], b = pts[Math.min(N,idx+1)];
+      var dx=b.x-a.x, dy=b.y-a.y, len=Math.sqrt(dx*dx+dy*dy)||1;
+      return { x:-dy/len, y:dx/len };
+    }
+    var left=[], right=[];
+    for (var i=0;i<=j;i++){
+      var n = normalAt(i);
+      if (i===0 && (arrow.tailLeftOffset || arrow.tailRightOffset)){
+        left.push(arrow.tailLeftOffset ? {x:pts[0].x+arrow.tailLeftOffset.x,y:pts[0].y+arrow.tailLeftOffset.y} : {x:pts[0].x+n.x*sw,y:pts[0].y+n.y*sw});
+        right.push(arrow.tailRightOffset ? {x:pts[0].x+arrow.tailRightOffset.x,y:pts[0].y+arrow.tailRightOffset.y} : {x:pts[0].x-n.x*sw,y:pts[0].y-n.y*sw});
+        continue;
+      }
+      left.push({x:pts[i].x+n.x*sw, y:pts[i].y+n.y*sw});
+      right.push({x:pts[i].x-n.x*sw, y:pts[i].y-n.y*sw});
+    }
+    var segDx=pts[j+1].x-pts[j].x, segDy=pts[j+1].y-pts[j].y, segLen=Math.sqrt(segDx*segDx+segDy*segDy)||1;
+    var segN = {x:-segDy/segLen, y:segDx/segLen};
+    left.push({x:shaftEndPt.x+segN.x*sw, y:shaftEndPt.y+segN.y*sw});
+    right.push({x:shaftEndPt.x-segN.x*sw, y:shaftEndPt.y-segN.y*sw});
+    function toLatLngs(arr){ return arr.map(function(p){ return fromLocalXY(tail, p.x, p.y); }); }
+    var hw = arrow.headWidth/2;
+    return {
+      leftLatLngs: toLatLngs(left), rightLatLngs: toLatLngs(right),
+      headLeftCorner: fromLocalXY(tail, shaftEndPt.x+segN.x*hw, shaftEndPt.y+segN.y*hw),
+      headRightCorner: fromLocalXY(tail, shaftEndPt.x-segN.x*hw, shaftEndPt.y-segN.y*hw),
+      tip: fromLocalXY(tail, pts[N].x, pts[N].y)
+    };
+  }
+  // Corta un camino (array de latlngs) dejando un hueco de ~2*gapHalfMeters centrado en la
+  // fracción de arco gapCenterT; devuelve los dos tramos resultantes. Mismo principio que
+  // taskSegWithGap, pero para un camino de N puntos en vez de un segmento recto.
+  function gapCutPath(latlngs, gapCenterT, gapHalfMeters){
+    var cum=[0];
+    for (var i=1;i<latlngs.length;i++){ cum.push(cum[i-1]+distanceMeters(latlngs[i-1],latlngs[i])); }
+    var total = cum[cum.length-1] || 0.0001;
+    var center = total*gapCenterT;
+    var gs = Math.max(0, center-gapHalfMeters), ge = Math.min(total, center+gapHalfMeters);
+    function ptAt(arc){
+      var k=0; while (k<cum.length-2 && cum[k+1]<arc) k++;
+      var span=cum[k+1]-cum[k]; var f = span>0 ? (arc-cum[k])/span : 0;
+      var a=latlngs[k], b=latlngs[k+1];
+      return L.latLng(a.lat+(b.lat-a.lat)*f, a.lng+(b.lng-a.lng)*f);
+    }
+    var segA=[], segB=[];
+    for (var i=0;i<latlngs.length;i++){ if (cum[i] <= gs) segA.push(latlngs[i]); }
+    segA.push(ptAt(gs));
+    segB.push(ptAt(ge));
+    for (var i=0;i<latlngs.length;i++){ if (cum[i] >= ge) segB.push(latlngs[i]); }
+    return [segA, segB];
+  }
+
   /* ---------------- CONTORNO ABIERTO DE LA FLECHA (reverso sin cerrar) ---------------- */
   var arrowOutlines = {};
   function syncArrowOutline(shape){
     if (!shape._isArrow) return;
     var owner = findLayerOfShape(shape);
-    var pts = computeArrowPoints(shape._arrow);
+    var arrow = shape._arrow;
     var style = {
       color: shape.options.color, weight: shape.options.weight,
       opacity: shape.options.opacity != null ? shape.options.opacity : 1,
       dashArray: shape.options.dashArray, interactive:false, keyboard:false
     };
+    var pts;
+    // "Dirección de ataque": el texto no debe superponerse al asta — se le corta un hueco al
+    // trazo del asta en la posición del texto, igual que el mecanismo de corte de línea usado
+    // por "Límite entre elementos" / el nombre de "Vía de infiltración".
+    if (arrow.mccKind === 'direccionataque' && arrow.labelText){
+      var edges = computeArrowShaftEdges(arrow);
+      var midPt = edges.leftLatLngs[Math.floor(edges.leftLatLngs.length/2)];
+      var mpp = metersPerPixel(midPt.lat, map.getZoom());
+      var approxPx = (String(arrow.labelText).length * 7.5) + 12;
+      var gapHalfM = Math.max(10*mpp, (approxPx/2) * mpp);
+      var leftCut = gapCutPath(edges.leftLatLngs, 0.5, gapHalfM);
+      var rightCut = gapCutPath(edges.rightLatLngs, 0.5, gapHalfM);
+      pts = [leftCut[0], leftCut[1], [edges.headLeftCorner, edges.tip, edges.headRightCorner], rightCut[1].slice().reverse(), rightCut[0].slice().reverse()];
+    } else {
+      pts = computeArrowPoints(arrow);
+    }
     var outline = arrowOutlines[shape._shapeId];
     if (!outline){
       outline = L.polyline(pts, style);
@@ -8288,6 +8379,9 @@
       otherHandlesCleanup = function(){ removeImageHandles(shape); };
     } else if (shape._isTacticalTask){
       otherHandlesCleanup = createTacticalTaskHandles(shape);
+      otherHandlesShapeRef = shape;
+    } else if (shape._mccText && shape._mccText.enabled && (shape._isMccPolygon || (shape._isArrow && shape._arrow && shape._arrow.mccKind === 'ejeavance'))){
+      otherHandlesCleanup = createMccTextRotationHandle(shape);
       otherHandlesShapeRef = shape;
     }
   }
@@ -9034,6 +9128,9 @@
       finalArrow._arrow.labelText = '';
       finalArrow._isMccArrow = true;
       arrowPendingMccKind = null;
+      // "Dirección de ataque" debe ser una flecha simple SIN relleno (solo trazo), a diferencia
+      // del resto de las flechas de la app que sí llevan relleno translúcido.
+      if (finalArrow._arrow.mccKind === 'direccionataque') finalArrow.setStyle({ fillOpacity: 0 });
     }
     active.group.addLayer(finalArrow);
     attachShapeInteractivity(finalArrow, active);
@@ -11822,55 +11919,140 @@
       }
 
       if (shape._task.tipo === 'frentecubierto'){
+        // Paridad completa con el panel de la herramienta "Unidades" original (antes solo
+        // tenía Afiliación/Tipo/Escalón): se agregan Unidad base, Modificador, Condición
+        // Operacional, Designación y los campos extra (obús/radar) según el tipo elegido.
         shape._task.mil = shape._task.mil || defaultMilParams();
-        var fcAffField = document.createElement('div');
-        fcAffField.className = 'style-field';
-        fcAffField.innerHTML = '<span>Afiliación de la Unidad</span>';
-        var fcAffSelect = document.createElement('select');
-        fcAffSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
-        MIL_AFFILIATIONS.forEach(function(opt){
-          var o = document.createElement('option');
-          o.value = opt[0]; o.textContent = opt[1];
-          if (shape._task.mil.affiliation === opt[0]) o.selected = true;
-          fcAffSelect.appendChild(o);
-        });
-        fcAffSelect.addEventListener('change', function(ev){ shape._task.mil.affiliation = ev.target.value; syncTacticalTaskCompanion(shape); });
-        fcAffField.appendChild(fcAffSelect);
-        ttBlock.appendChild(fcAffField);
+        if (!shape._task.mil.unitBase) shape._task.mil.unitBase = inferUnitBase(shape._task.mil.unitType);
 
-        var fcTypeField = document.createElement('div');
-        fcTypeField.className = 'style-field';
-        fcTypeField.innerHTML = '<span>Tipo de Unidad</span>';
-        var fcTypeSelect = document.createElement('select');
-        fcTypeSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
-        MIL_UNIT_TYPES.forEach(function(opt){
+        function fcSelectField(label, options, key){
+          var field = document.createElement('div');
+          field.className = 'style-field';
+          field.innerHTML = '<span>' + label + '</span>';
+          var select = document.createElement('select');
+          select.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;max-width:170px;';
+          options.forEach(function(opt){
+            var o = document.createElement('option');
+            o.value = opt[0]; o.textContent = opt[1];
+            if (shape._task.mil[key] === opt[0]) o.selected = true;
+            select.appendChild(o);
+          });
+          select.addEventListener('change', function(ev){
+            shape._task.mil[key] = ev.target.value;
+            if (key === 'unitType') ensureMilTypeExtras(shape._task.mil);
+            syncTacticalTaskCompanion(shape);
+            renderLayerList();
+            showProperties(shape, layerObj);
+          });
+          field.appendChild(select);
+          return field;
+        }
+        function fcMultiSelectField(label, options, key){
+          var field = document.createElement('div');
+          field.className = 'style-field mil-multiselect-field';
+          field.innerHTML = '<span>' + label + '<br><small>(Ctrl/Cmd + clic para elegir varios)</small></span>';
+          var select = document.createElement('select');
+          select.multiple = true;
+          select.size = Math.min(options.length, 5);
+          select.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;width:170px;';
+          var current = milModifiersOf(shape._task.mil);
+          options.forEach(function(opt){
+            var o = document.createElement('option');
+            o.value = opt[0]; o.textContent = opt[1];
+            if (current.indexOf(opt[0]) !== -1) o.selected = true;
+            select.appendChild(o);
+          });
+          select.addEventListener('change', function(ev){
+            shape._task.mil[key] = Array.from(select.selectedOptions).map(function(o){ return o.value; });
+            delete shape._task.mil.modifier;
+            syncTacticalTaskCompanion(shape);
+            renderLayerList();
+          });
+          field.appendChild(select);
+          return field;
+        }
+
+        ttBlock.appendChild(fcSelectField('Afiliación de la Unidad', MIL_AFFILIATIONS, 'affiliation'));
+
+        var fcBaseField = document.createElement('div');
+        fcBaseField.className = 'style-field';
+        fcBaseField.innerHTML = '<span>Unidad base</span>';
+        var fcBaseSelect = document.createElement('select');
+        fcBaseSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;max-width:170px;';
+        MIL_BASE_UNITS.forEach(function(opt){
           var o = document.createElement('option');
           o.value = opt[0]; o.textContent = opt[1];
-          if (shape._task.mil.unitType === opt[0]) o.selected = true;
-          fcTypeSelect.appendChild(o);
+          if (shape._task.mil.unitBase === opt[0]) o.selected = true;
+          fcBaseSelect.appendChild(o);
         });
-        fcTypeSelect.addEventListener('change', function(ev){
-          shape._task.mil.unitType = ev.target.value;
-          shape._task.mil.unitBase = inferUnitBase(ev.target.value);
+        fcBaseSelect.addEventListener('change', function(ev){
+          shape._task.mil.unitBase = ev.target.value;
+          shape._task.mil.unitType = MIL_UNIT_TYPES_BY_BASE[shape._task.mil.unitBase][0][0];
+          ensureMilTypeExtras(shape._task.mil);
           syncTacticalTaskCompanion(shape);
+          renderLayerList();
+          showProperties(shape, layerObj);
         });
-        fcTypeField.appendChild(fcTypeSelect);
-        ttBlock.appendChild(fcTypeField);
+        fcBaseField.appendChild(fcBaseSelect);
+        ttBlock.appendChild(fcBaseField);
 
-        var fcEchField = document.createElement('div');
-        fcEchField.className = 'style-field';
-        fcEchField.innerHTML = '<span>Escalón</span>';
-        var fcEchSelect = document.createElement('select');
-        fcEchSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:4px 5px;';
-        MIL_ECHELONS.forEach(function(opt){
-          var o = document.createElement('option');
-          o.value = opt[0]; o.textContent = opt[1];
-          if ((shape._task.mil.echelon || '') === opt[0]) o.selected = true;
-          fcEchSelect.appendChild(o);
+        ttBlock.appendChild(fcSelectField('Tipo de Unidad', MIL_UNIT_TYPES_BY_BASE[shape._task.mil.unitBase] || MIL_UNIT_TYPES_BY_BASE.generic, 'unitType'));
+        ttBlock.appendChild(fcSelectField('Escalón', MIL_ECHELONS, 'echelon'));
+        ttBlock.appendChild(fcMultiSelectField('Modificador', MIL_MODIFIERS.filter(function(opt){ return opt[0] !== 'none'; }), 'modifiers'));
+        ttBlock.appendChild(fcSelectField('Condición Operacional', MIL_CONDITIONS, 'condition'));
+
+        var fcDesignField = document.createElement('div');
+        fcDesignField.className = 'style-field';
+        fcDesignField.innerHTML = '<span>Designación</span>';
+        var fcDesignInput = document.createElement('input');
+        fcDesignInput.type = 'text';
+        fcDesignInput.placeholder = 'ej. 1-A';
+        fcDesignInput.value = shape._task.mil.designation || '';
+        fcDesignInput.style.cssText = 'width:120px;border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-family:inherit;font-size:12px;text-align:right;';
+        fcDesignInput.addEventListener('change', function(ev){
+          shape._task.mil.designation = ev.target.value;
+          syncTacticalTaskCompanion(shape);
+          renderLayerList();
         });
-        fcEchSelect.addEventListener('change', function(ev){ shape._task.mil.echelon = ev.target.value; syncTacticalTaskCompanion(shape); });
-        fcEchField.appendChild(fcEchSelect);
-        ttBlock.appendChild(fcEchField);
+        fcDesignField.appendChild(fcDesignInput);
+        ttBlock.appendChild(fcDesignField);
+
+        function fcNumberField(label, unit, getVal, setVal){
+          var field = document.createElement('div');
+          field.className = 'style-field';
+          field.innerHTML = '<span>' + label + '</span>';
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;gap:5px;';
+          var input = document.createElement('input');
+          input.type = 'number'; input.min = 0; input.step = 'any';
+          input.value = getVal();
+          input.style.cssText = 'width:70px;border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-family:inherit;font-size:12px;text-align:right;';
+          input.addEventListener('input', function(ev){
+            setVal(parseFloat(ev.target.value) || 0);
+            syncTacticalTaskCompanion(shape);
+          });
+          var unitSpan = document.createElement('span');
+          unitSpan.style.cssText = 'font-size:11px;color:var(--muted);';
+          unitSpan.textContent = unit;
+          wrap.appendChild(input); wrap.appendChild(unitSpan);
+          field.appendChild(wrap);
+          return field;
+        }
+        if (shape._task.mil.unitType === 'obus'){
+          ensureMilTypeExtras(shape._task.mil);
+          ttBlock.appendChild(fcNumberField('Radio de acción', 'km',
+            function(){ return shape._task.mil.obus.radioAccionKm; },
+            function(v){ shape._task.mil.obus.radioAccionKm = v; }));
+          ttBlock.appendChild(fcNumberField('Altura máxima', 'km',
+            function(){ return shape._task.mil.obus.alturaMaximaKm; },
+            function(v){ shape._task.mil.obus.alturaMaximaKm = v; }));
+        }
+        if (shape._task.mil.unitType === 'radarmilitar'){
+          ensureMilTypeExtras(shape._task.mil);
+          ttBlock.appendChild(fcNumberField('Radio de detección', 'millas náuticas',
+            function(){ return shape._task.mil.radarMilitar.radioDeteccionNm; },
+            function(v){ shape._task.mil.radarMilitar.radioDeteccionNm = v; }));
+        }
       }
 
       var ttHint = document.createElement('div');
@@ -12088,6 +12270,56 @@
 
       if (shape._mcc.type === 'limiteelementos'){
         mlBlock.appendChild(mccCheckboxField('Mostrar nombre (sin borde ni fondo)', function(){ return shape._mcc.showLabel !== false; }, function(v){ shape._mcc.showLabel = v; }));
+
+        // "Límite entre elementos" es un clon de Trazo libre, así que también debe tener las
+        // opciones de "Límite" (escalón/magnitud) que tiene cualquier Trazo libre genérico vía
+        // el sistema _limite / syncLimiteCompanion — antes faltaban por completo en este panel.
+        if (!shape._limite) shape._limite = { enabled:false, echelon1:'', echelon2:'' };
+        var mlLimiteField = document.createElement('div');
+        mlLimiteField.className = 'style-field';
+        mlLimiteField.style.cssText = 'border-top:1px solid var(--border);padding-top:8px;margin-top:2px;';
+        var mlLimiteLabel = document.createElement('label');
+        mlLimiteLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var mlLimiteCheck = document.createElement('input');
+        mlLimiteCheck.type = 'checkbox';
+        mlLimiteCheck.checked = !!shape._limite.enabled;
+        var mlLimiteText = document.createElement('span');
+        mlLimiteText.textContent = 'Límite';
+        mlLimiteLabel.appendChild(mlLimiteCheck); mlLimiteLabel.appendChild(mlLimiteText);
+        mlLimiteField.appendChild(mlLimiteLabel);
+        mlBlock.appendChild(mlLimiteField);
+
+        function mlEchelonField(labelTxt, key){
+          var f = document.createElement('div');
+          f.className = 'style-field';
+          f.style.display = shape._limite.enabled ? 'flex' : 'none';
+          f.innerHTML = '<span>' + labelTxt + '</span>';
+          var sel = document.createElement('select');
+          sel.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
+          MIL_ECHELONS.forEach(function(opt){
+            var o = document.createElement('option');
+            o.value = opt[0]; o.textContent = opt[1];
+            if ((shape._limite[key] || '') === opt[0]) o.selected = true;
+            sel.appendChild(o);
+          });
+          sel.addEventListener('change', function(ev){
+            shape._limite[key] = ev.target.value;
+            syncLimiteCompanion(shape);
+          });
+          f.appendChild(sel);
+          return f;
+        }
+        var mlEch1Field = mlEchelonField('Escalón / tamaño', 'echelon1');
+        var mlEch2Field = mlEchelonField('Segundo escalón (opcional)', 'echelon2');
+        mlBlock.appendChild(mlEch1Field);
+        mlBlock.appendChild(mlEch2Field);
+
+        mlLimiteCheck.addEventListener('change', function(ev){
+          shape._limite.enabled = ev.target.checked;
+          mlEch1Field.style.display = ev.target.checked ? 'flex' : 'none';
+          mlEch2Field.style.display = ev.target.checked ? 'flex' : 'none';
+          syncLimiteCompanion(shape);
+        });
       }
       if (shape._mcc.type === 'limitecombate'){
         mlBlock.appendChild(mccCheckboxField('Puntos de coordinación en extremos', function(){ return !!shape._mcc.coordPoints; }, function(v){ shape._mcc.coordPoints = v; }));
@@ -12097,6 +12329,9 @@
         mlBlock.appendChild(mccCheckboxField('Línea de Contacto', function(){ return !!shape._mcc.contacto; }, function(v){ shape._mcc.contacto = v; }));
         mlBlock.appendChild(mccRangeField('Alto de la onda', function(){ return shape._mcc.waveHeight||1; }, function(v){ shape._mcc.waveHeight = v; }, 0.3, 3, 0.1));
         mlBlock.appendChild(mccRangeField('Ancho de la onda', function(){ return shape._mcc.waveWidth||1; }, function(v){ shape._mcc.waveWidth = v; }, 0.3, 3, 0.1));
+      }
+      if (shape._mcc.type === 'via'){
+        mlBlock.appendChild(mccRangeField('Separación entre las dos líneas (px)', function(){ return shape._mcc.viaGapPx != null ? shape._mcc.viaGapPx : 6; }, function(v){ shape._mcc.viaGapPx = v; }, 2, 30, 1));
       }
       if (shape._mcc.type === 'via' || shape._mcc.type === 'camino'){
         mlBlock.appendChild(mccCheckboxField('Opacar fondo del nombre', function(){ return !!shape._mcc.opacarFondo; }, function(v){ shape._mcc.opacarFondo = v; }));
@@ -12117,6 +12352,26 @@
       zTitle.className = 'veh-section-label';
       zTitle.textContent = 'Zona';
       zBlock.appendChild(zTitle);
+
+      if (!shape._mcc.echelon && shape._mcc.echelon !== '') shape._mcc.echelon = '';
+      var zEchField = document.createElement('div');
+      zEchField.className = 'style-field';
+      zEchField.innerHTML = '<span>Escalón / tamaño</span>';
+      var zEchSelect = document.createElement('select');
+      zEchSelect.style.cssText = 'border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;padding:3px 4px;';
+      MIL_ECHELONS.forEach(function(opt){
+        var o = document.createElement('option');
+        o.value = opt[0]; o.textContent = opt[1];
+        if ((shape._mcc.echelon || '') === opt[0]) o.selected = true;
+        zEchSelect.appendChild(o);
+      });
+      zEchSelect.addEventListener('change', function(ev){
+        shape._mcc.echelon = ev.target.value;
+        syncMccZonaCompanion(shape);
+      });
+      zEchField.appendChild(zEchSelect);
+      zBlock.appendChild(zEchField);
+
       var zHint = document.createElement('div');
       zHint.className = 'hint';
       zHint.textContent = 'Arrastre el marcador en forma de triángulo sobre el borde de la zona para reposicionar el límite; su base siempre apunta hacia el centro.';
@@ -12127,88 +12382,11 @@
       body.appendChild(buildMccTextPanel(shape));
     }
 
-    if (kind === 'arrow' && shape._arrow && shape._arrow.mccKind){
-      var mccArrowBlock = document.createElement('div');
-      mccArrowBlock.className = 'style-block';
-      var mccArrowTitle = document.createElement('div');
-      mccArrowTitle.className = 'veh-section-label';
-      mccArrowTitle.textContent = (shape._arrow.mccKind === 'direccionataque') ? 'Dirección de ataque' : 'Eje de Avance';
-      mccArrowBlock.appendChild(mccArrowTitle);
-
-      if (shape._arrow.mccKind === 'direccionataque'){
-        var daLabelField = document.createElement('div');
-        daLabelField.className = 'style-field';
-        daLabelField.innerHTML = '<span>Texto (sigue la dirección de la flecha)</span>';
-        var daLabelInput = document.createElement('input');
-        daLabelInput.type = 'text';
-        daLabelInput.value = shape._arrow.labelText || '';
-        daLabelInput.addEventListener('input', function(ev){
-          shape._arrow.labelText = ev.target.value;
-          syncArrowLabel(shape);
-        });
-        daLabelField.appendChild(daLabelInput);
-        mccArrowBlock.appendChild(daLabelField);
-
-        var futuroField = document.createElement('div');
-        futuroField.className = 'style-field';
-        var futuroLabel = document.createElement('label');
-        futuroLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
-        var futuroCheck = document.createElement('input');
-        futuroCheck.type = 'checkbox';
-        futuroCheck.checked = !!shape._arrow.futuro;
-        var futuroText = document.createElement('span');
-        futuroText.textContent = 'Ataque Futuro (asta discontinua)';
-        futuroLabel.appendChild(futuroCheck); futuroLabel.appendChild(futuroText);
-        futuroField.appendChild(futuroLabel);
-        futuroField.addEventListener && mccArrowBlock.appendChild(futuroField);
-        futuroCheck.addEventListener('change', function(ev){
-          shape._arrow.futuro = ev.target.checked;
-          shape.setStyle({ dashArray: ev.target.checked ? '8,6' : (shape._dashStyle === 'double' ? null : null) });
-          syncArrowOutline(shape);
-        });
-
-        var simuladoField = document.createElement('div');
-        simuladoField.className = 'style-field';
-        var simuladoLabel = document.createElement('label');
-        simuladoLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
-        var simuladoCheck = document.createElement('input');
-        simuladoCheck.type = 'checkbox';
-        simuladoCheck.checked = !!shape._arrow.simulado;
-        var simuladoText = document.createElement('span');
-        simuladoText.textContent = 'Ataque Simulado (segunda punta discontinua y separada)';
-        simuladoLabel.appendChild(simuladoCheck); simuladoLabel.appendChild(simuladoText);
-        simuladoField.appendChild(simuladoLabel);
-        mccArrowBlock.appendChild(simuladoField);
-        simuladoCheck.addEventListener('change', function(ev){
-          shape._arrow.simulado = ev.target.checked;
-          syncArrowSimulado(shape);
-        });
-      }
-
-      if (shape._arrow.mccKind === 'ejeavance'){
-        var ejeSimuladoField = document.createElement('div');
-        ejeSimuladoField.className = 'style-field';
-        var ejeSimuladoLabel = document.createElement('label');
-        ejeSimuladoLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
-        var ejeSimuladoCheck = document.createElement('input');
-        ejeSimuladoCheck.type = 'checkbox';
-        ejeSimuladoCheck.checked = !!shape._arrow.simulado;
-        var ejeSimuladoText = document.createElement('span');
-        ejeSimuladoText.textContent = 'Eje Simulado (segunda punta discontinua y separada)';
-        ejeSimuladoLabel.appendChild(ejeSimuladoCheck); ejeSimuladoLabel.appendChild(ejeSimuladoText);
-        ejeSimuladoField.appendChild(ejeSimuladoLabel);
-        mccArrowBlock.appendChild(ejeSimuladoField);
-        ejeSimuladoCheck.addEventListener('change', function(ev){
-          shape._arrow.simulado = ev.target.checked;
-          syncArrowSimulado(shape);
-        });
-
-        shape._mccText = shape._mccText || defaultMccTextParams();
-        mccArrowBlock.appendChild(buildMccTextPanel(shape));
-      }
-
-      body.appendChild(mccArrowBlock);
-    }
+    // El bloque de propiedades específico de "Dirección de ataque" / "Eje de Avance" (MCC) se
+    // construye y agrega MÁS ABAJO, después del bloque genérico de la flecha (dimensiones,
+    // corredor de movilidad, Ataque principal, Av Aprox Aérea): así todas las opciones de
+    // modificación de estas dos herramientas (Ataque Principal, Ataque Futuro, Ataque Simulado /
+    // Eje Simulado) quedan agrupadas juntas, al final del panel, en vez de intercaladas.
 
     if (kind === 'image'){
       var imgBlock = document.createElement('div');
@@ -12673,7 +12851,9 @@
         mainAttackLabel.appendChild(mainAttackCheck);
         mainAttackLabel.appendChild(mainAttackText);
         mainAttackField.appendChild(mainAttackLabel);
-        styleBlock.appendChild(mainAttackField);
+        // Para "Dirección de ataque" este campo se reutiliza más abajo, agrupado junto a
+        // Ataque Futuro y Ataque Simulado al final del panel, en vez de aparecer aquí.
+        if (shape._arrow.mccKind !== 'direccionataque') styleBlock.appendChild(mainAttackField);
 
         mainAttackCheck.addEventListener('change', function(ev){
           shape._arrow.mainAttack = ev.target.checked;
@@ -12766,6 +12946,96 @@
       }
 
       body.appendChild(styleBlock);
+    }
+
+    if (kind === 'arrow' && shape._arrow && shape._arrow.mccKind){
+      var mccArrowBlock = document.createElement('div');
+      mccArrowBlock.className = 'style-block';
+      var mccArrowTitle = document.createElement('div');
+      mccArrowTitle.className = 'veh-section-label';
+      mccArrowTitle.textContent = (shape._arrow.mccKind === 'direccionataque') ? 'Dirección de ataque' : 'Eje de Avance';
+      mccArrowBlock.appendChild(mccArrowTitle);
+
+      if (shape._arrow.mccKind === 'direccionataque'){
+        var daLabelField = document.createElement('div');
+        daLabelField.className = 'style-field';
+        daLabelField.innerHTML = '<span>Texto (sigue la dirección de la flecha y corta el asta)</span>';
+        var daLabelInput = document.createElement('input');
+        daLabelInput.type = 'text';
+        daLabelInput.value = shape._arrow.labelText || '';
+        daLabelInput.addEventListener('input', function(ev){
+          shape._arrow.labelText = ev.target.value;
+          syncArrowLabel(shape);
+          syncArrowOutline(shape);
+        });
+        daLabelField.appendChild(daLabelInput);
+        mccArrowBlock.appendChild(daLabelField);
+
+        // Las tres opciones de modificación (Ataque Principal, Ataque Futuro, Ataque Simulado)
+        // van agrupadas juntas aquí, al final del panel de propiedades, sin tooltips/title en
+        // sus controles. "Ataque principal" es el mismo campo/checkbox genérico de toda flecha
+        // (creado más arriba junto con el resto de los campos de la flecha), reinsertado aquí.
+        if (typeof mainAttackField !== 'undefined') mccArrowBlock.appendChild(mainAttackField);
+
+        var futuroField = document.createElement('div');
+        futuroField.className = 'style-field';
+        var futuroLabel = document.createElement('label');
+        futuroLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var futuroCheck = document.createElement('input');
+        futuroCheck.type = 'checkbox';
+        futuroCheck.checked = !!shape._arrow.futuro;
+        var futuroText = document.createElement('span');
+        futuroText.textContent = 'Ataque Futuro (asta discontinua)';
+        futuroLabel.appendChild(futuroCheck); futuroLabel.appendChild(futuroText);
+        futuroField.appendChild(futuroLabel);
+        mccArrowBlock.appendChild(futuroField);
+        futuroCheck.addEventListener('change', function(ev){
+          shape._arrow.futuro = ev.target.checked;
+          shape.setStyle({ dashArray: ev.target.checked ? '8,6' : (shape._dashStyle === 'double' ? null : null) });
+          syncArrowOutline(shape);
+        });
+
+        var simuladoField = document.createElement('div');
+        simuladoField.className = 'style-field';
+        var simuladoLabel = document.createElement('label');
+        simuladoLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var simuladoCheck = document.createElement('input');
+        simuladoCheck.type = 'checkbox';
+        simuladoCheck.checked = !!shape._arrow.simulado;
+        var simuladoText = document.createElement('span');
+        simuladoText.textContent = 'Ataque Simulado (segunda punta discontinua y separada)';
+        simuladoLabel.appendChild(simuladoCheck); simuladoLabel.appendChild(simuladoText);
+        simuladoField.appendChild(simuladoLabel);
+        mccArrowBlock.appendChild(simuladoField);
+        simuladoCheck.addEventListener('change', function(ev){
+          shape._arrow.simulado = ev.target.checked;
+          syncArrowSimulado(shape);
+        });
+      }
+
+      if (shape._arrow.mccKind === 'ejeavance'){
+        var ejeSimuladoField = document.createElement('div');
+        ejeSimuladoField.className = 'style-field';
+        var ejeSimuladoLabel = document.createElement('label');
+        ejeSimuladoLabel.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
+        var ejeSimuladoCheck = document.createElement('input');
+        ejeSimuladoCheck.type = 'checkbox';
+        ejeSimuladoCheck.checked = !!shape._arrow.simulado;
+        var ejeSimuladoText = document.createElement('span');
+        ejeSimuladoText.textContent = 'Eje Simulado (segunda punta discontinua y separada)';
+        ejeSimuladoLabel.appendChild(ejeSimuladoCheck); ejeSimuladoLabel.appendChild(ejeSimuladoText);
+        ejeSimuladoField.appendChild(ejeSimuladoLabel);
+        mccArrowBlock.appendChild(ejeSimuladoField);
+        ejeSimuladoCheck.addEventListener('change', function(ev){
+          shape._arrow.simulado = ev.target.checked;
+          syncArrowSimulado(shape);
+        });
+
+        shape._mccText = shape._mccText || defaultMccTextParams();
+        mccArrowBlock.appendChild(buildMccTextPanel(shape));
+      }
+
+      body.appendChild(mccArrowBlock);
     }
 
     var actions = document.createElement('div');
@@ -14265,7 +14535,14 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     else if (key === 'emboscada'){ activateTacticalTaskTool('emboscada'); mccTacticalTaskPending = true; updateToolbarUI(); }
     else if (key === 'frentecubierto'){ activateTacticalTaskTool('frentecubierto'); mccTacticalTaskPending = true; updateToolbarUI(); }
     else if (key === 'limiteelementos' || key === 'limitecombate' || key === 'via' || key === 'camino') activateMccLineTool(key);
-    else if (MCC_POINT_KINDS.indexOf(key) !== -1) activateMccPointTool(key);
+    else {
+      // Los botones de "Punto de..." usan data-tool="mcc:puntoXxx" (con el prefijo "punto"),
+      // mientras que MCC_POINT_KINDS guarda las claves sin ese prefijo ("coordinacion",
+      // "control", etc.) — por eso había que normalizar la clave antes de buscarla, o el
+      // dispatcher nunca encontraba coincidencia y las 5 herramientas quedaban sin activar.
+      var pointKey = key.indexOf('punto') === 0 ? key.slice(5) : key;
+      if (MCC_POINT_KINDS.indexOf(pointKey) !== -1) activateMccPointTool(pointKey);
+    }
   }
 
   function renderMccMisionesSubmenu(){
@@ -14303,6 +14580,16 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var len = Math.max(String(text == null ? '' : text).length, 1);
     var est = (boxW * 1.7) / len;
     return Math.max(7, Math.min(maxFont || 16, est, boxH * 0.75));
+  }
+
+  // Factor de escala compartido para que el texto/íconos "en unidades de mundo" de las
+  // herramientas MCC (Zona, Eje de Avance, Límite de combate, Vía de infiltración) mantengan
+  // su tamaño proporcional al dibujo en metros en vez de quedar fijos en píxeles de pantalla:
+  // se recalcula en cada zoomend junto con el resto de las sincronizaciones de cada herramienta,
+  // igual que el patrón ya usado por las líneas defensivas (recomputar tamaño según el zoom).
+  var MCC_SCALE_REF_ZOOM = 16;
+  function mccZoomScaleFactor(){
+    return Math.pow(2, (map.getZoom() - MCC_SCALE_REF_ZOOM));
   }
 
   /* ================================  5 "PUNTO DE..." (markers)  ================================ */
@@ -14399,6 +14686,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       p.contacto = false; p.waveHeight = 1; p.waveWidth = 1;
     }
     if (type === 'via' || type === 'camino'){ p.opacarFondo = false; p.repetirNombre = false; }
+    if (type === 'via'){ p.viaGapPx = 6; }
     return p;
   }
 
@@ -14503,7 +14791,10 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var cum = [0];
     for (var i=1;i<pts.length;i++){ cum.push(cum[i-1] + Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y)); }
     var total = cum[cum.length-1] || 1;
-    var steps = Math.max(8, Math.round(total / Math.max(6, wavelengthPx/4)));
+    // Muestreo denso (20 puntos por longitud de onda) para que la curva se vea como medias
+    // ondas/semicírculos redondeados ("scallops") y no como zigzags triangulares: con pocos
+    // puntos, los segmentos rectos entre ellos dibujaban triángulos en vez de una onda suave.
+    var steps = Math.max(24, Math.round(total / Math.max(1.5, wavelengthPx/20)));
     var out = [];
     for (var s=0;s<=steps;s++){
       var arc = total*s/steps;
@@ -14528,7 +14819,12 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     if (g){ g.remove(); delete mccLineCompanions[shape._shapeId]; }
   }
   function mccBorderlessLabelIcon(text, bearingDeg, color, opaque, fontSize){
-    var html = '<div style="transform:rotate(' + bearingDeg + 'deg);transform-origin:50% 50%;white-space:nowrap;' +
+    // bearingDeg llega como un rumbo (atan2 este/norte, igual convención que taskBearingDeg);
+    // labelRotationForBearing lo convierte en la rotación CSS correcta para que el texto quede
+    // EN LÍNEA con esa dirección (tangente) y no perpendicular a ella, además de evitarle quedar
+    // cabeza abajo — mismo mecanismo ya usado por las etiquetas de longitud de línea.
+    var rot = labelRotationForBearing(bearingDeg);
+    var html = '<div style="transform:rotate(' + rot + 'deg);transform-origin:50% 50%;white-space:nowrap;' +
       'font-family:Calibri,Arial,sans-serif;font-size:' + (fontSize||12) + 'px;font-weight:700;color:' + color + ';' +
       (opaque ? 'background:rgba(255,255,255,.85);padding:1px 4px;border-radius:3px;' : '') + '">' + escapeHtmlText(text) + '</div>';
     return L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] });
@@ -14540,9 +14836,17 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var mcc = shape._mcc;
     var latlngs = shape.getLatLngs();
     if (!latlngs || latlngs.length < 2){ removeMccLineCompanion(shape); return; }
+    // IMPORTANTE: quitar siempre el grupo companion anterior ANTES de construir uno nuevo.
+    // Esta función se re-ejecuta en cada zoomend (vía syncAllMccLineCompanions) y antes no
+    // removía el L.layerGroup previo del mapa — simplemente lo pisaba en el registro, dejando
+    // los marcadores/polilíneas viejos huérfanos sobre el mapa. Eso es lo que producía los
+    // puntos de coordinación, el texto de los extremos y la Línea de Contacto duplicándose (y
+    // la "Vía de infiltración" mostrando más de dos líneas) cada vez que se hacía zoom.
+    removeMccLineCompanion(shape);
     var group = L.layerGroup();
     var color = shape.options.color;
     var n = latlngs.length;
+    var zf = mccZoomScaleFactor();
 
     if (mcc.type === 'limiteelementos'){
       if (mcc.showLabel !== false && shape._customName){
@@ -14562,23 +14866,16 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
         L.polyline(blackLine, { color:'#111', weight:2.4, interactive:false, keyboard:false }).addTo(group);
       }
       if (mcc.coordPoints){
-        var mpp0 = metersPerPixel(latlngs[0].lat, map.getZoom());
-        var mppN = metersPerPixel(latlngs[n-1].lat, map.getZoom());
-        var offPx = 16 * (mcc.coordScale || 1);
-        var dStart = outwardDirAt(latlngs[0], latlngs[Math.min(1,n-1)]);
-        var dEnd = outwardDirAt(latlngs[n-1], latlngs[Math.max(0,n-2)]);
-        var cStart = fromLocalXY(latlngs[0], dStart.x*offPx*mpp0, dStart.y*offPx*mpp0);
-        var cEnd = fromLocalXY(latlngs[n-1], dEnd.x*offPx*mppN, dEnd.y*offPx*mppN);
-        L.polyline([latlngs[0], cStart], { color: color, weight:1.6, interactive:false, keyboard:false }).addTo(group);
-        L.polyline([latlngs[n-1], cEnd], { color: color, weight:1.6, interactive:false, keyboard:false }).addTo(group);
-        var csize = 26 * (mcc.coordScale || 1);
-        [cStart, cEnd].forEach(function(c){
+        // El centro del glifo "punto de coordinación" debe coincidir EXACTAMENTE con el
+        // vértice inicial/final real de la línea (antes quedaba desplazado hacia afuera).
+        var csize = 26 * (mcc.coordScale || 1) * zf;
+        [latlngs[0], latlngs[n-1]].forEach(function(c){
           var icon = L.divIcon({ className:'', html: mccCoordGlyphSVG(csize, color), iconSize:[csize,csize], iconAnchor:[csize/2,csize/2] });
           L.marker(c, { icon: icon, interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
         });
       }
       if (mcc.textEnabled && shape._customName){
-        var tfs = 12 * (mcc.textScale || 1);
+        var tfs = 12 * (mcc.textScale || 1) * zf;
         var tanStart = taskBearingDeg(localXY(latlngs[0], latlngs[Math.min(1,n-1)]));
         var tanEnd = taskBearingDeg(localXY(latlngs[n-1], latlngs[Math.max(0,n-2)]));
         [[latlngs[0], tanStart], [latlngs[n-1], tanEnd]].forEach(function(pair){
@@ -14588,7 +14885,8 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     }
     else if (mcc.type === 'via' || mcc.type === 'camino'){
       if (mcc.type === 'via'){
-        var offsetLatLngs = offsetLineLatLngsPx(latlngs, 5);
+        var gapPx = (mcc.viaGapPx != null ? mcc.viaGapPx : 6);
+        var offsetLatLngs = offsetLineLatLngsPx(latlngs, gapPx);
         L.polyline(offsetLatLngs, { color: color, weight: shape.options.weight || 3, opacity: shape.options.opacity, interactive:false, keyboard:false }).addTo(group);
       }
       var nameText = shape._customName;
@@ -14600,10 +14898,17 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
         } else {
           idxList = [Math.floor((n-1)/2)];
         }
+        // Para "Vía", el texto se ubica EN LÍNEA con el eje y a medio camino entre las dos
+        // líneas que la forman (desplazado la mitad del hueco hacia el lado de la línea
+        // compañera); para "Camino" (una sola línea) se queda directamente sobre ella.
+        var halfGapPx = (mcc.type === 'via') ? (mcc.viaGapPx != null ? mcc.viaGapPx : 6) / 2 : 0;
+        var tfsVia = 12 * zf;
         idxList.forEach(function(idx){
           var pos = latlngs[idx], nxt = latlngs[Math.min(n-1, idx+1)];
           var brng2 = taskBearingDeg(localXY(pos, nxt));
-          L.marker(pos, { icon: mccBorderlessLabelIcon(nameText, brng2, color, !!mcc.opacarFondo), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
+          if (halfGapPx){ pos = offsetLineLatLngsPx(latlngs, halfGapPx)[idx]; }
+          var fsOpt = (mcc.type === 'via') ? tfsVia : 12;
+          L.marker(pos, { icon: mccBorderlessLabelIcon(nameText, brng2, color, !!mcc.opacarFondo, fsOpt), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
         });
       }
     }
@@ -14623,7 +14928,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
   /* ================================  ZONA (polígono libre + límite único + texto interno)  ================================ */
   function defaultMccZonaParams(){
-    return { type:'zona', limiteArc: 0.5 };
+    return { type:'zona', limiteArc: 0.5, echelon:'' };
   }
   function defaultMccTextParams(){
     return { enabled:false, text:'Texto', rotation:0, boxWidth:140, boxHeight:40, offsetX:0, offsetY:0, color:'#1A1A1A' };
@@ -14755,9 +15060,14 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     }
     return best;
   }
-  function buildZonaMagnitudeIcon(bearingDeg, color){
+  function buildZonaMagnitudeIcon(bearingDeg, color, echelon){
+    // El triángulo es solo el soporte visual del límite de Zona; el símbolo de magnitud/escalón
+    // real (puntos, barras o X según MIL_ECHELONS) se dibuja encima, igual que en el resto de
+    // la simbología OTAN de la app, y se elige con el selector "Escalón / tamaño" del panel.
+    var marks = milEchelonSVG(echelon || '');
     var html = '<div style="width:22px;height:26px;transform:rotate(' + bearingDeg + 'deg);transform-origin:50% 50%;">' +
-      '<svg width="22" height="26" viewBox="0 0 22 26" xmlns="http://www.w3.org/2000/svg"><polygon points="11,2 20,22 2,22" fill="#fff" stroke="' + color + '" stroke-width="2.2" stroke-linejoin="round"/></svg></div>';
+      '<svg width="22" height="26" viewBox="0 0 22 26" xmlns="http://www.w3.org/2000/svg"><polygon points="11,2 20,22 2,22" fill="#fff" stroke="' + color + '" stroke-width="2.2" stroke-linejoin="round"/>' +
+      '<svg x="1" y="15" width="20" height="8" viewBox="0 0 60 10">' + marks + '</svg></svg></div>';
     return L.divIcon({ className:'', html: html, iconSize:[22,26], iconAnchor:[11,13] });
   }
 
@@ -14779,7 +15089,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var color = shape.options.color;
     var entry = mccZonaCompanions[shape._shapeId];
     if (!entry){
-      var marker = L.marker(pos, { icon: buildZonaMagnitudeIcon(bearing-180, color), draggable:true, zIndexOffset:650, title:'Arrastre para reposicionar el límite sobre el borde de la zona' });
+      var marker = L.marker(pos, { icon: buildZonaMagnitudeIcon(bearing-180, color, shape._mcc.echelon), draggable:true, zIndexOffset:650, title:'Arrastre para reposicionar el límite sobre el borde de la zona' });
       marker.on('drag', function(){
         var bshape = zonaBoundaryLatLngs(shape);
         var f = nearestPerimeterFraction(bshape, marker.getLatLng());
@@ -14787,14 +15097,14 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
         var p2 = pointAtPerimeterFraction(bshape, f);
         marker.setLatLng(p2);
         var c2 = polygonCentroidLatLng(shape);
-        marker.setIcon(buildZonaMagnitudeIcon(taskBearingDeg(localXY(p2,c2))-180, color));
+        marker.setIcon(buildZonaMagnitudeIcon(taskBearingDeg(localXY(p2,c2))-180, color, shape._mcc.echelon));
       });
       marker.on('dragend', function(){ if (typeof scheduleSave === 'function') scheduleSave(); });
       if (owner.visible) marker.addTo(map);
       mccZonaCompanions[shape._shapeId] = { marker: marker };
     } else {
       entry.marker.setLatLng(pos);
-      entry.marker.setIcon(buildZonaMagnitudeIcon(bearing-180, color));
+      entry.marker.setIcon(buildZonaMagnitudeIcon(bearing-180, color, shape._mcc.echelon));
     }
   }
   function syncAllMccZonaCompanions(){
@@ -14815,8 +15125,13 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     return null;
   }
   function buildMccTextIcon(t){
-    var w = Math.max(t.boxWidth || 140, 30), h = Math.max(t.boxHeight || 40, 20);
-    var fs = Math.max(8, Math.min(h*0.45, 40));
+    // El ancho/alto guardados en t.boxWidth/boxHeight representan el tamaño "de referencia" a
+    // MCC_SCALE_REF_ZOOM; se reescalan según el zoom actual del mapa para que el cuadro de texto
+    // mantenga su proporción con el polígono/flecha (en vez de quedar fijo en píxeles de pantalla
+    // y terminar saliéndose del símbolo al hacer zoom in, o viéndose minúsculo al hacer zoom out).
+    var zf = mccZoomScaleFactor();
+    var w = Math.max((t.boxWidth || 140) * zf, 10), h = Math.max((t.boxHeight || 40) * zf, 8);
+    var fs = Math.max(6, Math.min(h*0.45, 400));
     var html = '<div style="width:100%;height:100%;transform:rotate(' + (t.rotation||0) + 'deg);transform-origin:50% 50%;' +
       'background:transparent;border:none;padding:2px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;' +
       'font-family:Calibri,Arial,sans-serif;font-size:' + fs + 'px;font-weight:700;color:' + (t.color||'#1A1A1A') + ';white-space:pre-wrap;overflow:hidden;">' +
@@ -14853,6 +15168,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       m.setLatLng(pos);
       m.setIcon(icon);
     }
+    if (shape._mccTextHandles) positionMccTextHandle(shape);
   }
   function syncAllMccTextCompanions(){
     var liveIds = {};
@@ -14862,6 +15178,49 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     Object.keys(mccTextCompanions).forEach(function(id){
       if (!liveIds[id]){ mccTextCompanions[id].remove(); delete mccTextCompanions[id]; }
     });
+  }
+
+  /* ---- Manija dorada de rotación del texto interno MCC (Zona / Eje de Avance), reutilizando
+     exactamente el mismo mecanismo (positionTextHandle / createTextRotationHandle) que usa la
+     herramienta de texto genérica, en vez de un campo numérico o cualquier otro ajuste. ---- */
+  function mccTextHandleGeometry(shape){
+    var anchor = mccTextAnchor(shape);
+    var t = shape._mccText;
+    var pos = fromLocalXY(anchor, t.offsetX||0, t.offsetY||0);
+    var zf = mccZoomScaleFactor();
+    var boxHpx = Math.max((t.boxHeight||40)*zf, 8);
+    var mpp = metersPerPixel(pos.lat, map.getZoom());
+    var dist = (boxHpx/2 + 22) * mpp;
+    var rad = (t.rotation||0) * Math.PI/180;
+    var handleLatLng = fromLocalXY(pos, -dist*Math.sin(rad), dist*Math.cos(rad));
+    return { pos: pos, handleLatLng: handleLatLng };
+  }
+  function positionMccTextHandle(shape){
+    var h = shape._mccTextHandles;
+    if (!h) return;
+    var g = mccTextHandleGeometry(shape);
+    h.rotate.setLatLng(g.handleLatLng);
+    h.stem.setLatLngs([g.pos, g.handleLatLng]);
+  }
+  function createMccTextRotationHandle(shape){
+    var g = mccTextHandleGeometry(shape);
+    var marker = L.marker(g.handleLatLng, { draggable:true, icon: makeHandleIcon('#B8962E',16), zIndexOffset:2000, title:'Arrastre para girar' }).addTo(map);
+    var stem = L.polyline([g.pos, g.handleLatLng], { color:'#B8962E', weight:1.5, dashArray:'3 4', interactive:false }).addTo(map);
+    shape._mccTextHandles = { rotate: marker, stem: stem };
+    var rotStartAngle;
+    marker.on('dragstart', function(){
+      var pivot = mccTextHandleGeometry(shape).pos;
+      rotStartAngle = angleFromPivot(pivot, marker.getLatLng()) - (shape._mccText.rotation||0);
+    }).on('drag', function(){
+      var pivot = mccTextHandleGeometry(shape).pos;
+      var curAngle = angleFromPivot(pivot, marker.getLatLng());
+      shape._mccText.rotation = curAngle - rotStartAngle;
+      syncMccTextCompanion(shape);
+    }).on('dragend', function(){ if (typeof scheduleSave === 'function') scheduleSave(); });
+    return function cleanup(){
+      map.removeLayer(marker); map.removeLayer(stem);
+      shape._mccTextHandles = null;
+    };
   }
 
   /* ---- Panel de propiedades reutilizable del cuadro de texto interno (Zona / Eje de Avance) ---- */
@@ -14913,7 +15272,9 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     }
     fieldsWrap.appendChild(dimField('Ancho del cuadro (px)', 'boxWidth', 30, 600, 5));
     fieldsWrap.appendChild(dimField('Alto del cuadro (px)', 'boxHeight', 15, 300, 5));
-    fieldsWrap.appendChild(dimField('Rotación (°)', 'rotation', -180, 180, 1));
+    // La rotación ya NO se fija con un campo numérico: se ajusta exclusivamente arrastrando la
+    // manija dorada que aparece sobre el mapa (mismo mecanismo que la herramienta de texto
+    // genérica), activada/actualizada por syncOtherHandlesForSelection más abajo.
 
     block.appendChild(fieldsWrap);
 
@@ -14921,11 +15282,16 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       t.enabled = ev.target.checked;
       fieldsWrap.style.display = t.enabled ? 'block' : 'none';
       syncMccTextCompanion(shape);
+      // Forzar la re-evaluación de las manijas "otras" (rectángulo/elipse/texto/… y ahora
+      // también el texto interno MCC) para que la manija de rotación aparezca o desaparezca
+      // de inmediato al activar/desactivar el texto interno, sin tener que reseleccionar.
+      syncOtherHandlesForSelection(null);
+      syncOtherHandlesForSelection(shape);
     });
 
     var hint = document.createElement('div');
     hint.className = 'hint';
-    hint.textContent = 'Arrastre el texto directamente en el mapa para reposicionarlo.';
+    hint.textContent = 'Arrastre el texto directamente en el mapa para reposicionarlo, y la manija dorada para rotarlo.';
     block.appendChild(hint);
     return block;
   }
@@ -14940,15 +15306,22 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
 
   function computeSimuladoWedge(arrow){
+    // La punta "fantasma" de Ataque/Eje Simulado debe quedar POR FUERA de la punta real (más
+    // allá del extremo, en la dirección de la flecha), no superpuesta ni por dentro de ella.
+    // Antes, la base del cálculo partía del final del asta con un apexDist menor que headLen
+    // (igual fórmula que Ataque Principal, con un factor que en la práctica seguía dejando el
+    // vértice ANTES de la punta real). Ahora se parte directamente de la punta real (geo.tip) y
+    // se proyecta un pequeño triángulo fantasma más allá, con su base a caballo sobre la punta.
     var geo = computeArrowHeadGeometry(arrow);
-    var sw = arrow.shaftWidth/2, hw = Math.max(arrow.headWidth/2, 0.001);
-    var backLeft = { x: geo.shaftEndPt.x + geo.segN.x*sw, y: geo.shaftEndPt.y + geo.segN.y*sw };
-    var backRight = { x: geo.shaftEndPt.x - geo.segN.x*sw, y: geo.shaftEndPt.y - geo.segN.y*sw };
+    var hw = Math.max(arrow.headWidth/2, 0.001);
     var fdx = geo.tip.x - geo.shaftEndPt.x, fdy = geo.tip.y - geo.shaftEndPt.y;
     var flen = Math.sqrt(fdx*fdx+fdy*fdy) || 1;
     var fux = fdx/flen, fuy = fdy/flen;
-    var apexDist = geo.headLen * (sw/hw) * 1.6;
-    var apex = { x: geo.shaftEndPt.x + fux*apexDist, y: geo.shaftEndPt.y + fuy*apexDist };
+    var baseHalfWidth = hw * 0.55;
+    var extra = Math.max(geo.headLen * 0.6, baseHalfWidth);
+    var backLeft = { x: geo.tip.x + geo.segN.x*baseHalfWidth, y: geo.tip.y + geo.segN.y*baseHalfWidth };
+    var backRight = { x: geo.tip.x - geo.segN.x*baseHalfWidth, y: geo.tip.y - geo.segN.y*baseHalfWidth };
+    var apex = { x: geo.tip.x + fux*extra, y: geo.tip.y + fuy*extra };
     return [
       fromLocalXY(geo.tail, backLeft.x, backLeft.y),
       fromLocalXY(geo.tail, apex.x, apex.y),
@@ -15154,6 +15527,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     map.on('zoomend', syncAllMccLineCompanions);
     map.on('zoomend', syncAllMccZonaCompanions);
     map.on('zoomend', syncAllMccTextCompanions);
+    map.on('zoomend', syncAllArrowOutlines);
     setInterval(saveStateToStorage, 8000);
 
 
