@@ -485,9 +485,32 @@
     padding:7px 2px 6px 2px; cursor:pointer; color:var(--navy); font-family:inherit;
   }
   #draw-toolbar .tool-btn svg,
-  .tool-submenu-row .tool-btn svg{ width:19px; height:19px; }
+  .tool-submenu-row .tool-btn svg{ width:19px; height:19px; flex:0 0 auto; }
   #draw-toolbar .tool-btn span,
   .tool-submenu-row .tool-btn span{ font-size:8.7px; font-weight:700; letter-spacing:.2px; text-transform:uppercase; }
+  /* Barra principal permanente: TODOS los botones (sueltos y dentro de .tool-btn-wrap) comparten
+     exactamente el mismo borde izquierdo y ancho (100% del contenedor). Un <button> con
+     display:flex dentro de un div de bloque se ajustaba al contenido (Táctica/MCC/Vehículos
+     quedaban más angostos y "desplazados"), y las etiquetas largas (nowrap implícito por ancho
+     mínimo) se salían y se recortaban. Ahora los hijos pueden encogerse (min-width:0), la
+     etiqueta se parte en líneas / se reduce según el ancho del contenedor (container query) y
+     nunca se recorta. El submenú flotante (.tool-submenu-row) no se toca. */
+  /* OJO: container-type NO va en #draw-toolbar (aplica layout containment y convertiría a la
+     barra en bloque contenedor de los submenús position:fixed, rompiendo positionFloatingSubmenu);
+     va en cada botón, cuyos submenús son hermanos, no descendientes. */
+  #draw-toolbar{ align-items:stretch; overflow-x:hidden; }
+  #draw-toolbar > .tool-btn,
+  #draw-toolbar > .tool-btn-wrap{ display:block; width:100%; min-width:0; max-width:100%; margin:0; box-sizing:border-box; flex:0 0 auto; }
+  #draw-toolbar > .tool-btn{ display:flex; }
+  #draw-toolbar > .tool-btn-wrap > .tool-btn{ display:flex; width:100%; min-width:0; max-width:100%; margin:0; box-sizing:border-box; }
+  #draw-toolbar > .tool-btn,
+  #draw-toolbar > .tool-btn-wrap > .tool-btn{ padding-left:2px; padding-right:2px; text-align:center; container-type:inline-size; }
+  #draw-toolbar > .tool-btn > span,
+  #draw-toolbar > .tool-btn-wrap > .tool-btn > span{
+    display:block; max-width:100%; min-width:0; text-align:center;
+    white-space:normal; line-height:1.15; overflow-wrap:anywhere; word-break:normal; hyphens:auto;
+    font-size:clamp(6.5px, 19cqw, 8.7px); letter-spacing:clamp(0px, .5cqw, .2px);
+  }
   #draw-toolbar .tool-btn:hover,
   .tool-submenu-row .tool-btn:hover{ background:var(--hover-tint); }
   #draw-toolbar .tool-btn.active,
@@ -7947,7 +7970,11 @@
     return { latlngs: latlngs, dists: dists, total: total };
   }
 
-  function limitePointAndAngleAtArc(geo, targetArc){
+  // winM (opcional, metros): ventana a cada lado del punto sobre la que se mide la tangente EN
+  // PANTALLA (así un trazo a mano alzada con segmentos diminutos/ruidosos no produce un ángulo
+  // errático: la magnitud sigue la dirección real del trazo). El ángulo queda normalizado a
+  // (-90, 90] para que la magnitud nunca quede cabeza abajo.
+  function limitePointAndAngleAtArc(geo, targetArc, winM){
     var latlngs = geo.latlngs, dists = geo.dists;
     targetArc = Math.max(0, Math.min(geo.total, targetArc));
     var k = 0;
@@ -7960,6 +7987,12 @@
     var deltaLat = b.lat - a.lat;
     var deltaLng = (b.lng - a.lng) * (Math.cos(a.lat*Math.PI/180) || 1);
     var angleDeg = Math.atan2(-deltaLat, deltaLng) * 180/Math.PI;
+    if (winM > 0 && typeof map !== 'undefined' && map){
+      var p1 = map.latLngToContainerPoint(limitePointAtArc(geo, targetArc - winM));
+      var p2 = map.latLngToContainerPoint(limitePointAtArc(geo, targetArc + winM));
+      if (Math.hypot(p2.x-p1.x, p2.y-p1.y) > 0.5) angleDeg = Math.atan2(p2.y-p1.y, p2.x-p1.x) * 180/Math.PI;
+    }
+    if (angleDeg > 90) angleDeg -= 180; else if (angleDeg <= -90) angleDeg += 180;
     return { latlng: L.latLng(lat, lng), angleDeg: angleDeg };
   }
 
@@ -8183,7 +8216,12 @@
     return segMeters / segPx;
   }
 
+  var _mccLeGuard = false;
   function syncLimiteCompanion(shape){
+    // "Límite entre elementos" (MCC) coordina línea cortada + magnitudes + nombre en una sola
+    // pasada (syncMccLineCompanion llama de vuelta a esta función con la guarda activa).
+    if (!_mccLeGuard && shape._isMccLine && shape._mcc && shape._mcc.type === 'limiteelementos'){ syncMccLineCompanion(shape); return; }
+    shape._lePlan = null;
     if (!shape._limite || !shape._limite.enabled){ removeLimiteCompanion(shape); return; }
     var owner = findLayerOfShape(shape);
     if (!owner) return;
@@ -8214,6 +8252,21 @@
       gapM = Math.min(gapM, (geo.total/repeatCount) * 0.85);
       return { start: Math.max(0, pos-gapM/2), end: Math.min(geo.total, pos+gapM/2), pos: pos };
     });
+    // Límite entre elementos: el nombre también corta la línea, en un tramo libre de magnitudes.
+    if (shape._isMccLine && shape._mcc && shape._mcc.type === 'limiteelementos'){
+      var lePlan = mccLimiteLabelPlan(shape, positions.map(function(p){ return p/geo.total; }), pxW);
+      shape._lePlan = lePlan;
+      if (lePlan){
+        gapRanges.push({ start: mccPxArcToMeters(geo, lePlan.info, lePlan.a), end: mccPxArcToMeters(geo, lePlan.info, lePlan.b), pos: 0 });
+        gapRanges.sort(function(x,y){ return x.start - y.start; });
+        var merged = [];
+        gapRanges.forEach(function(g){
+          var last = merged[merged.length-1];
+          if (last && g.start <= last.end) last.end = Math.max(last.end, g.end); else merged.push({ start:g.start, end:g.end, pos:g.pos });
+        });
+        gapRanges = merged;
+      }
+    }
 
     var segments = [];
     var prevEnd = 0;
@@ -8262,7 +8315,7 @@
     var existing = limiteMagnitudes[shape._shapeId] || [];
     var updated = [];
     positions.forEach(function(pos, idx){
-      var posInfo = limitePointAndAngleAtArc(geo, pos);
+      var posInfo = limitePointAndAngleAtArc(geo, pos, (pxW/2) * limiteMetersPerPixelNear(geo, pos));
       var html = '<div style="width:' + pxW + 'px;height:' + pxH + 'px;display:flex;align-items:center;transform:rotate(' + posInfo.angleDeg + 'deg);">' + innerHtml + '</div>';
       var icon = L.divIcon({ className:'', html: html, iconSize:[pxW, pxH], iconAnchor:[pxW/2, pxH/2] });
       var mag = existing[idx];
@@ -15193,6 +15246,64 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     return res.layout;
   }
 
+
+  // ---- Límite entre elementos: plan del nombre (centro/hueco en arco de PÍXELES) ----
+  // magFracs: fracciones (0..1) del largo donde syncLimiteCompanion pone magnitudes de ancho
+  // magPxW px; el nombre se coloca en el tramo libre más cercano al centro de la línea.
+  function mccLimiteLabelPlan(shape, magFracs, magPxW){
+    var name = shape._customName;
+    if (!shape._mcc || shape._mcc.showLabel === false || !name) return null;
+    var latlngs = shape.getLatLngs();
+    if (!latlngs || latlngs.length < 2) return null;
+    var info = mccPathPxInfo(latlngs);
+    if (!(info.total >= 1)) return null;
+    var fs = 12, pad = 4;
+    var need = mccTextWidthPx(String(name), fs) + pad*2;
+    var total = info.total;
+    var occ = (magFracs || []).map(function(f){ return [f*total - magPxW/2 - 4, f*total + magPxW/2 + 4]; })
+      .sort(function(x,y){ return x[0]-y[0]; });
+    var free = [], cur = 0;
+    occ.forEach(function(o){ if (o[0] > cur) free.push([cur, Math.min(o[0], total)]); cur = Math.max(cur, o[1]); });
+    if (cur < total) free.push([cur, total]);
+    if (!free.length) free.push([0, total]);
+    var best = null;
+    free.forEach(function(iv){
+      var len = iv[1]-iv[0];
+      var c = len >= need ? Math.max(iv[0]+need/2, Math.min(iv[1]-need/2, total/2)) : (iv[0]+iv[1])/2;
+      var fits = len >= need;
+      var score = (fits ? 0 : 1e6) + (fits ? Math.abs(c - total/2) : -len);
+      if (!best || score < best.score) best = { c:c, score:score };
+    });
+    var center = best.c;
+    return { center: center, a: Math.max(0, center - need/2), b: Math.min(total, center + need/2), info: info, fs: fs };
+  }
+  // Convierte un arco en píxeles (sobre la polilínea) al arco equivalente en metros (geo.dists),
+  // exacto dentro de cada segmento.
+  function mccPxArcToMeters(geo, info, arc){
+    arc = Math.max(0, Math.min(info.total, arc));
+    var k = 0;
+    while (k < info.cum.length-2 && info.cum[k+1] < arc) k++;
+    var span = info.cum[k+1]-info.cum[k];
+    var f = span > 0 ? (arc-info.cum[k])/span : 0;
+    return geo.dists[k] + f*(geo.dists[k+1]-geo.dists[k]);
+  }
+  // Dos tramos de la polilínea (latlngs) dejando un hueco entre los arcos de píxel a..b.
+  function mccCutLatLngsByPxArc(latlngs, info, a, b){
+    function llAt(arc){
+      var k = 0;
+      while (k < info.cum.length-2 && info.cum[k+1] < arc) k++;
+      var span = info.cum[k+1]-info.cum[k];
+      var f = span > 0 ? (arc-info.cum[k])/span : 0;
+      var p = latlngs[k], q = latlngs[k+1];
+      return L.latLng(p.lat+(q.lat-p.lat)*f, p.lng+(q.lng-p.lng)*f);
+    }
+    var segA = [], segB = [];
+    for (var i=0;i<latlngs.length;i++){ if (info.cum[i] < a) segA.push(latlngs[i]); }
+    segA.push(llAt(a));
+    segB.push(llAt(b));
+    for (var j=0;j<latlngs.length;j++){ if (info.cum[j] > b) segB.push(latlngs[j]); }
+    return [segA, segB];
+  }
   function mccBorderlessLabelIcon(text, bearingDeg, color, opaque, fontSize, liftPx){
     // bearingDeg llega como un rumbo (atan2 este/norte, igual convención que taskBearingDeg);
     // labelRotationForBearing lo convierte en la rotación CSS correcta para que el texto quede
@@ -15235,36 +15346,35 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var zf = mccZoomScaleFactor();
 
     if (mcc.type === 'limiteelementos'){
-      if (mcc.showLabel !== false && shape._customName){
-        // La etiqueta debe quedar EXACTAMENTE sobre la línea, en el punto medio real (por
-        // longitud de arco, no solo por índice de vértice) y rotada según la tangente ahí mismo
-        // (mismo patrón que corrige Límite de combate/Vía/Camino con labelRotationForBearing).
-        // Además la línea se CORTA con un hueco donde se muestra el texto, igual que el
-        // mecanismo ya usado por Límite de combate/Vía/Camino/Dirección de ataque (gapCutPath).
-        var cum = [0];
-        for (var ci=1; ci<n; ci++){ cum.push(cum[ci-1] + distanceMeters(latlngs[ci-1], latlngs[ci])); }
-        var total = cum[n-1] || 0.0001;
-        var half = total*0.5;
-        var k = 0;
-        while (k < n-2 && cum[k+1] < half) k++;
-        var span = cum[k+1]-cum[k];
-        var f = span > 0 ? (half-cum[k])/span : 0;
-        var a = latlngs[k], b = latlngs[Math.min(n-1,k+1)];
-        var midPt = L.latLng(a.lat + (b.lat-a.lat)*f, a.lng + (b.lng-a.lng)*f);
-        var brng = taskBearingDeg(localXY(a, b));
-        var mppMid2 = metersPerPixel(midPt.lat, map.getZoom());
-        var approxPxLbl = (String(shape._customName).length * 7.5) + 12;
-        var gapHalfMLbl = Math.max(8*mppMid2, (approxPxLbl/2) * mppMid2);
-        var cutSegs = gapCutPath(latlngs, 0.5, gapHalfMLbl);
-        shape.setStyle({ stroke: false });
-        L.polyline(cutSegs, {
-          color: shape.options.color, weight: shape.options.weight,
-          opacity: shape.options.opacity != null ? shape.options.opacity : 1,
-          dashArray: shape.options.dashArray, interactive:false, keyboard:false
-        }).addTo(group);
-        L.marker(midPt, { icon: mccBorderlessLabelIcon(shape._customName, brng, color, false), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
-      } else {
-        shape.setStyle({ stroke: true });
+      // Línea + magnitudes + nombre en una sola pasada. El nombre es TEXTO CURVO que sigue la
+      // tangente del trazo (mismo mecanismo que Vía/Camino: mccCurvedTextLayout) y la línea se
+      // CORTA bajo él; si la magnitud ("Límite") está activa, la línea y las magnitudes las
+      // dibuja syncLimiteCompanion (con la guarda activa) incluyendo el hueco del nombre, en un
+      // tramo libre de magnitudes.
+      var leLimiteOn = !!(shape._limite && shape._limite.enabled);
+      _mccLeGuard = true;
+      try {
+        if (leLimiteOn){
+          syncLimiteCompanion(shape);
+        } else {
+          shape._lePlan = null;
+          removeLimiteCompanion(shape);   // limpia restos y deja stroke:true
+          var plan0 = mccLimiteLabelPlan(shape, [], 0);
+          shape._lePlan = plan0;
+          if (plan0){
+            shape.setStyle({ stroke: false });
+            var cutSegs = mccCutLatLngsByPxArc(latlngs, plan0.info, plan0.a, plan0.b);
+            L.polyline(cutSegs, {
+              color: shape.options.color, weight: shape.options.weight,
+              opacity: shape.options.opacity != null ? shape.options.opacity : 1,
+              dashArray: shape.options.dashArray, interactive:false, keyboard:false
+            }).addTo(group);
+          }
+        }
+      } finally { _mccLeGuard = false; }
+      var lePlan2 = shape._lePlan;
+      if (lePlan2){
+        mccAddCurvedText(group, latlngs, shape._customName, { fontSize: lePlan2.fs, color: color, centerArc: lePlan2.center, lift: 0 });
       }
     }
     else if (mcc.type === 'limitecombate'){
