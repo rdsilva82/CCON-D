@@ -7489,7 +7489,8 @@
       tailLeftOffset: a.tailLeftOffset ? { x:a.tailLeftOffset.x, y:a.tailLeftOffset.y } : null,
       tailRightOffset: a.tailRightOffset ? { x:a.tailRightOffset.x, y:a.tailRightOffset.y } : null,
       corridorEnabled: !!a.corridorEnabled, corridorEchelon: a.corridorEchelon || '', mainAttack: !!a.mainAttack,
-      avAproxAerea: !!a.avAproxAerea };
+      avAproxAerea: !!a.avAproxAerea,
+      mccKind: a.mccKind || null, futuro: !!a.futuro, simulado: !!a.simulado, labelText: a.labelText || '' };
   }
 
   // Replica exactamente el cálculo geométrico de computeArrowPoints (bezier, arco, punto
@@ -7533,6 +7534,12 @@
   // la cabeza real), solo que partiendo del ancho del asta (más angosto que el ancho de
   // cabeza), lo que retrasa su vértice respecto de la punta real.
   function computeMainAttackWedge(arrow){
+    if (arrow.mccKind === 'direccionataque'){
+      // Dirección de ataque: segunda cabeza en "V" PARALELA a la principal (mismo largo y ancho,
+      // gobernados por las mismas manijas), desplazada hacia atrás a lo largo del eje.
+      var df = daHeadFrame(arrow);
+      return daVHeadLatLngs(df, daMainAttackOffset(df));
+    }
     var geo = computeArrowHeadGeometry(arrow);
     var sw = arrow.shaftWidth/2;
     var hw = Math.max(arrow.headWidth/2, 0.001);
@@ -7632,7 +7639,11 @@
      polígono) que termina en una punta de flecha ABIERTA de dos trazos simples en "V" (no un
      triángulo relleno), según la imagen de referencia "BRAVO". Reutiliza el mismo bezier
      (tail/curve/head) que el resto de las flechas para poder rotar/curvar/escalar igual. ---- */
-  function computeDireccionAtaqueCenterline(arrow){
+  // Marco local (metros, relativo a arrow.tail) de la cabeza en "V" de Dirección de ataque:
+  // tangente final, normal, largo y semiancho EFECTIVOS (con sus límites) y punto trasero.
+  // Es la única fuente de verdad para la cabeza principal, las cabezas paralelas (Ataque
+  // principal / simulado) y las manijas de largo/ancho de cabeza.
+  function daHeadFrame(arrow){
     var tail = arrow.tail, head = arrow.head;
     var curveLatLng = arrow.curve || midLocal(tail, head);
     var P0 = { x:0, y:0 };
@@ -7648,18 +7659,35 @@
     var dx = tip.x-prev.x, dy = tip.y-prev.y, dlen = Math.sqrt(dx*dx+dy*dy) || 1;
     var ux = dx/dlen, uy = dy/dlen;
     var nx = -uy, ny = ux;
-    var headLen = Math.max(Math.min(arrow.headLength || 20, totalLen*0.35), 1);
+    var maxHeadLen = Math.max(totalLen*0.5, 1);
+    var headLen = Math.max(Math.min(arrow.headLength || 20, maxHeadLen), 1);
     var hw = Math.max((arrow.headWidth || 10)/2, 2);
-    var backPt = { x: tip.x - ux*headLen, y: tip.y - uy*headLen };
-    var leftArm = { x: backPt.x + nx*hw, y: backPt.y + ny*hw };
-    var rightArm = { x: backPt.x - nx*hw, y: backPt.y - ny*hw };
-    function toLL(p){ return fromLocalXY(tail, p.x, p.y); }
+    return { tail: tail, pts: pts, totalLen: totalLen, tip: tip, ux: ux, uy: uy, nx: nx, ny: ny,
+      headLen: headLen, hw: hw, maxHeadLen: maxHeadLen,
+      backPt: { x: tip.x - ux*headLen, y: tip.y - uy*headLen } };
+  }
+  // Una cabeza "V" abierta cuyo vértice está desplazado `off` metros a lo largo del eje (+ hacia
+  // adelante, - hacia atrás). TODAS las cabezas comparten el mismo largo y ancho (paralelas).
+  function daVHeadLatLngs(f, off){
+    var tipP = { x: f.tip.x + f.ux*off, y: f.tip.y + f.uy*off };
+    var back = { x: tipP.x - f.ux*f.headLen, y: tipP.y - f.uy*f.headLen };
+    function toLL(p){ return fromLocalXY(f.tail, p.x, p.y); }
+    return [ toLL({ x: back.x + f.nx*f.hw, y: back.y + f.ny*f.hw }), toLL(tipP), toLL({ x: back.x - f.nx*f.hw, y: back.y - f.ny*f.hw }) ];
+  }
+  function daMainAttackOffset(f){ return -Math.max(f.headLen*0.55, 1); }
+  function daSimuladoOffset(f){ return Math.max(f.headLen*0.6, 1); }
+
+  function computeDireccionAtaqueCenterline(arrow){
+    var f = daHeadFrame(arrow);
+    function toLL(p){ return fromLocalXY(f.tail, p.x, p.y); }
+    var vh = daVHeadLatLngs(f, 0);
     return {
-      tail: tail,
-      centerline: pts.map(toLL),
-      tip: toLL(tip),
-      leftArm: toLL(leftArm),
-      rightArm: toLL(rightArm)
+      tail: f.tail,
+      centerline: f.pts.map(toLL),
+      tip: vh[1],
+      leftArm: vh[0],
+      rightArm: vh[2],
+      frame: f
     };
   }
 
@@ -7681,12 +7709,15 @@
       var dgeo = computeDireccionAtaqueCenterline(arrow);
       var vHead = [dgeo.leftArm, dgeo.tip, dgeo.rightArm];
       if (arrow.labelText){
-        // El texto corta un hueco en la línea (mismo mecanismo que Límite entre elementos /
-        // Vía de infiltración), ahora aplicado al centerline en vez de a los bordes del asta.
-        var midPt = dgeo.centerline[Math.floor(dgeo.centerline.length/2)];
-        var mpp = metersPerPixel(midPt.lat, map.getZoom());
-        var approxPx = (String(arrow.labelText).length * 7.5) + 12;
-        var gapHalfM = Math.max(10*mpp, (approxPx/2) * mpp);
+        // El texto (curvo, sigue el trazo) corta un hueco en la línea. El ancho del hueco sale
+        // del ancho REAL del texto medido en pantalla (px) y se convierte a metros con la
+        // relación metros/px del propio trazo, centrado en la mitad del arco.
+        var cpx = mccPathPxInfo(dgeo.centerline);
+        var textPxW = mccTextWidthPx(String(arrow.labelText), DA_LABEL_FS);
+        var cTotalM = 0;
+        for (var ci=1; ci<dgeo.centerline.length; ci++){ cTotalM += distanceMeters(dgeo.centerline[ci-1], dgeo.centerline[ci]); }
+        var mPerPx = (cpx.total > 0) ? (cTotalM / cpx.total) : 1;
+        var gapHalfM = Math.max(10, textPxW/2 + 6) * mPerPx;
         var cut = gapCutPath(dgeo.centerline, 0.5, gapHalfM);
         pts = [cut[0], cut[1], vHead];
       } else {
@@ -8300,8 +8331,56 @@
     };
   }
 
+  // Posiciones de las manijas de la cabeza en "V" de Dirección de ataque: el punto trasero del
+  // eje (largo de cabeza) y el extremo del brazo izquierdo (ancho de cabeza).
+  function daHeadHandlePositions(arrow){
+    var f = daHeadFrame(arrow);
+    return {
+      headLen: fromLocalXY(f.tail, f.backPt.x, f.backPt.y),
+      headWidth: fromLocalXY(f.tail, f.backPt.x + f.nx*f.hw, f.backPt.y + f.ny*f.hw)
+    };
+  }
+  function createDaArrowHandles(shape){
+    var tailM = L.marker(shape._arrow.tail, { draggable:true, icon: makeHandleIcon('#1F3864',16), zIndexOffset:2000, title:'Cola de la flecha' }).addTo(map);
+    var headM = L.marker(shape._arrow.head, { draggable:true, icon: makeHandleIcon('#1F3864',16), zIndexOffset:2000, title:'Punta de la flecha' }).addTo(map);
+    var curveM = L.marker(shape._arrow.curve || midLocal(shape._arrow.tail, shape._arrow.head), { draggable:true, icon: makeHandleIcon('#B8962E',15), zIndexOffset:2000, title:'Punto de curvatura — arrástrelo para curvar la flecha' }).addTo(map);
+    var hp = daHeadHandlePositions(shape._arrow);
+    var headLenM = L.marker(hp.headLen, { draggable:true, icon: makeHandleIcon('#4C7A57',14), zIndexOffset:2000, title:'Largo de la punta — arrastre a lo largo del eje' }).addTo(map);
+    var headWidthM = L.marker(hp.headWidth, { draggable:true, icon: makeHandleIcon('#4C7A57',14), zIndexOffset:2000, title:'Ancho de la punta — arrastre para abrir/cerrar la V' }).addTo(map);
+
+    var beforeState = null;
+    function onDragStart(){ beforeState = cloneArrowState(shape._arrow); }
+    function onDragEnd(){
+      var afterState = cloneArrowState(shape._arrow);
+      pushAction(
+        function(){ shape._arrow = cloneArrowState(beforeState); rebuildArrow(shape); if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape)); },
+        function(){ shape._arrow = cloneArrowState(afterState); rebuildArrow(shape); if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape)); }
+      );
+      renderLayerList();
+    }
+    tailM.on('dragstart', onDragStart).on('drag', function(){ shape._arrow.tail = tailM.getLatLng(); rebuildArrow(shape); }).on('dragend', onDragEnd);
+    headM.on('dragstart', onDragStart).on('drag', function(){ shape._arrow.head = headM.getLatLng(); rebuildArrow(shape); }).on('dragend', onDragEnd);
+    curveM.on('dragstart', onDragStart).on('drag', function(){ shape._arrow.curve = curveM.getLatLng(); rebuildArrow(shape); }).on('dragend', onDragEnd);
+    headLenM.on('dragstart', onDragStart).on('drag', function(){
+      var f = daHeadFrame(shape._arrow);
+      var d = localXY(f.tail, headLenM.getLatLng());
+      var along = (f.tip.x - d.x)*f.ux + (f.tip.y - d.y)*f.uy;
+      shape._arrow.headLength = Math.max(2, Math.min(along, f.maxHeadLen));
+      rebuildArrow(shape);
+    }).on('dragend', onDragEnd);
+    headWidthM.on('dragstart', onDragStart).on('drag', function(){
+      var f = daHeadFrame(shape._arrow);
+      var d = localXY(f.tail, headWidthM.getLatLng());
+      var perp = (d.x - f.backPt.x)*f.nx + (d.y - f.backPt.y)*f.ny;
+      shape._arrow.headWidth = Math.max(4, Math.abs(perp)*2);
+      rebuildArrow(shape);
+    }).on('dragend', onDragEnd);
+    shape._arrowHandles = { tail: tailM, head: headM, curve: curveM, width: null, headWidth: headWidthM, headLen: headLenM, tailLeft: null, tailRight: null };
+  }
+
   function createArrowHandles(shape){
     if (shape._arrowHandles) return;
+    if (shape._arrow && shape._arrow.mccKind === 'direccionataque'){ createDaArrowHandles(shape); return; }
     var tailM = L.marker(shape._arrow.tail, { draggable:true, icon: makeHandleIcon('#1F3864',16), zIndexOffset:2000, title:'Cola de la flecha' }).addTo(map);
     var headM = L.marker(shape._arrow.head, { draggable:true, icon: makeHandleIcon('#1F3864',16), zIndexOffset:2000, title:'Punta de la flecha' }).addTo(map);
     var curveM = L.marker(shape._arrow.curve || midLocal(shape._arrow.tail, shape._arrow.head), { draggable:true, icon: makeHandleIcon('#B8962E',15), zIndexOffset:2000, title:'Punto de curvatura — arrástrelo para curvar la flecha' }).addTo(map);
@@ -8371,6 +8450,12 @@
     h.tail.setLatLng(shape._arrow.tail);
     h.head.setLatLng(shape._arrow.head);
     h.curve.setLatLng(shape._arrow.curve || midLocal(shape._arrow.tail, shape._arrow.head));
+    if (h.headLen){
+      var dhp = daHeadHandlePositions(shape._arrow);
+      h.headLen.setLatLng(dhp.headLen);
+      h.headWidth.setLatLng(dhp.headWidth);
+      return;
+    }
     var sizePos = arrowSizeHandlePositions(shape._arrow);
     h.width.setLatLng(sizePos.width);
     h.headWidth.setLatLng(sizePos.headWidth);
@@ -8384,10 +8469,9 @@
     map.removeLayer(shape._arrowHandles.tail);
     map.removeLayer(shape._arrowHandles.head);
     map.removeLayer(shape._arrowHandles.curve);
-    map.removeLayer(shape._arrowHandles.width);
-    map.removeLayer(shape._arrowHandles.headWidth);
-    map.removeLayer(shape._arrowHandles.tailLeft);
-    map.removeLayer(shape._arrowHandles.tailRight);
+    ['width','headWidth','headLen','tailLeft','tailRight'].forEach(function(k){
+      if (shape._arrowHandles[k]) map.removeLayer(shape._arrowHandles[k]);
+    });
     shape._arrowHandles = null;
   }
 
@@ -12358,6 +12442,43 @@
         return field;
       }
 
+      // Control de tamaño en metros con escala LOGARÍTMICA (el rango va de 100 m a decenas de km,
+      // una escala lineal no sería manejable) + campo numérico para fijar el valor exacto.
+      function mccLogRangeField(label, getVal, setVal, minM, maxM){
+        var field = document.createElement('div');
+        field.className = 'style-field';
+        field.style.flexWrap = 'wrap';
+        field.innerHTML = '<span>' + label + '</span>';
+        var slider = document.createElement('input');
+        slider.type = 'range'; slider.min = 0; slider.max = 1000; slider.step = 1;
+        slider.className = 'mcc-log-range';
+        var num = document.createElement('input');
+        num.type = 'number'; num.min = minM; num.max = maxM; num.step = 50;
+        num.className = 'mcc-log-num';
+        num.style.cssText = 'width:74px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12px;text-align:right;';
+        function toPos(v){ return Math.round(1000 * Math.log(Math.max(minM, Math.min(maxM, v))/minM) / Math.log(maxM/minM)); }
+        function toVal(pos){
+          var v = minM * Math.pow(maxM/minM, pos/1000);
+          var mag = Math.pow(10, Math.floor(Math.log10(v)) - 1);   // 2 cifras significativas
+          return Math.max(minM, Math.min(maxM, Math.round(v/mag)*mag));
+        }
+        var cur = getVal();
+        slider.value = toPos(cur); num.value = Math.round(cur);
+        slider.addEventListener('input', function(ev){
+          var v = toVal(parseFloat(ev.target.value));
+          num.value = Math.round(v);
+          setVal(v); syncMccLineCompanion(shape);
+        });
+        num.addEventListener('change', function(ev){
+          var v = Math.max(minM, Math.min(maxM, parseFloat(ev.target.value) || minM));
+          num.value = Math.round(v); slider.value = toPos(v);
+          setVal(v); syncMccLineCompanion(shape);
+        });
+        field.appendChild(slider);
+        field.appendChild(num);
+        return field;
+      }
+
       if (shape._mcc.type === 'limiteelementos'){
         mlBlock.appendChild(mccCheckboxField('Mostrar nombre (sin borde ni fondo)', function(){ return shape._mcc.showLabel !== false; }, function(v){ shape._mcc.showLabel = v; }));
 
@@ -12416,9 +12537,9 @@
         // El tamaño ahora se controla en metros reales de terreno (mínimo 100m), no con un
         // multiplicador abstracto, para que el rango cubra desde un tamaño mínimo realista
         // hasta uno bastante grande, y para que el control realmente cambie lo renderizado.
-        mlBlock.appendChild(mccRangeField('Tamaño del punto de coordinación (m)', function(){ return shape._mcc.coordSizeM||150; }, function(v){ shape._mcc.coordSizeM = v; }, 100, 2000, 25));
+        mlBlock.appendChild(mccLogRangeField('Tamaño del punto de coordinación (m)', function(){ return shape._mcc.coordSizeM||150; }, function(v){ shape._mcc.coordSizeM = v; }, MCC_COORD_MIN_M, MCC_COORD_MAX_M));
         mlBlock.appendChild(mccCheckboxField('Texto en los extremos', function(){ return !!shape._mcc.textEnabled; }, function(v){ shape._mcc.textEnabled = v; }));
-        mlBlock.appendChild(mccRangeField('Tamaño del texto (m)', function(){ return shape._mcc.textSizeM||110; }, function(v){ shape._mcc.textSizeM = v; }, 100, 1500, 25));
+        mlBlock.appendChild(mccLogRangeField('Tamaño del texto (m)', function(){ return shape._mcc.textSizeM||110; }, function(v){ shape._mcc.textSizeM = v; }, MCC_COORD_MIN_M, MCC_TEXT_MAX_M));
         mlBlock.appendChild(mccCheckboxField('Línea de Contacto', function(){ return !!shape._mcc.contacto; }, function(v){ shape._mcc.contacto = v; }));
         mlBlock.appendChild(mccRangeField('Alto de la onda', function(){ return shape._mcc.waveHeight||1; }, function(v){ shape._mcc.waveHeight = v; }, 0.3, 3, 0.1));
         mlBlock.appendChild(mccRangeField('Ancho de la onda', function(){ return shape._mcc.waveWidth||1; }, function(v){ shape._mcc.waveWidth = v; }, 0.3, 3, 0.1));
@@ -12892,7 +13013,8 @@
           field.appendChild(input);
           styleBlock.appendChild(field);
         }
-        dimField('Ancho de flecha', 'shaftWidth', 1, 1);
+        // Dirección de ataque es una línea de un solo trazo: no tiene ancho de asta.
+        if (shape._arrow.mccKind !== 'direccionataque') dimField('Ancho de flecha', 'shaftWidth', 1, 1);
         dimField('Largo de cabeza', 'headLength', 3, 1);
         dimField('Ancho de cabeza', 'headWidth', 1, 1);
 
@@ -14664,12 +14786,13 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
 
   /* ---- Glifo reutilizable: círculo con una X completa ("Punto de coordinación") ---- */
-  function mccCoordGlyphSVG(size, color){
+  function mccCoordGlyphSVG(size, color, fill){
     color = color || '#1F3864';
+    fill = fill || '#fff';
     var r = size/2 - 2;
     var a = size/2 - r*0.7, b = size/2 + r*0.7;
     return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" xmlns="http://www.w3.org/2000/svg">' +
-      '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="#fff" stroke="' + color + '" stroke-width="2"/>' +
+      '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="' + fill + '" stroke="' + color + '" stroke-width="2"/>' +
       '<line x1="' + a + '" y1="' + a + '" x2="' + b + '" y2="' + b + '" stroke="' + color + '" stroke-width="2"/>' +
       '<line x1="' + a + '" y1="' + b + '" x2="' + b + '" y2="' + a + '" stroke="' + color + '" stroke-width="2"/>' +
       '</svg>';
@@ -14788,6 +14911,10 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
 
   /* ================================  LÍNEAS MCC (a mano alzada)  ================================ */
+  // Límite de combate: tamaños en metros reales de terreno. Mínimo 100 m; máximo equivalente a un
+  // punto de coordinación de 20 km de diámetro (el texto, en la misma proporción 110/150 que
+  // sus valores por defecto: ~14,7 km, redondeado a 15 km).
+  var MCC_COORD_MIN_M = 100, MCC_COORD_MAX_M = 20000, MCC_TEXT_MAX_M = 15000;
   function defaultMccLineParams(type){
     var p = { type: type };
     if (type === 'limiteelementos'){ p.showLabel = true; }
@@ -14889,43 +15016,57 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
 
   function offsetLineLatLngsPx(latlngs, px){
-    var pts = latlngs.map(function(ll){ return map.latLngToContainerPoint(ll); });
+    var pts = latlngs.map(mccLLToPx);
     var out = [];
     for (var i=0;i<pts.length;i++){
       var a = pts[Math.max(0,i-1)], b = pts[Math.min(pts.length-1,i+1)];
       var dx = b.x-a.x, dy = b.y-a.y;
       var len = Math.hypot(dx,dy) || 1;
       var nx = -dy/len, ny = dx/len;
-      out.push(map.containerPointToLatLng(L.point(pts[i].x+nx*px, pts[i].y+ny*px)));
+      out.push(mccPxToLL({ x: pts[i].x+nx*px, y: pts[i].y+ny*px }));
     }
     return out;
   }
 
-  function buildZigzagOffsetLatLngs(latlngs, amplitudePx, wavelengthPx, side){
-    var pts = latlngs.map(function(ll){ return map.latLngToContainerPoint(ll); });
+  /* ---- Línea de Contacto: ondas (medios círculos/semielipses) unidas, construidas en el
+     espacio de PÍXELES del zoom actual con una proporción alto:ancho fija, así la forma no se
+     deforma al cambiar el zoom. Se remuestrea el trazo a paso uniforme, las normales se
+     suavizan sobre varias muestras y cada media onda es una semielipse de cuerda `W` y flecha
+     `H` (semicírculo cuando H = W/2). Las dos filas (roja/negra) son espejo una de otra y sus
+     líneas base están separadas por H/2 (±H/4 respecto de la línea). ---- */
+  function mccWaveRowPx(ptsPx, H, W, side){
     var cum = [0];
-    for (var i=1;i<pts.length;i++){ cum.push(cum[i-1] + Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y)); }
-    var total = cum[cum.length-1] || 1;
-    // Muestreo denso (20 puntos por longitud de onda) para que la curva se vea como medias
-    // ondas/semicírculos redondeados ("scallops") y no como zigzags triangulares: con pocos
-    // puntos, los segmentos rectos entre ellos dibujaban triángulos en vez de una onda suave.
-    var steps = Math.max(24, Math.round(total / Math.max(1.5, wavelengthPx/20)));
-    var out = [];
-    for (var s=0;s<=steps;s++){
-      var arc = total*s/steps;
-      var k = 0;
+    for (var i=1;i<ptsPx.length;i++){ cum.push(cum[i-1] + Math.hypot(ptsPx[i].x-ptsPx[i-1].x, ptsPx[i].y-ptsPx[i-1].y)); }
+    var total = cum[cum.length-1];
+    if (!(total > 0)) return ptsPx.slice();
+    var step = Math.max(0.5, Math.min(2, W/24));
+    var n = Math.max(24, Math.ceil(total/step));
+    var samples = [];
+    var k = 0;
+    for (var q=0;q<=n;q++){
+      var arc = total*q/n;
       while (k < cum.length-2 && cum[k+1] < arc) k++;
       var span = cum[k+1]-cum[k];
-      var frac = span > 0 ? (arc-cum[k])/span : 0;
-      var p = { x: pts[k].x + (pts[k+1].x-pts[k].x)*frac, y: pts[k].y + (pts[k+1].y-pts[k].y)*frac };
-      var a = pts[Math.max(0,k)], b = pts[Math.min(pts.length-1,k+1)];
+      var f = span > 0 ? (arc-cum[k])/span : 0;
+      samples.push({ x: ptsPx[k].x + (ptsPx[k+1].x-ptsPx[k].x)*f, y: ptsPx[k].y + (ptsPx[k+1].y-ptsPx[k].y)*f, s: arc });
+    }
+    var win = Math.max(1, Math.round((W*0.25)/(total/n)));
+    var out = [];
+    for (var m=0;m<=n;m++){
+      var a = samples[Math.max(0,m-win)], b = samples[Math.min(n,m+win)];
       var dx = b.x-a.x, dy = b.y-a.y, len = Math.hypot(dx,dy) || 1;
       var nx = -dy/len, ny = dx/len;
-      var wavePhase = (arc/wavelengthPx) * Math.PI*2;
-      var off = side*amplitudePx*0.5 + Math.sin(wavePhase)*amplitudePx*0.5*side;
-      out.push(map.containerPointToLatLng(L.point(p.x+nx*off, p.y+ny*off)));
+      var u = (samples[m].s % W) / W;
+      var t = 2*u - 1;
+      var h = H * Math.sqrt(Math.max(0, 1 - t*t));
+      var off = side * (H/4 + h);
+      out.push({ x: samples[m].x + nx*off, y: samples[m].y + ny*off });
     }
     return out;
+  }
+  function buildZigzagOffsetLatLngs(latlngs, heightPx, widthPx, side){
+    var pts = latlngs.map(mccLLToPx);
+    return mccWaveRowPx(pts, heightPx, widthPx, side).map(mccPxToLL);
   }
 
   var mccLineCompanions = {};
@@ -14933,6 +15074,125 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var g = mccLineCompanions[shape._shapeId];
     if (g){ g.remove(); delete mccLineCompanions[shape._shapeId]; }
   }
+  /* ================================  TEXTO CURVO A LO LARGO DE UN CAMINO  ================================
+     Ayudante compartido por Dirección de ataque, Vía de infiltración y Camino. Trabaja en el
+     espacio de PÍXELES del zoom actual (latLngToContainerPoint), así que el resultado se
+     recalcula en cada zoomend/edición. Cada carácter se coloca en su posición de arco y se rota
+     según la tangente local del trazo; todo el texto va en UN solo marcador (un divIcon con un
+     <span> absoluto por carácter) para no multiplicar elementos del mapa. */
+  var DA_LABEL_FS = 13;
+  // Conversión latlng <-> píxel de contenedor SIN redondeo (Leaflet redondea latLngToContainerPoint
+  // a enteros, lo que cuantiza las tangentes y deforma el texto curvo y las ondas).
+  function mccLLToPx(ll){
+    var p = map.project(ll, map.getZoom()), o = map.getPixelBounds().min;
+    return { x: p.x - o.x, y: p.y - o.y };
+  }
+  function mccPxToLL(p){
+    var o = map.getPixelBounds().min;
+    return map.unproject(L.point(p.x + o.x, p.y + o.y), map.getZoom());
+  }
+  var _mccMeasureCtx = null, _mccMeasureTried = false;
+  function mccTextWidthPx(text, fontSize){
+    text = String(text == null ? '' : text);
+    try {
+      if (!_mccMeasureTried){
+        _mccMeasureTried = true;
+        if (!/jsdom/i.test((navigator && navigator.userAgent) || '')){
+          var cv = document.createElement('canvas');
+          _mccMeasureCtx = cv.getContext ? cv.getContext('2d') : null;
+        }
+      }
+      if (_mccMeasureCtx){
+        _mccMeasureCtx.font = '700 ' + fontSize + 'px Calibri, Arial, sans-serif';
+        var w = _mccMeasureCtx.measureText(text).width;
+        if (w > 0 && isFinite(w)) return w;
+      }
+    } catch(e){}
+    return text.length * fontSize * 0.55;
+  }
+  function mccPathPxInfo(latlngs){
+    var pts = latlngs.map(mccLLToPx);
+    var cum = [0];
+    for (var i=1;i<pts.length;i++){ cum.push(cum[i-1] + Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y)); }
+    return { pts: pts, cum: cum, total: cum[cum.length-1] || 0 };
+  }
+  function mccPxAtArc(info, arc){
+    var pts = info.pts, cum = info.cum;
+    arc = Math.max(0, Math.min(info.total, arc));
+    var k = 0;
+    while (k < cum.length-2 && cum[k+1] < arc) k++;
+    var span = cum[k+1]-cum[k];
+    var f = span > 0 ? (arc-cum[k])/span : 0;
+    return { x: pts[k].x + (pts[k+1].x-pts[k].x)*f, y: pts[k].y + (pts[k+1].y-pts[k].y)*f };
+  }
+  function mccReversePathInfo(info){
+    var pts = info.pts.slice().reverse();
+    var cum = [0];
+    for (var i=1;i<pts.length;i++){ cum.push(cum[i-1] + Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y)); }
+    return { pts: pts, cum: cum, total: cum[cum.length-1] || 0 };
+  }
+  // Calcula la posición/rotación de cada carácter. o: { fontSize, centerArc (px, opcional),
+  // lift (px, opcional) }. Si el trazo apunta hacia la izquierda se recorre al revés para que el
+  // texto se lea de izquierda a derecha y quede siempre derecho. Si el texto es más largo que el
+  // camino, se trunca (los caracteres que no caben se omiten).
+  function mccCurvedTextLayout(latlngs, text, o){
+    o = o || {};
+    var fs = o.fontSize || 12;
+    text = String(text == null ? '' : text);
+    var info = mccPathPxInfo(latlngs);
+    if (!text || info.total < 1) return null;
+    var chars = Array.from(text);
+    var widths = chars.map(function(ch){ return mccTextWidthPx(ch === ' ' ? ' ' : ch, fs); });
+    var W = widths.reduce(function(a,b){ return a+b; }, 0);
+    var c = (o.centerArc != null) ? o.centerArc : info.total/2;
+    var half = Math.min(W, info.total)/2;
+    var pA = mccPxAtArc(info, c - half), pB = mccPxAtArc(info, c + half);
+    var reversed = (pB.x - pA.x) < 0;
+    if (reversed){ info = mccReversePathInfo(info); c = info.total - c; }
+    var start = c - W/2;
+    if (W <= info.total) start = Math.max(0, Math.min(info.total - W, start)); else start = 0;
+    var glyphs = [], s = start;
+    var delta = Math.max(fs*0.5, 1);
+    for (var i=0;i<chars.length;i++){
+      var mid = s + widths[i]/2;
+      s += widths[i];
+      if (mid > info.total) break;
+      var p = mccPxAtArc(info, mid);
+      var a1 = mccPxAtArc(info, mid - delta), a2 = mccPxAtArc(info, mid + delta);
+      var ang = Math.atan2(a2.y - a1.y, a2.x - a1.x) * 180/Math.PI;
+      glyphs.push({ ch: chars[i], x: p.x, y: p.y, angle: ang, w: widths[i] });
+    }
+    if (!glyphs.length) return null;
+    return { glyphs: glyphs, textWidth: W, reversed: reversed, fontSize: fs, start: start, total: info.total,
+      cx: mccPxAtArc(info, Math.max(0, Math.min(info.total, start + W/2))) };
+  }
+  function mccCurvedTextIcon(latlngs, text, o){
+    o = o || {};
+    var lay = mccCurvedTextLayout(latlngs, text, o);
+    if (!lay) return null;
+    var fs = lay.fontSize, color = o.color || '#1F3864', lift = o.lift || 0;
+    var g0 = lay.glyphs[Math.floor(lay.glyphs.length/2)];
+    var ax = g0.x, ay = g0.y;
+    var spans = lay.glyphs.map(function(g){
+      var ch = g.ch === ' ' ? '&nbsp;' : escapeHtmlText(g.ch);
+      return '<span style="position:absolute;left:0;top:0;white-space:pre;line-height:1.15;font-family:Calibri,Arial,sans-serif;font-size:' + fs + 'px;font-weight:700;color:' + color + ';' +
+        (o.opaque ? 'background:rgba(255,255,255,.92);box-shadow:0 0 0 1px rgba(255,255,255,.92);' : '') +
+        'transform:translate(' + (g.x-ax).toFixed(2) + 'px,' + (g.y-ay).toFixed(2) + 'px) rotate(' + g.angle.toFixed(2) + 'deg) translate(-50%, calc(-50% - ' + lift.toFixed(2) + 'px));">' + ch + '</span>';
+    }).join('');
+    var html = '<div class="mcc-curved-text" style="position:relative;width:0;height:0;overflow:visible;pointer-events:none;">' + spans + '</div>';
+    return {
+      latlng: mccPxToLL({ x: ax, y: ay }),
+      icon: L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] }),
+      layout: lay
+    };
+  }
+  function mccAddCurvedText(group, latlngs, text, o){
+    var res = mccCurvedTextIcon(latlngs, text, o);
+    if (!res) return null;
+    L.marker(res.latlng, { icon: res.icon, interactive:false, keyboard:false, zIndexOffset: (o && o.z) || 650 }).addTo(group);
+    return res.layout;
+  }
+
   function mccBorderlessLabelIcon(text, bearingDeg, color, opaque, fontSize, liftPx){
     // bearingDeg llega como un rumbo (atan2 este/norte, igual convención que taskBearingDeg);
     // labelRotationForBearing lo convierte en la rotación CSS correcta para que el texto quede
@@ -15009,92 +15269,107 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     }
     else if (mcc.type === 'limitecombate'){
       if (mcc.contacto){
-        var ampPx = 8 * (mcc.waveHeight || 1);
-        var wlPx = 26 * (mcc.waveWidth || 1);
+        // Por defecto la onda es un semicírculo (alto = ancho/2).
+        var ampPx = 12 * (mcc.waveHeight || 1);
+        var wlPx = 24 * (mcc.waveWidth || 1);
         var redLine = buildZigzagOffsetLatLngs(latlngs, ampPx, wlPx, 1);
         var blackLine = buildZigzagOffsetLatLngs(latlngs, ampPx, wlPx, -1);
         L.polyline(redLine, { color:'#C62828', weight:2.4, interactive:false, keyboard:false }).addTo(group);
         L.polyline(blackLine, { color:'#111', weight:2.4, interactive:false, keyboard:false }).addTo(group);
       }
       var lcZoom = map.getZoom();
+      var coordDiamM = Math.max(mcc.coordSizeM || 150, 1);
       if (mcc.coordPoints){
-        // El centro del glifo "punto de coordinación" debe coincidir EXACTAMENTE con el
-        // vértice inicial/final real de la línea (antes quedaba desplazado hacia afuera).
-        // Tamaño en metros reales de terreno (ver nota en defaultMccLineParams) para que el
-        // control de tamaño alcance un mínimo realista (~100m) y realmente se note al cambiarlo.
-        var coordDiamM = Math.max(mcc.coordSizeM || 150, 1);
+        // El centro del glifo "punto de coordinación" coincide EXACTAMENTE con el vértice
+        // inicial/final real de la línea. Tamaño en metros reales de terreno, SIN tope en
+        // píxeles (hasta 20 km de diámetro): fondo transparente (fill none). Para tamaños muy
+        // grandes en pantalla (un SVG de miles de px es inviable) se dibuja con vectores del
+        // mapa (círculo + X en metros), que el renderizador recorta al área visible.
         [latlngs[0], latlngs[n-1]].forEach(function(c){
           var mppc = metersPerPixel(c.lat, lcZoom);
           var csize = Math.max(coordDiamM / mppc, 4);
-          var icon = L.divIcon({ className:'', html: mccCoordGlyphSVG(csize, color), iconSize:[csize,csize], iconAnchor:[csize/2,csize/2] });
+          if (csize > 2500){
+            var rM = coordDiamM/2, k = rM*0.7;
+            var vs = { color: color, weight: 2, fill: false, interactive:false, keyboard:false };
+            L.circle(c, Object.assign({ radius: rM }, vs)).addTo(group);
+            L.polyline([fromLocalXY(c, -k, -k), fromLocalXY(c, k, k)], vs).addTo(group);
+            L.polyline([fromLocalXY(c, -k, k), fromLocalXY(c, k, -k)], vs).addTo(group);
+            return;
+          }
+          var icon = L.divIcon({ className:'', html: mccCoordGlyphSVG(csize, color, 'none'), iconSize:[csize,csize], iconAnchor:[csize/2,csize/2] });
           L.marker(c, { icon: icon, interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
         });
       }
       if (mcc.textEnabled && shape._customName){
         var textSizeM = Math.max(mcc.textSizeM || 110, 1);
-        var coordDiamM2 = Math.max(mcc.coordSizeM || 150, 1);
-        var tanStart = taskBearingDeg(localXY(latlngs[0], latlngs[Math.min(1,n-1)]));
-        var tanEnd = taskBearingDeg(localXY(latlngs[n-1], latlngs[Math.max(0,n-2)]));
-        // El texto se ubica en el MEDIO del tramo entre el punto de coordinación y el resto de
-        // la línea: afuera del círculo, desplazado a lo largo de la continuación de la dirección
-        // del trazo que sale de él (como en la referencia "LAC"), nunca encima/tocando el punto.
-        [[0, Math.min(1,n-1), tanStart], [n-1, Math.max(0,n-2), tanEnd]].forEach(function(cfg){
-          var endPt = latlngs[cfg[0]], towardPt = latlngs[cfg[1]], tangent = cfg[2];
-          var mppT = metersPerPixel(endPt.lat, lcZoom);
+        var pxInfo = mccPathPxInfo(latlngs);
+        // Texto de los extremos: COLINEAL con el primer/último tramo de la línea (tangente medida
+        // sobre un tramo corto de ~28 px desde el extremo, no un promedio de toda la línea),
+        // fuera del círculo y nunca encima de él. El borde cercano del texto queda a
+        // (radio del círculo + holgura) del extremo, con anclaje CSS (no centrado) para que sea
+        // independiente del ancho del texto: a la izquierda el texto TERMINA antes del círculo y
+        // a la derecha EMPIEZA justo después.
+        [[true], [false]].forEach(function(cfg){
+          var atStart = cfg[0];
+          var info = atStart ? pxInfo : mccReversePathInfo(pxInfo);
+          var endP = info.pts[0];
+          var ref = mccPxAtArc(info, Math.min(28, info.total));
+          var ix = ref.x - endP.x, iy = ref.y - endP.y;
+          var il = Math.hypot(ix, iy);
+          if (!(il > 0)) return;
+          ix /= il; iy /= il;                 // dirección hacia el interior de la línea
+          var ax = -ix, ay = -iy;             // dirección hacia AFUERA (extensión de la línea)
+          var endLL = atStart ? latlngs[0] : latlngs[n-1];
+          var mppT = metersPerPixel(endLL.lat, lcZoom);
           var tfs = Math.max(textSizeM / mppT, 6);
-          var coordPx = mcc.coordPoints ? (coordDiamM2 / mppT) : 0;
-          var inward = localXY(endPt, towardPt);
-          var ilen = Math.hypot(inward.x, inward.y) || 1;
-          var awayX = -inward.x/ilen, awayY = -inward.y/ilen;
-          var offsetM = (coordPx/2 + tfs*0.8 + 6) * mppT;
-          var labelPos = fromLocalXY(endPt, awayX*offsetM, awayY*offsetM);
-          L.marker(labelPos, { icon: mccBorderlessLabelIcon(shape._customName, tangent, color, false, tfs), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
+          var coordR = mcc.coordPoints ? (coordDiamM / mppT)/2 : 0;
+          var gapPx = Math.max(3, tfs*0.15);
+          var nearPx = coordR + gapPx;
+          var rot = Math.atan2(iy, ix) * 180/Math.PI;     // ángulo de pantalla de la línea
+          if (rot > 90) rot -= 180; else if (rot <= -90) rot += 180;  // texto derecho (legible)
+          var rr = rot * Math.PI/180;
+          var rdx = Math.cos(rr), rdy = Math.sin(rr);      // dirección de lectura
+          var side = (ax*rdx + ay*rdy) >= 0 ? 'right' : 'left';
+          var anchorPx = { x: endP.x + ax*nearPx, y: endP.y + ay*nearPx };
+          var html = '<div style="transform:rotate(' + rot.toFixed(3) + 'deg);transform-origin:0 0;">' +
+            '<div data-side="' + side + '" style="display:inline-block;white-space:nowrap;transform:translate(' + (side === 'right' ? '0' : '-100%') + ', -50%);' +
+            'font-family:Calibri,Arial,sans-serif;font-size:' + tfs + 'px;font-weight:700;line-height:1;color:' + color + ';">' + escapeHtmlText(shape._customName) + '</div></div>';
+          L.marker(mccPxToLL(anchorPx), { icon: L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] }), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
         });
       }
     }
     else if (mcc.type === 'via' || mcc.type === 'camino'){
-      var gapPx = (mcc.viaGapPx != null ? mcc.viaGapPx : 6);
+      // Separación en píxeles, SIN tope superior (solo un mínimo de 2 px).
+      var gapPx = Math.max(2, (mcc.viaGapPx != null ? mcc.viaGapPx : 6));
       if (mcc.type === 'via'){
         var offsetLatLngs = offsetLineLatLngsPx(latlngs, gapPx);
         L.polyline(offsetLatLngs, { color: color, weight: shape.options.weight || 3, opacity: shape.options.opacity, interactive:false, keyboard:false }).addTo(group);
       }
       var nameText = shape._customName;
       if (nameText){
-        var idxList = [];
+        // Texto CURVO a lo largo del trazo (mccCurvedTextLayout). "Vía": va sobre el eje medio
+        // entre las dos líneas y su altura es una fracción fija (0.65) de la separación, así
+        // nunca sale del espacio entre ambas. "Camino": va sobre la línea (elevado), 12 px.
+        var textPath = (mcc.type === 'via') ? offsetLineLatLngsPx(latlngs, gapPx/2) : latlngs;
+        var tpInfo = mccPathPxInfo(textPath);
+        var fsCurve = (mcc.type === 'via') ? Math.max(gapPx * 0.65, 1) : 12;
+        var liftCurve = (mcc.type === 'camino') ? 9 : 0;
+        var centers = [tpInfo.total/2];
         if (mcc.repetirNombre){
-          // El intervalo entre repeticiones debe ser PROPORCIONAL al largo real de la línea (en
-          // metros), no un número fijo de repeticiones basado en la cantidad de vértices: antes
-          // una línea corta con solo 2-3 vértices igual forzaba 3 repeticiones (amontonadas), y
-          // una línea larga con muchos vértices de trazo a mano alzada también quedaba fija en
-          // el mismo rango, sin relación con cuánto espacio real había disponible.
+          // Intervalo PROPORCIONAL al largo real (m) de la línea; cada repetición se ubica en su
+          // posición de arco a lo largo del trazo curvo.
           var totalLenM = 0;
           for (var li=1; li<n; li++){ totalLenM += distanceMeters(latlngs[li-1], latlngs[li]); }
           var midLL = latlngs[Math.floor(n/2)];
           var mppMid = metersPerPixel(midLL.lat, map.getZoom());
-          var labelPx = (String(nameText).length * 7.5) + 24;
+          var labelPx = mccTextWidthPx(String(nameText), fsCurve) + 24;
           var naturalSpacingM = Math.max(labelPx * 3, 90) * mppMid;
           var reps = Math.max(1, Math.min(6, Math.floor(totalLenM / naturalSpacingM)));
-          if (reps <= 1){ idxList = [Math.floor((n-1)/2)]; }
-          else { for (var ri=0; ri<reps; ri++){ idxList.push(Math.round((n-1)*(ri+0.5)/reps)); } }
-        } else {
-          idxList = [Math.floor((n-1)/2)];
+          centers = [];
+          for (var ri=0; ri<reps; ri++){ centers.push(tpInfo.total * (ri+0.5)/reps); }
         }
-        // Para "Vía", el texto se ubica EN LÍNEA con el eje y a medio camino entre las dos
-        // líneas que la forman (desplazado la mitad del hueco hacia el lado de la línea
-        // compañera); su tamaño de fuente se DERIVA de esa separación (no es independiente): a
-        // mayor separación entre líneas, texto más grande, y viceversa, para que siempre quepa.
-        // Para "Camino" (una sola línea), el texto queda ENCIMA de la línea (no debajo), elevado
-        // en el eje perpendicular de su propio sistema de coordenadas rotado.
-        var halfGapPx = (mcc.type === 'via') ? gapPx / 2 : 0;
-        var tfsVia = Math.max(8, Math.min(gapPx * 1.6, 26));
-        var caminoLiftPx = 9;
-        idxList.forEach(function(idx){
-          var pos = latlngs[idx], nxt = latlngs[Math.min(n-1, idx+1)];
-          var brng2 = taskBearingDeg(localXY(pos, nxt));
-          if (halfGapPx){ pos = offsetLineLatLngsPx(latlngs, halfGapPx)[idx]; }
-          var fsOpt = (mcc.type === 'via') ? tfsVia : 12;
-          var lift = (mcc.type === 'camino') ? caminoLiftPx : 0;
-          L.marker(pos, { icon: mccBorderlessLabelIcon(nameText, brng2, color, !!mcc.opacarFondo, fsOpt, lift), interactive:false, keyboard:false, zIndexOffset:650 }).addTo(group);
+        centers.forEach(function(cArc){
+          mccAddCurvedText(group, textPath, nameText, { fontSize: fsCurve, color: color, opaque: !!mcc.opacarFondo, lift: liftCurve, centerArc: cArc });
         });
       }
     }
@@ -15129,13 +15404,13 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       var n = latlngs.length;
       var midIdx = Math.floor((n-1)/2);
       var mid = latlngs[midIdx], next = latlngs[Math.min(n-1, midIdx+1)];
-      var midPx = map.latLngToContainerPoint(mid), nextPx = map.latLngToContainerPoint(next);
+      var midPx = mccLLToPx(mid), nextPx = mccLLToPx(next);
       var dx = nextPx.x-midPx.x, dy = nextPx.y-midPx.y, len = Math.hypot(dx,dy) || 1;
       var nx = -dy/len, ny = dx/len;
-      var markerPx = map.latLngToContainerPoint(marker.getLatLng());
+      var markerPx = mccLLToPx(marker.getLatLng());
       var rel = { x: markerPx.x-midPx.x, y: markerPx.y-midPx.y };
       var perp = rel.x*nx + rel.y*ny;
-      shape._mcc.viaGapPx = Math.max(2, Math.min(40, Math.abs(perp)));
+      shape._mcc.viaGapPx = Math.max(2, Math.abs(perp));  // sin tope superior
       syncMccLineCompanion(shape);
       marker.setLatLng(mccViaGapHandlePos(shape));
     });
@@ -15538,6 +15813,11 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
 
   function computeSimuladoWedge(arrow){
+    if (arrow.mccKind === 'direccionataque'){
+      // Cabeza simulada: misma "V" (mismo largo y ancho), más allá de la punta real.
+      var df = daHeadFrame(arrow);
+      return daVHeadLatLngs(df, daSimuladoOffset(df));
+    }
     // La punta "fantasma" de Ataque/Eje Simulado debe quedar POR FUERA de la punta real (más
     // allá del extremo, en la dirección de la flecha), no superpuesta ni por dentro de ella.
     // Antes, la base del cálculo partía del final del asta con un apexDist menor que headLen
@@ -15597,12 +15877,14 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     if (!shape._isArrow || !shape._arrow.labelText){ removeArrowLabelMark(shape); return; }
     var owner = findLayerOfShape(shape);
     if (!owner) return;
-    var cd = computeArrowCenterline(shape._arrow);
-    var html = '<div style="transform:rotate(' + cd.angleDeg + 'deg);transform-origin:50% 50%;white-space:nowrap;font-family:Calibri,Arial,sans-serif;font-size:13px;font-weight:700;color:' + shape.options.color + ';">' + escapeHtmlText(shape._arrow.labelText) + '</div>';
-    var icon = L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] });
+    // El texto va CENTRADO sobre el asta y CURVA con ella: cada carácter se rota según la
+    // tangente local del trazo (ver mccCurvedTextLayout), mismo mecanismo que Vía y Camino.
+    var path = (shape._arrow.mccKind === 'direccionataque') ? computeDireccionAtaqueCenterline(shape._arrow).centerline : computeArrowCenterline(shape._arrow).latlngs;
+    var res = mccCurvedTextIcon(path, shape._arrow.labelText, { fontSize: DA_LABEL_FS, color: shape.options.color });
+    if (!res){ removeArrowLabelMark(shape); return; }
     var m = arrowLabelMarks[shape._shapeId];
-    if (!m){ m = L.marker(cd.midLatLng, { icon: icon, interactive:false, keyboard:false, zIndexOffset:660 }); if (owner.visible) m.addTo(map); arrowLabelMarks[shape._shapeId] = m; }
-    else { m.setLatLng(cd.midLatLng); m.setIcon(icon); }
+    if (!m){ m = L.marker(res.latlng, { icon: res.icon, interactive:false, keyboard:false, zIndexOffset:660 }); if (owner.visible) m.addTo(map); arrowLabelMarks[shape._shapeId] = m; }
+    else { m.setLatLng(res.latlng); m.setIcon(res.icon); }
   }
   function syncAllArrowLabels(){
     var liveIds = {};
