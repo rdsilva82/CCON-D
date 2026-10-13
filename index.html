@@ -5032,17 +5032,18 @@
   // propiedades: afiliación, condición y selector de tipo dentro de cada categoría. El parámetro
   // "tipoVehiculo" es opcional (lo pasa Vehículos, no Armas, que reutiliza estas tres funciones
   // sin ese tercer argumento y por lo tanto sigue viendo siempre el marco de Vehículos Terrestres).
+  // Los íconos de condición reciben además la afiliación vigente para dibujarse con su marco/color.
   function vehAffiliationIconSVG(affiliation, tipoVehiculo){
     return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
       vehFrameSVGFor(tipoVehiculo, affiliation, 'present') +
       '</svg>';
   }
-  function vehConditionIconSVG(condition, tipoVehiculo){
+  function vehConditionIconSVG(condition, tipoVehiculo, affiliation){
     // style="overflow:visible" es necesario aquí: el "sombrero" de Simulado dibuja por fuera
     // del viewBox (y negativo) y, a diferencia del ícono grande del mapa, este SVG pequeño no
     // tenía esa propiedad, por lo que el navegador lo recortaba en el botón del panel.
     return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVGFor(tipoVehiculo, 'friendly', condition) +
+      vehFrameSVGFor(tipoVehiculo, affiliation || 'friendly', condition) +
       vehDummyOverlaySVG(condition) +
       '</svg>';
   }
@@ -6052,6 +6053,7 @@
     showProperties(finalLine, active);
     defensiveLineLatLngs = [];
     defensiveLinePolyline = null;
+    disableAllTools(); // herramienta de un solo uso: se desactiva al terminar el trazo
   }
   function activateDefensiveLineTool(){
     if (activeToolName === 'defensiveline'){ disableAllTools(); return; }
@@ -6127,6 +6129,7 @@
     showProperties(finalPoly, active);
     freePolyLatLngs = [];
     freePolyShape = null;
+    disableAllTools(); // herramienta de un solo uso: se desactiva al cerrar el polígono
   }
   function activateFreePolygon(){
     if (activeToolName === 'freepolygon'){ disableAllTools(); return; }
@@ -9888,8 +9891,9 @@
     active.group.addLayer(layer);
     attachShapeInteractivity(layer, active);
     recordAddShape(active, layer);
-    activeToolName = null;
-    updateToolbarUI();
+    // Punto/Línea/Polígono/Rectángulo/Círculo: se desactivan al completar la figura
+    // (apaga el manejador de Leaflet.draw, restaura cursor y resalta el botón correctamente).
+    disableAllTools();
     renderLayerList();
     selectedShape = layer;
     showProperties(layer, active);
@@ -11401,7 +11405,7 @@
       condLabel.className = 'veh-section-label';
       condLabel.textContent = 'Condición';
       vehBlock.appendChild(condLabel);
-      vehBlock.appendChild(vehPickRow(VEH_CONDITIONS, veh.condition, function(val){ return vehConditionIconSVG(val, veh.tipoVehiculo); }, function(val){
+      vehBlock.appendChild(vehPickRow(VEH_CONDITIONS, veh.condition, function(val){ return vehConditionIconSVG(val, veh.tipoVehiculo, veh.affiliation); }, function(val){
         veh.condition = val;
         applyVehiculoSymbol(shape);
         renderLayerList();
@@ -11522,7 +11526,7 @@
       armaCondLabel.className = 'veh-section-label';
       armaCondLabel.textContent = 'Condición';
       armaBlock.appendChild(armaCondLabel);
-      armaBlock.appendChild(armaPickRow(VEH_CONDITIONS, arm.condition, vehConditionIconSVG, function(val){
+      armaBlock.appendChild(armaPickRow(VEH_CONDITIONS, arm.condition, function(val){ return vehConditionIconSVG(val, undefined, arm.affiliation); }, function(val){
         arm.condition = val;
         applyArmaSymbol(shape);
         renderLayerList();
@@ -15034,6 +15038,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     showProperties(finalLine, active);
     mccLineLatLngs = [];
     mccLineShape = null;
+    disableAllTools(); // herramienta de un solo uso: se desactiva al terminar el trazo
   }
   function activateMccLineTool(type){
     if (activeToolName === 'mccline' && mccLineType === type){ disableAllTools(); return; }
