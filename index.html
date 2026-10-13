@@ -4602,8 +4602,28 @@
     ['vcrt_pesado','Vehículo de combate recuperador de tanque pesado'],
     ['vctp_recuperador','VCTP recuperador']
   ];
-  var VEH_TYPES_INGENIEROS = [];
-  var VEH_TYPES_LOGISTICOS = [];
+  var VEH_TYPES_INGENIEROS = [
+    ['ing_puente_flotante','Puente flotante'],
+    ['ing_rueda','Vehículo a rueda de ingenieros'],
+    ['ing_transporte_puente','Vehículo transporte de puente'],
+    ['ing_lanzador_puente','Vehículo lanzador de puente'],
+    ['ing_movimiento_tierra','Vehículo de movimiento de tierra'],
+    ['ing_sembrador_minas','Vehículo sembrador de minas'],
+    ['ing_minado_dinamico','Vehículo de minado dinámico'],
+    ['ing_barreminas','Vehículo con barreminas'],
+    ['ing_brecha_explosiva','Vehículo blindado de apertura de brecha con carga explosiva'],
+    ['ing_brecha_arado','Vehículo de apertura de brecha con arado/dozer']
+  ];
+  var VEH_TYPES_LOGISTICOS = [
+    ['log_ambulancia','Ambulancia'],
+    ['log_ambulancia_blindada','Ambulancia blindada'],
+    ['log_locomotora','Locomotora'],
+    ['log_vagon','Vagón de tren'],
+    ['log_rueda_sanidad','Vehículo a rueda de sanidad'],
+    ['log_vehiculo_rueda','Vehículo a rueda'],
+    ['log_cisterna_agua','Vehículo cisterna de agua'],
+    ['log_cl3','Vehículo de transporte de efectos Cl III']
+  ];
   var VEH_TYPES_BY_CATEGORY_TERRESTRE = {
     combate: VEH_TYPES_COMBATE,
     ingenieros: VEH_TYPES_INGENIEROS,
@@ -4814,6 +4834,61 @@
       '<line x1="19" y1="35" x2="41" y2="35" stroke="#000" stroke-width="2"/>';
   }
 
+  // Cuerpo base de "Vehículo de uso general": caja abierta por arriba con el borde superior
+  // cóncavo (se hunde en el centro). Es la base de varios tipos de Ingenieros/Logísticos, que le
+  // inscriben un símbolo interior (zona útil aprox. x 22↔38, y 25↔35).
+  function vehUsoGeneralBase(){
+    return '<path d="M21,20 Q30,27 39,20 L39,36 L21,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  function vehTankBase(){ return vehHullRect() + vehEars(); }
+
+  /* ---- Símbolos interiores de Ingenieros / Logísticos (negro, trazo fino para no tocar la base) ---- */
+  var VEH_IN = 'fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"';
+  // Puente (vista lateral): dos líneas cóncavas hacia el centro, con las puntas de la superior
+  // hacia arriba y las de la inferior hacia abajo. (x0,x1) = extremos; yTop/yBot = líneas centrales.
+  function vehBridgeSymbol(xl, xr, yTop, yBot, tip){
+    return '<polyline points="' + xl + ',' + (yTop - tip) + ' ' + (xl + tip) + ',' + yTop + ' ' + (xr - tip) + ',' + yTop + ' ' + xr + ',' + (yTop - tip) + '" ' + VEH_IN + '/>' +
+      '<polyline points="' + xl + ',' + (yBot + tip) + ' ' + (xl + tip) + ',' + yBot + ' ' + (xr - tip) + ',' + yBot + ' ' + xr + ',' + (yBot + tip) + '" ' + VEH_IN + '/>';
+  }
+  // Cruz médica rellena, centrada en (30,cy).
+  function vehMedCross(cy, half, th){
+    half = half || 5; th = th || 4;
+    return '<path d="M' + (30 - th/2) + ',' + (cy - half) + ' h' + th + ' v' + (half - th/2) + ' h' + (half - th/2) + ' v' + th + ' h-' + (half - th/2) + ' v' + (half - th/2) + ' h-' + th + ' v-' + (half - th/2) + ' h-' + (half - th/2) + ' v-' + th + ' h' + (half - th/2) + ' Z" fill="#000"/>';
+  }
+  // Triángulo con asta (barreminas): usado solo (grande) y dentro del casco del tanque.
+  function vehBarreminasSymbol(){
+    return '<path d="M19,36 L30,25 L41,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
+      '<line x1="30" y1="25" x2="30" y2="17" stroke="#000" stroke-width="2"/>';
+  }
+  function vehBarreminasInTank(){
+    return '<polyline points="20,35 30,28 40,35" ' + VEH_IN + '/>' +
+      '<line x1="30" y1="25" x2="30" y2="28" stroke="#000" stroke-width="1.4"/>';
+  }
+  function vehMineSymbol(){
+    var spurs = [[-1,-1],[1,-1],[-1,1],[1,1]].map(function(d){
+      return '<line x1="' + (30 + d[0]*2.4) + '" y1="' + (30 + d[1]*2.4) + '" x2="' + (30 + d[0]*5) + '" y2="' + (30 + d[1]*5) + '" stroke="#000" stroke-width="1.6" stroke-linecap="round"/>';
+    }).join('');
+    return '<circle cx="30" cy="30" r="3.4" fill="#000"/>' + spurs;
+  }
+  // Grifo/canilla: caño horizontal que se curva hacia abajo a la derecha, con manija en "T".
+  function vehFaucetSymbol(){
+    return '<path d="M23.5,30.5 L33,30.5 Q37,30.5 37,34" ' + VEH_IN + '/>' +
+      '<line x1="27.5" y1="27" x2="32.5" y2="27" stroke="#000" stroke-width="1.4" stroke-linecap="round"/>' +
+      '<line x1="30" y1="27" x2="30" y2="30.5" stroke="#000" stroke-width="1.4"/>';
+  }
+  // Clase III (combustibles): copa invertida (triángulo) con pie vertical.
+  function vehClIIISymbol(){
+    return '<path d="M24.5,25.5 L35.5,25.5 L30,31.5 Z" ' + VEH_IN + '/>' +
+      '<line x1="30" y1="31.5" x2="30" y2="35" stroke="#000" stroke-width="1.4"/>';
+  }
+  function vehWagonWheels(){
+    return [23,27,33,37].map(function(x){ return '<circle cx="' + x + '" cy="38" r="1.8" fill="none" stroke="#000" stroke-width="1.2"/>'; }).join('');
+  }
+  function vehEngineerPi(){
+    return '<polyline points="22.5,31 22.5,26 37.5,26 37.5,31" ' + VEH_IN + '/>' +
+      '<line x1="30" y1="26" x2="30" y2="31" stroke="#000" stroke-width="1.4"/>';
+  }
+
   /* ---- Piezas reutilizables de los glifos de vehículos Aéreos (Ala Fija / Ala Rotatoria / UAV) ---- */
   // Letra o código de función inscripto (igual criterio que milGlyphSVG con MIL_TEXT_UNIT_CODES):
   // centrado horizontalmente, con el tamaño de letra ajustado según la longitud del texto.
@@ -4853,7 +4928,7 @@
       case 'uso_general':
         // Un solo arco cuyo radio "mira hacia arriba" (el centro del círculo queda por encima
         // del arco), por lo que la curva se hunde hacia abajo en el centro, no dos jorobas.
-        return '<path d="M21,20 Q30,27 39,20 L39,36 L21,36 Z" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        return vehUsoGeneralBase();
       case 'rueda':
         return vehCapsuleOnWheels();
       case 'todo_terreno_blindado':
@@ -4895,6 +4970,56 @@
           '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
       case 'vctp_recuperador':
         return vehRoofWithPosts() + vehRecuperadorHooksSmall();
+
+      /* ---- Ingenieros: base de Combate (uso general / rueda / tanque / VCTP) + símbolo ---- */
+      case 'ing_puente_flotante':
+        return vehBridgeSymbol(18, 42, 25, 30, 4) +
+          '<path d="M21,36 L39,36 Q30,45 21,36 Z" fill="#000" stroke="#000" stroke-width="1" stroke-linejoin="round"/>';
+      case 'ing_rueda':
+        return vehCapsuleOnWheels() + vehEngineerPi();
+      case 'ing_transporte_puente':
+        return '<rect x="21" y="19" width="18" height="22" fill="none" stroke="#000" stroke-width="2"/>' +
+          '<polyline points="25,22 28.5,25.5 28.5,34.5 25,38" ' + VEH_IN + '/>' +
+          '<polyline points="35,22 31.5,25.5 31.5,34.5 35,38" ' + VEH_IN + '/>';
+      case 'ing_lanzador_puente':
+        return vehUsoGeneralBase() + vehBridgeSymbol(23.5, 36.5, 29, 31.5, 3);
+      case 'ing_movimiento_tierra':
+        return vehTankBase() +
+          '<polyline points="23,16.5 25,14.5 35,14.5 37,16.5" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<line x1="30" y1="14.5" x2="30" y2="25" stroke="#000" stroke-width="2"/>';
+      case 'ing_sembrador_minas':
+        return vehUsoGeneralBase() + vehMineSymbol();
+      case 'ing_minado_dinamico':
+        return vehRoofWithPosts() +
+          '<polyline points="24.5,23 30,32 35.5,23" fill="none" stroke="#000" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter"/>';
+      case 'ing_barreminas':
+        return vehBarreminasSymbol();
+      case 'ing_brecha_explosiva':
+        return vehTankBase() + vehBarreminasInTank();
+      case 'ing_brecha_arado':
+        return vehTankBase() +
+          '<line x1="25.5" y1="15" x2="34.5" y2="15" stroke="#000" stroke-width="2" stroke-linecap="round"/>' +
+          '<line x1="30" y1="15" x2="30" y2="25" stroke="#000" stroke-width="2"/>';
+
+      /* ---- Logísticos ---- */
+      case 'log_ambulancia':
+        return vehUsoGeneralBase() + vehMedCross(29.5, 5, 4);
+      case 'log_ambulancia_blindada':
+        return vehRoofWithPosts() + vehMedCross(28.5, 5, 4);
+      case 'log_locomotora':
+        return '<path d="M22,20 L31,20 L31,32 L40,32 L40,41 L22,41 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="miter"/>';
+      case 'log_vagon':
+        return vehUsoGeneralBase() + vehWagonWheels();
+      case 'log_rueda_sanidad':
+        return vehUsoGeneralBase() +
+          '<line x1="30" y1="23.5" x2="30" y2="36" stroke="#000" stroke-width="1.8"/>' +
+          '<line x1="21" y1="29.5" x2="39" y2="29.5" stroke="#000" stroke-width="1.8"/>';
+      case 'log_vehiculo_rueda':
+        return vehCapsuleOnWheels();
+      case 'log_cisterna_agua':
+        return vehUsoGeneralBase() + vehFaucetSymbol();
+      case 'log_cl3':
+        return vehUsoGeneralBase() + vehClIIISymbol();
 
       /* ---- Aéreos: Ala Fija (letra/código de función inscripto; sin modificador = genérico) ---- */
       case 'af_generico':
