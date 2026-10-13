@@ -4558,8 +4558,8 @@
     ['planned','Futuro'],
     ['dummy','Simulado']
   ];
-  // Tipos de vehículo de más alto nivel: Terrestres (lo que ya existía), Aéreos y Navales (por
-  // definir, de momento sin categorías/tipos propios — se muestran como "Próximamente").
+  // Tipos de vehículo de más alto nivel: Terrestres (lo que ya existía), Aéreos y Navales
+  // (Superficie / Submarinos).
   var VEH_TIPOVEHICULO = [
     ['terrestre','Terrestres'],
     ['aereo','Aéreos'],
@@ -4575,7 +4575,10 @@
     ['ala_rotatoria','Ala Rotatoria'],
     ['uav','UAV']
   ];
-  var VEH_CATEGORIES_NAVAL = [];
+  var VEH_CATEGORIES_NAVAL = [
+    ['superficie','Superficie'],
+    ['submarinos','Submarinos']
+  ];
   var VEH_CATEGORIES_BY_TIPOVEHICULO = {
     terrestre: VEH_CATEGORIES_TERRESTRE,
     aereo: VEH_CATEGORIES_AEREO,
@@ -4684,10 +4687,91 @@
     uav: VEH_TYPES_UAV
   };
 
+  // ---- Navales: Superficie y Submarinos. Igual criterio que Aéreos: los códigos llevan el prefijo de
+  // su categoría (sup_/sub_) porque vehTypeGlyphSVG(tipo) despacha por un único string global.
+  // "Nave barreminas" aparece dos veces en la lista original del usuario (símbolo "MS" y símbolo de
+  // casco con domo/brazos): el segundo se distingue con el sufijo "(MS)" para que ambos sean elegibles.
+  var VEH_TYPES_SUPERFICIE = [
+    ['sup_nave_combate','Nave de combate'],
+    ['sup_nave_linea','Nave de línea'],
+    ['sup_portaaviones','Portaaviones'],
+    ['sup_crucero_batalla','Crucero de batalla'],
+    ['sup_crucero','Crucero'],
+    ['sup_destructor','Destructor'],
+    ['sup_fragata','Fragata'],
+    ['sup_combate_anfibio','Nave de combate anfibio'],
+    ['sup_asalto_anfibio','Nave de asalto anfibio'],
+    ['sup_desembarco_anfibio','Nave de desembarco anfibio'],
+    ['sup_lancha_desembarco','Lancha de desembarco anfibio'],
+    ['sup_barreminas','Nave barreminas'],
+    ['sup_minadora','Nave minadora'],
+    ['sup_barreminas_ms','Nave barreminas (MS)'],
+    ['sup_cazaminas','Nave cazaminas'],
+    ['sup_contramedidas_antiminas','Nave de contramedidas antiminas'],
+    ['sup_dron_contramedidas','Dron de contramedidas antiminas'],
+    ['sup_patrullera_combate','Patrullera de combate'],
+    ['sup_patrullera_antisubmarina','Patrullera de combate antisubmarino'],
+    ['sup_patrullera_antisuperficie','Patrullera de combate antisuperficie'],
+    ['sup_hovercraft','Hovercraft'],
+    ['sup_estacion_combate','Estación de combate'],
+    ['sup_estacion_vigilancia','Estación de vigilancia'],
+    ['sup_estacion_antisubmarina','Estación antisubmarina'],
+    ['sup_grupo_combate','Grupo de combate'],
+    ['sup_fuerza_tarea','Fuerza de tarea'],
+    ['sup_grupo_tareas','Grupo de tareas'],
+    ['sup_unidad_tareas','Unidad de tareas'],
+    ['sup_grupo_convoy','Grupo de convoy'],
+    ['sup_no_combatiente','Nave no combatiente'],
+    ['sup_reabastecimiento','Nave de reabastecimiento'],
+    ['sup_soporte','Nave de soporte'],
+    ['sup_inteligencia','Nave de inteligencia'],
+    ['sup_servicio_apoyo','Nave de servicio y apoyo'],
+    ['sup_buque_hospital','Buque hospital'],
+    ['sup_hovercraft_nc','Hovercraft no combatiente'],
+    ['sup_estacion_nc','Estación no combatiente'],
+    ['sup_estacion_rescate','Estación de rescate'],
+    ['sup_mercante','Nave mercante'],
+    ['sup_mercante_carga','Nave mercante de carga'],
+    ['sup_mercante_roro','Nave mercante RO/RO'],
+    ['sup_mercante_tanque','Nave mercante tanque'],
+    ['sup_mercante_remolque','Nave mercante remolque'],
+    ['sup_mercante_ferry','Nave mercante ferry'],
+    ['sup_mercante_pasajeros','Nave mercante de pasajeros'],
+    ['sup_mercante_hazmat','Nave mercante de materiales peligrosos'],
+    ['sup_mercante_remolcadora','Nave mercante remolcadora'],
+    ['sup_pesquero','Pesquero'],
+    ['sup_pesquero_deriva','Pesquero de deriva'],
+    ['sup_draga','Draga'],
+    ['sup_pesquero_arrastre','Pesquero de arrastre'],
+    ['sup_placer','Nave de placer'],
+    ['sup_policial','Nave policial']
+  ];
+  var VEH_TYPES_SUBMARINOS = [
+    ['sub_submarino','Submarino'],
+    ['sub_nuclear','Submarino nuclear'],
+    ['sub_convencional','Submarino convencional'],
+    ['sub_otros_sumergibles','Otros sumergibles'],
+    ['sub_estacion','Estación de submarinos'],
+    ['sub_estacion_antisub','Estación de submarinos antisubmarinos'],
+    ['sub_arma','Arma submarina'],
+    ['sub_torpedo','Torpedo'],
+    ['sub_mina','Mina'],
+    ['sub_mina_anclada','Mina (anclada)'],
+    ['sub_mina_flotante','Mina (flotante)'],
+    ['sub_senuelo','Señuelo submarino'],
+    ['sub_mina_senuelo','Mina señuelo']
+  ];
+  // Minas y señuelos se dibujan SIN marco de afiliación; la afiliación se lee por su color de relleno.
+  var VEH_NAVAL_FRAMELESS = ['sub_mina','sub_mina_anclada','sub_mina_flotante','sub_senuelo','sub_mina_senuelo'];
+  var VEH_TYPES_BY_CATEGORY_NAVAL = {
+    superficie: VEH_TYPES_SUPERFICIE,
+    submarinos: VEH_TYPES_SUBMARINOS
+  };
+
   var VEH_TYPES_BY_CATEGORY_BY_TIPOVEHICULO = {
     terrestre: VEH_TYPES_BY_CATEGORY_TERRESTRE,
     aereo: VEH_TYPES_BY_CATEGORY_AEREO,
-    naval: {}
+    naval: VEH_TYPES_BY_CATEGORY_NAVAL
   };
 
   function vehDefaultCategoryForTipoVehiculo(tipoVehiculo){
@@ -4751,11 +4835,39 @@
     }
     return '<path d="M 12,50 L 12,32 Q 12,10 30,10 Q 48,10 48,32 L 48,50" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
   }
+  // Marco de Navales/Submarinos: el marco aéreo (base abierta) volteado verticalmente respecto de la
+  // línea media del viewBox de 60x60, de modo que la parte redondeada/en punta queda ABAJO y el borde
+  // abierto ARRIBA. El volteo se aplica solo a la geometría del marco, nunca al glifo.
+  function vehSubFrameSVG(affiliation, condition){
+    return '<g transform="translate(0,60) scale(1,-1)">' + vehAirFrameSVG(affiliation, condition) + '</g>';
+  }
+  // Categoría naval de un código de tipo (por prefijo): 'superficie' | 'submarinos' | ''.
+  function vehNavalCategoryOfTipo(tipo){
+    if (typeof tipo !== 'string') return '';
+    if (tipo.indexOf('sup_') === 0) return 'superficie';
+    if (tipo.indexOf('sub_') === 0) return 'submarinos';
+    return '';
+  }
+  function vehIsFrameless(tipo){
+    return VEH_NAVAL_FRAMELESS.indexOf(tipo) !== -1;
+  }
   // Elige el marco de afiliación correcto según el tipo de vehículo: Aéreos usa vehAirFrameSVG,
-  // el resto (Terrestres/Navales, y por compatibilidad las Armas que reutilizan este mismo marco)
-  // sigue usando vehFrameSVG sin cambios.
-  function vehFrameSVGFor(tipoVehiculo, affiliation, condition){
-    return tipoVehiculo === 'aereo' ? vehAirFrameSVG(affiliation, condition) : vehFrameSVG(affiliation, condition);
+  // Navales/Submarinos usa el marco aéreo volteado (y NINGÚN marco para minas/señuelos), y el resto
+  // (Terrestres/Superficie, y por compatibilidad las Armas) sigue usando vehFrameSVG sin cambios.
+  // "category" y "tipo" son opcionales (solo los usa Navales).
+  function vehFrameSVGFor(tipoVehiculo, affiliation, condition, category, tipo){
+    if (tipoVehiculo === 'aereo') return vehAirFrameSVG(affiliation, condition);
+    if (tipoVehiculo === 'naval'){
+      if (tipo && vehIsFrameless(tipo)) return '';
+      if (category === 'submarinos' || (!category && vehNavalCategoryOfTipo(tipo) === 'submarinos')) return vehSubFrameSVG(affiliation, condition);
+    }
+    return vehFrameSVG(affiliation, condition);
+  }
+  // Muestra de color para los íconos de afiliación/condición cuando el símbolo elegido no lleva marco.
+  function vehFramelessSwatchSVG(affiliation, condition){
+    var fill = MIL_AFFILIATION_COLORS[affiliation] || MIL_AFFILIATION_COLORS.friendly;
+    var dash = condition === 'planned' ? ' stroke-dasharray="5,3"' : '';
+    return '<circle cx="30" cy="30" r="16" fill="' + fill + '" stroke="#000" stroke-width="2"' + dash + '/>';
   }
 
   // "Sombrero" punteado sobre el marco para la condición Simulado: más ancho, más grueso y
@@ -5125,12 +5237,220 @@
     }
   }
 
+  /* ---- Glifos de Navales (Superficie / Submarinos) ----
+     Superficie se diseña en una caja de ±16 centrada en (30,30) para el círculo de "amigo" y se
+     reduce hacia el centro para los marcos más chicos (rombo/cuatrifolio). Submarinos se diseña para
+     la mitad superior (abierta) del marco volteado. Minas y señuelos van sin marco, rellenos con el
+     color de la afiliación. */
+  function vehNavText(txt, cy, fs, fill){
+    return '<text x="30" y="' + (cy + 0.358 * fs).toFixed(2) + '" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="' + fs + '" font-weight="800" fill="' + (fill || '#000') + '">' + txt + '</text>';
+  }
+  function vehNavPoly(pts){ return '<polygon points="' + pts + '" fill="#000"/>'; }
+  function vehNavLine(x1,y1,x2,y2,w){ return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#000" stroke-width="'+(w||1.6)+'"/>'; }
+  // Estación: rectángulo cruzado por una línea vertical que sobresale arriba y abajo (+ texto opcional abajo).
+  function vehNavStation(label){
+    return '<rect x="20.5" y="17" width="19" height="13" fill="none" stroke="#000" stroke-width="1.6"/>' +
+      vehNavLine(30,13,30,34,1.6) + (label ? vehNavText(label, 42.2, 10.5) : '');
+  }
+  // Grupo de combate (casa/pentágono negro entre dos "paréntesis" angulares) + texto opcional.
+  function vehNavGroup(label){
+    return vehNavPoly('21.5,24.5 30,17 38.5,24.5 38.5,38 21.5,38') +
+      '<polyline points="17.5,37 17.5,22 26,14.5" fill="none" stroke="#000" stroke-width="1.2"/>' +
+      '<polyline points="42.5,37 42.5,22 34,14.5" fill="none" stroke="#000" stroke-width="1.2"/>' +
+      (label ? vehNavText(label, 43.4, 10) : '');
+  }
+  function vehNavHovercraft(bottom, label){
+    return vehNavPoly('19.5,28.7 19.5,21.7 21.5,25.1 38.5,25.1 40.5,21.7 40.5,28.7 45.2,28.7 40.8,' + bottom + ' 19.2,' + bottom + ' 14.8,28.7') +
+      (label ? vehNavText(label, 34.2, 9.5, '#fff') : '');
+  }
+  // Casco mercante (blanco con borde negro): trapecio ancho arriba + superestructura central.
+  function vehNavMerchant(label, stripe){
+    var s = '<path d="M23,19.3 H37 V27.1 H45.6 L38.1,40 H21.9 L14.4,27.1 H23 Z" fill="#fff" stroke="#000" stroke-width="1.6" stroke-linejoin="miter"/>';
+    if (stripe){
+      s += '<polygon points="38.9,27.6 41.6,27.6 34.1,39.6 31.4,39.6" fill="#000"/>' +
+        '<line x1="37.1" y1="27.6" x2="29.6" y2="39.6" stroke="#000" stroke-width="1"/>';
+    }
+    if (label) s += vehNavText(label, 33.8, 9.5);
+    return s;
+  }
+  function vehNavFisher(label){
+    return '<path d="M14.6,31.1 H20.4 V26.4 H29.3 V31.1 H45.4 L38,42 H22 Z" fill="#fff" stroke="#000" stroke-width="1.6" stroke-linejoin="miter"/>' +
+      vehNavLine(33,31,33,18.4,1.8) + vehNavLine(33,30.8,43,21.7,1.8) +
+      (label ? vehNavText(label, 36.9, 9) : '');
+  }
+  function vehNavSaber(){
+    return '<path d="M25.8,16 C26.4,24 31.5,28.5 37.8,32.8" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<path d="M25.8,16 C26.4,24 31.5,28.5 37.8,32.8" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round"/>' +
+      '<ellipse cx="39.4" cy="35" rx="2.5" ry="2" fill="#fff" stroke="#000" stroke-width="0.9"/>';
+  }
+  // Cuerpo de mina (elipse con 3 "cuernos" rectangulares). Los cuernos se dibujan primero y la elipse encima.
+  function vehNavMineArms(cx, cy, rx, ry, aw, ah, st, half){
+    var s = '';
+    [-40, 0, 40].forEach(function(deg){
+      var th = deg * Math.PI / 180;
+      var px = cx + rx * Math.sin(th), py = cy - ry * Math.cos(th);
+      var nx = Math.sin(th) / rx, ny = -Math.cos(th) / ry, nl = Math.sqrt(nx*nx + ny*ny);
+      nx /= nl; ny /= nl;
+      var c = [px + nx * (ah / 2 - 1.2), py + ny * (ah / 2 - 1.2)];
+      var ang = Math.atan2(nx, -ny) * 180 / Math.PI;
+      s += '<rect x="' + (c[0] - aw/2).toFixed(2) + '" y="' + (c[1] - ah/2).toFixed(2) + '" width="' + aw + '" height="' + ah + '" transform="rotate(' + ang.toFixed(1) + ' ' + c[0].toFixed(2) + ' ' + c[1].toFixed(2) + ')"' + st + '/>';
+    });
+    return s;
+  }
+  function vehNavMineGlyph(tipo, affiliation, condition){
+    var fill = MIL_AFFILIATION_COLORS[affiliation] || MIL_AFFILIATION_COLORS.friendly;
+    var dash = condition === 'planned' ? ' stroke-dasharray="5,3"' : '';
+    var st = ' fill="' + fill + '" stroke="#000" stroke-width="1.6"' + dash;
+    var tri = function(e, y0, y1, w){ return '<polygon points="' + e + ',' + y0 + ' ' + e + ',' + y1 + ' ' + (e - w) + ',' + ((y0 + y1) / 2).toFixed(2) + '"' + st + ' stroke-linejoin="miter"/>'; };
+    switch(tipo){
+      case 'sub_mina':
+        return vehNavMineArms(30,31.6,17.4,15.6,5.2,6.7,st) + '<ellipse cx="30" cy="31.6" rx="17.4" ry="15.6"' + st + '/>';
+      case 'sub_mina_anclada':
+        return vehNavLine(30,38,30,48.9,1.6) + vehNavLine(14.8,48.9,45.2,48.9,1.8) +
+          vehNavMineArms(30,27.3,12.8,10.9,4.7,6.1,st) + '<ellipse cx="30" cy="27.3" rx="12.8" ry="10.9"' + st + '/>';
+      case 'sub_mina_flotante': {
+        var zz = 'M13.4,42.7';
+        for (var k = 0; k < 6; k++){ zz += ' L' + (16.15 + 5.5*k).toFixed(2) + ',38.3 L' + (18.9 + 5.5*k).toFixed(2) + ',42.7'; }
+        return '<path d="' + zz + '" fill="none" stroke="#000" stroke-width="1.6" stroke-linejoin="miter"/>' +
+          vehNavMineArms(30,27.6,12.3,10.9,4.7,6.1,st) + '<ellipse cx="30" cy="27.6" rx="12.3" ry="10.9"' + st + '/>';
+      }
+      case 'sub_senuelo':
+        return '<rect x="13" y="19" width="34" height="3.3"' + st + '/>' +
+          tri(21.8,25,41.2,6.9) + tri(32.7,25,41.2,6.5) + tri(44,25,41.2,6.4);
+      case 'sub_mina_senuelo':
+        return vehNavMineArms(30,28,13.7,11.5,4.9,6.5,st) +
+          '<path d="M16.3,28 A13.7,11.5 0 0 1 43.7,28 Z"' + st + '/>' +
+          tri(23.3,28.8,38.5,5.5) + tri(33.1,28.8,38.5,5.5) + tri(42.8,28.8,38.5,5.5);
+    }
+    return '';
+  }
+
+  function vehNavalGlyphRaw(tipo, affiliation, condition){
+    if (vehIsFrameless(tipo)) return vehNavMineGlyph(tipo, affiliation, condition);
+    switch(tipo){
+      /* ---- Superficie ---- */
+      case 'sup_nave_combate':
+        return vehNavSaber() + '<g transform="translate(60,0) scale(-1,1)">' + vehNavSaber() + '</g>';
+      case 'sup_nave_linea':
+        return vehNavPoly('28.4,13.7 31.6,13.7 31.6,18 40.5,18 40.5,21.6 31.6,21.6 31.6,22.3 36.5,22.3 36.5,28.5 46.3,28.5 30,41.4 13.7,28.5 23.5,28.5 23.5,22.3 28.4,22.3 28.4,21.6 19.5,21.6 19.5,18 28.4,18');
+      case 'sup_portaaviones':
+        return vehNavPoly('18.6,19.8 26.9,19.8 26.9,34 45.4,34 33.1,43.9 18.6,28.5');
+      case 'sup_crucero_batalla': return vehNavText('BB', 30, 20);
+      case 'sup_crucero': return vehNavText('CC', 30, 20);
+      case 'sup_destructor': return vehNavText('DD', 30, 20);
+      case 'sup_fragata': return vehNavText('FF', 30, 20);
+      case 'sup_combate_anfibio':
+        return vehNavPoly('24.7,19.7 35,19.7 35,24.5 44.2,25 31.8,36.5 42.4,36.5 42.4,38.7 29.6,38.7 16.2,25 24.7,24.5');
+      case 'sup_asalto_anfibio': return vehNavText('LA', 30, 20);
+      case 'sup_desembarco_anfibio': return vehNavText('LS', 30, 20);
+      case 'sup_lancha_desembarco': return vehNavText('LC', 30, 20);
+      case 'sup_barreminas':
+        return '<rect x="14.1" y="28.1" width="31.9" height="4.3" fill="#000"/>' +
+          vehNavPoly('16,32.4 44,32.4 30,45.9') +
+          '<path d="M22.8,28.1 A7.2,5.6 0 0 1 37.2,28.1 Z" fill="#000"/>' +
+          vehNavLine(30,23,30,16.5,3.4) + vehNavLine(24,25,19.8,20.5,3.4) + vehNavLine(36,25,40.2,20.5,3.4);
+      case 'sup_minadora': return vehNavText('ML', 30, 20);
+      case 'sup_barreminas_ms': return vehNavText('MS', 30, 20);
+      case 'sup_cazaminas': return vehNavText('MH', 30, 20);
+      case 'sup_contramedidas_antiminas': return vehNavText('MA', 30, 20);
+      case 'sup_dron_contramedidas': return vehNavText('MD', 30, 20);
+      case 'sup_patrullera_combate':
+        return vehNavPoly('25.8,17 34.2,17 34.2,28 47,28 30,44.5 13,28 25.8,28');
+      case 'sup_patrullera_antisubmarina': return vehNavText('PC', 30, 20);
+      case 'sup_patrullera_antisuperficie':
+        return vehNavPoly('26,22.3 34,22.3 34,32.5 36.7,32.5 42.3,25.7 45.7,27.9 30,46.6 14.3,27.9 17.7,25.7 23.5,32.5 26,32.5');
+      case 'sup_hovercraft':
+        return vehNavHovercraft(38.5);
+      case 'sup_estacion_combate':
+        return '<rect x="20.2" y="23.6" width="18.8" height="13" fill="none" stroke="#000" stroke-width="1.6"/>' +
+          vehNavLine(29.5,19.8,29.5,40.2,1.5) +
+          '<path d="M40.3,19.7 A14.3,14.3 0 1 0 40.3,40.3" fill="none" stroke="#000" stroke-width="1.4"/>';
+      case 'sup_estacion_vigilancia': return vehNavStation('PK');
+      case 'sup_estacion_antisubmarina': return vehNavStation('AS');
+      case 'sup_grupo_combate': return vehNavGroup('');
+      case 'sup_fuerza_tarea': return vehNavGroup('TF');
+      case 'sup_grupo_tareas': return vehNavGroup('TG');
+      case 'sup_unidad_tareas': return vehNavGroup('TU');
+      case 'sup_grupo_convoy':
+        return '<path d="M17.7,21.7 H42.3 V37.7 H35.5 V28.5 H24.5 V37.7 H17.7 Z" fill="#000"/>';
+      case 'sup_no_combatiente':
+        return vehNavPoly('22.5,18.5 37.5,18.5 37.5,28.5 46.2,28.5 46.2,40.2 13.8,40.2 13.8,28.5 22.5,28.5');
+      case 'sup_reabastecimiento': return vehNavText('AR', 30, 20);
+      case 'sup_soporte': return vehNavText('AS', 30, 20);
+      case 'sup_inteligencia': return vehNavText('JI', 30, 20);
+      case 'sup_servicio_apoyo': return vehNavText('YY', 30, 20);
+      case 'sup_buque_hospital': return vehNavText('AH', 30, 20);
+      case 'sup_hovercraft_nc': return vehNavHovercraft(40.5, 'NC');
+      case 'sup_estacion_nc': return vehNavStation('NC');
+      case 'sup_estacion_rescate': return vehNavStation('RS');
+      case 'sup_mercante': return vehNavMerchant('');
+      case 'sup_mercante_carga': return vehNavMerchant('CA');
+      case 'sup_mercante_roro': return vehNavMerchant('RO');
+      case 'sup_mercante_tanque': return vehNavMerchant('OT');
+      case 'sup_mercante_remolque': return vehNavMerchant('TU');
+      case 'sup_mercante_ferry': return vehNavMerchant('FE');
+      case 'sup_mercante_pasajeros': return vehNavMerchant('PA');
+      case 'sup_mercante_hazmat': return vehNavMerchant('HZ');
+      case 'sup_mercante_remolcadora': return vehNavMerchant('TW');
+      case 'sup_pesquero': return vehNavFisher('');
+      case 'sup_pesquero_deriva': return vehNavFisher('DF');
+      case 'sup_draga': return vehNavFisher('DR');
+      case 'sup_pesquero_arrastre': return vehNavFisher('TR');
+      case 'sup_placer':
+        return '<path d="M14,34 H46 L40.5,41.5 H19.5 Z" fill="#fff" stroke="#000" stroke-width="1.6" stroke-linejoin="miter"/>' +
+          '<polygon points="32,17 32,33 43.5,33" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="miter"/>' +
+          vehNavLine(30.4,14.5,30.4,34,2.4);
+      case 'sup_policial': return vehNavMerchant('', true);
+
+      /* ---- Submarinos (diseñados para la zona superior del marco volteado) ---- */
+      case 'sub_submarino':
+        return vehNavPoly('13.8,22.3 20,15.4 40.3,15.4 46.3,22.3 40.3,29.7 20,29.7');
+      case 'sub_nuclear':
+        return vehNavPoly('14,26.9 20,19.9 39.7,19.9 46,26.9 39.7,33.9 20.3,33.9') +
+          '<rect x="21" y="13.7" width="18.2" height="7" fill="#000"/>';
+      case 'sub_convencional':
+        return vehNavPoly('14,26.9 20,19.9 39.7,19.9 46,26.9 39.7,33.9 20.3,33.9') +
+          '<rect x="28.9" y="11.5" width="2.3" height="9" fill="#000"/>';
+      case 'sub_otros_sumergibles':
+        return '<ellipse cx="29.8" cy="28" rx="15.2" ry="8.7" fill="#000"/>' +
+          '<rect x="23.2" y="13.3" width="12.5" height="9" fill="#000"/>';
+      case 'sub_estacion':
+        return '<rect x="19.8" y="14.9" width="20.8" height="14.8" fill="#000"/>' +
+          vehNavLine(30,11.2,30,32.8,1.6) + vehNavText('SS', 38.2, 9);
+      case 'sub_estacion_antisub':
+        return vehNavPoly('16.2,31.2 21.5,26 38.9,26 44.2,31.2 38.9,36.4 21.5,36.4') +
+          '<rect x="24.2" y="14.9" width="12.3" height="7.3" fill="#000"/>' +
+          vehNavLine(30,11.5,30,26.5,1.2);
+      case 'sub_arma':
+        return vehNavText('WPN', 24, 12.5);
+      case 'sub_torpedo':
+        return vehNavPoly('14,26.2 16.3,22.4 39.9,22.4 42.5,26.2 39.9,30.1 16.3,30.1') +
+          vehNavPoly('42.5,26.2 45.1,22.4 45.1,30.1');
+      default:
+        return '';
+    }
+  }
+  var VEH_NAVAL_SUP_SCALE = { friendly:1, neutral:1, hostile:0.7, unknown:0.6 };
+  function vehNavalGlyphSVG(tipo, affiliation, condition){
+    var aff = affiliation || 'friendly';
+    var raw = vehNavalGlyphRaw(tipo, aff, condition || 'present');
+    if (!raw || vehIsFrameless(tipo)) return raw;
+    if (tipo.indexOf('sup_') === 0){
+      var k = VEH_NAVAL_SUP_SCALE[aff] || 1;
+      return k === 1 ? raw : '<g transform="translate(30,30) scale(' + k + ') translate(-30,-30)">' + raw + '</g>';
+    }
+    // Submarinos: en el marco "desconocido" (cuatrifolio sin lóbulo superior) el área útil es chica.
+    if (aff === 'unknown') return '<g transform="translate(30,31) scale(0.62) translate(-30,-27)">' + raw + '</g>';
+    return raw;
+  }
+
   // Glifo interno (el "dibujo" propio de cada tipo de vehículo), independiente de la afiliación:
   // se dibuja siempre en negro sobre el marco de color correspondiente, igual que milGlyphSVG.
   // Los glifos de Aéreos (prefijo af_/ar_/uav_) se reducen un 20% desde el centro (30,30): a
   // tamaño completo sobresalían de los contenedores de afiliación de Aéreos (más angostos que el
   // círculo de Terrestres).
-  function vehTypeGlyphSVG(tipo){
+  function vehTypeGlyphSVG(tipo, affiliation, condition){
+    if (vehNavalCategoryOfTipo(tipo)) return vehNavalGlyphSVG(tipo, affiliation, condition);
     var raw = vehTypeGlyphSVGRaw(tipo);
     if (!raw) return raw;
     if (tipo && (tipo.indexOf('af_') === 0 || tipo.indexOf('ar_') === 0 || tipo.indexOf('uav_') === 0)){
@@ -5142,8 +5462,8 @@
   function buildVehiculoSVG(veh){
     veh = veh || defaultVehiculoParams();
     return '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVGFor(veh.tipoVehiculo, veh.affiliation, veh.condition) +
-      vehTypeGlyphSVG(veh.tipo) +
+      vehFrameSVGFor(veh.tipoVehiculo, veh.affiliation, veh.condition, veh.category, veh.tipo) +
+      vehTypeGlyphSVG(veh.tipo, veh.affiliation, veh.condition) +
       vehDummyOverlaySVG(veh.condition) +
       '</svg>';
   }
@@ -5170,17 +5490,17 @@
   // "tipoVehiculo" es opcional (lo pasa Vehículos, no Armas, que reutiliza estas tres funciones
   // sin ese tercer argumento y por lo tanto sigue viendo siempre el marco de Vehículos Terrestres).
   // Los íconos de condición reciben además la afiliación vigente para dibujarse con su marco/color.
-  function vehAffiliationIconSVG(affiliation, tipoVehiculo){
+  function vehAffiliationIconSVG(affiliation, tipoVehiculo, category, tipo){
     return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVGFor(tipoVehiculo, affiliation, 'present') +
+      (vehFrameSVGFor(tipoVehiculo, affiliation, 'present', category, tipo) || vehFramelessSwatchSVG(affiliation, 'present')) +
       '</svg>';
   }
-  function vehConditionIconSVG(condition, tipoVehiculo, affiliation){
+  function vehConditionIconSVG(condition, tipoVehiculo, affiliation, category, tipo){
     // style="overflow:visible" es necesario aquí: el "sombrero" de Simulado dibuja por fuera
     // del viewBox (y negativo) y, a diferencia del ícono grande del mapa, este SVG pequeño no
     // tenía esa propiedad, por lo que el navegador lo recortaba en el botón del panel.
     return '<svg width="30" height="30" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVGFor(tipoVehiculo, affiliation || 'friendly', condition) +
+      (vehFrameSVGFor(tipoVehiculo, affiliation || 'friendly', condition, category, tipo) || vehFramelessSwatchSVG(affiliation || 'friendly', condition)) +
       vehDummyOverlaySVG(condition) +
       '</svg>';
   }
@@ -5190,8 +5510,8 @@
     // Sensible a la afiliación actual (igual que armaTypeIconSVG): al cambiar la afiliación, los
     // símbolos de la grilla de tipos se repintan con el marco nuevo.
     return '<svg width="100%" height="100%" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-      vehFrameSVGFor(tipoVehiculo, affiliation || 'friendly', 'present') +
-      vehTypeGlyphSVG(tipo) +
+      vehFrameSVGFor(tipoVehiculo, affiliation || 'friendly', 'present', vehNavalCategoryOfTipo(tipo), tipo) +
+      vehTypeGlyphSVG(tipo, affiliation || 'friendly', 'present') +
       '</svg>';
   }
   var vehiculosClickHandler = null;
@@ -11531,7 +11851,7 @@
       affLabel.className = 'veh-section-label';
       affLabel.textContent = 'Afiliación';
       vehBlock.appendChild(affLabel);
-      vehBlock.appendChild(vehPickRow(MIL_AFFILIATIONS, veh.affiliation, function(val){ return vehAffiliationIconSVG(val, veh.tipoVehiculo); }, function(val){
+      vehBlock.appendChild(vehPickRow(MIL_AFFILIATIONS, veh.affiliation, function(val){ return vehAffiliationIconSVG(val, veh.tipoVehiculo, veh.category, veh.tipo); }, function(val){
         veh.affiliation = val;
         applyVehiculoSymbol(shape);
         renderLayerList();
@@ -11542,7 +11862,7 @@
       condLabel.className = 'veh-section-label';
       condLabel.textContent = 'Condición';
       vehBlock.appendChild(condLabel);
-      vehBlock.appendChild(vehPickRow(VEH_CONDITIONS, veh.condition, function(val){ return vehConditionIconSVG(val, veh.tipoVehiculo, veh.affiliation); }, function(val){
+      vehBlock.appendChild(vehPickRow(VEH_CONDITIONS, veh.condition, function(val){ return vehConditionIconSVG(val, veh.tipoVehiculo, veh.affiliation, veh.category, veh.tipo); }, function(val){
         veh.condition = val;
         applyVehiculoSymbol(shape);
         renderLayerList();
