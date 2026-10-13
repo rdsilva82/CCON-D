@@ -4827,11 +4827,18 @@
   // Líneas verticales + techo en punta + base, compartidos por "VCTP", "VCTP a rueda" y "VCTP
   // recuperador": las líneas sobresalen hacia ARRIBA (del lado del techo, pasando el punto donde
   // se une la línea diagonal), al ras con la base abajo (sin sobresalir hacia abajo).
-  function vehRoofWithPosts(){
-    return '<line x1="19" y1="13" x2="19" y2="35" stroke="#000" stroke-width="2"/>' +
+  // Todo el conjunto (caja + símbolo inscripto) se baja y se reduce un 10% para quedar centrado
+  // verticalmente en el marco de afiliación (antes los postes/techo llegaban hasta el borde
+  // superior del marco, sobre todo en rombo y cuatrifolio). La caja pasa de y 13..35 a 20,1..39,9.
+  // "inner" (opcional) se inscribe dentro del mismo grupo para que la composición no se desarme.
+  var VEH_VCTP_TRANSFORM = 'translate(30,30) scale(0.9) translate(-30,-24)';
+  function vehRoofWithPosts(inner){
+    return '<g class="veh-vctp-base" transform="' + VEH_VCTP_TRANSFORM + '">' +
+      '<line x1="19" y1="13" x2="19" y2="35" stroke="#000" stroke-width="2"/>' +
       '<line x1="41" y1="13" x2="41" y2="35" stroke="#000" stroke-width="2"/>' +
       '<path d="M19,21 L30,13 L41,21" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round"/>' +
-      '<line x1="19" y1="35" x2="41" y2="35" stroke="#000" stroke-width="2"/>';
+      '<line x1="19" y1="35" x2="41" y2="35" stroke="#000" stroke-width="2"/>' +
+      (inner || '') + '</g>';
   }
 
   // Cuerpo base de "Vehículo de uso general": caja abierta por arriba con el borde superior
@@ -4969,7 +4976,7 @@
           '<line x1="18" y1="33" x2="22" y2="33" stroke="#000" stroke-width="1.8"/>' +
           '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
       case 'vctp_recuperador':
-        return vehRoofWithPosts() + vehRecuperadorHooksSmall();
+        return vehRoofWithPosts(vehRecuperadorHooksSmall());
 
       /* ---- Ingenieros: base de Combate (uso general / rueda / tanque / VCTP) + símbolo ---- */
       case 'ing_puente_flotante':
@@ -4990,8 +4997,8 @@
       case 'ing_sembrador_minas':
         return vehUsoGeneralBase() + vehMineSymbol();
       case 'ing_minado_dinamico':
-        return vehRoofWithPosts() +
-          '<polyline points="24.5,23 30,32 35.5,23" fill="none" stroke="#000" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter"/>';
+        return vehRoofWithPosts(
+          '<polyline points="24.5,23 30,32 35.5,23" fill="none" stroke="#000" stroke-width="3" stroke-linecap="butt" stroke-linejoin="miter"/>');
       case 'ing_barreminas':
         return vehBarreminasSymbol();
       case 'ing_brecha_explosiva':
@@ -5005,7 +5012,7 @@
       case 'log_ambulancia':
         return vehUsoGeneralBase() + vehMedCross(29.5, 5, 4);
       case 'log_ambulancia_blindada':
-        return vehRoofWithPosts() + vehMedCross(28.5, 5, 4);
+        return vehRoofWithPosts(vehMedCross(28.5, 5, 4));
       case 'log_locomotora':
         return '<path d="M22,20 L31,20 L31,32 L40,32 L40,41 L22,41 Z" fill="none" stroke="#000" stroke-width="2" stroke-linejoin="miter"/>';
       case 'log_vagon':
