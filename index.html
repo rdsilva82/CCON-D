@@ -4800,24 +4800,34 @@
       '<circle cx="20" cy="36.5" r="3.5" fill="none" stroke="#000" stroke-width="1.6"/>' +
       '<circle cx="40" cy="36.5" r="3.5" fill="none" stroke="#000" stroke-width="1.6"/>';
   }
-  // Símbolo central de la familia "recuperador de tanque" (idéntico al de "Mantenimiento" de
-  // Unidades): una línea recta con un semicírculo en cada extremo, abriendo hacia AFUERA (lejos
-  // del centro), igual que esos dos arcos de milGlyphSVG('mantenimiento', ...) pero a una escala
-  // que encaja dentro del casco del tanque (x 24↔36, igual que el alto del casco 25↔35).
-  function vehRecuperadorHooks(){
-    var jr = 5, cy = 30;
-    return '<path d="M 24,'+(cy-jr)+' A '+jr+' '+jr+' 0 0 1 24,'+(cy+jr)+'" fill="none" stroke="#000" stroke-width="1.8"/>' +
-      '<path d="M 36,'+(cy-jr)+' A '+jr+' '+jr+' 0 0 0 36,'+(cy+jr)+'" fill="none" stroke="#000" stroke-width="1.8"/>' +
-      '<line x1="24" y1="'+cy+'" x2="36" y2="'+cy+'" stroke="#000" stroke-width="1.8"/>';
+  // Símbolo "recuperador" (compartido por todas las variantes): dos "copas" (arcos gruesos)
+  // mirando hacia AFUERA (la izquierda abre a la izquierda, la derecha a la derecha; sus fondos
+  // quedan enfrentados al centro) unidas por una recta horizontal. La recta empieza y termina
+  // exactamente en el fondo (ápice) de cada copa, sin pasar de él. (x0,y0)-(x1,y1) es la caja
+  // EXTERIOR (incluido el grosor del trazo) que el símbolo puede ocupar: queda inscripto en ella.
+  function vehRecuperadorGeom(x0, y0, x1, y1, sw){
+    sw = sw || 1.6;
+    var cy = (y0 + y1) / 2, c = (y1 - y0) - sw, sag = c * 0.42;
+    var xtL = x0 + sw/2, xtR = x1 - sw/2;
+    return { sw: sw, cy: cy, yTop: cy - c/2, yBot: cy + c/2, r: (c*c/4 + sag*sag) / (2*sag),
+             xtL: xtL, xaL: xtL + sag, xtR: xtR, xaR: xtR - sag,
+             box: [x0, y0, x1, y1] };
   }
-  // Misma pieza que vehRecuperadorHooks(), a menor escala, para encajar dentro del casco más
-  // angosto de "VCTP recuperador".
-  function vehRecuperadorHooksSmall(){
-    var jr = 3.5, cy = 30;
-    return '<path d="M 26,'+(cy-jr)+' A '+jr+' '+jr+' 0 0 1 26,'+(cy+jr)+'" fill="none" stroke="#000" stroke-width="1.5"/>' +
-      '<path d="M 34,'+(cy-jr)+' A '+jr+' '+jr+' 0 0 0 34,'+(cy+jr)+'" fill="none" stroke="#000" stroke-width="1.5"/>' +
-      '<line x1="26" y1="'+cy+'" x2="34" y2="'+cy+'" stroke="#000" stroke-width="1.5"/>';
+  function vehRecuperadorSymbol(x0, y0, x1, y1, sw){
+    var g = vehRecuperadorGeom(x0, y0, x1, y1, sw), st = 'fill="none" stroke="#000" stroke-width="' + g.sw + '"';
+    return '<g class="veh-recuperador">' +
+      '<path d="M ' + g.xtL + ',' + g.yTop + ' A ' + g.r + ' ' + g.r + ' 0 0 1 ' + g.xtL + ',' + g.yBot + '" ' + st + ' stroke-linecap="round"/>' +
+      '<path d="M ' + g.xtR + ',' + g.yTop + ' A ' + g.r + ' ' + g.r + ' 0 0 0 ' + g.xtR + ',' + g.yBot + '" ' + st + ' stroke-linecap="round"/>' +
+      '<line x1="' + g.xaL + '" y1="' + g.cy + '" x2="' + g.xaR + '" y2="' + g.cy + '" ' + st + '/></g>';
   }
+  // Cajas exteriores del símbolo según el contenedor. Casco del tanque: interior x 20..40,
+  // y 26..34 (rect 19..41 x 25..35, trazo 2) -> 1,5 de margen lateral y ~1,2 vertical.
+  var VEH_RECUP_TANK_BOX = [21.5, 27.2, 38.5, 32.8];
+  // VCTP (coordenadas del grupo, antes de la transformación): interior x 20..40, base interior
+  // y 34, techo en punta por encima.
+  var VEH_RECUP_VCTP_BOX = [22, 24.2, 38, 32.2];
+  function vehRecuperadorInTank(){ return vehRecuperadorSymbol.apply(null, VEH_RECUP_TANK_BOX); }
+  function vehRecuperadorInVctp(){ return vehRecuperadorSymbol.apply(null, VEH_RECUP_VCTP_BOX); }
   // Rombo cuyas puntas (arriba/abajo/izquierda/derecha) tocan exactamente los extremos de las
   // "orejas" (líneas verticales) del casco — tan alto como esas líneas, no achatado — usado por
   // la familia "vehículo de combate de infantería" en vez de la X.
@@ -4963,20 +4973,15 @@
       case 'vci_rueda':
         return vehEars() + vehInfantryDiamond() + vehWheelsBelowFrame();
       case 'vcrt':
-        return vehHullRect() + vehEars() + vehRecuperadorHooks();
+        return vehTankBase() + vehRecuperadorInTank();
       case 'vcrt_liviano':
-        return vehHullRect() + vehEars() + vehRecuperadorHooks() + '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>';
+        return vehTankBase() + vehDividerLines(1) + vehRecuperadorInTank();
       case 'vcrt_mediano':
-        return vehHullRect() + vehEars() + vehRecuperadorHooks() +
-          '<line x1="18" y1="30" x2="22" y2="30" stroke="#000" stroke-width="1.8"/>' +
-          '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
+        return vehTankBase() + vehDividerLines(2) + vehRecuperadorInTank();
       case 'vcrt_pesado':
-        return vehHullRect() + vehEars() + vehRecuperadorHooks() +
-          '<line x1="18" y1="27" x2="22" y2="27" stroke="#000" stroke-width="1.8"/>' +
-          '<line x1="18" y1="33" x2="22" y2="33" stroke="#000" stroke-width="1.8"/>' +
-          '<line x1="38" y1="30" x2="42" y2="30" stroke="#000" stroke-width="1.8"/>';
+        return vehTankBase() + vehDividerLines(3) + vehRecuperadorInTank();
       case 'vctp_recuperador':
-        return vehRoofWithPosts(vehRecuperadorHooksSmall());
+        return vehRoofWithPosts(vehRecuperadorInVctp());
 
       /* ---- Ingenieros: base de Combate (uso general / rueda / tanque / VCTP) + símbolo ---- */
       case 'ing_puente_flotante':
