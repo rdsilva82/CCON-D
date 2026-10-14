@@ -9155,14 +9155,16 @@
         // El texto (curvo, sigue el trazo) corta un hueco en la línea. El ancho del hueco sale
         // del ancho REAL del texto medido en pantalla (px) y se convierte a metros con la
         // relación metros/px del propio trazo, centrado en la mitad del arco.
+        // El hueco sigue la colocación REAL del texto (que puede desplazarse para esquivar un giro).
         var cpx = mccPathPxInfo(dgeo.centerline);
-        var textPxW = mccTextWidthPx(String(arrow.labelText), DA_LABEL_FS);
-        var cTotalM = 0;
-        for (var ci=1; ci<dgeo.centerline.length; ci++){ cTotalM += distanceMeters(dgeo.centerline[ci-1], dgeo.centerline[ci]); }
-        var mPerPx = (cpx.total > 0) ? (cTotalM / cpx.total) : 1;
-        var gapHalfM = Math.max(10, textPxW/2 + 6) * mPerPx;
-        var cut = gapCutPath(dgeo.centerline, 0.5, gapHalfM);
-        pts = [cut[0], cut[1], vHead];
+        var layG = arrowLabelLayout(arrow, dgeo.centerline);
+        if (layG){
+          var gc = (layG.a + layG.b) / 2, gh = Math.max(10, (layG.b - layG.a) / 2 + 6);
+          var cut = mccCutLatLngsByPxArc(dgeo.centerline, cpx, Math.max(0, gc - gh), Math.min(cpx.total, gc + gh));
+          pts = [cut[0], cut[1], vHead];
+        } else {
+          pts = [dgeo.centerline, vHead];
+        }
       } else {
         pts = [dgeo.centerline, vHead];
       }
@@ -16695,11 +16697,20 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     for (var i=1;i<pts.length;i++){ cum.push(cum[i-1] + Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y)); }
     return { pts: pts, cum: cum, total: cum[cum.length-1] || 0 };
   }
+  // Índice del tramo que contiene el arco `arc` (búsqueda binaria; mismo resultado que el recorrido lineal).
+  function mccSegIndex(cum, arc){
+    var lo = 0, hi = cum.length - 2;
+    if (hi < 0) return 0;
+    while (lo < hi){
+      var mid = (lo + hi) >> 1;
+      if (cum[mid+1] < arc) lo = mid + 1; else hi = mid;
+    }
+    return lo;
+  }
   function mccPxAtArc(info, arc){
     var pts = info.pts, cum = info.cum;
     arc = Math.max(0, Math.min(info.total, arc));
-    var k = 0;
-    while (k < cum.length-2 && cum[k+1] < arc) k++;
+    var k = mccSegIndex(cum, arc);
     var span = cum[k+1]-cum[k];
     var f = span > 0 ? (arc-cum[k])/span : 0;
     return { x: pts[k].x + (pts[k+1].x-pts[k].x)*f, y: pts[k].y + (pts[k+1].y-pts[k].y)*f };
@@ -16710,44 +16721,221 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     for (var i=1;i<pts.length;i++){ cum.push(cum[i-1] + Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y)); }
     return { pts: pts, cum: cum, total: cum[cum.length-1] || 0 };
   }
+
+  /* ---- Colocación del texto a lo largo de un camino (robusta ante giros bruscos) ----
+     El texto se reparte por longitud de arco con el avance medido de cada carácter y la rotación
+     de cada carácter sale de una tangente SUAVIZADA (cuerda de ±fs/2 alrededor del carácter), así
+     las letras no pivotan de golpe en un vértice. Una ventana es "legible" (modo 'bend') si:
+       - entre caracteres vecinos la rotación cambia <= MCC_TXT_MAX_STEP grados,
+       - el giro total del texto es <= MCC_TXT_MAX_SPAN grados,
+       - la distancia entre centros vecinos es >= MCC_TXT_MIN_CHORD del avance (sin zigzag),
+       - con elevación (lift) el lado interior de la curva no comprime los caracteres más de 40 %.
+     La ventana pedida se conserva si el giro entre vecinos es <= MCC_TXT_COMFORT_STEP (18 grados);
+     si no (o si no es legible) se desliza (deterministamente, solo geometría) hasta la
+     ventana legible más cercana. Si ninguna ventana del largo del texto lo es, el texto se
+     coloca RECTO (modo 'straight') centrado sobre el tramo casi recto más largo/adecuado,
+     reduciendo el tamaño hasta MCC_TXT_MIN_SCALE solo si es imprescindible. Sin solapes. ---- */
+  var MCC_TXT_MAX_STEP = 25, MCC_TXT_COMFORT_STEP = 18, MCC_TXT_MAX_SPAN = 60, MCC_TXT_MIN_CHORD = 0.75, MCC_TXT_MIN_SCALE = 0.7;
+  function mccNormDeg(a){ while (a > 180) a -= 360; while (a <= -180) a += 360; return a; }
+  // Caracteres colocados con la ventana [s0, s0+W] (arco hacia adelante). rev: se lee de fin a inicio.
+  function mccBendGlyphs(info, widths, fs, s0, rev){
+    var W = 0, i; for (i=0;i<widths.length;i++) W += widths[i];
+    var delta = Math.max(fs*0.5, 1), cum = 0, out = [];
+    for (i=0;i<widths.length;i++){
+      var mid = rev ? (s0 + W - (cum + widths[i]/2)) : (s0 + cum + widths[i]/2);
+      cum += widths[i];
+      if (mid < 0 || mid > info.total) continue;
+      var p = mccPxAtArc(info, mid), a1 = mccPxAtArc(info, mid - delta), a2 = mccPxAtArc(info, mid + delta);
+      var ang = Math.atan2(a2.y - a1.y, a2.x - a1.x) * 180/Math.PI;
+      if (rev) ang = mccNormDeg(ang + 180);
+      out.push({ i: i, x: p.x, y: p.y, angle: ang, w: widths[i], arc: mid });
+    }
+    return out;
+  }
+  function mccChooseReversed(info, widths, fs, s0, W){
+    var g = mccBendGlyphs(info, widths, fs, s0, false);
+    var exF = 0, exR = 0;
+    g.forEach(function(q){
+      exF += Math.max(0, Math.abs(q.angle) - 90);
+      exR += Math.max(0, Math.abs(mccNormDeg(q.angle + 180)) - 90);
+    });
+    if (Math.abs(exF - exR) > 1) return exR < exF;
+    var pA = mccPxAtArc(info, s0), pB = mccPxAtArc(info, s0 + W);
+    return (pB.x - pA.x) < -1e-6;
+  }
+  function mccBendOk(gl, nChars, lift, maxStep, maxSpan){
+    maxStep = maxStep || MCC_TXT_MAX_STEP; maxSpan = maxSpan || MCC_TXT_MAX_SPAN;
+    if (gl.length < nChars) return false;
+    var mn = Infinity, mx = -Infinity, acc = 0, i;
+    for (i=0;i<gl.length;i++){
+      if (i > 0){
+        var d = mccNormDeg(gl[i].angle - gl[i-1].angle);
+        if (Math.abs(d) > maxStep) return false;
+        acc += d;
+        var sp = (gl[i].w + gl[i-1].w) / 2;
+        var dist = Math.hypot(gl[i].x - gl[i-1].x, gl[i].y - gl[i-1].y);
+        if (dist < MCC_TXT_MIN_CHORD * sp) return false;
+        if (lift){
+          // lift > 0 desplaza hacia la IZQUIERDA del sentido de lectura; un giro antihorario
+          // (d < 0) deja ese lado en el interior de la curva.
+          var rad = d * Math.PI / 180, inner = (lift > 0) ? (rad < 0) : (rad > 0);
+          var comp = Math.abs(lift) * Math.abs(rad);
+          if (inner ? comp > 0.4 * sp : comp > 0.8 * sp) return false;
+        }
+      }
+      mn = Math.min(mn, acc); mx = Math.max(mx, acc);
+    }
+    return (mx - mn) <= maxSpan;
+  }
+  // Tramos casi rectos (desviación perpendicular <= tol respecto a su cuerda), crecidos de forma voraz.
+  function mccStraightRuns(info, tol){
+    var pts = info.pts, cum = info.cum, n = pts.length, runs = [], i = 0;
+    while (i < n - 1){
+      var j = i + 1;
+      while (j + 1 < n){
+        var A = pts[i], B = pts[j+1], dx = B.x - A.x, dy = B.y - A.y, L = Math.hypot(dx, dy);
+        if (L < 1e-6) break;
+        var ok = true, k;
+        for (k=i+1;k<=j && ok;k++){
+          if (Math.abs((pts[k].x - A.x) * dy - (pts[k].y - A.y) * dx) / L > tol) ok = false;
+        }
+        for (k=i;k<=j && ok;k++){
+          if ((pts[k+1].x - pts[k].x) * dx + (pts[k+1].y - pts[k].y) * dy < 0) ok = false;
+        }
+        if (!ok) break;
+        j++;
+      }
+      if (cum[j] - cum[i] > 1e-6) runs.push({ i: i, j: j, r0: cum[i], r1: cum[j], A: pts[i], B: pts[j] });
+      i = j;
+    }
+    return runs;
+  }
+  function mccStraightLayout(info, widths, fs, W, c, lo, hi, lift){
+    // tolerancia estricta (0.35 fs) y laxa (1 fs: zigzags de poca amplitud se atraviesan por su eje)
+    var runs = mccStraightRuns(info, Math.max(0.35 * fs, 1.5)).map(function(r){ r.rank = 0; return r; })
+      .concat(mccStraightRuns(info, Math.max(1.0 * fs, 3)).map(function(r){ r.rank = 1; return r; }));
+    var best = null;
+    runs.forEach(function(r){
+      var dx = r.B.x - r.A.x, dy = r.B.y - r.A.y, Lc = Math.hypot(dx, dy);
+      if (Lc < 1e-6) return;
+      var rl = Math.max(r.r0, lo), rh = Math.min(r.r1, hi);
+      if (rh - rl <= 1e-6) return;
+      var t0 = (rl - r.r0) / (r.r1 - r.r0), t1 = (rh - r.r0) / (r.r1 - r.r0);
+      var av = Lc * (t1 - t0), midArc = (rl + rh) / 2;
+      var cand = { run: r, dx: dx / Lc, dy: dy / Lc, Lc: Lc, t0: t0, t1: t1, av: av, midArc: midArc,
+        fits: av >= W, dist: Math.abs(midArc - c), rank: r.rank,
+        freeL: (t0 === 0 && r.i > 0 && lo <= 0), freeR: (t1 === 1 && r.j < info.pts.length - 1 && hi >= info.total) };
+      var better = !best;
+      if (best){
+        if (cand.fits !== best.fits) better = cand.fits;
+        else if (cand.fits) better = cand.rank !== best.rank ? cand.rank < best.rank : cand.dist < best.dist - 1e-9;
+        else better = cand.av > best.av + 1e-9 || (Math.abs(cand.av - best.av) <= 1e-9 && cand.dist < best.dist);
+      }
+      if (better) best = cand;
+    });
+    if (!best) return null;
+    var scale = Math.max(MCC_TXT_MIN_SCALE, Math.min(1, best.av / W));
+    var Ws = W * scale, ang = Math.atan2(best.dy, best.dx) * 180 / Math.PI;
+    var rev = Math.abs(ang) > 90 + 1e-6;
+    if (rev) ang = mccNormDeg(ang + 180);
+    // Posición del texto a lo largo de la cuerda: centrado en el tramo; si no cabe, se desplaza
+    // hacia el lado libre (un vértice interior) para no perder letras; si tampoco, se trunca.
+    var tlo = best.freeL ? -Infinity : best.Lc * best.t0, thi = best.freeR ? Infinity : best.Lc * best.t1;
+    var tmid = best.Lc * (best.t0 + best.t1) / 2, tstart = tmid - Ws/2;
+    if (tstart < tlo) tstart = tlo;
+    if (tstart + Ws > thi) tstart = thi - Ws;
+    if (tstart < tlo) tstart = tmid - Ws/2;
+    var gl = [], cum = 0, i;
+    for (i=0;i<widths.length;i++){
+      var w = widths[i] * scale, off = cum + w/2;
+      cum += w;
+      // posición a lo largo de la cuerda (t): en sentido de lectura inverso se recorre de fin a inicio
+      var tpar = rev ? (tstart + Ws - off) : (tstart + off);
+      if (tpar < tlo - 1e-6 || tpar > thi + 1e-6) continue;
+      var gx = best.run.A.x + best.dx * tpar, gy = best.run.A.y + best.dy * tpar;
+      gl.push({ i: i, x: gx, y: gy, angle: ang, w: w, arc: best.run.r0 + (best.run.r1 - best.run.r0) * tpar / best.Lc });
+    }
+    if (!gl.length) return null;
+    var arcOf = function(t){ return best.run.r0 + (best.run.r1 - best.run.r0) * t / best.Lc; };
+    return { glyphs: gl, W: Ws, scale: scale, reversed: rev,
+      a: Math.max(0, Math.min(info.total, arcOf(tstart))), b: Math.max(0, Math.min(info.total, arcOf(tstart + Ws))) };
+  }
   // Calcula la posición/rotación de cada carácter. o: { fontSize, centerArc (px, opcional),
-  // lift (px, opcional) }. Si el trazo apunta hacia la izquierda se recorre al revés para que el
-  // texto se lea de izquierda a derecha y quede siempre derecho. Si el texto es más largo que el
-  // camino, se trunca (los caracteres que no caben se omiten).
+  // lift (px, opcional), range [lo,hi] (arco permitido), avoid [[a,b],...] (arcos a evitar) }.
+  // Siempre queda derecho (legible) y sin solapes. Si el texto es más largo que el camino y ni
+  // reduciéndolo cabe, se trunca (los caracteres que no caben se omiten).
   function mccCurvedTextLayout(latlngs, text, o){
     o = o || {};
-    var fs = o.fontSize || 12;
+    var fs = o.fontSize || 12, lift = o.lift || 0;
     text = String(text == null ? '' : text);
     var info = mccPathPxInfo(latlngs);
     if (!text || info.total < 1) return null;
     var chars = Array.from(text);
-    var widths = chars.map(function(ch){ return mccTextWidthPx(ch === ' ' ? ' ' : ch, fs); });
+    var widths = chars.map(function(ch){ return mccTextWidthPx(ch === ' ' ? ' ' : ch, fs); });
     var W = widths.reduce(function(a,b){ return a+b; }, 0);
-    var c = (o.centerArc != null) ? o.centerArc : info.total/2;
-    var half = Math.min(W, info.total)/2;
-    var pA = mccPxAtArc(info, c - half), pB = mccPxAtArc(info, c + half);
-    var reversed = (pB.x - pA.x) < 0;
-    if (reversed){ info = mccReversePathInfo(info); c = info.total - c; }
-    var start = c - W/2;
-    if (W <= info.total) start = Math.max(0, Math.min(info.total - W, start)); else start = 0;
-    var glyphs = [], s = start;
-    var delta = Math.max(fs*0.5, 1);
-    for (var i=0;i<chars.length;i++){
-      var mid = s + widths[i]/2;
-      s += widths[i];
-      if (mid > info.total) break;
-      var p = mccPxAtArc(info, mid);
-      var a1 = mccPxAtArc(info, mid - delta), a2 = mccPxAtArc(info, mid + delta);
-      var ang = Math.atan2(a2.y - a1.y, a2.x - a1.x) * 180/Math.PI;
-      glyphs.push({ ch: chars[i], x: p.x, y: p.y, angle: ang, w: widths[i] });
+    var total = info.total;
+    var lo = o.range ? Math.max(0, o.range[0]) : 0, hi = o.range ? Math.min(total, o.range[1]) : total;
+    var c = (o.centerArc != null) ? o.centerArc : total/2;
+    var avoid = (o.avoid || []).filter(function(v){ return v && v[1] > v[0]; });
+    function conflicts(s0){
+      for (var q=0;q<avoid.length;q++){ if (s0 < avoid[q][1] && s0 + W > avoid[q][0]) return true; }
+      return false;
     }
-    if (!glyphs.length) return null;
-    return { glyphs: glyphs, textWidth: W, reversed: reversed, fontSize: fs, start: start, total: info.total,
-      cx: mccPxAtArc(info, Math.max(0, Math.min(info.total, start + W/2))) };
+    var result = null;
+    if (W <= hi - lo + 1e-9){
+      var s0d = Math.max(lo, Math.min(hi - W, c - W/2));
+      var cands = [s0d];
+      var span = (hi - W) - lo;
+      if (span > 1e-6){
+        var step = Math.max(1, fs/3, span/300), set = {}, k;
+        cands = [s0d];
+        for (k=1; k*step <= span + step; k++){
+          [s0d - k*step, s0d + k*step].forEach(function(v){
+            v = Math.max(lo, Math.min(hi - W, v));
+            var key = v.toFixed(3);
+            if (!set[key] && Math.abs(v - s0d) > 1e-9){ set[key] = 1; cands.push(v); }
+          });
+          if (s0d - k*step <= lo && s0d + k*step >= hi - W) break;
+        }
+        cands = [cands[0]].concat(cands.slice(1).sort(function(a,b){ return Math.abs(a - s0d) - Math.abs(b - s0d) || a - b; }));
+      }
+      // 1) la ventana pedida si es legible; 2) la ventana "limpia" (casi sin giro) más cercana,
+      // salvo que haya una legible mucho más cerca; 3) cualquier ventana legible; 4) texto recto.
+      var fallbackCand = null, relaxedCand = null;
+      for (var ci=0; ci<cands.length; ci++){
+        var s0 = cands[ci];
+        if (relaxedCand && Math.abs(s0 - s0d) > Math.abs(relaxedCand.a - s0d) + W) break;
+        var rev = mccChooseReversed(info, widths, fs, s0, W);
+        var gl = mccBendGlyphs(info, widths, fs, s0, rev);
+        if (!mccBendOk(gl, chars.length, lift)) continue;
+        var cand = { glyphs: gl, W: W, scale: 1, reversed: rev, a: s0, b: s0 + W, mode: 'bend' };
+        if (conflicts(s0)){ if (!fallbackCand) fallbackCand = cand; continue; }
+        if (ci === 0 && mccBendOk(gl, chars.length, lift, MCC_TXT_COMFORT_STEP, MCC_TXT_MAX_SPAN)){ result = cand; break; }
+        if (ci > 0 && mccBendOk(gl, chars.length, lift, 8, 15)){ result = cand; break; }
+        if (!relaxedCand) relaxedCand = cand;
+      }
+      if (!result) result = relaxedCand || fallbackCand;
+    }
+    if (!result){
+      var st = mccStraightLayout(info, widths, fs, W, c, lo, hi, lift);
+      if (st){ st.mode = 'straight'; result = st; }
+    }
+    if (!result) return null;
+    var fsOut = fs * result.scale;
+    result.glyphs.forEach(function(g){
+      g.ch = chars[g.i];
+      var r = g.angle * Math.PI / 180;
+      g.px = g.x + lift * Math.sin(r);          // centro dibujado (con la elevación)
+      g.py = g.y - lift * Math.cos(r);
+    });
+    var mid = (result.a + result.b) / 2;
+    return { glyphs: result.glyphs, textWidth: result.W, reversed: result.reversed, fontSize: fsOut, start: result.a, total: total,
+      mode: result.mode, scale: result.scale, a: result.a, b: result.b, center: mid, lift: lift,
+      cx: mccPxAtArc(info, Math.max(0, Math.min(total, mid))) };
   }
   function mccCurvedTextIcon(latlngs, text, o){
     o = o || {};
-    var lay = mccCurvedTextLayout(latlngs, text, o);
+    var lay = o.layout || mccCurvedTextLayout(latlngs, text, o);
     if (!lay) return null;
     var fs = lay.fontSize, color = o.color || '#1F3864', lift = o.lift || 0;
     var g0 = lay.glyphs[Math.floor(lay.glyphs.length/2)];
@@ -16795,13 +16983,17 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var best = null;
     free.forEach(function(iv){
       var len = iv[1]-iv[0];
-      var c = len >= need ? Math.max(iv[0]+need/2, Math.min(iv[1]-need/2, total/2)) : (iv[0]+iv[1])/2;
       var fits = len >= need;
-      var score = (fits ? 0 : 1e6) + (fits ? Math.abs(c - total/2) : -len);
-      if (!best || score < best.score) best = { c:c, score:score };
+      var c = fits ? Math.max(iv[0]+need/2, Math.min(iv[1]-need/2, total/2)) : (iv[0]+iv[1])/2;
+      // El texto se planifica dentro del tramo libre (esquiva giros bruscos y sigue legible);
+      // el hueco de la línea se toma del texto realmente colocado.
+      var lay = mccCurvedTextLayout(latlngs, name, fits ? { fontSize: fs, centerArc: c, range: [iv[0]+pad, iv[1]-pad] } : { fontSize: fs, centerArc: c });
+      var cc = c, aa = c - need/2, bb = c + need/2, fsOut = fs;
+      if (lay){ aa = lay.a - pad; bb = lay.b + pad; cc = (aa + bb)/2; fsOut = lay.fontSize; }
+      var score = (fits ? 0 : 1e6) + (fits ? Math.abs(cc - total/2) : -len);
+      if (!best || score < best.score) best = { c:cc, a:aa, b:bb, fs:fsOut, lay:lay, score:score };
     });
-    var center = best.c;
-    return { center: center, a: Math.max(0, center - need/2), b: Math.min(total, center + need/2), info: info, fs: fs };
+    return { center: best.c, a: Math.max(0, best.a), b: Math.min(total, best.b), info: info, fs: best.fs, lay: best.lay };
   }
   // Convierte un arco en píxeles (sobre la polilínea) al arco equivalente en metros (geo.dists),
   // exacto dentro de cada segmento.
@@ -16900,7 +17092,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       } finally { _mccLeGuard = false; }
       var lePlan2 = shape._lePlan;
       if (lePlan2){
-        mccAddCurvedText(group, latlngs, shape._customName, { fontSize: lePlan2.fs, color: color, centerArc: lePlan2.center, lift: 0 });
+        mccAddCurvedText(group, latlngs, shape._customName, { fontSize: lePlan2.fs, color: color, centerArc: lePlan2.center, lift: 0, layout: lePlan2.lay });
       }
     }
     else if (mcc.type === 'limitecombate'){
@@ -17004,8 +17196,16 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
           centers = [];
           for (var ri=0; ri<reps; ri++){ centers.push(tpInfo.total * (ri+0.5)/reps); }
         }
+        // Cada repetición se coloca con el planificador de texto (esquiva giros bruscos); si cae
+        // sobre una repetición ya colocada se descarta para no superponer letras.
+        var placedArcs = [];
         centers.forEach(function(cArc){
-          mccAddCurvedText(group, textPath, nameText, { fontSize: fsCurve, color: color, opaque: !!mcc.opacarFondo, lift: liftCurve, centerArc: cArc });
+          var layRep = mccCurvedTextLayout(textPath, nameText, { fontSize: fsCurve, lift: liftCurve, centerArc: cArc, avoid: placedArcs });
+          if (!layRep) return;
+          var padRep = Math.max(4, fsCurve * 0.5);
+          if (placedArcs.some(function(r){ return layRep.a < r[1] && layRep.b > r[0]; })) return;
+          placedArcs.push([layRep.a - padRep, layRep.b + padRep]);
+          mccAddCurvedText(group, textPath, nameText, { fontSize: fsCurve, color: color, opaque: !!mcc.opacarFondo, lift: liftCurve, centerArc: cArc, layout: layRep });
         });
       }
     }
@@ -17553,6 +17753,17 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var m = arrowLabelMarks[shape._shapeId];
     if (m){ m.remove(); delete arrowLabelMarks[shape._shapeId]; }
   }
+  // Colocación del texto de una flecha (compartida con el hueco de la línea). En Dirección de
+  // Ataque Aérea se esquiva el marcador de doble chevrón.
+  function arrowLabelLayout(arrow, path){
+    if (!arrow || !arrow.labelText) return null;
+    var avoid = [];
+    if (arrow.aereo && arrow.mccKind === 'direccionataque'){
+      var mk = mccaArrowMarkerPlan(path);
+      if (mk) avoid.push([mk.c - MCCA_DA_HALF_W - 4, mk.c + MCCA_DA_HALF_W + 4]);
+    }
+    return mccCurvedTextLayout(path, String(arrow.labelText), { fontSize: DA_LABEL_FS, avoid: avoid });
+  }
   function syncArrowLabel(shape){
     if (!shape._isArrow || !shape._arrow.labelText){ removeArrowLabelMark(shape); return; }
     var owner = findLayerOfShape(shape);
@@ -17560,7 +17771,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     // El texto va CENTRADO sobre el asta y CURVA con ella: cada carácter se rota según la
     // tangente local del trazo (ver mccCurvedTextLayout), mismo mecanismo que Vía y Camino.
     var path = (shape._arrow.mccKind === 'direccionataque') ? computeDireccionAtaqueCenterline(shape._arrow).centerline : computeArrowCenterline(shape._arrow).latlngs;
-    var res = mccCurvedTextIcon(path, shape._arrow.labelText, { fontSize: DA_LABEL_FS, color: shape.options.color });
+    var res = mccCurvedTextIcon(path, shape._arrow.labelText, { fontSize: DA_LABEL_FS, color: shape.options.color, layout: arrowLabelLayout(shape._arrow, path) });
     if (!res){ removeArrowLabelMark(shape); return; }
     var m = arrowLabelMarks[shape._shapeId];
     if (!m){ m = L.marker(res.latlng, { icon: res.icon, interactive:false, keyboard:false, zIndexOffset:660 }); if (owner.visible) m.addTo(map); arrowLabelMarks[shape._shapeId] = m; }
@@ -18067,6 +18278,23 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     });
     return out;
   }
+  // Rectángulo girado (centro, rotación CSS en grados, ancho, alto) y prueba de solape (SAT).
+  function mccTextRectPx(c, rotDeg, w, h){
+    var r = rotDeg * Math.PI / 180, ux = Math.cos(r), uy = Math.sin(r), vx = -uy, vy = ux, hw = w / 2, hh = h / 2;
+    return { c: c, ax: [{ x: ux, y: uy }, { x: vx, y: vy }], pts: [[-1,-1],[1,-1],[1,1],[-1,1]].map(function(q){
+      return { x: c.x + ux * hw * q[0] + vx * hh * q[1], y: c.y + uy * hw * q[0] + vy * hh * q[1] };
+    }) };
+  }
+  function mccRectsOverlap(A, B){
+    var axes = A.ax.concat(B.ax);
+    for (var i=0;i<axes.length;i++){
+      var ax = axes[i], mnA = Infinity, mxA = -Infinity, mnB = Infinity, mxB = -Infinity;
+      A.pts.forEach(function(p){ var d = p.x * ax.x + p.y * ax.y; mnA = Math.min(mnA, d); mxA = Math.max(mxA, d); });
+      B.pts.forEach(function(p){ var d = p.x * ax.x + p.y * ax.y; mnB = Math.min(mnB, d); mxB = Math.max(mxB, d); });
+      if (mxA <= mnB || mxB <= mnA) return false;
+    }
+    return true;
+  }
   function mccaBuildCorredor(shape){
     var m = shape._mcc, ll = mccaFlat(shape);
     if (ll.length < 2) return null;
@@ -18106,16 +18334,28 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     // nombre (= campo NOMBRE) a lo largo de cada segmento, en su dirección y legible
     var name = shape._customName || '';
     if (name){
+      var labelRects = [];
       geo.segs.forEach(function(s, k){
         var span = s.len - geo.wPx;
         if (span < 14) return;
         var fs = Math.min(geo.wPx * 0.42, 18);
         var tw = mccTextWidthPx(name, fs);
-        if (tw > span - 8) fs = fs * (span - 8) / tw;
+        if (tw > span - 8){ fs = fs * (span - 8) / tw; tw = span - 8; }
         if (fs < 6) return;
         var mid = { x: (s.a.x + s.b.x) / 2, y: (s.a.y + s.b.y) / 2 };
         var bearing = mccaBearing(ll[k], ll[k+1]);
-        L.marker(toLL(mid), { icon: mccBorderlessLabelIcon(name, bearing, st.color, false, fs, 0), interactive: false, keyboard: false, zIndexOffset: 660 }).addTo(g);
+        // En giros muy cerrados los rótulos de tramos vecinos pueden cruzarse: se reduce el tamaño
+        // (hasta 60 %) y, si aun así chocan con uno ya colocado, se omite este rótulo.
+        var rotDeg = labelRotationForBearing(bearing), scaleL = 1, rectL = null;
+        for (;;){
+          rectL = mccTextRectPx(mid, rotDeg, tw * scaleL + 2, fs * scaleL * 1.2);
+          if (!labelRects.some(function(r){ return mccRectsOverlap(r, rectL); })) break;
+          scaleL -= 0.1;
+          if (scaleL < 0.6) { rectL = null; break; }
+        }
+        if (!rectL || fs * scaleL < 6) return;
+        labelRects.push(rectL);
+        L.marker(toLL(mid), { icon: mccBorderlessLabelIcon(name, bearing, st.color, false, fs * scaleL, 0), interactive: false, keyboard: false, zIndexOffset: 660 }).addTo(g);
       });
     }
     return g;
@@ -18513,8 +18753,8 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var mPerPx = (cpx.total > 0) ? (cTotalM / cpx.total) : 1;
     var gaps = [];
     if (arrow.labelText){
-      var tw = mccTextWidthPx(String(arrow.labelText), DA_LABEL_FS);
-      gaps.push({ c: cTotalM * 0.5, h: Math.max(10, tw / 2 + 6) * mPerPx });
+      var layA = arrowLabelLayout(arrow, dgeo.centerline);
+      if (layA) gaps.push({ c: (layA.a + layA.b) / 2 * mPerPx, h: Math.max(10, (layA.b - layA.a) / 2 + 6) * mPerPx });
     }
     var plan = mccaArrowMarkerPlan(dgeo.centerline);
     if (plan) gaps.push({ c: plan.c * mPerPx, h: (MCCA_DA_HALF_W + 0.5) * mPerPx });
@@ -19000,17 +19240,21 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var st = mccaStyleOf(shape), g = L.layerGroup(), info = mccPathPxInfo(ll);
     var fs = mccfFont(m, 12), vis = fs >= MCCA_FS_MIN_VISIBLE && info.total > 8;
     var tx = mccfLineTexts(m), cut = MCCF_CUT.indexOf(t) !== -1, lo = mccfLineOpts(shape);
-    var plan = null;
+    var plan = null, layOn = null;
     if (cut && vis && tx.on){
-      var W = mccTextWidthPx(tx.on, fs), gapW = W + Math.max(8, fs * 0.8);
-      if (gapW < info.total * 0.98) plan = { a: info.total / 2 - gapW / 2, b: info.total / 2 + gapW / 2 };
+      // El hueco sigue la colocación real del texto (que puede desplazarse para esquivar un giro).
+      layOn = mccCurvedTextLayout(ll, tx.on, { fontSize: fs, lift: 0 });
+      if (layOn){
+        var gapW = (layOn.b - layOn.a) + Math.max(8, fs * 0.8), gcen = (layOn.a + layOn.b) / 2;
+        if (gapW < info.total * 0.98) plan = { a: Math.max(0, gcen - gapW / 2), b: Math.min(info.total, gcen + gapW / 2) };
+      }
     }
     L.polyline(plan ? mccCutLatLngsByPxArc(ll, info, plan.a, plan.b) : ll, lo).addTo(g);
     if (!vis) return g;
     var lift = st.weight / 2 + fs * 0.62 + 1, c = info.total / 2;
     if (tx.above) mccAddCurvedText(g, ll, tx.above, { fontSize: fs, color: st.color, centerArc: c, lift: lift, z: 660 });
     if (tx.below) mccAddCurvedText(g, ll, tx.below, { fontSize: fs, color: st.color, centerArc: c, lift: -lift, z: 660 });
-    if (tx.on && (!cut || plan)) mccAddCurvedText(g, ll, tx.on, { fontSize: fs, color: st.color, centerArc: c, lift: cut ? 0 : lift, z: 660 });
+    if (tx.on && (!cut || plan)) mccAddCurvedText(g, ll, tx.on, { fontSize: fs, color: st.color, centerArc: c, lift: cut ? 0 : lift, z: 660, layout: cut ? layOn : null });
     if (t === 'f_oo') mccfEndLabels(g, info, 'O-O', fs, st.color, st.weight);
     return g;
   }
@@ -19068,19 +19312,21 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var lo = mccfLineOpts(shape); lo.lineJoin = 'round';
     var ring2 = plan.ring.concat([plan.ring[0]]);
     var showText = !!text && fs >= MCCA_FS_MIN_VISIBLE;
-    var W = showText ? mccTextWidthPx(text, fs) : 0, gapW = W + Math.max(8, fs * 0.8);
-    if (showText && gapW < T * 0.9){
+    var path2 = ring2.concat(ring2.slice(1));
+    var layB = showText ? mccCurvedTextLayout(path2, text, { fontSize: fs, centerArc: T + plan.c, lift: 0 }) : null;
+    var gapW = layB ? (layB.b - layB.a) + Math.max(8, fs * 0.8) : 0;
+    var cB = layB ? (((layB.a + layB.b) / 2) % T + T) % T : plan.c;
+    if (layB && gapW < T * 0.9){
       // línea del contorno interrumpida detrás del texto: un solo trazo abierto que da la vuelta
       // completa desde el final del hueco hasta su comienzo
       var p2 = plan.info.pts.concat(plan.info.pts.slice(1)), cum2 = plan.info.cum.slice();
       for (var i = 1; i < plan.info.cum.length; i++) cum2.push(T + plan.info.cum[i]);
-      var a0 = plan.c + gapW / 2;
+      var a0 = cB + gapW / 2;
       if (a0 >= T) a0 -= T;
       var seg = mccfSlicePx(p2, cum2, a0, a0 + T - gapW);
       L.polyline(seg.map(mccPxToLL), lo).addTo(g);
       // texto: UNA etiqueta curva centrada en el punto del borde
-      var path2 = ring2.concat(ring2.slice(1));
-      mccAddCurvedText(g, path2, text, { fontSize: fs, color: st.color, centerArc: T + plan.c, lift: 0, z: 660 });
+      mccAddCurvedText(g, path2, text, { fontSize: fs, color: st.color, centerArc: T + plan.c, lift: 0, z: 660, layout: layB });
     } else {
       L.polyline(ring2, lo).addTo(g);
     }
