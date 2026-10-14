@@ -167,7 +167,9 @@
   header .brand .theme-toggle-btn:hover{ background:rgba(255,255,255,.26); }
   header .brand .theme-toggle-btn svg{ flex-shrink:0; }
   header h1{ font-size:15px; margin:0; line-height:1.2; font-weight:700; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  header .subtitle{ font-size:11px; color:var(--gold-light); font-weight:400; }
+  header .subtitle{ font-size:11px; color:var(--gold-light); font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:min(60vw,720px); }
+  #user-select-org{ font-size:13px; font-weight:700; color:var(--gold); margin:0 0 6px 0; overflow-wrap:anywhere; line-height:1.3; }
+  #user-select-org:empty{ display:none; }
   header .header-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
   #user-controls{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
   #current-user-badge{ flex-shrink:0; white-space:nowrap; }
@@ -1044,6 +1046,10 @@
   }
   .cfg-save:hover{ background:var(--navy-deep); }
   .cfg-add{ background:var(--surface); color:var(--navy); border-color:var(--gold); margin-top:4px; }
+  .cfg-titulo{ display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:8px; align-items:center; padding:8px 10px; border:1px solid var(--border); border-radius:10px; margin-bottom:7px; background:var(--surface-alt); }
+  .cfg-titulo label{ grid-column:1 / -1; font-size:12px; font-weight:700; color:var(--navy); }
+  .cfg-restore{ font-family:inherit; font-weight:700; font-size:12.5px; border-radius:8px; cursor:pointer; padding:8px 14px; background:var(--surface); color:var(--navy); border:2px solid var(--gold); }
+  .cfg-titulo .cfg-count{ grid-column:1 / -1; font-size:11px; color:var(--muted); }
   .cfg-msg{ grid-column:1 / -1; font-size:12px; }
   .cfg-msg:empty{ display:none; }
   .cfg-msg.ok{ color:#2E7D32; font-weight:700; }
@@ -1051,6 +1057,8 @@
   .cfg-sync{ font-size:12px; color:var(--muted); margin:10px 0 4px; min-height:16px; }
   @media (max-width:720px){
     .cfg-row{ grid-template-columns:44px 1fr; }
+    .cfg-titulo{ grid-template-columns:1fr 1fr; }
+    .cfg-titulo .cfg-name{ grid-column:1 / -1; }
     .cfg-row > *:nth-child(n+3){ grid-column:1 / -1; }
   }
 </style>
@@ -1061,6 +1069,7 @@
   <div id="user-select-card">
     <div class="crest" style="margin:0 auto 14px auto;">NS</div>
     <h1>Sistema de Anotación Cartográfica</h1>
+    <div id="user-select-org"></div>
     <p id="user-select-subtitle">Seleccione el usuario que va a operar esta sesión</p>
     <div id="user-name-step" style="display:none;">
       <p>Antes de continuar, ingrese su nombre. Quedará registrado en este navegador y será visible para los demás usuarios conectados.</p>
@@ -1103,7 +1112,7 @@
     </button>
     <div>
       <h1>Sistema de Anotación Cartográfica</h1>
-      <div class="subtitle">División de Ejército III, Colombia</div>
+      <div class="subtitle" id="header-subtitle">División de Ejército III, Colombia</div>
     </div>
   </div>
   <div class="mode-switcher">
@@ -1749,6 +1758,10 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   var AULAS_CFG_KEY = 'aulas_config_v1';
   var DEFAULT_PASSWORD = 'admin';
   var AULA_NAME_MAX = 30;
+  var AULAS_TITULO_DEFAULT = 'División de Ejército III, Colombia';
+  var AULAS_TITULO_DEFAULT_CORTO = 'División de Ejército III'; // forma usada en <title> y en 'fuente' cuando el título es el predeterminado
+  var AULAS_TITULO_MAX = 80;
+  var APP_NOMBRE = 'Sistema de Anotación Cartográfica';
   var aulasCfg = null;
   var aulasCfgSyncStatus = '';
 
@@ -1813,6 +1826,12 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     return s || fallback;
   }
   function aulaDefaultName(id){ return 'AULA ' + id; }
+  // Título (encabezado): sin HTML ni control, espacios colapsados, máx. 80; vacío -> predeterminado.
+  function aulasSanitizeTitle(raw){
+    var s = String(raw == null ? '' : raw).replace(/<[^>]*>/g, '').replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (s.length > AULAS_TITULO_MAX) s = s.slice(0, AULAS_TITULO_MAX).trim();
+    return s || AULAS_TITULO_DEFAULT;
+  }
   function aulasValidPw(p){
     if (!(p && typeof p === 'object' && typeof p.s === 'string' && typeof p.h === 'string' && /^[0-9a-f]{64}$/.test(p.h))) return null;
     var out = { s: p.s, h: p.h };
@@ -1821,7 +1840,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function aulasDefaultConfig(){
     return {
-      v: 1, updatedAt: 0,
+      v: 1, updatedAt: 0, titulo: AULAS_TITULO_DEFAULT,
       direccion: { name: 'DIRECCIÓN', pw: null },
       aulas: AULAS_BASE_IDS.map(function(id){ return { id: id, name: aulaDefaultName(id), visible: true, pw: null }; })
     };
@@ -1836,7 +1855,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   function aulasNormalizeConfig(raw){
     var def = aulasDefaultConfig();
     if (!raw || typeof raw !== 'object') return def;
-    var cfg = { v: 1, updatedAt: (typeof raw.updatedAt === 'number' && isFinite(raw.updatedAt)) ? raw.updatedAt : 0, direccion: null, aulas: [] };
+    var cfg = { v: 1, updatedAt: (typeof raw.updatedAt === 'number' && isFinite(raw.updatedAt)) ? raw.updatedAt : 0, titulo: aulasSanitizeTitle(raw.titulo), direccion: null, aulas: [] };
     var rd = raw.direccion && typeof raw.direccion === 'object' ? raw.direccion : {};
     cfg.direccion = { name: aulasSanitizeName(rd.name, 'DIRECCIÓN'), pw: aulasValidPw(rd.pw) };
     var seen = {};
@@ -1863,6 +1882,20 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     aulasCfg = cfg;
     AULAS.length = 0;
     cfg.aulas.forEach(function(a){ AULAS.push(a.id); });
+    try{ aulasRenderTitulo(); } catch(err){}
+  }
+  function aulasTitulo(){ return aulasCfg && aulasCfg.titulo ? aulasCfg.titulo : AULAS_TITULO_DEFAULT; }
+  // Forma compuesta para <title> y 'fuente': con el título predeterminado conserva el texto histórico.
+  function aulasTituloCorto(){ var t = aulasTitulo(); return t === AULAS_TITULO_DEFAULT ? AULAS_TITULO_DEFAULT_CORTO : t; }
+  function aulasFuenteText(){ return APP_NOMBRE + ' - ' + aulasTituloCorto(); }
+  // Aplica el título a todos los lugares visibles (textContent: sin HTML).
+  function aulasRenderTitulo(){
+    var t = aulasTitulo();
+    var sub = document.getElementById('header-subtitle');
+    if (sub){ sub.textContent = t; sub.title = t; }
+    document.title = APP_NOMBRE + ' · ' + aulasTituloCorto();
+    var org = document.getElementById('user-select-org');
+    if (org){ org.textContent = aulasInicioLoading ? '' : t; }
   }
   function aulasLoadLocal(){
     var raw = null;
@@ -1927,6 +1960,11 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       if (!e) return { ok:false, error:'Aula inexistente.' };
       e.name = aulasSanitizeName(name, aulaDefaultName(id));
     }
+    return aulasCommit();
+  }
+  function aulasSetTitle(raw){
+    if (!aulasCfg) aulasLoadLocal();
+    aulasCfg.titulo = aulasSanitizeTitle(raw);
     return aulasCommit();
   }
   function aulasSetVisible(id, visible){
@@ -2248,6 +2286,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     var aulaGrid = document.getElementById('aula-grid');
     if (!aulaGrid) return;
     aulaGrid.innerHTML = '';
+    try{ aulasRenderTitulo(); } catch(err){}
     if (aulasInicioLoading){
       var ld = document.createElement('div');
       ld.className = 'aula-loading'; ld.setAttribute('role', 'status');
@@ -2361,6 +2400,30 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     var sh = cfgMakeEl('div', 'cfg-share'); sh.id = 'cfg-share-status';
     body.appendChild(sh);
     aulasRefreshShareLine();
+
+    // Título (encabezado)
+    var tSec = cfgMakeEl('div', 'cfg-titulo'); tSec.id = 'cfg-titulo-sec';
+    var tLbl = cfgMakeEl('label', null, 'Título (encabezado)'); tLbl.setAttribute('for', 'cfg-titulo-input');
+    var tIn = cfgMakeEl('input', 'cfg-name'); tIn.type = 'text'; tIn.id = 'cfg-titulo-input'; tIn.maxLength = AULAS_TITULO_MAX; tIn.value = aulasTitulo();
+    tIn.placeholder = AULAS_TITULO_DEFAULT;
+    var tSave = cfgMakeEl('button', 'cfg-save', 'Guardar'); tSave.type = 'button'; tSave.id = 'cfg-titulo-save';
+    var tRst = cfgMakeEl('button', 'cfg-restore', 'Restablecer'); tRst.type = 'button'; tRst.id = 'cfg-titulo-restore'; tRst.title = 'Volver a: ' + AULAS_TITULO_DEFAULT;
+    var tMsg = cfgMakeEl('div', 'cfg-msg'); tMsg.id = 'cfg-titulo-msg';
+    function tDone(r, okTxt){
+      tMsg.className = 'cfg-msg ' + (r.ok ? 'ok' : 'err');
+      tMsg.textContent = r.ok ? '✓ ' + okTxt : r.error;
+      tIn.value = aulasTitulo();
+      aulasRefreshStatusLine();
+    }
+    tSave.addEventListener('click', function(){
+      var clean = aulasSanitizeTitle(tIn.value);
+      var empty = !String(tIn.value || '').replace(/<[^>]*>/g, ' ').replace(/[\s\u0000-\u001f\u007f<>]/g, '');
+      tDone(aulasSetTitle(tIn.value), empty ? 'Título vacío: se restableció el predeterminado.' : (clean.length < String(tIn.value).trim().length ? 'Título guardado (ajustado: sin HTML / máx. ' + AULAS_TITULO_MAX + ' caracteres).' : 'Título guardado.'));
+    });
+    tIn.addEventListener('keydown', function(ev){ if (ev.key === 'Enter'){ ev.preventDefault(); tSave.click(); } });
+    tRst.addEventListener('click', function(){ tDone(aulasSetTitle(AULAS_TITULO_DEFAULT), 'Título restablecido al predeterminado.'); });
+    tSec.appendChild(tLbl); tSec.appendChild(tIn); tSec.appendChild(tSave); tSec.appendChild(tRst); tSec.appendChild(tMsg);
+    body.appendChild(tSec);
 
     // Dirección
     var dSec = cfgMakeEl('div', 'cfg-row cfg-row-dir');
@@ -15306,7 +15369,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       tipo: 'capas-completas-ccon-d',
       version: 1,
       generado: new Date().toISOString(),
-      fuente: 'Sistema de Anotación Cartográfica - División de Ejército III',
+      fuente: aulasFuenteText(),
       aula: currentUserLabel(),
       layers: layers.map(function(l){
         return { id: l.id, name: l.name, color: l.color, visible: l.visible, expanded: l.expanded, parentId: l.parentId, sortIndex: l.sortIndex, geojson: layerToGeoJSON(l) };
