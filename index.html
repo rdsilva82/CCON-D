@@ -1307,7 +1307,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="7" width="16" height="10"/><path d="M4 7l16 10M20 7L4 17" stroke-width="1.6"/></svg>
         <span>Unidades</span>
       </button>
-      <button class="tool-btn" data-tool="equipos" title="Equipos: punto para marcar un equipo (características por definir)">
+      <button class="tool-btn" data-tool="equipos" title="Equipos: radioeléctricos, ingenieros y especiales">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a3 3 0 00-4.2 4.2L3 18v3h3l7.5-7.5a3 3 0 004.2-4.2l-2.2 2.2-2-2z"/></svg>
         <span>Equipos</span>
       </button>
@@ -4505,47 +4505,6 @@
      usuario. Por ahora son un punto simple con un ícono genérico distinto por categoría y sin
      campos propios más allá del nombre; sus características específicas (ficha de datos, tipos,
      íconos definitivos, etc.) quedan pendientes de que el usuario las defina. */
-  function defaultEquipoParams(){ return { tipo:'' }; }
-  function buildEquipoIcon(){
-    var c = '#5B6B73';
-    var html =
-      '<svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' +
-        '<circle cx="15" cy="15" r="13" fill="' + c + '" stroke="#fff" stroke-width="2"/>' +
-        '<path d="M18.4 9.9a3.6 3.6 0 00-5 5l-8.2 8.2 1.7 1.7 8.2-8.2a3.6 3.6 0 005-5l-2.6 2.6-2.4-2.4z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '</svg>';
-    return L.divIcon({ className:'', html: html, iconSize:[30,30], iconAnchor:[15,15] });
-  }
-  var equiposClickHandler = null;
-  function stopEquiposTool(){
-    if (equiposClickHandler){ map.off('click', equiposClickHandler); equiposClickHandler = null; }
-    mapContainer.style.cursor = '';
-  }
-  function activateEquiposTool(){
-    if (activeToolName === 'equipos'){ disableAllTools(); return; }
-    var active = getActiveLayer();
-    if (!active){ alert('Cree o seleccione una capa antes de colocar un equipo.'); return; }
-    disableAllTools();
-    activeToolName = 'equipos';
-    updateToolbarUI();
-    mapContainer.style.cursor = 'crosshair';
-    equiposClickHandler = function(e){
-      var activeNow = getActiveLayer();
-      if (!activeNow) return;
-      var eq = defaultEquipoParams();
-      var layer = L.marker(e.latlng, { icon: buildEquipoIcon(eq) });
-      layer._isEquipo = true;
-      layer._equipo = eq;
-      activeNow.group.addLayer(layer);
-      attachShapeInteractivity(layer, activeNow);
-      recordAddShape(activeNow, layer);
-      renderLayerList();
-      selectedShape = layer;
-      showProperties(layer, activeNow);
-      disableAllTools();
-    };
-    map.on('click', equiposClickHandler);
-  }
-
   /* ---------------- SÍMBOLOS MILITARES DE VEHÍCULOS (estándar OTAN, esquema propio) ----------------
      Sistema paralelo e independiente al de "Unidades" (milFrameSVG, etc.): comparte la paleta de
      colores por afiliación (MIL_AFFILIATION_COLORS) y la lógica de condición/"simulado", pero usa
@@ -5450,6 +5409,7 @@
   // tamaño completo sobresalían de los contenedores de afiliación de Aéreos (más angostos que el
   // círculo de Terrestres).
   function vehTypeGlyphSVG(tipo, affiliation, condition){
+    if (typeof tipo === 'string' && tipo.indexOf('eq_') === 0) return eqGlyphSVG(tipo, affiliation);
     if (vehNavalCategoryOfTipo(tipo)) return vehNavalGlyphSVG(tipo, affiliation, condition);
     var raw = vehTypeGlyphSVGRaw(tipo);
     if (!raw) return raw;
@@ -5471,15 +5431,16 @@
     return L.divIcon({ className:'', html: buildVehiculoSVG(veh), iconSize:[60,60], iconAnchor:[30,30] });
   }
   function applyVehiculoSymbol(shape){
-    shape.setIcon(buildVehiculoIcon(shape._vehiculo));
+    shape.setIcon(buildVehiculoIcon(vehParamsOf(shape)));
     updateVehLeftLabel(shape);
   }
   // Cuadro de texto a la izquierda del símbolo, propio de los vehículos "Terrestres" (mismo
   // criterio que updateArmaLeftLabel para Armas / Apoyo de Fuego): se muestra siempre (aunque
   // esté vacío) mientras el vehículo sea Terrestre, y se quita por completo en Aéreos/Navales.
   function updateVehLeftLabel(shape){
-    if (shape._vehiculo && shape._vehiculo.tipoVehiculo === 'terrestre'){
-      shape.bindTooltip(shape._vehiculo.leftLabel || '', { permanent:true, direction:'left', offset:[-26,0], className:'veh-left-box' });
+    var vp = vehParamsOf(shape);
+    if (vp && (vp.tipoVehiculo === 'terrestre' || vp.tipoVehiculo === 'equipo')){
+      shape.bindTooltip(vp.leftLabel || '', { permanent:true, direction:'left', offset:[-26,0], className:'veh-left-box' });
     } else if (shape.getTooltip()){
       shape.unbindTooltip();
     }
@@ -5545,6 +5506,327 @@
       disableAllTools();
     };
     map.on('click', vehiculosClickHandler);
+  }
+
+  /* ---------------- EQUIPOS (reutiliza el motor de Vehículos Terrestres) ----------------
+     La herramienta "Equipos" funciona igual que Vehículos > Terrestres: mismos marcos por
+     afiliación (vehFrameSVG: círculo / rombo / cuadrado / cuatrifolio), misma condición
+     (Presente / Futuro / Simulado, con íconos sincronizados a la afiliación), mismo cuadro de
+     texto a la izquierda ("Tipo", tooltip permanente "veh-left-box"), mismo panel de propiedades.
+     Se comparten los constructores (buildVehiculoSVG/Icon, vehFrameSVGFor, vehConditionIconSVG,
+     vehTypeIconSVG, updateVehLeftLabel, el bloque del panel) y solo cambian las tablas de
+     categorías/tipos y la bandera propia: marker._isEquipo + marker._equipo (y properties.equipo
+     en GeoJSON). Los parámetros llevan tipoVehiculo:'equipo', que NO aparece en la UI de
+     Vehículos (VEH_TIPOVEHICULO no lo incluye). Los códigos de tipo llevan prefijo "eq_".
+     La categoría "Equipos" dentro de Armas es otra cosa y no se toca. */
+  var EQ_CATEGORIES = [
+    ['radioelectricos','Radioeléctricos'],
+    ['ingenieros','Ingenieros'],
+    ['especiales','Especiales']
+  ];
+  var EQ_TYPES_RADIOELECTRICOS = [
+    ['eq_rad_portatil_mochilar','Radio portátil mochilar'],
+    ['eq_rad_portatil_vehicular','Radio portátil vehicular'],
+    ['eq_rad_portatil_manual','Radio portátil manual'],
+    ['eq_rad_estacion_fija','Estación radioeléctrica fija'],
+    ['eq_rad_manual_vhf','Radio portátil manual VHF'],
+    ['eq_rad_manual_uhf','Radio portátil manual UHF'],
+    ['eq_rad_repetidor','Repetidor de radio'],
+    ['eq_rad_integracion_radio_radio','Equipo de integración Radio-Radio'],
+    ['eq_rad_integracion_radio_cableado','Equipo de integración radio-cableado'],
+    ['eq_rad_receptor','Equipo de radio receptor'],
+    ['eq_rad_multicanal','Radio multicanal'],
+    ['eq_rad_multicanal_repetidor','Radio multicanal repetidor'],
+    ['eq_rad_radiogoniometro','Radiogoniómetro'],
+    ['eq_rad_engano_imitativo','Engaño imitativo'],
+    ['eq_rad_interferencia','Equipo de interferencia radioeléctrica'],
+    ['eq_rad_ctvm','Centro de transmisión videomóvil'],
+    ['eq_rad_ccmi','Centro de conmutación móvil integrado'],
+    ['eq_rad_ctcm','Centro troncalizador de comunicaciones móviles'],
+    ['eq_rad_telefono_satelital','Teléfono satelital de campaña'],
+    ['eq_rad_terminal_sat_remolcable','Terminal satelital de campaña remolcable'],
+    ['eq_rad_terminal_sat_transportable','Terminal satelital de campaña transportable'],
+    ['eq_rad_terminal_sat_portatil','Terminal satelital portátil'],
+    ['eq_rad_radioenlace_digital','Radioenlace digital de campaña'],
+    ['eq_rad_central_telefonica','Central telefónica'],
+    ['eq_rad_centro_mensajes','Centro de mensajes'],
+    ['eq_rad_telefono_campana','Teléfono de campaña'],
+    ['eq_rad_escucha_alambrica','Puesto de escucha alámbrica'],
+    ['eq_rad_generador','Generador'],
+    ['eq_rad_palomar','Palomar'],
+    ['eq_rad_estafeta','Estafeta'],
+    ['eq_rad_estafeta_rueda','Estafeta a rueda'],
+    ['eq_rad_estafeta_aereo','Estafeta aéreo']
+  ];
+  // Ingenieros y Especiales: categorías vacías ("Próximamente.") a la espera de sus símbolos.
+  var EQ_TYPES_INGENIEROS = [];
+  var EQ_TYPES_ESPECIALES = [];
+  var EQ_TYPES_BY_CATEGORY = {
+    radioelectricos: EQ_TYPES_RADIOELECTRICOS,
+    ingenieros: EQ_TYPES_INGENIEROS,
+    especiales: EQ_TYPES_ESPECIALES
+  };
+  VEH_CATEGORIES_BY_TIPOVEHICULO.equipo = EQ_CATEGORIES;
+  VEH_TYPES_BY_CATEGORY_BY_TIPOVEHICULO.equipo = EQ_TYPES_BY_CATEGORY;
+
+  function defaultEquipoParams(){
+    var p = defaultVehiculoParams('equipo');
+    return p;
+  }
+  // Parámetros del símbolo de un marcador de Vehículo o de Equipo (ambos comparten motor).
+  function vehParamsOf(shape){
+    return shape && (shape._isEquipo ? shape._equipo : shape._vehiculo);
+  }
+  // Normaliza parámetros importados: los Equipos "antiguos" (punto simple, { tipo:'' }) se
+  // reconstruyen como Amigo / Presente / primer tipo de Radioeléctricos.
+  function normalizeEquipoParams(src){
+    var eq = Object.assign(defaultEquipoParams(), src || {});
+    eq.tipoVehiculo = 'equipo';
+    if (!MIL_AFFILIATION_COLORS[eq.affiliation]) eq.affiliation = 'friendly';
+    if (!VEH_CONDITIONS.some(function(c){ return c[0] === eq.condition; })) eq.condition = 'present';
+    if (!EQ_CATEGORIES.some(function(c){ return c[0] === eq.category; })) eq.category = EQ_CATEGORIES[0][0];
+    var types = EQ_TYPES_BY_CATEGORY[eq.category] || [];
+    if (types.length && !types.some(function(t){ return t[0] === eq.tipo; })) eq.tipo = types[0][0];
+    if (typeof eq.leftLabel !== 'string') eq.leftLabel = '';
+    return eq;
+  }
+  function buildEquipoSVG(eq){ return buildVehiculoSVG(eq || defaultEquipoParams()); }
+  function buildEquipoIcon(eq){ return buildVehiculoIcon(eq || defaultEquipoParams()); }
+  function applyEquipoSymbol(shape){ applyVehiculoSymbol(shape); }
+
+  /* ---- Primitivas reutilizables de los glifos de Equipos (60x60, trazo negro) ---- */
+  function eqLn(x1,y1,x2,y2,w){
+    return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#000" stroke-width="'+(w||2)+'" stroke-linecap="butt"/>';
+  }
+  function eqCirc(cx,cy,r,w,filled){
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+(filled?'#000':'none')+'" stroke="#000" stroke-width="'+(w||2)+'"/>';
+  }
+  function eqPath(d,w,fill){
+    return '<path d="'+d+'" fill="'+(fill||'none')+'" stroke="#000" stroke-width="'+(w||2)+'" stroke-linejoin="miter" stroke-linecap="butt"/>';
+  }
+  function eqPoly(pts,w){
+    return '<polyline points="'+pts.map(function(p){return p[0]+','+p[1];}).join(' ')+'" fill="none" stroke="#000" stroke-width="'+(w||2)+'" stroke-linejoin="miter" stroke-linecap="butt"/>';
+  }
+  // Antena en zigzag. 'M' (7 vértices, extremos abajo, pico central sobre el mástil) o 'W'
+  // (5 vértices, extremos arriba, valles a los lados del pico central).
+  function eqZig(cx,cy,hw,amp,kind){
+    var pts = [], i, n = kind === 'W' ? 4 : 6;
+    for (i = 0; i <= n; i++){
+      var up = kind === 'W' ? (i % 2 === 0) : (i % 2 === 1);
+      pts.push([+(cx - hw + i * (2*hw/n)).toFixed(2), +(cy + (up ? -amp : amp)).toFixed(2)]);
+    }
+    return eqPoly(pts, 1.8);
+  }
+  // Mástil vertical.
+  function eqMast(x,y1,y2,w){ return eqLn(x,y1,x,y2,w||2); }
+  // Flecha abierta (línea + dos aletas) que termina en (x2,y2).
+  function eqArrow(x1,y1,x2,y2,w,head){
+    var a = Math.atan2(y2 - y1, x2 - x1), h = head || 4.5, s = 0.5;
+    function pt(k){ return (x2 - h*Math.cos(a + k)).toFixed(2) + ',' + (y2 - h*Math.sin(a + k)).toFixed(2); }
+    return eqLn(x1,y1,x2,y2,w||1.6) +
+      '<polyline points="'+pt(-s)+' '+x2+','+y2+' '+pt(s)+'" fill="none" stroke="#000" stroke-width="'+(w||1.6)+'" stroke-linejoin="miter"/>';
+  }
+  // Arco de circunferencia (ángulos en grados, 0 = este, y hacia abajo; a1>a0 = sentido horario).
+  function eqArc(cx,cy,r,a0,a1,w){
+    var r0 = a0*Math.PI/180, r1 = a1*Math.PI/180;
+    var x0 = cx + r*Math.cos(r0), y0 = cy + r*Math.sin(r0), x1 = cx + r*Math.cos(r1), y1 = cy + r*Math.sin(r1);
+    return eqPath('M'+x0.toFixed(2)+','+y0.toFixed(2)+' A'+r+','+r+' 0 '+(Math.abs(a1-a0) > 180 ? 1 : 0)+' '+(a1 > a0 ? 1 : 0)+' '+x1.toFixed(2)+','+y1.toFixed(2), w||1.4);
+  }
+  // Dos arcos finos de señal satelital que cuelgan del extremo superior de un mástil en x.
+  function eqSatArcs(x,yTop){
+    return eqArc(x+6.5,yTop,6.5,90,180,1.4) + eqArc(x+6.5,yTop,10.5,90,180,1.4);
+  }
+  // Barra de suelo / barra gruesa horizontal.
+  function eqBar(x1,x2,y,w){ return eqLn(x1,y,x2,y,w||2.6); }
+  // Fila de ondas senoidales entre x0 y x1 a la altura y.
+  function eqWave(x0,x1,y,period,amp){
+    var d = 'M'+x0+','+y+' Q'+(x0+period/4)+','+(y-2*amp)+' '+(x0+period/2)+','+y, x = x0 + period/2;
+    while (x + period/2 <= x1 + 0.01){ x += period/2; d += ' T'+x+','+y; }
+    return eqPath(d, 1.3);
+  }
+  function eqText(txt,x,baseY,fs,opts){
+    opts = opts || {};
+    return '<text x="'+x+'" y="'+baseY+'" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="'+fs+'" font-weight="'+(opts.bold ? 800 : 400)+'"' +
+      (opts.len ? ' textLength="'+opts.len+'" lengthAdjust="spacingAndGlyphs"' : '') + ' fill="#000">'+txt+'</text>';
+  }
+  // Repetidor (antena): barra gruesa arriba y línea con escalón hasta (xTo,yTo).
+  function eqRepetidorLine(xBar,yBar,hw,yJog,xTo,yTo){
+    return eqBar(xBar-hw,xBar+hw,yBar,3) + eqPath('M'+xBar+','+yBar+' V'+yJog+' H'+(xBar-4)+' L'+xTo+','+yTo, 1.8);
+  }
+  // Radio-base: círculo pequeño + mástil + antena en zigzag.
+  function eqRadioBase(zy,cy,r,kind,hw,x){
+    x = x || 30; hw = hw || 12;
+    var amp = 2.4;
+    return eqZig(x,zy,hw,amp,kind||'M') + eqMast(x, zy - amp, cy - r) + eqCirc(x,cy,r,2);
+  }
+  function eqTriangle(ax,ay,bx,by,w){
+    return eqPath('M'+ax+','+ay+' L'+(ax-bx)+','+by+' L'+(ax+bx)+','+by+' Z', w||2.8);
+  }
+  // Silueta de paloma con las alas abiertas (mitad derecha reflejada para la izquierda).
+  function eqDove(){
+    var half = '<path d="M30,33 C34,25.5 42,24 50,30.5 C44,29.4 39,32 35.2,36.6 C33.6,38.6 31.6,41.4 30,44 Z" fill="#000" stroke="#000" stroke-width="0.8" stroke-linejoin="round"/>';
+    return half + '<g transform="translate(60,0) scale(-1,1)">' + half + '</g>';
+  }
+
+  // Glifos (en coordenadas del marco 60x60, sin escalar por afiliación).
+  function eqGlyphRaw(tipo){
+    switch (tipo){
+      case 'eq_rad_portatil_mochilar':
+        return eqRadioBase(16,42,3.6);
+      case 'eq_rad_portatil_vehicular':
+        return eqRadioBase(15,40,3.6) + eqBar(21,39,43.9,2);
+      case 'eq_rad_portatil_manual':
+        return '<ellipse cx="29" cy="38" rx="10" ry="8" fill="none" stroke="#000" stroke-width="2"/>' +
+          eqPath('M23.6,31.4 Q23.5,20.5 37,17.5', 1.6);
+      case 'eq_rad_estacion_fija':
+        return eqRadioBase(14,35.5,3.4) + '<rect x="22" y="38.9" width="16" height="6" fill="none" stroke="#000" stroke-width="2"/>';
+      case 'eq_rad_manual_vhf':
+        return '<ellipse cx="29" cy="38" rx="10.5" ry="8.5" fill="none" stroke="#000" stroke-width="2"/>' +
+          eqPath('M23.4,30 Q23.5,20.5 37,17.5', 1.6) + eqText('V',29,42.2,12);
+      case 'eq_rad_manual_uhf':
+        return '<ellipse cx="29" cy="38" rx="10.5" ry="8.5" fill="none" stroke="#000" stroke-width="2"/>' +
+          eqPath('M23.4,30 Q23.5,20.5 37,17.5', 1.6) + eqText('U',29,42.2,12);
+      case 'eq_rad_repetidor':
+        return eqRepetidorLine(31,15,11,25,29.6,38.1) + eqCirc(29.6,41.4,3.4,2);
+      case 'eq_rad_integracion_radio_radio':
+        return eqZig(30,13.5,12,2.2,'M') + eqZig(30,20,12,2.2,'M') + eqMast(30,11.3,39.6) + eqCirc(30,43,3.4,2);
+      case 'eq_rad_integracion_radio_cableado':
+        return eqRadioBase(14,37,3.4) + eqMast(30,40.4,45,2) + eqBar(25,35,45,2);
+      case 'eq_rad_receptor':
+        return eqZig(26,17.5,8,2.4,'W') + eqMast(26,17.5,31) + eqCirc(26,38,7,2) +
+          eqArrow(41.5,15,30,31,1.6,4.5);
+      case 'eq_rad_multicanal':
+        return eqPath('M25,23 H21 A7,7 0 0 0 21,37 H25 Z',2) + eqLn(25,30,43,30,2.4) +
+          eqPoly([[42,18],[46,24],[42,30],[46,36],[42,42]],1.8);
+      case 'eq_rad_multicanal_repetidor':
+        return eqRepetidorLine(29,14,11,22,23.5,31) +
+          eqPath('M25.5,31 H21.5 A6.7,6.7 0 0 0 21.5,44.4 H25.5 Z',2) + eqLn(25.5,37.7,43,37.7,2.2) +
+          eqPoly([[42,29],[46,33.4],[42,37.7],[46,42],[42,46.4]],1.8);
+      case 'eq_rad_radiogoniometro':
+        return eqZig(25,15,11,2.4,'M') + eqMast(25,12.6,38.4) + eqCirc(25,42,3.6,2) +
+          eqArrow(28.3,39,42.5,24,1.6,4.5);
+      case 'eq_rad_engano_imitativo':
+        return eqZig(30,16,7.5,2.4,'W') + eqMast(30,16,32) + eqCirc(30,39,7,2) + eqText('EI',30,42.2,9.5);
+      case 'eq_rad_interferencia':
+        return eqRadioBase(12.5,29.5,3.2,'M',12) + eqWave(17,43,37,4,1.3) + eqWave(17,43,42.4,4,1.3);
+      case 'eq_rad_ctvm':
+        return eqText('CTVM',30,34.4,13,{bold:true,len:31});
+      case 'eq_rad_ccmi':
+        return eqPath('M15,26 L19,22 H45 V38 H15 Z',2) + eqText('CCMI',30,33.6,10.5,{bold:true,len:22});
+      case 'eq_rad_ctcm':
+        return eqTriangle(29,17,14,42,2.2) + eqText('CTCM',29,39.6,6,{bold:true,len:15}) +
+          eqArc(33.5,21,3.6,-70,20,1.2) + eqArc(33.5,21,6.6,-70,20,1.2) + eqArc(33.5,21,9.6,-70,20,1.2);
+      case 'eq_rad_telefono_satelital':
+        return eqCirc(27,38,7.5,2) + eqMast(34.5,14,38,2.6) + eqSatArcs(34.5,14);
+      case 'eq_rad_terminal_sat_remolcable':
+        return eqCirc(27,38,7.5,2) + eqLn(12.5,38,19.5,38,2.2) + eqMast(34.5,14,38,2.6) + eqSatArcs(34.5,14);
+      case 'eq_rad_terminal_sat_transportable':
+        return eqBar(17,43,45.6,3) + eqCirc(30,37,8,2) + eqMast(30,12,29) + eqSatArcs(30,12);
+      case 'eq_rad_terminal_sat_portatil':
+        return eqCirc(30,38,8.5,2,true) + eqMast(30,12,29.5) + eqSatArcs(30,12);
+      case 'eq_rad_radioenlace_digital':
+        return eqRadioBase(13,28.5,3.3) + eqText('DIG',30,42.4,11.5,{bold:true,len:21});
+      case 'eq_rad_central_telefonica':
+        return eqBar(20,40,14,3) + eqMast(30,14,46,1.8) + eqPath('M30,21 A8,8 0 0 0 30,37',1.6) + eqLn(30,38,37,38,1.6);
+      case 'eq_rad_centro_mensajes':
+        return eqCirc(30,38,8.2,1.8) + '<rect x="23.6" y="34.2" width="12.8" height="7.6" fill="none" stroke="#000" stroke-width="2"/>' +
+          eqMast(30,24,29.8,1.8) + eqBar(24,36,24,1.8) + eqArrow(24,22,38.5,14,1.6,4.5);
+      case 'eq_rad_telefono_campana':
+        return eqCirc(27,38,7.5,2) + eqMast(34.5,15,38,1.8) + eqBar(27,42,15,3);
+      case 'eq_rad_escucha_alambrica':
+        return eqCirc(27,38,7.5,2) + eqMast(34.5,15,38,1.8) + eqBar(27,42,15,3) + eqArrow(44,24,35,37.6,1.6,4.8);
+      case 'eq_rad_generador':
+        return eqText('G',30,38.4,25,{bold:true});
+      case 'eq_rad_palomar':
+        return eqDove();
+      case 'eq_rad_estafeta':
+        return eqTriangle(30,14,14,40,3) + eqText('E',30,35.6,13);
+      case 'eq_rad_estafeta_rueda':
+        return eqTriangle(30,11,14.5,36,3) + eqText('E',30,32.4,11.5) +
+          eqCirc(20.5,40.2,2.4,1.6) + eqCirc(30,40.2,2.4,1.6) + eqCirc(39.5,40.2,2.4,1.6);
+      case 'eq_rad_estafeta_aereo':
+        return eqTriangle(30,10,15.5,40,3) + eqText('E',30,30.6,10.5) +
+          eqPath('M23.4,38.2 A3.4,3.4 0 0 1 30.2,38.2 A3.4,3.4 0 0 1 37,38.2',1.8);
+      default:
+        return '';
+    }
+  }
+  // Reducción por afiliación (mismo criterio que Navales/Terrestres): el rombo y el cuatrifolio
+  // dejan menos área útil que el círculo/cuadrado.
+  // Desplazamiento (dx,dy) que centra la caja del glifo en (30,30), medido sobre la geometría
+  // de cada glifo; se aplica antes de la reducción por afiliación.
+  var EQ_GLYPH_OFFSET = {
+    eq_rad_portatil_mochilar:[0.0,0.5],
+    eq_rad_portatil_vehicular:[0.0,1.5],
+    eq_rad_portatil_manual:[1.0,-2.0],
+    eq_rad_estacion_fija:[0.0,1.5],
+    eq_rad_manual_vhf:[1.0,-2.0],
+    eq_rad_manual_uhf:[1.0,-2.0],
+    eq_rad_repetidor:[-1.0,0.0],
+    eq_rad_integracion_radio_radio:[0.0,1.0],
+    eq_rad_integracion_radio_cableado:[0.0,1.5],
+    eq_rad_receptor:[0.0,0.0],
+    eq_rad_multicanal:[0.0,0.0],
+    eq_rad_multicanal_repetidor:[-0.5,0.0],
+    eq_rad_radiogoniometro:[2.0,1.0],
+    eq_rad_engano_imitativo:[0.0,0.0],
+    eq_rad_interferencia:[0.0,3.0],
+    eq_rad_ctvm:[0.0,0.0],
+    eq_rad_ccmi:[0.0,0.0],
+    eq_rad_ctcm:[1.0,3.0],
+    eq_rad_telefono_satelital:[0.0,0.0],
+    eq_rad_terminal_sat_remolcable:[3.0,0.0],
+    eq_rad_terminal_sat_transportable:[0.0,1.0],
+    eq_rad_terminal_sat_portatil:[0.0,1.0],
+    eq_rad_radioenlace_digital:[0.0,2.5],
+    eq_rad_central_telefonica:[0.0,0.0],
+    eq_rad_centro_mensajes:[0.0,0.0],
+    eq_rad_telefono_campana:[-1.0,0.0],
+    eq_rad_escucha_alambrica:[-2.0,0.0],
+    eq_rad_generador:[0.0,0.5],
+    eq_rad_palomar:[0.0,-5.0],
+    eq_rad_estafeta:[0.0,3.0],
+    eq_rad_estafeta_rueda:[0.0,3.0],
+    eq_rad_estafeta_aereo:[0.0,5.0]
+  };
+  var EQ_AFFILIATION_SCALE = { friendly:0.86, neutral:0.86, hostile:0.64, unknown:0.54 };
+  function eqGlyphSVG(tipo, affiliation){
+    var raw = eqGlyphRaw(tipo);
+    if (!raw) return raw;
+    var k = EQ_AFFILIATION_SCALE[affiliation || 'friendly'] || 1, o = EQ_GLYPH_OFFSET[tipo] || [0,0];
+    return '<g transform="translate(30,30) scale(' + k + ') translate(' + (o[0] - 30) + ',' + (o[1] - 30) + ')">' + raw + '</g>';
+  }
+
+  var equiposClickHandler = null;
+  function stopEquiposTool(){
+    if (equiposClickHandler){ map.off('click', equiposClickHandler); equiposClickHandler = null; }
+    mapContainer.style.cursor = '';
+  }
+  function activateEquiposTool(){
+    if (activeToolName === 'equipos'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar un equipo.'); return; }
+    disableAllTools();
+    activeToolName = 'equipos';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    equiposClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var eq = defaultEquipoParams();
+      var layer = L.marker(e.latlng, { icon: buildEquipoIcon(eq) });
+      layer._isEquipo = true;
+      layer._equipo = eq;
+      updateVehLeftLabel(layer);
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', equiposClickHandler);
   }
 
   var ARMA_CATEGORIES = [
@@ -10872,7 +11154,7 @@
     top.appendChild(delBtn);
     row.appendChild(top);
 
-    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo' && kind !== 'arma' && kind !== 'mccpoint'){
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo' && kind !== 'equipo' && kind !== 'arma' && kind !== 'mccpoint'){
       var controls = document.createElement('div');
       controls.className = 'style-controls';
 
@@ -11826,8 +12108,8 @@
     body.appendChild(nameLabel);
     body.appendChild(nameInput);
 
-    if (shape._isVehiculo){
-      var veh = shape._vehiculo;
+    if (shape._isVehiculo || shape._isEquipo){
+      var veh = vehParamsOf(shape);
 
       function vehPickRow(options, currentValue, iconFn, onPick){
         var row = document.createElement('div');
@@ -11927,7 +12209,7 @@
         vehBlock.appendChild(emptyTypes);
       }
 
-      if (veh.tipoVehiculo === 'terrestre'){
+      if (veh.tipoVehiculo === 'terrestre' || veh.tipoVehiculo === 'equipo'){
         var vehLeftLabelField = document.createElement('div');
         vehLeftLabelField.className = 'style-field';
         vehLeftLabelField.innerHTML = '<span>Tipo</span>';
@@ -12309,7 +12591,7 @@
       body.appendChild(milBlock);
     }
 
-    if (kind === 'marker' && !shape._isMilSymbol && !shape._isVehiculo && !shape._isArma){
+    if (kind === 'marker' && !shape._isMilSymbol && !shape._isVehiculo && !shape._isEquipo && !shape._isArma){
       var pointBlock = document.createElement('div');
       pointBlock.className = 'style-block';
 
@@ -13247,7 +13529,7 @@
       body.appendChild(lengthBlock);
     }
 
-    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo' && kind !== 'arma' && kind !== 'mccpoint'){
+    if (kind !== 'marker' && kind !== 'text' && kind !== 'target' && kind !== 'infra' && kind !== 'vehiculo' && kind !== 'equipo' && kind !== 'arma' && kind !== 'mccpoint'){
       var styleBlock = document.createElement('div');
       styleBlock.className = 'style-block';
 
@@ -14106,10 +14388,11 @@
           return ig;
         }
         if (p.equipo){
-          var eq = Object.assign(defaultEquipoParams(), p.equipo);
+          var eq = normalizeEquipoParams(p.equipo);
           var eqm = L.marker(latlng, { icon: buildEquipoIcon(eq) });
           eqm._isEquipo = true;
           eqm._equipo = eq;
+          updateVehLeftLabel(eqm);
           return eqm;
         }
         if (p.vehiculo){
