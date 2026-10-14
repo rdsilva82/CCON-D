@@ -16634,7 +16634,26 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     if (shape.getLatLng) return shape.getLatLng();
     return null;
   }
+  // Escala proporcional al zoom (como la ZVP): el tamaño se FIJA en el zoom de referencia (refZoom)
+  // y después crece/encoge 2^(zoom - refZoom). Se oculta bajo 3.5 px y se limita arriba a 200 px.
+  var MCCA_FS_MIN_VISIBLE = 3.5, MCCA_FS_MAX = 200;
+  function mccaZoomK(refZoom){
+    if (refZoom == null || !isFinite(refZoom) || !window.map || !map.getZoom) return 1;
+    return Math.pow(2, map.getZoom() - refZoom);
+  }
+  function mccaEffFont(fs, refZoom){ return Math.min(MCCA_FS_MAX, fs * mccaZoomK(refZoom)); }
   function buildMccTextIcon(t){
+    if (t.refZoom != null){
+      var kz = mccaZoomK(t.refZoom), fsz = mccaEffFont(Math.max(4, t.fontSize || 22), t.refZoom);
+      kz = Math.min(kz, fsz / Math.max(4, t.fontSize || 22));
+      if (fsz < MCCA_FS_MIN_VISIBLE) return L.divIcon({ className:'', html:'', iconSize:[0,0], iconAnchor:[0,0] });
+      var wz = Math.max((t.boxWidth || 140) * kz, 4), hz = Math.max((t.boxHeight || 40) * kz, 4);
+      var htmlz = '<div style="width:100%;height:100%;transform:rotate(' + (t.rotation||0) + 'deg);transform-origin:50% 50%;' +
+        'background:transparent;border:none;padding:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;' +
+        'font-family:Calibri,Arial,sans-serif;font-size:' + fsz.toFixed(2) + 'px;font-weight:700;color:' + (t.color||'#1A1A1A') + ';white-space:pre-wrap;overflow:hidden;">' +
+        escapeHtmlText(t.text||'').replace(/\n/g,'<br>') + '</div>';
+      return L.divIcon({ className:'', html:htmlz, iconSize:[wz,hz], iconAnchor:[wz/2,hz/2] });
+    }
     // El cuadro de texto interno de Zona/Eje de Avance debe comportarse EXACTAMENTE como la
     // etiqueta de nombre de "Trazo libre" (sin marco, fondo transparente, tamaño de pantalla
     // fijo en píxeles) — NO como un símbolo táctico que deba reescalarse con el zoom. La versión
@@ -16661,6 +16680,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     if (!owner) return;
     var anchor = mccTextAnchor(shape);
     if (!anchor) return;
+    if (shape._mcc && shape._mcc.type === 'a_zor' && shape._mccText.refZoom == null) shape._mccText.refZoom = map.getZoom();
     var pos = fromLocalXY(anchor, shape._mccText.offsetX||0, shape._mccText.offsetY||0);
     var icon = buildMccTextIcon(shape._mccText);
     var m = mccTextCompanions[shape._shapeId];
@@ -16699,7 +16719,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var anchor = mccTextAnchor(shape);
     var t = shape._mccText;
     var pos = fromLocalXY(anchor, t.offsetX||0, t.offsetY||0);
-    var boxHpx = Math.max(t.boxHeight||40, 8);
+    var boxHpx = Math.max(t.boxHeight||40, 8) * (t.refZoom != null ? mccaZoomK(t.refZoom) : 1);
     var mpp = metersPerPixel(pos.lat, map.getZoom());
     var dist = (boxHpx/2 + 22) * mpp;
     var rad = (t.rotation||0) * Math.PI/180;
@@ -17443,7 +17463,9 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var m = shape._mcc, b = m.box, ft = Math.round(m.widthFt * 10) / 10;
     var rows = [['NOMBRE:', shape._customName || ''], ['Ancho:', ft + ' FT'], ['Cota Mínima:', b.cotaMin || ''], ['Cota Máxima:', b.cotaMax || ''],
       ['Desde:', b.desde || ''], ['Hasta:', b.hasta || '']];
-    var fs = Math.max(6, b.fontSize || 12), color = shape.options.color;
+    if (b.refZoom == null) b.refZoom = map.getZoom();
+    var fs = mccaEffFont(Math.max(6, b.fontSize || 12), b.refZoom), color = shape.options.color;
+    if (fs < MCCA_FS_MIN_VISIBLE) return L.divIcon({ className: '', html: '', iconSize: [0, 0], iconAnchor: [0, 0] });
     var colW = 0, valW = 0;
     rows.forEach(function(r){ colW = Math.max(colW, mccTextWidthPx(r[0], fs) * 0.9); valW = Math.max(valW, mccTextWidthPx(r[1], fs) * 0.9); });
     var html = '<div class="mcca-box" style="font-family:' + MCCA_FAM + ';font-size:' + fs + 'px;line-height:1.35;color:' + color + ';background:transparent;border:none;white-space:nowrap;">' +
@@ -17531,10 +17553,11 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   function mccaZorApplySize(shape){
     var t = shape._mccText, fs = Math.max(6, shape._mcc.fontSize || 22);
     t.fontSize = fs; t.boxWidth = Math.ceil(mccTextWidthPx('ZOR', fs) + 16); t.boxHeight = Math.ceil(fs * 1.5);
+    t.refZoom = map.getZoom();   // tamaño fijado en este zoom; luego escala con el zoom
   }
   function mccaNewZorText(color, fontSize){
     var t = Object.assign(defaultMccTextParams(), { enabled: true, text: 'ZOR', color: color || '#1A1A1A', fixed: true });
-    t.fontSize = fontSize || 22;
+    t.fontSize = fontSize || 22; t.refZoom = map.getZoom();
     t.boxWidth = Math.ceil(mccTextWidthPx('ZOR', t.fontSize) + 16); t.boxHeight = Math.ceil(t.fontSize * 1.5);
     return t;
   }
@@ -17939,7 +17962,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       kit.text('Cota Máxima', function(){ return m.box.cotaMax || ''; }, function(v){ m.box.cotaMax = v; }, { dataKey: 'cotaMax', placeholder: 'ej. 4000 m' });
       kit.text('Desde', function(){ return m.box.desde || ''; }, function(v){ m.box.desde = v; }, { dataKey: 'desde', placeholder: 'ej. 270600May25' });
       kit.text('Hasta', function(){ return m.box.hasta || ''; }, function(v){ m.box.hasta = v; }, { dataKey: 'hasta', placeholder: 'ej. 271800May25' });
-      kit.num('Tamaño del texto del cuadro (px)', function(){ return m.box.fontSize || 12; }, function(v){ m.box.fontSize = v; }, { min: 6, max: 60, step: 1, dataKey: 'boxFont' });
+      kit.num('Tamaño del texto del cuadro (px)', function(){ return m.box.fontSize || 12; }, function(v){ m.box.fontSize = v; m.box.refZoom = map.getZoom(); }, { min: 6, max: 60, step: 1, dataKey: 'boxFont' });
       mccaBgSlider(kit, function(){ return m.bgOpacity; }, function(v){ m.bgOpacity = v; });
       // Nodos: código (1.ª línea) y número (2.ª línea) editables; agregar / quitar.
       var nTitle = document.createElement('div'); nTitle.className = 'veh-section-label'; nTitle.textContent = 'Nodos (código / número)'; nTitle.style.marginTop = '6px';
