@@ -968,6 +968,85 @@
   body.theme-digital .shape-row.selected{ box-shadow:0 0 0 1px var(--gold-light) inset, 0 0 10px rgba(34,211,238,.15); }
   body.theme-digital #draw-toolbar .tool-btn.active,
   body.theme-digital .tool-submenu-row .tool-btn.active{ box-shadow:0 0 8px rgba(34,211,238,.45); }
+
+  /* ---------- CONTRASEÑA Y CONFIGURACIÓN DE AULAS ---------- */
+  .pw-scrim, .cfg-scrim{
+    display:none; position:fixed; inset:0; z-index:5200; background:rgba(10,20,40,.72);
+    align-items:center; justify-content:center; padding:16px;
+  }
+  .pw-scrim.show, .cfg-scrim.show{ display:flex; }
+  .pw-box{
+    background:var(--surface); border-radius:14px; padding:26px 28px 22px; width:100%; max-width:360px;
+    text-align:center; box-shadow:0 14px 44px rgba(0,0,0,.5); border-top:4px solid var(--gold);
+  }
+  .pw-crest{
+    width:44px; height:44px; margin:0 auto 10px; border-radius:50%; background:var(--navy); color:var(--gold-light,#D9BE6B);
+    display:flex; align-items:center; justify-content:center; font-size:20px; border:2px solid var(--gold);
+  }
+  .pw-box h2{ font-size:17px; color:var(--navy); margin:0 0 4px; word-break:break-word; }
+  .pw-sub{ font-size:12.5px; color:var(--muted); margin:0 0 14px; }
+  .pw-field{ display:flex; gap:6px; }
+  .pw-field input{
+    flex:1; min-width:0; font-family:inherit; font-size:14px; padding:10px 12px; border:2px solid var(--border);
+    border-radius:8px; color:var(--navy); background:var(--surface);
+  }
+  .pw-field input:focus{ outline:none; border-color:var(--gold); }
+  .pw-field button{
+    font-family:inherit; font-size:12px; font-weight:700; border:2px solid var(--border); background:var(--surface-alt);
+    color:var(--navy); border-radius:8px; padding:0 10px; cursor:pointer;
+  }
+  #pw-error{ min-height:18px; margin:8px 0 2px; font-size:12.5px; font-weight:700; color:#B3261E; }
+  .pw-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
+  .pw-actions button{
+    font-family:inherit; font-weight:700; font-size:13px; padding:9px 18px; border-radius:8px; cursor:pointer;
+    border:2px solid var(--navy); background:var(--surface); color:var(--navy);
+  }
+  .pw-actions #pw-ok{ background:var(--navy); color:#fff; }
+  .pw-actions #pw-ok:hover{ background:var(--navy-deep); }
+  .cfg-box{
+    background:var(--surface); border-radius:14px; width:100%; max-width:820px; max-height:92vh; display:flex; flex-direction:column;
+    box-shadow:0 14px 44px rgba(0,0,0,.5); border-top:4px solid var(--gold); overflow:hidden;
+  }
+  .cfg-head{ display:flex; align-items:center; justify-content:space-between; padding:12px 18px; background:var(--navy); color:#fff; }
+  .cfg-head h2{ margin:0; font-size:16px; }
+  .cfg-head button{ background:transparent; border:none; color:#fff; font-size:18px; cursor:pointer; }
+  .cfg-body{ padding:14px 18px 18px; overflow:auto; color:var(--text); }
+  .cfg-intro, .cfg-note{ font-size:12px; color:var(--muted); margin:0 0 12px; }
+  .cfg-h3{ font-size:13px; letter-spacing:.5px; text-transform:uppercase; color:var(--navy); margin:14px 0 6px; border-bottom:2px solid var(--gold); padding-bottom:3px; }
+  .cfg-row{
+    display:grid; grid-template-columns:44px minmax(120px,1fr) 108px minmax(190px,1.4fr) auto; gap:8px; align-items:center;
+    padding:8px 10px; border:1px solid var(--border); border-radius:10px; margin-bottom:7px; background:var(--surface-alt);
+  }
+  .cfg-row.cfg-hidden{ opacity:.7; }
+  .cfg-id{ font-weight:800; color:#fff; background:var(--navy); border-radius:7px; text-align:center; padding:7px 0; font-size:13px; }
+  .cfg-name, .cfg-pw input{
+    font-family:inherit; font-size:13px; padding:7px 9px; border:2px solid var(--border); border-radius:7px; color:var(--navy); background:var(--surface); width:100%; min-width:0;
+  }
+  .cfg-name:focus, .cfg-pw input:focus{ outline:none; border-color:var(--gold); }
+  .cfg-pw{ display:flex; gap:5px; }
+  .cfg-fixed{ font-size:12px; color:var(--muted); }
+  .cfg-switch{ display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; font-weight:700; color:var(--navy); position:relative; }
+  .cfg-switch input{ position:absolute; opacity:0; width:0; height:0; }
+  .cfg-slider{ position:relative; width:34px; height:18px; border-radius:18px; background:#9AA5B5; transition:.15s; flex:none; }
+  .cfg-slider::after{ content:''; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:#fff; transition:.15s; }
+  .cfg-switch input:checked + .cfg-slider{ background:var(--gold); }
+  .cfg-switch input:checked + .cfg-slider::after{ left:18px; }
+  .cfg-switch input:focus-visible + .cfg-slider{ outline:2px solid var(--navy); outline-offset:2px; }
+  .cfg-save, .cfg-add{
+    font-family:inherit; font-weight:700; font-size:12.5px; border-radius:8px; cursor:pointer; padding:8px 14px;
+    background:var(--navy); color:#fff; border:2px solid var(--navy);
+  }
+  .cfg-save:hover{ background:var(--navy-deep); }
+  .cfg-add{ background:var(--surface); color:var(--navy); border-color:var(--gold); margin-top:4px; }
+  .cfg-msg{ grid-column:1 / -1; font-size:12px; }
+  .cfg-msg:empty{ display:none; }
+  .cfg-msg.ok{ color:#2E7D32; font-weight:700; }
+  .cfg-msg.err{ color:#B3261E; font-weight:700; }
+  .cfg-sync{ font-size:12px; color:var(--muted); margin:10px 0 4px; min-height:16px; }
+  @media (max-width:720px){
+    .cfg-row{ grid-template-columns:44px 1fr; }
+    .cfg-row > *:nth-child(n+3){ grid-column:1 / -1; }
+  }
 </style>
 </head>
 <body>
@@ -983,6 +1062,30 @@
       <button id="user-name-continue-btn" disabled>Continuar</button>
     </div>
     <div id="aula-grid"></div>
+  </div>
+</div>
+
+<div class="pw-scrim" id="pw-scrim">
+  <div class="pw-box" role="dialog" aria-modal="true" aria-labelledby="pw-title">
+    <div class="pw-crest">&#128274;</div>
+    <h2 id="pw-title">Acceso</h2>
+    <p class="pw-sub">Ingrese la contraseña para continuar.</p>
+    <div class="pw-field">
+      <input type="password" id="pw-input" autocomplete="off" placeholder="Contraseña" maxlength="64" aria-label="Contraseña">
+      <button type="button" id="pw-toggle" aria-label="Mostrar u ocultar contraseña">Mostrar</button>
+    </div>
+    <div id="pw-error" role="alert"></div>
+    <div class="pw-actions">
+      <button type="button" id="pw-cancel">Cancelar</button>
+      <button type="button" id="pw-ok">Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<div class="cfg-scrim" id="cfg-scrim">
+  <div class="cfg-box" role="dialog" aria-modal="true" aria-label="Configuración">
+    <div class="cfg-head"><h2>&#9881;&#65039; Configuración</h2><button type="button" id="cfg-close" aria-label="Cerrar">&#10005;</button></div>
+    <div class="cfg-body" id="cfg-body"></div>
   </div>
 </div>
 
@@ -1008,6 +1111,7 @@
     <div id="user-controls">
       <div id="current-user-badge"></div>
       <button class="toggle-btn" id="direccion-mode-toggle" style="display:none;"></button>
+      <button class="toggle-btn" id="config-btn" style="display:none;" title="Configuración de aulas: visibilidad, designaciones y contraseñas">&#9881;&#65039; <span class="home-label">Configuración</span></button>
       <button class="toggle-btn" id="go-home-btn" title="Volver al inicio y elegir otra aula o dirección">🏠 <span class="home-label">Inicio</span></button>
     </div>
     <div class="panel-toggles">
@@ -1592,7 +1696,480 @@
   }
 
   /* ---------------- USUARIO / AULA ACTIVA ---------------- */
-  var AULAS = ['A','B','C','D','E','F','G','H'];
+  /* ---------------- CONFIGURACIÓN DE AULAS (visibilidad, designaciones, contraseñas) ---------------- */
+  // Los identificadores internos (A, B, C…) son FIJOS y son los que usan el almacenamiento, las capas,
+  // el GeoJSON y el contexto de usuario. La "designación" es solo una etiqueta visible (cosmética).
+  var AULAS_BASE_IDS = ['A','B','C','D','E','F','G','H'];
+  var AULAS = AULAS_BASE_IDS.slice(); // TODOS los ids conocidos (visibles o no); se muta in situ
+  var AULAS_CFG_KEY = 'aulas_config_v1';
+  var DEFAULT_PASSWORD = 'admin';
+  var AULA_NAME_MAX = 30;
+  var aulasCfg = null;
+  var aulasCfgSyncStatus = '';
+
+  // SHA-256 síncrono en JS puro (no depende de crypto.subtle; funciona también en jsdom).
+  function sha256Hex(msg){
+    var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    var s = unescape(encodeURIComponent(String(msg)));
+    var bytes = [];
+    for (var i=0;i<s.length;i++) bytes.push(s.charCodeAt(i));
+    var bitLen = bytes.length * 8;
+    bytes.push(0x80);
+    while (bytes.length % 64 !== 56) bytes.push(0);
+    var hi = Math.floor(bitLen / 4294967296), lo = bitLen >>> 0;
+    bytes.push((hi>>>24)&255,(hi>>>16)&255,(hi>>>8)&255,hi&255,(lo>>>24)&255,(lo>>>16)&255,(lo>>>8)&255,lo&255);
+    var w = new Array(64);
+    function rotr(x,n){ return (x>>>n) | (x<<(32-n)); }
+    for (var off=0; off<bytes.length; off+=64){
+      for (var t=0;t<16;t++) w[t] = (bytes[off+4*t]<<24)|(bytes[off+4*t+1]<<16)|(bytes[off+4*t+2]<<8)|bytes[off+4*t+3];
+      for (t=16;t<64;t++){
+        var s0 = rotr(w[t-15],7) ^ rotr(w[t-15],18) ^ (w[t-15]>>>3);
+        var s1 = rotr(w[t-2],17) ^ rotr(w[t-2],19) ^ (w[t-2]>>>10);
+        w[t] = (w[t-16] + s0 + w[t-7] + s1) | 0;
+      }
+      var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+      for (t=0;t<64;t++){
+        var S1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+        var ch = (e & f) ^ (~e & g);
+        var t1 = (h + S1 + ch + K[t] + w[t]) | 0;
+        var S0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+        var mj = (a & b) ^ (a & c) ^ (b & c);
+        var t2 = (S0 + mj) | 0;
+        h=g; g=f; f=e; e=(d + t1) | 0; d=c; c=b; b=a; a=(t1 + t2) | 0;
+      }
+      H[0]=(H[0]+a)|0; H[1]=(H[1]+b)|0; H[2]=(H[2]+c)|0; H[3]=(H[3]+d)|0;
+      H[4]=(H[4]+e)|0; H[5]=(H[5]+f)|0; H[6]=(H[6]+g)|0; H[7]=(H[7]+h)|0;
+    }
+    return H.map(function(x){ return ('00000000' + (x>>>0).toString(16)).slice(-8); }).join('');
+  }
+  function aulasPwHash(pw, salt, key){
+    var hsh = sha256Hex(salt + '|' + key + '|' + pw);
+    for (var i=0;i<1500;i++) hsh = sha256Hex(hsh + salt + pw);
+    return hsh;
+  }
+  function aulasNewSalt(){
+    var out = '';
+    try{
+      var arr = new Uint8Array(12);
+      (window.crypto || window.msCrypto).getRandomValues(arr);
+      for (var i=0;i<arr.length;i++) out += ('0' + arr[i].toString(16)).slice(-2);
+    } catch(err){
+      for (var j=0;j<4;j++) out += Math.random().toString(36).slice(2, 8);
+    }
+    return out;
+  }
+  function aulasSanitizeName(raw, fallback){
+    var s = String(raw == null ? '' : raw).replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (s.length > AULA_NAME_MAX) s = s.slice(0, AULA_NAME_MAX).trim();
+    return s || fallback;
+  }
+  function aulaDefaultName(id){ return 'AULA ' + id; }
+  function aulasValidPw(p){
+    return p && typeof p === 'object' && typeof p.s === 'string' && typeof p.h === 'string' && /^[0-9a-f]{64}$/.test(p.h) ? { s: p.s, h: p.h } : null;
+  }
+  function aulasDefaultConfig(){
+    return {
+      v: 1, updatedAt: 0,
+      direccion: { name: 'DIRECCIÓN', pw: null },
+      aulas: AULAS_BASE_IDS.map(function(id){ return { id: id, name: aulaDefaultName(id), visible: true, pw: null }; })
+    };
+  }
+  function aulasNextId(existing){
+    // A..Z, luego AA, AB… (continúa la secuencia de letras)
+    function idAt(n){ var s = ''; n = n + 1; while (n > 0){ var r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); } return s; }
+    for (var i=0;i<2000;i++){ var id = idAt(i); if (existing.indexOf(id) === -1) return id; }
+    return null;
+  }
+  // Normaliza cualquier objeto (posiblemente corrupto) a una configuración válida.
+  function aulasNormalizeConfig(raw){
+    var def = aulasDefaultConfig();
+    if (!raw || typeof raw !== 'object') return def;
+    var cfg = { v: 1, updatedAt: (typeof raw.updatedAt === 'number' && isFinite(raw.updatedAt)) ? raw.updatedAt : 0, direccion: null, aulas: [] };
+    var rd = raw.direccion && typeof raw.direccion === 'object' ? raw.direccion : {};
+    cfg.direccion = { name: aulasSanitizeName(rd.name, 'DIRECCIÓN'), pw: aulasValidPw(rd.pw) };
+    var seen = {};
+    var rawAulas = Array.isArray(raw.aulas) ? raw.aulas : [];
+    rawAulas.forEach(function(a){
+      if (!a || typeof a !== 'object' || typeof a.id !== 'string' || !/^[A-Z]{1,3}$/.test(a.id) || seen[a.id]) return;
+      seen[a.id] = true;
+      cfg.aulas.push({ id: a.id, name: aulasSanitizeName(a.name, aulaDefaultName(a.id)), visible: a.visible !== false, pw: aulasValidPw(a.pw) });
+    });
+    // Las aulas base nunca desaparecen (se restauran con valores por defecto si faltan).
+    AULAS_BASE_IDS.forEach(function(id){
+      if (!seen[id]) cfg.aulas.push({ id: id, name: aulaDefaultName(id), visible: true, pw: null });
+    });
+    cfg.aulas.sort(function(x, y){
+      var bx = AULAS_BASE_IDS.indexOf(x.id), by = AULAS_BASE_IDS.indexOf(y.id);
+      if (bx !== -1 && by !== -1) return bx - by;
+      if (bx !== -1) return -1;
+      if (by !== -1) return 1;
+      return 0; // los agregados conservan su orden de creación
+    });
+    return cfg;
+  }
+  function aulasApplyConfig(cfg){
+    aulasCfg = cfg;
+    AULAS.length = 0;
+    cfg.aulas.forEach(function(a){ AULAS.push(a.id); });
+  }
+  function aulasLoadLocal(){
+    var raw = null;
+    try{ raw = JSON.parse(localStorage.getItem(AULAS_CFG_KEY) || 'null'); } catch(err){ raw = null; }
+    aulasApplyConfig(aulasNormalizeConfig(raw));
+  }
+  function aulasSaveLocal(){
+    try{ localStorage.setItem(AULAS_CFG_KEY, JSON.stringify(aulasCfg)); return true; } catch(err){ return false; }
+  }
+  function aulasEntry(id){
+    if (!aulasCfg) aulasLoadLocal();
+    for (var i=0;i<aulasCfg.aulas.length;i++) if (aulasCfg.aulas[i].id === id) return aulasCfg.aulas[i];
+    return null;
+  }
+  function aulaLabel(id){ var e = aulasEntry(id); return e ? e.name : aulaDefaultName(id); }
+  function direccionLabel(){ if (!aulasCfg) aulasLoadLocal(); return aulasCfg.direccion.name; }
+  function isAulaVisible(id){ var e = aulasEntry(id); return !!(e && e.visible); }
+  function visibleAulaIds(){ if (!aulasCfg) aulasLoadLocal(); return aulasCfg.aulas.filter(function(a){ return a.visible; }).map(function(a){ return a.id; }); }
+
+  function aulasVerifyPassword(kind, id, pw){
+    if (!aulasCfg) aulasLoadLocal();
+    var target = kind === 'direccion' ? aulasCfg.direccion : aulasEntry(id);
+    if (!target) return false;
+    pw = String(pw == null ? '' : pw);
+    if (!target.pw) return pw === DEFAULT_PASSWORD;
+    return aulasPwHash(pw, target.pw.s, kind === 'direccion' ? 'direccion' : id) === target.pw.h;
+  }
+  function aulasSetPassword(kind, id, pw){
+    if (!aulasCfg) aulasLoadLocal();
+    pw = String(pw == null ? '' : pw);
+    if (!pw) return { ok:false, error:'La contraseña no puede estar vacía.' };
+    if (pw.length > 64) return { ok:false, error:'La contraseña es demasiado larga (máximo 64 caracteres).' };
+    var target = kind === 'direccion' ? aulasCfg.direccion : aulasEntry(id);
+    if (!target) return { ok:false, error:'Aula inexistente.' };
+    var salt = aulasNewSalt();
+    target.pw = { s: salt, h: aulasPwHash(pw, salt, kind === 'direccion' ? 'direccion' : id) };
+    return aulasCommit();
+  }
+  function aulasSetName(kind, id, name){
+    if (!aulasCfg) aulasLoadLocal();
+    if (kind === 'direccion'){ aulasCfg.direccion.name = aulasSanitizeName(name, 'DIRECCIÓN'); }
+    else {
+      var e = aulasEntry(id);
+      if (!e) return { ok:false, error:'Aula inexistente.' };
+      e.name = aulasSanitizeName(name, aulaDefaultName(id));
+    }
+    return aulasCommit();
+  }
+  function aulasSetVisible(id, visible){
+    var e = aulasEntry(id);
+    if (!e) return { ok:false, error:'Aula inexistente.' };
+    e.visible = !!visible;
+    return aulasCommit();
+  }
+  function aulasAdd(){
+    if (!aulasCfg) aulasLoadLocal();
+    var id = aulasNextId(AULAS.slice());
+    if (!id) return { ok:false, error:'No hay más identificadores disponibles.' };
+    aulasCfg.aulas.push({ id: id, name: aulaDefaultName(id), visible: true, pw: null });
+    AULAS.push(id);
+    var r = aulasCommit();
+    r.id = id;
+    return r;
+  }
+  function aulasNameDuplicated(id, name){
+    return aulasCfg.aulas.some(function(a){ return a.id !== id && a.name.toLowerCase() === String(name).toLowerCase(); });
+  }
+  // Guarda en este navegador y, si hay sincronización con GitHub configurada, intenta compartirla.
+  function aulasCommit(){
+    aulasCfg.updatedAt = Date.now();
+    aulasApplyConfig(aulasCfg);
+    var ok = aulasSaveLocal();
+    aulasCfgSyncStatus = ok ? 'Guardado en este navegador.' : 'No se pudo guardar en este navegador (almacenamiento bloqueado).';
+    aulasPushRemote();
+    try{ aulasOnConfigChanged(); } catch(err){}
+    return { ok: ok, error: ok ? null : 'No se pudo guardar la configuración en este navegador.' };
+  }
+
+  /* --- Copia compartida opcional en el repositorio de GitHub (solo si esta sesión tiene la sincronización configurada) --- */
+  var aulasRemoteSha = null;
+  function aulasRemotePath(){ return githubConfig.path.replace(/\.json$/i, '') + '/aulas_config.json'; }
+  function aulasRemoteAvailable(){ return typeof fetch === 'function' && githubConfigured(); }
+  function aulasPullRemote(done){
+    if (!aulasRemoteAvailable()){ if (done) done(false); return; }
+    var p;
+    try{
+      p = fetch(githubContentsUrl(aulasRemotePath(), true), { headers: githubAuthHeaders() })
+        .then(function(res){
+          if (res.status === 404) return null;
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json().then(function(fileData){
+            return resolveFileText(fileData).then(function(text){ aulasRemoteSha = fileData.sha; return JSON.parse(text); });
+          });
+        })
+        .then(function(remote){
+          if (!remote || typeof remote !== 'object') return false;
+          var norm = aulasNormalizeConfig(remote);
+          if (norm.updatedAt > (aulasCfg ? aulasCfg.updatedAt : 0)){
+            aulasApplyConfig(norm);
+            aulasSaveLocal();
+            try{ aulasOnConfigChanged(); } catch(err){}
+            return true;
+          }
+          return false;
+        });
+    } catch(err){ if (done) done(false); return; }
+    p.then(function(changed){ if (done) done(changed); }, function(){ if (done) done(false); });
+  }
+  function aulasPushRemote(retriesLeft){
+    if (!aulasRemoteAvailable()) return;
+    if (retriesLeft == null) retriesLeft = 2;
+    var path = aulasRemotePath();
+    var snapshot = JSON.stringify(aulasCfg);
+    function put(sha){
+      var body = { message: 'Actualizar configuración de aulas - ' + new Date().toISOString(), content: utf8ToBase64(snapshot), branch: githubConfig.branch || 'main' };
+      if (sha) body.sha = sha;
+      return fetch(githubContentsUrl(path), { method:'PUT', headers: Object.assign({ 'Content-Type':'application/json' }, githubAuthHeaders()), body: JSON.stringify(body) })
+        .then(function(res){
+          if ((res.status === 409 || res.status === 422) && retriesLeft > 0) return aulasPushRemote(retriesLeft - 1);
+          return res.json().catch(function(){ return null; }).then(function(d){
+            if (res.ok){ if (d && d.content) aulasRemoteSha = d.content.sha; aulasCfgSyncStatus = 'Guardado y compartido en GitHub.'; }
+            else aulasCfgSyncStatus = 'Guardado en este navegador; no se pudo compartir en GitHub (HTTP ' + res.status + ').';
+            aulasRefreshStatusLine();
+          });
+        });
+    }
+    try{
+      fetch(githubContentsUrl(path, true), { headers: githubAuthHeaders() })
+        .then(function(res){ if (res.status === 404) return null; if (!res.ok) throw new Error('HTTP ' + res.status); return res.json().then(function(d){ return d.sha; }); })
+        .then(put)
+        .catch(function(){ aulasCfgSyncStatus = 'Guardado en este navegador; no se pudo compartir en GitHub.'; aulasRefreshStatusLine(); });
+    } catch(err){}
+  }
+
+  /* --- Contraseña de acceso (barrera blanda del lado del cliente) --- */
+  var pwPromptState = null;
+  function closePasswordPrompt(){
+    var scrim = document.getElementById('pw-scrim');
+    scrim.classList.remove('show');
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-error').textContent = '';
+    pwPromptState = null;
+  }
+  function openPasswordPrompt(kind, id, onSuccess){
+    var scrim = document.getElementById('pw-scrim');
+    var input = document.getElementById('pw-input');
+    var err = document.getElementById('pw-error');
+    var label = kind === 'direccion' ? direccionLabel() : aulaLabel(id);
+    document.getElementById('pw-title').textContent = 'Acceso a ' + label;
+    input.type = 'password';
+    document.getElementById('pw-toggle').textContent = 'Mostrar';
+    input.value = ''; err.textContent = '';
+    scrim.classList.add('show');
+    pwPromptState = { kind: kind, id: id, onSuccess: onSuccess };
+    setTimeout(function(){ try{ input.focus(); }catch(e){} }, 30);
+  }
+  function submitPasswordPrompt(){
+    if (!pwPromptState) return;
+    var input = document.getElementById('pw-input');
+    var st = pwPromptState;
+    if (aulasVerifyPassword(st.kind, st.id, input.value)){
+      closePasswordPrompt();
+      st.onSuccess();
+    } else {
+      document.getElementById('pw-error').textContent = 'Contraseña incorrecta. Intente de nuevo.';
+      input.value = '';
+      input.focus();
+    }
+  }
+  (function initPasswordPromptEvents(){
+    var input = document.getElementById('pw-input');
+    input.addEventListener('keydown', function(ev){
+      if (ev.key === 'Enter'){ ev.preventDefault(); submitPasswordPrompt(); }
+      else if (ev.key === 'Escape'){ ev.preventDefault(); closePasswordPrompt(); }
+    });
+    document.getElementById('pw-ok').addEventListener('click', submitPasswordPrompt);
+    document.getElementById('pw-cancel').addEventListener('click', closePasswordPrompt);
+    document.getElementById('pw-scrim').addEventListener('click', function(ev){ if (ev.target === this) closePasswordPrompt(); });
+    document.getElementById('pw-toggle').addEventListener('click', function(){
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      this.textContent = show ? 'Ocultar' : 'Mostrar';
+      input.focus();
+    });
+  })();
+
+  /* --- Botones del Inicio (solo aulas visibles; muestran la designación) --- */
+  var inicioOnReady = null;
+  function renderInicioButtons(){
+    var aulaGrid = document.getElementById('aula-grid');
+    if (!aulaGrid) return;
+    aulaGrid.innerHTML = '';
+    visibleAulaIds().forEach(function(letra){
+      var btn = document.createElement('button');
+      btn.className = 'aula-btn';
+      btn.dataset.aula = letra;
+      btn.textContent = aulaLabel(letra);
+      btn.title = aulaLabel(letra);
+      btn.addEventListener('click', function(){
+        openPasswordPrompt('aula', letra, function(){
+          if (!isAulaVisible(letra)) return; // se ocultó mientras tanto
+          userContext = { role:'aula', aula: letra };
+          saveUserContext(userContext);
+          activateUserContext(inicioOnReady);
+        });
+      });
+      aulaGrid.appendChild(btn);
+    });
+    var direccionBtn = document.createElement('button');
+    direccionBtn.className = 'aula-btn direccion-btn';
+    direccionBtn.textContent = direccionLabel();
+    direccionBtn.addEventListener('click', function(){
+      openPasswordPrompt('direccion', null, function(){
+        userContext = { role:'direccion', visibleAulas: [] };
+        saveUserContext(userContext);
+        activateUserContext(inicioOnReady);
+      });
+    });
+    aulaGrid.appendChild(direccionBtn);
+  }
+
+  /* --- Panel "Configuración" (solo Dirección) --- */
+  function aulasRefreshStatusLine(){
+    var el = document.getElementById('cfg-sync-status');
+    if (el) el.textContent = aulasCfgSyncStatus || '';
+  }
+  function cfgMakeEl(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function cfgPasswordFields(kind, id, msgEl){
+    var wrap = cfgMakeEl('div', 'cfg-pw');
+    var p1 = cfgMakeEl('input'); p1.type = 'password'; p1.placeholder = 'Nueva contraseña'; p1.autocomplete = 'new-password'; p1.maxLength = 64; p1.className = 'cfg-pw1';
+    var p2 = cfgMakeEl('input'); p2.type = 'password'; p2.placeholder = 'Repetir contraseña'; p2.autocomplete = 'new-password'; p2.maxLength = 64; p2.className = 'cfg-pw2';
+    wrap.appendChild(p1); wrap.appendChild(p2);
+    return { wrap: wrap, p1: p1, p2: p2 };
+  }
+  // Guarda designación y (si se completó) contraseña de una fila. Devuelve true si todo fue bien.
+  function cfgSaveRow(kind, id, nameInput, pwf, msgEl){
+    var msgs = [];
+    var warn = '';
+    var okAll = true;
+    if (nameInput){
+      var clean = aulasSanitizeName(nameInput.value, kind === 'direccion' ? 'DIRECCIÓN' : aulaDefaultName(id));
+      if (kind !== 'direccion' && aulasNameDuplicated(id, clean)) warn = ' (aviso: otra aula tiene la misma designación)';
+      var r = aulasSetName(kind, id, clean);
+      if (!r.ok){ okAll = false; msgs.push(r.error); }
+      nameInput.value = clean;
+    }
+    if (pwf.p1.value || pwf.p2.value){
+      if (!pwf.p1.value) { okAll = false; msgs.push('Escriba la nueva contraseña.'); }
+      else if (pwf.p1.value !== pwf.p2.value){ okAll = false; msgs.push('Las contraseñas no coinciden.'); }
+      else {
+        var r2 = aulasSetPassword(kind, id, pwf.p1.value);
+        if (!r2.ok){ okAll = false; msgs.push(r2.error); }
+        else { msgs.push('Contraseña actualizada.'); pwf.p1.value = ''; pwf.p2.value = ''; }
+      }
+    }
+    if (okAll && !msgs.length) msgs.push('Guardado.');
+    msgEl.className = 'cfg-msg ' + (okAll ? 'ok' : 'err');
+    msgEl.textContent = (okAll ? '✓ ' : '') + msgs.join(' ') + warn;
+    aulasRefreshStatusLine();
+    return okAll;
+  }
+  function renderConfigPanel(){
+    var body = document.getElementById('cfg-body');
+    if (!body) return;
+    body.innerHTML = '';
+    body.appendChild(cfgMakeEl('p', 'cfg-intro', 'Los identificadores internos (A, B, C…) son fijos y no cambian. La designación es solo el nombre que se muestra. Un aula oculta no se elimina: conserva sus datos y reaparece al volver a activarla.'));
+
+    // Dirección
+    var dSec = cfgMakeEl('div', 'cfg-row cfg-row-dir');
+    dSec.dataset.kind = 'direccion';
+    dSec.appendChild(cfgMakeEl('div', 'cfg-id', 'DIR'));
+    var dName = cfgMakeEl('input', 'cfg-name'); dName.type = 'text'; dName.maxLength = AULA_NAME_MAX; dName.value = aulasCfg.direccion.name; dName.setAttribute('aria-label', 'Designación de Dirección');
+    dSec.appendChild(dName);
+    dSec.appendChild(cfgMakeEl('div', 'cfg-fixed', 'Siempre visible'));
+    var dPw = cfgPasswordFields('direccion', null);
+    dSec.appendChild(dPw.wrap);
+    var dBtn = cfgMakeEl('button', 'cfg-save', 'Guardar'); dBtn.type = 'button';
+    var dMsg = cfgMakeEl('div', 'cfg-msg');
+    dBtn.addEventListener('click', function(){ cfgSaveRow('direccion', null, dName, dPw, dMsg); });
+    dSec.appendChild(dBtn);
+    dSec.appendChild(dMsg);
+    body.appendChild(dSec);
+
+    body.appendChild(cfgMakeEl('h3', 'cfg-h3', 'Aulas'));
+    aulasCfg.aulas.forEach(function(a){
+      var row = cfgMakeEl('div', 'cfg-row' + (a.visible ? '' : ' cfg-hidden'));
+      row.dataset.aula = a.id;
+      row.appendChild(cfgMakeEl('div', 'cfg-id', a.id));
+      var nm = cfgMakeEl('input', 'cfg-name'); nm.type = 'text'; nm.maxLength = AULA_NAME_MAX; nm.value = a.name; nm.setAttribute('aria-label', 'Designación del aula ' + a.id);
+      row.appendChild(nm);
+      var sw = cfgMakeEl('label', 'cfg-switch');
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'cfg-vis'; cb.checked = a.visible;
+      cb.setAttribute('aria-label', 'Visible: aula ' + a.id);
+      var slider = cfgMakeEl('span', 'cfg-slider');
+      var swTxt = cfgMakeEl('span', 'cfg-switch-txt', a.visible ? 'Visible' : 'Oculta');
+      sw.appendChild(cb); sw.appendChild(slider); sw.appendChild(swTxt);
+      row.appendChild(sw);
+      var pwf = cfgPasswordFields('aula', a.id);
+      row.appendChild(pwf.wrap);
+      var btn = cfgMakeEl('button', 'cfg-save', 'Guardar'); btn.type = 'button';
+      var msg = cfgMakeEl('div', 'cfg-msg');
+      btn.addEventListener('click', function(){ cfgSaveRow('aula', a.id, nm, pwf, msg); });
+      cb.addEventListener('change', function(){
+        var r = aulasSetVisible(a.id, cb.checked);
+        row.classList.toggle('cfg-hidden', !cb.checked);
+        swTxt.textContent = cb.checked ? 'Visible' : 'Oculta';
+        msg.className = 'cfg-msg ' + (r.ok ? 'ok' : 'err');
+        msg.textContent = r.ok ? (cb.checked ? '✓ Aula visible en el Inicio.' : '✓ Aula oculta (sus datos se conservan).') : r.error;
+        aulasRefreshStatusLine();
+      });
+      row.appendChild(btn);
+      row.appendChild(msg);
+      body.appendChild(row);
+    });
+    var add = cfgMakeEl('button', 'cfg-add', '＋ Agregar aula'); add.type = 'button'; add.id = 'cfg-add-btn';
+    add.addEventListener('click', function(){
+      var r = aulasAdd();
+      renderConfigPanel();
+      var nb = document.getElementById('cfg-body');
+      var last = nb.querySelector('.cfg-row[data-aula="' + r.id + '"] .cfg-msg');
+      if (last){ last.className = 'cfg-msg ' + (r.ok ? 'ok' : 'err'); last.textContent = r.ok ? '✓ Aula ' + r.id + ' creada (contraseña inicial: admin).' : r.error; }
+    });
+    body.appendChild(add);
+    var st = cfgMakeEl('div', 'cfg-sync'); st.id = 'cfg-sync-status'; st.textContent = aulasCfgSyncStatus || '';
+    body.appendChild(st);
+    body.appendChild(cfgMakeEl('p', 'cfg-note', 'Nota: las contraseñas son una barrera blanda del lado del cliente, no seguridad real. La configuración se guarda en este navegador y, si la sincronización con GitHub está configurada en esta sesión, también en el repositorio para que otros navegadores con acceso la reciban.'));
+  }
+  function openConfigPanel(){
+    if (!userContext || userContext.role !== 'direccion') return;
+    renderConfigPanel();
+    document.getElementById('cfg-scrim').classList.add('show');
+  }
+  function closeConfigPanel(){ document.getElementById('cfg-scrim').classList.remove('show'); }
+  (function initConfigPanelEvents(){
+    document.getElementById('cfg-close').addEventListener('click', closeConfigPanel);
+    document.getElementById('cfg-scrim').addEventListener('click', function(ev){ if (ev.target === this) closeConfigPanel(); });
+    document.addEventListener('keydown', function(ev){
+      if (ev.key === 'Escape' && document.getElementById('cfg-scrim').classList.contains('show')) closeConfigPanel();
+    });
+    document.getElementById('config-btn').addEventListener('click', openConfigPanel);
+  })();
+
+  // Reacciona a cambios de configuración: Inicio, etiqueta de usuario y vista de Dirección.
+  function aulasOnConfigChanged(){
+    var screen = document.getElementById('user-select-screen');
+    if (screen && !screen.classList.contains('hide') && inicioOnReady) renderInicioButtons();
+    if (userContext){
+      var badge = document.getElementById('current-user-badge');
+      if (badge && userContext.role === 'direccion'){ badge.innerHTML = '<b>' + escapeHtmlText(currentUserLabel()) + '</b>'; badge.title = currentUserLabel(); }
+      else renderPresenceUI();
+      if (userContext.role === 'direccion' && isReadOnlyMode()) applyAulaVisibilityToDireccion();
+    }
+  }
   var USER_CONTEXT_KEY = 'active_user_context_v1';
   var userContext = null; // { role:'aula', aula:'A' } o { role:'direccion', viewingAula:'A'|null }
 
@@ -1611,38 +2188,26 @@
   function isReadOnlyMode(){ return !!(userContext && userContext.role === 'direccion' && !userContext.direccionEditMode); }
   function currentUserLabel(){
     if (!userContext) return '';
-    if (userContext.role === 'aula') return 'AULA ' + userContext.aula;
-    if (userContext.role === 'direccion') return userContext.direccionEditMode ? 'DIRECCIÓN — Editando capas propias' : 'DIRECCIÓN';
+    if (userContext.role === 'aula') return aulaLabel(userContext.aula);
+    if (userContext.role === 'direccion') return userContext.direccionEditMode ? direccionLabel() + ' — Editando capas propias' : direccionLabel();
     return '';
   }
 
   function initUserSelector(onReady){
     var screen = document.getElementById('user-select-screen');
-    var aulaGrid = document.getElementById('aula-grid');
-    var subtitle = document.getElementById('user-select-subtitle');
-
-    AULAS.forEach(function(letra){
-      var btn = document.createElement('button');
-      btn.className = 'aula-btn';
-      btn.textContent = 'AULA ' + letra;
-      btn.addEventListener('click', function(){
-        userContext = { role:'aula', aula: letra };
-        saveUserContext(userContext);
-        activateUserContext(onReady);
-      });
-      aulaGrid.appendChild(btn);
-    });
-    var direccionBtn = document.createElement('button');
-    direccionBtn.className = 'aula-btn direccion-btn';
-    direccionBtn.textContent = 'DIRECCIÓN';
-    direccionBtn.addEventListener('click', function(){
-      userContext = { role:'direccion', visibleAulas: [] };
-      saveUserContext(userContext);
-      activateUserContext(onReady);
-    });
-    aulaGrid.appendChild(direccionBtn);
+    inicioOnReady = onReady;
+    aulasLoadLocal();
+    try{ loadGithubConfig(); }catch(err){}
+    renderInicioButtons();
+    // Si hay sincronización con GitHub configurada en este navegador, intenta traer la configuración compartida.
+    aulasPullRemote();
 
     var saved = loadUserContext();
+    // Una sesión guardada en un aula que Dirección ocultó (o que ya no existe) no se reanuda: vuelve al Inicio.
+    if (saved && saved.role === 'aula' && !isAulaVisible(saved.aula)){
+      try{ localStorage.removeItem(USER_CONTEXT_KEY); }catch(err){}
+      saved = null;
+    }
     if (!loadUserName()){
       screen.classList.remove('hide');
       ensureUserNameRegistered(function(){
@@ -1702,43 +2267,66 @@
         );
       };
     }
+    var cfgBtn = document.getElementById('config-btn');
+    if (cfgBtn) cfgBtn.style.display = userContext.role === 'direccion' ? 'inline-block' : 'none';
     if (isReadOnlyMode()){
       if (!userContext.visibleAulas) userContext.visibleAulas = [];
-      var togglesWrap = document.getElementById('direccion-aula-toggles');
-      togglesWrap.innerHTML = '';
-      AULAS.forEach(function(letra){
-        var btn = document.createElement('button');
-        btn.className = 'direccion-aula-toggle';
-        btn.dataset.letra = letra;
-        btn.textContent = letra;
-        btn.title = 'Mostrar/ocultar AULA ' + letra;
-        var isOn = userContext.visibleAulas.indexOf(letra) !== -1;
-        btn.classList.toggle('on', isOn);
-        btn.addEventListener('click', function(){
-          var nowOn = !btn.classList.contains('on');
-          btn.classList.toggle('on', nowOn);
-          if (nowOn){
-            if (userContext.visibleAulas.indexOf(letra) === -1) userContext.visibleAulas.push(letra);
-          } else {
-            userContext.visibleAulas = userContext.visibleAulas.filter(function(x){ return x !== letra; });
-          }
-          saveUserContext(userContext);
-          direccionToggleAula(letra, nowOn, btn);
-          if (nowOn) presenceTick();
-        });
-        btn.addEventListener('mouseenter', function(ev){ showFloatingTooltip(presenceTooltipHtmlForAula(letra), ev); });
-        btn.addEventListener('mousemove', function(ev){ positionFloatingTooltip(ev); });
-        btn.addEventListener('mouseleave', hideFloatingTooltip);
-        togglesWrap.appendChild(btn);
-      });
+      // Las aulas ocultas (o inexistentes) no aparecen en la vista de Dirección.
+      userContext.visibleAulas = userContext.visibleAulas.filter(function(l){ return isAulaVisible(l); });
+      saveUserContext(userContext);
+      buildDireccionAulaToggles();
       onReady();
+      var togglesWrap = document.getElementById('direccion-aula-toggles');
       userContext.visibleAulas.slice().forEach(function(letra){
-        var btn = Array.from(togglesWrap.children).filter(function(b){ return b.textContent === letra; })[0];
+        var btn = Array.from(togglesWrap.children).filter(function(b){ return b.dataset.letra === letra; })[0];
         direccionToggleAula(letra, true, btn);
       });
       return;
     }
     onReady();
+  }
+
+  function buildDireccionAulaToggles(){
+    var togglesWrap = document.getElementById('direccion-aula-toggles');
+    togglesWrap.innerHTML = '';
+    visibleAulaIds().forEach(function(letra){
+      var btn = document.createElement('button');
+      btn.className = 'direccion-aula-toggle';
+      btn.dataset.letra = letra;
+      btn.textContent = letra;
+      btn.title = 'Mostrar/ocultar ' + aulaLabel(letra);
+      var isOn = userContext.visibleAulas.indexOf(letra) !== -1;
+      btn.classList.toggle('on', isOn);
+      btn.addEventListener('click', function(){
+        var nowOn = !btn.classList.contains('on');
+        btn.classList.toggle('on', nowOn);
+        if (nowOn){
+          if (userContext.visibleAulas.indexOf(letra) === -1) userContext.visibleAulas.push(letra);
+        } else {
+          userContext.visibleAulas = userContext.visibleAulas.filter(function(x){ return x !== letra; });
+        }
+        saveUserContext(userContext);
+        direccionToggleAula(letra, nowOn, btn);
+        if (nowOn) presenceTick();
+      });
+      btn.addEventListener('mouseenter', function(ev){ showFloatingTooltip(presenceTooltipHtmlForAula(letra), ev); });
+      btn.addEventListener('mousemove', function(ev){ positionFloatingTooltip(ev); });
+      btn.addEventListener('mouseleave', hideFloatingTooltip);
+      togglesWrap.appendChild(btn);
+    });
+    renderPresenceUI();
+  }
+
+  // Tras un cambio de visibilidad: retira de la vista de Dirección las aulas ocultas (sin borrar sus datos).
+  function applyAulaVisibilityToDireccion(){
+    if (!userContext || !isReadOnlyMode()) return;
+    var current = userContext.visibleAulas || [];
+    var toDrop = current.filter(function(l){ return !isAulaVisible(l); });
+    toDrop.forEach(function(l){ direccionToggleAula(l, false); });
+    userContext.visibleAulas = current.filter(function(l){ return isAulaVisible(l); });
+    saveUserContext(userContext);
+    buildDireccionAulaToggles();
+    renderLayerList();
   }
 
   /* ---------------- DIRECCIÓN: superposición de varias aulas a la vez (solo lectura) ---------------- */
@@ -1807,6 +2395,7 @@
       .then(function(){
         direccionAulaLoading[letra] = false;
         if (btn) btn.classList.remove('loading');
+        if (!isAulaVisible(letra)){ renderLayerList(); return; } // se ocultó mientras cargaba
         direccionMergeAulaIntoLayers(letra);
         renderLayerList();
       })
@@ -1815,7 +2404,7 @@
         if (btn){ btn.classList.remove('loading'); btn.classList.remove('on'); }
         userContext.visibleAulas = (userContext.visibleAulas || []).filter(function(x){ return x !== letra; });
         saveUserContext(userContext);
-        alert('No se pudo cargar AULA ' + letra + ': ' + err.message);
+        alert('No se pudo cargar ' + aulaLabel(letra) + ': ' + err.message);
       });
   }
 
@@ -2666,13 +3255,13 @@
   function presenceRelevantAulas(){
     if (!userContext) return [];
     if (userContext.role === 'aula') return [userContext.aula];
-    if (userContext.role === 'direccion' && isReadOnlyMode()) return (userContext.visibleAulas || []).slice();
+    if (userContext.role === 'direccion' && isReadOnlyMode()) return (userContext.visibleAulas || []).filter(isAulaVisible);
     return [];
   }
 
   function presenceTooltipHtmlForAula(letra){
     var data = presenceCache[letra];
-    var titulo = '<b>AULA ' + escapeHtmlText(letra) + '</b>';
+    var titulo = '<b>' + escapeHtmlText(aulaLabel(letra)) + '</b>';
     if (!data || !data.clients || !Object.keys(data.clients).length){
       return titulo + '<br>Sin usuarios conectados por ahora.';
     }
@@ -10909,9 +11498,9 @@
         var count = rootLayers.filter(function(n){ return n._direccionAula === letra; }).length;
         var divider = document.createElement('div');
         divider.className = 'aula-divider' + (collapsed ? ' collapsed' : '');
-        divider.innerHTML = '<span class="aula-divider-arrow">▸</span><span class="aula-divider-label">AULA ' +
-          escapeHtmlText(letra) + '</span><span class="aula-divider-count">(' + count + ')</span>';
-        divider.title = collapsed ? 'Mostrar las capas de AULA ' + letra : 'Ocultar las capas de AULA ' + letra;
+        divider.innerHTML = '<span class="aula-divider-arrow">▸</span><span class="aula-divider-label">' +
+          escapeHtmlText(aulaLabel(letra)) + '</span><span class="aula-divider-count">(' + count + ')</span>';
+        divider.title = collapsed ? 'Mostrar las capas de ' + aulaLabel(letra) : 'Ocultar las capas de ' + aulaLabel(letra);
         divider.addEventListener('click', function(){
           direccionAulaSectionCollapsed[letra] = !collapsed; // toggle: era colapsado -> ahora expandido, y viceversa
           renderLayerList();
@@ -11002,7 +11591,7 @@
     nameInput.addEventListener('change', function(ev){ l.name = ev.target.value || l.name; scheduleSave(); });
     (function(){
       var tooltipHtml = l._direccionAula
-        ? escapeHtmlText(l.name) + '<br><b>AULA ' + escapeHtmlText(l._direccionAula) + '</b>'
+        ? escapeHtmlText(l.name) + '<br><b>' + escapeHtmlText(aulaLabel(l._direccionAula)) + '</b>'
         : escapeHtmlText(l.name);
       nameInput.addEventListener('mouseenter', function(ev){ showFloatingTooltip(tooltipHtml, ev); });
       nameInput.addEventListener('mousemove', function(ev){ positionFloatingTooltip(ev); });
