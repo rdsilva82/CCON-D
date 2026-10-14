@@ -83,6 +83,12 @@
     grid-column:1 / -1; background:var(--navy); color:#fff; border-color:var(--navy);
   }
   .aula-btn.direccion-btn:hover{ background:var(--navy-deep); }
+  .aula-loading{ grid-column:1 / -1; text-align:center; font-size:12px; color:var(--muted); padding:18px 0; }
+  .cfg-share{ font-size:12px; margin:0 0 12px; padding:8px 10px; border:1px solid var(--border); border-radius:8px; background:var(--surface-alt); line-height:1.45; }
+  .cfg-share .cfg-share-line{ margin:0 0 4px; }
+  .cfg-share .ok{ color:#1b6e3a; }
+  .cfg-share .warn{ color:#9a5b00; font-weight:600; }
+  .cfg-share .info{ color:var(--muted); }
   #direccion-aula-picker{ margin-top:6px; }
   #direccion-back-btn{ margin-top:14px; }
 
@@ -1626,6 +1632,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
 <script>
+/* ============================================================================================
+   CONFIGURACIÓN COMPARTIDA DE AULAS (lectura pública, sin token)
+   El Inicio lee 'aulas_config.json' del repositorio de GitHub ANTES del login. Requiere repositorio PÚBLICO.
+   Origen del repositorio (en este orden): 1) sincronización con GitHub ya configurada en este navegador;
+   2) parámetro de enlace ?cfgrepo=usuario/repo (se recuerda en este navegador);
+   3) esta constante (opcional; déjela vacía para autodetectar);
+   4) autodetección en GitHub Pages: https://<usuario>.github.io/<repo>/  ->  <usuario>/<repo>.
+   Si la página NO está en GitHub Pages (dominio propio, archivo local), complete 'repo' (p. ej. 'miusuario/mirepo').
+   'branch' vacío = rama por defecto del repositorio; 'path' vacío = 'data/estado.json' (igual que la sincronización),
+   de modo que el archivo leído es 'data/estado/aulas_config.json'.
+   ============================================================================================ */
+var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 (function(){
 
   /* ---------------- TEMA VISUAL (Clásico / Digital) ---------------- */
@@ -1770,9 +1788,12 @@
     }
     return H.map(function(x){ return ('00000000' + (x>>>0).toString(16)).slice(-8); }).join('');
   }
-  function aulasPwHash(pw, salt, key){
+  // Iteraciones del hash: las contraseñas guardadas sin campo 'i' usan 1500 (versión anterior, siguen siendo válidas).
+  var AULAS_PW_ITER_LEGACY = 1500, AULAS_PW_ITER_CURRENT = 12000, AULAS_PW_ITER_MAX = 100000, AULAS_PW_MIN_LEN = 6;
+  function aulasPwHash(pw, salt, key, iters){
+    iters = iters || AULAS_PW_ITER_LEGACY;
     var hsh = sha256Hex(salt + '|' + key + '|' + pw);
-    for (var i=0;i<1500;i++) hsh = sha256Hex(hsh + salt + pw);
+    for (var i=0;i<iters;i++) hsh = sha256Hex(hsh + salt + pw);
     return hsh;
   }
   function aulasNewSalt(){
@@ -1793,7 +1814,10 @@
   }
   function aulaDefaultName(id){ return 'AULA ' + id; }
   function aulasValidPw(p){
-    return p && typeof p === 'object' && typeof p.s === 'string' && typeof p.h === 'string' && /^[0-9a-f]{64}$/.test(p.h) ? { s: p.s, h: p.h } : null;
+    if (!(p && typeof p === 'object' && typeof p.s === 'string' && typeof p.h === 'string' && /^[0-9a-f]{64}$/.test(p.h))) return null;
+    var out = { s: p.s, h: p.h };
+    if (typeof p.i === 'number' && isFinite(p.i) && p.i >= 1) out.i = Math.min(Math.floor(p.i), AULAS_PW_ITER_MAX);
+    return out;
   }
   function aulasDefaultConfig(){
     return {
@@ -1881,17 +1905,18 @@
     if (!target) return false;
     pw = String(pw == null ? '' : pw);
     if (!target.pw) return pw === DEFAULT_PASSWORD;
-    return aulasPwHash(pw, target.pw.s, kind === 'direccion' ? 'direccion' : id) === target.pw.h;
+    return aulasPwHash(pw, target.pw.s, kind === 'direccion' ? 'direccion' : id, target.pw.i || AULAS_PW_ITER_LEGACY) === target.pw.h;
   }
   function aulasSetPassword(kind, id, pw){
     if (!aulasCfg) aulasLoadLocal();
     pw = String(pw == null ? '' : pw);
     if (!pw) return { ok:false, error:'La contraseña no puede estar vacía.' };
+    if (pw.length < AULAS_PW_MIN_LEN) return { ok:false, error:'La contraseña nueva debe tener al menos ' + AULAS_PW_MIN_LEN + ' caracteres.' };
     if (pw.length > 64) return { ok:false, error:'La contraseña es demasiado larga (máximo 64 caracteres).' };
     var target = kind === 'direccion' ? aulasCfg.direccion : aulasEntry(id);
     if (!target) return { ok:false, error:'Aula inexistente.' };
     var salt = aulasNewSalt();
-    target.pw = { s: salt, h: aulasPwHash(pw, salt, kind === 'direccion' ? 'direccion' : id) };
+    target.pw = { s: salt, h: aulasPwHash(pw, salt, kind === 'direccion' ? 'direccion' : id, AULAS_PW_ITER_CURRENT), i: AULAS_PW_ITER_CURRENT };
     return aulasCommit();
   }
   function aulasSetName(kind, id, name){
@@ -1936,8 +1961,183 @@
 
   /* --- Copia compartida opcional en el repositorio de GitHub (solo si esta sesión tiene la sincronización configurada) --- */
   var aulasRemoteSha = null;
-  function aulasRemotePath(){ return githubConfig.path.replace(/\.json$/i, '') + '/aulas_config.json'; }
+  function aulasPathFor(syncPath){ return String(syncPath).replace(/\.json$/i, '') + '/aulas_config.json'; }
+  function aulasRemotePath(){ return aulasPathFor(githubConfig.path); }
+  var aulasLastPushOk = null;
   function aulasRemoteAvailable(){ return typeof fetch === 'function' && githubConfigured(); }
+
+  /* --- Lectura PÚBLICA de la configuración compartida (sin token; el repositorio debe ser público) --- */
+  var AULAS_REMOTE_CACHE_KEY = 'aulas_config_remote_cache_v1';
+  var AULAS_CFGREPO_KEY = 'aulas_cfgrepo_v1';
+  var AULAS_DEFAULT_SYNC_PATH = 'data/estado.json'; // mismo valor por defecto que la sincronización con GitHub
+  var AULAS_FETCH_TIMEOUT_MS = 4000;
+  var aulasInicioLoading = false;
+  var aulasPublicState = { phase: 'idle', source: null, detail: '' }; // idle|pending|ok|cache|notfound|error|nosource|token
+  function aulasRepoOk(r){ return typeof r === 'string' && /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(r); }
+  function aulasPageLocation(){
+    try{ return { hostname: location.hostname || '', pathname: location.pathname || '/', search: location.search || '' }; }
+    catch(err){ return { hostname: '', pathname: '/', search: '' }; }
+  }
+  // <usuario>.github.io/<repo>/…  ->  usuario/repo ;  <usuario>.github.io/  ->  usuario/usuario.github.io ; otros hosts -> ''
+  function aulasDeriveRepoFromUrl(hostname, pathname){
+    var m = /^([a-z0-9-]+)\.github\.io$/i.exec(String(hostname || ''));
+    if (!m) return '';
+    var segs = String(pathname || '/').split('/').filter(Boolean);
+    var first = segs[0], repo, user = m[1].toLowerCase();
+    if (!first || (segs.length === 1 && /\.html?$/i.test(first))) repo = user + '/' + user + '.github.io';
+    else { try{ first = decodeURIComponent(first); }catch(err){} repo = user + '/' + first; }
+    return aulasRepoOk(repo) ? repo : '';
+  }
+  // ?cfgrepo=usuario/repo : valor del parámetro ('' si no hay), o null si el parámetro no está presente.
+  function aulasParseCfgRepoParam(search){
+    var m = /[?&]cfgrepo=([^&#]*)/.exec(String(search || ''));
+    if (!m) return null;
+    var v = '';
+    try{ v = decodeURIComponent(m[1]).trim().replace(/^\/+|\/+$/g, ''); }catch(err){ return ''; }
+    return aulasRepoOk(v) ? v : '';
+  }
+  // Devuelve el repositorio de anulación manual (parámetro del enlace o el recordado en este navegador).
+  function aulasCfgRepoOverride(){
+    var fromUrl = aulasParseCfgRepoParam(aulasPageLocation().search);
+    try{
+      if (fromUrl) localStorage.setItem(AULAS_CFGREPO_KEY, fromUrl);
+      else if (fromUrl === '' ) localStorage.removeItem(AULAS_CFGREPO_KEY); // ?cfgrepo= vacío/inválido: olvida la anulación
+    } catch(err){}
+    if (fromUrl) return fromUrl;
+    try{ var st = localStorage.getItem(AULAS_CFGREPO_KEY); return aulasRepoOk(st) ? st : ''; } catch(err){ return ''; }
+  }
+  function aulasPublicSource(){
+    var gh = githubConfig;
+    if (gh && aulasRepoOk(gh.repo)) return { repo: gh.repo, branch: gh.branch || '', syncPath: gh.path || AULAS_DEFAULT_SYNC_PATH, origin: 'config' };
+    var ov = aulasCfgRepoOverride();
+    if (ov) return { repo: ov, branch: '', syncPath: AULAS_DEFAULT_SYNC_PATH, origin: 'param' };
+    var c = AULAS_PUBLIC_CONFIG;
+    if (c && aulasRepoOk(c.repo)) return { repo: c.repo, branch: c.branch || '', syncPath: c.path || AULAS_DEFAULT_SYNC_PATH, origin: 'const' };
+    var loc = aulasPageLocation();
+    var r = aulasDeriveRepoFromUrl(loc.hostname, loc.pathname);
+    if (r) return { repo: r, branch: '', syncPath: AULAS_DEFAULT_SYNC_PATH, origin: 'pages' };
+    return null;
+  }
+  function aulasSourceText(src){ return src.repo + ' / ' + aulasPathFor(src.syncPath) + (src.branch ? ' (rama ' + src.branch + ')' : ''); }
+  function aulasReadCache(src){
+    try{
+      var c = JSON.parse(localStorage.getItem(AULAS_REMOTE_CACHE_KEY) || 'null');
+      if (c && c.repo === src.repo && c.cfg && typeof c.cfg === 'object') return aulasNormalizeConfig(c.cfg);
+    } catch(err){}
+    return null;
+  }
+  function aulasWriteCache(src, cfg){
+    try{ localStorage.setItem(AULAS_REMOTE_CACHE_KEY, JSON.stringify({ repo: src.repo, fetchedAt: Date.now(), cfg: cfg })); } catch(err){}
+  }
+  // Descarga sin autenticación. cb({state:'ok', raw}|{state:'notfound'}|{state:'error', reason}). Nunca queda colgada (plazo corto).
+  function aulasFetchPublic(src, cb){
+    var done = false, timer = null, ctrl = null;
+    try{ if (typeof AbortController === 'function') ctrl = new AbortController(); }catch(err){ ctrl = null; }
+    function finish(r){
+      if (done) return;
+      done = true; clearTimeout(timer);
+      if (ctrl){ try{ ctrl.abort(); }catch(err){} }
+      cb(r);
+    }
+    timer = setTimeout(function(){ finish({ state:'error', reason:'tiempo de espera agotado' }); }, AULAS_FETCH_TIMEOUT_MS);
+    var path = aulasPathFor(src.syncPath).replace(/^\/+/, '');
+    var encPath = path.split('/').map(encodeURIComponent).join('/');
+    var base = ctrl ? { signal: ctrl.signal } : {};
+    function textOf(res){
+      if (res.status === 404) return { k:'nf' };
+      if (!res.ok) return { k:'err', reason: (res.status === 403 || res.status === 429) ? 'límite de peticiones o acceso denegado (HTTP ' + res.status + ')' : 'HTTP ' + res.status };
+      return null;
+    }
+    function viaRaw(branch){
+      return function(){
+        return fetch('https://raw.githubusercontent.com/' + src.repo + '/' + encodeURIComponent(branch) + '/' + encPath, base).then(function(res){
+          var bad = textOf(res); if (bad) return bad;
+          return res.text().then(function(t){ return { k:'ok', text:t }; });
+        });
+      };
+    }
+    function viaApi(){
+      return fetch('https://api.github.com/repos/' + src.repo + '/contents/' + encPath + (src.branch ? '?ref=' + encodeURIComponent(src.branch) : ''),
+        { signal: base.signal, headers: { 'Accept':'application/vnd.github+json' } }).then(function(res){
+        var bad = textOf(res); if (bad) return bad;
+        return res.json().then(function(d){
+          if (d && typeof d.content === 'string' && d.content) return { k:'ok', text: base64ToUtf8(d.content) };
+          if (d && typeof d.download_url === 'string' && /^https:\/\//.test(d.download_url)){
+            return fetch(d.download_url, base).then(function(r2){
+              var bad2 = textOf(r2); if (bad2) return bad2;
+              return r2.text().then(function(t){ return { k:'ok', text:t }; });
+            });
+          }
+          return { k:'err', reason:'respuesta sin contenido' };
+        });
+      });
+    }
+    // Con rama conocida: raw (rápido, sin límite de la API) y, si falla, la API. Sin rama: API (rama por defecto) y, si falla, raw main/master.
+    var attempts = src.branch
+      ? [ { kind:'raw', f: viaRaw(src.branch) }, { kind:'api', f: viaApi } ]
+      : [ { kind:'api', f: viaApi }, { kind:'raw', f: viaRaw('main') }, { kind:'raw', f: viaRaw('master') } ];
+    function parseAndFinish(text){
+      var obj = null;
+      try{ obj = JSON.parse(text); }catch(err){ obj = null; }
+      if (!obj || typeof obj !== 'object' || (!Array.isArray(obj.aulas) && !(obj.direccion && typeof obj.direccion === 'object'))){
+        finish({ state:'error', reason:'archivo de configuración inválido' });
+      } else finish({ state:'ok', raw: obj });
+    }
+    function run(i, lastErr){
+      if (done) return;
+      if (i >= attempts.length){ finish({ state:'error', reason: lastErr || 'no disponible' }); return; }
+      var p;
+      try{ p = attempts[i].f(); }catch(err){ p = Promise.reject(err); }
+      p.then(function(r){
+        if (done) return;
+        if (r.k === 'ok') return parseAndFinish(r.text);
+        if (r.k === 'nf' && (i === 0 || attempts[i].kind === 'api')) return finish({ state:'notfound' });
+        run(i + 1, r.k === 'err' ? r.reason : lastErr);
+      }, function(err){
+        if (done) return;
+        run(i + 1, (err && err.message) || 'sin conexión');
+      });
+    }
+    run(0, '');
+  }
+  // Carga la configuración compartida antes del login. done(changed). Con token usa la lectura autenticada (más reciente gana);
+  // sin token la copia del repositorio es la autoridad: si carga, se adopta entera (una copia local vieja no la pisa).
+  function aulasLoadPublicConfig(done){
+    done = done || function(){};
+    if (aulasRemoteAvailable()){
+      aulasPublicState = { phase:'token', source: aulasPublicSource(), detail:'' };
+      aulasPullRemote(done);
+      return;
+    }
+    var src = aulasPublicSource();
+    if (!src || typeof fetch !== 'function'){ aulasPublicState = { phase:'nosource', source:null, detail:'' }; done(false); return; }
+    aulasPublicState = { phase:'pending', source: src, detail:'' };
+    var finished = false;
+    aulasFetchPublic(src, function(r){
+      if (finished) return; finished = true;
+      var changed = false;
+      try{
+        if (r.state === 'ok'){
+          var norm = aulasNormalizeConfig(r.raw);
+          aulasWriteCache(src, norm);
+          aulasApplyConfig(norm);
+          aulasSaveLocal();
+          aulasPublicState = { phase:'ok', source: src, detail:'' };
+          changed = true;
+        } else {
+          var cached = aulasReadCache(src);
+          aulasPublicState = { phase: r.state === 'notfound' ? 'notfound' : 'error', source: src, detail: r.reason || '' };
+          // Respaldo: última copia remota guardada (si no es más vieja que la copia local, que puede traer ediciones propias).
+          if (cached && cached.updatedAt >= (aulasCfg ? aulasCfg.updatedAt : 0)){
+            aulasApplyConfig(cached);
+            aulasPublicState.phase = 'cache';
+            changed = true;
+          }
+        }
+      } catch(err){ aulasPublicState = { phase:'error', source: src, detail:'error al aplicar' }; }
+      done(changed);
+    });
+  }
   function aulasPullRemote(done){
     if (!aulasRemoteAvailable()){ if (done) done(false); return; }
     var p;
@@ -1976,8 +2176,8 @@
         .then(function(res){
           if ((res.status === 409 || res.status === 422) && retriesLeft > 0) return aulasPushRemote(retriesLeft - 1);
           return res.json().catch(function(){ return null; }).then(function(d){
-            if (res.ok){ if (d && d.content) aulasRemoteSha = d.content.sha; aulasCfgSyncStatus = 'Guardado y compartido en GitHub.'; }
-            else aulasCfgSyncStatus = 'Guardado en este navegador; no se pudo compartir en GitHub (HTTP ' + res.status + ').';
+            if (res.ok){ aulasLastPushOk = true; if (d && d.content) aulasRemoteSha = d.content.sha; aulasCfgSyncStatus = 'Guardado y compartido en GitHub.'; }
+            else { aulasLastPushOk = false; aulasCfgSyncStatus = 'Guardado en este navegador; no se pudo compartir en GitHub (HTTP ' + res.status + ').'; }
             aulasRefreshStatusLine();
           });
         });
@@ -1986,7 +2186,7 @@
       fetch(githubContentsUrl(path, true), { headers: githubAuthHeaders() })
         .then(function(res){ if (res.status === 404) return null; if (!res.ok) throw new Error('HTTP ' + res.status); return res.json().then(function(d){ return d.sha; }); })
         .then(put)
-        .catch(function(){ aulasCfgSyncStatus = 'Guardado en este navegador; no se pudo compartir en GitHub.'; aulasRefreshStatusLine(); });
+        .catch(function(){ aulasLastPushOk = false; aulasCfgSyncStatus = 'Guardado en este navegador; no se pudo compartir en GitHub.'; aulasRefreshStatusLine(); });
     } catch(err){}
   }
 
@@ -2048,6 +2248,13 @@
     var aulaGrid = document.getElementById('aula-grid');
     if (!aulaGrid) return;
     aulaGrid.innerHTML = '';
+    if (aulasInicioLoading){
+      var ld = document.createElement('div');
+      ld.className = 'aula-loading'; ld.setAttribute('role', 'status');
+      ld.textContent = 'Cargando configuración…';
+      aulaGrid.appendChild(ld);
+      return;
+    }
     visibleAulaIds().forEach(function(letra){
       var btn = document.createElement('button');
       btn.className = 'aula-btn';
@@ -2081,6 +2288,28 @@
   function aulasRefreshStatusLine(){
     var el = document.getElementById('cfg-sync-status');
     if (el) el.textContent = aulasCfgSyncStatus || '';
+    aulasRefreshShareLine();
+  }
+  // Estado de intercambio: dónde se comparte la configuración y desde dónde la leen los demás equipos.
+  function aulasRefreshShareLine(){
+    var box = document.getElementById('cfg-share-status');
+    if (!box) return;
+    box.innerHTML = '';
+    function line(cls, txt){ var p = cfgMakeEl('p', 'cfg-share-line ' + cls, txt); box.appendChild(p); return p; }
+    if (aulasRemoteAvailable()){
+      if (aulasLastPushOk === false) line('warn', '⚠ No se pudo compartir en GitHub. Los cambios quedan en este navegador; verifique el token y la conexión.');
+      else line('ok', '✓ Compartida con todos los equipos desde ' + githubConfig.repo + ' (' + aulasRemotePath() + ').');
+    } else {
+      line('warn', 'Estos cambios solo valen en este navegador. Configura la sincronización con GitHub (repo + token) para compartirlos.');
+    }
+    var src = aulasPublicSource();
+    if (src) line('info', 'El Inicio de los demás equipos lee la configuración de: ' + aulasSourceText(src) + '. El repositorio debe ser público.');
+    else line('warn', 'No se encontró repositorio público (el repo debe ser público). Defina AULAS_PUBLIC_CONFIG en index.html, abra el enlace con ?cfgrepo=usuario/repo o configure la sincronización con GitHub.');
+    var ph = aulasPublicState.phase, det = aulasPublicState.detail ? ' (' + aulasPublicState.detail + ')' : '';
+    if (ph === 'ok') line('info', 'Última lectura del repositorio: correcta.');
+    else if (ph === 'notfound') line('warn', 'El archivo aún no existe en el repositorio (o el repositorio es privado). Guarde la configuración con la sincronización activa para publicarlo.');
+    else if (ph === 'cache') line('info', 'No se pudo leer el repositorio' + det + '; se usó la última copia compartida guardada en este navegador.');
+    else if (ph === 'error') line('warn', 'No se pudo leer el repositorio' + det + '; se usa la copia de este navegador.');
   }
   function cfgMakeEl(tag, cls, text){
     var e = document.createElement(tag);
@@ -2090,7 +2319,7 @@
   }
   function cfgPasswordFields(kind, id, msgEl){
     var wrap = cfgMakeEl('div', 'cfg-pw');
-    var p1 = cfgMakeEl('input'); p1.type = 'password'; p1.placeholder = 'Nueva contraseña'; p1.autocomplete = 'new-password'; p1.maxLength = 64; p1.className = 'cfg-pw1';
+    var p1 = cfgMakeEl('input'); p1.type = 'password'; p1.placeholder = 'Nueva (mín. ' + AULAS_PW_MIN_LEN + ')'; p1.autocomplete = 'new-password'; p1.maxLength = 64; p1.className = 'cfg-pw1';
     var p2 = cfgMakeEl('input'); p2.type = 'password'; p2.placeholder = 'Repetir contraseña'; p2.autocomplete = 'new-password'; p2.maxLength = 64; p2.className = 'cfg-pw2';
     wrap.appendChild(p1); wrap.appendChild(p2);
     return { wrap: wrap, p1: p1, p2: p2 };
@@ -2127,6 +2356,11 @@
     if (!body) return;
     body.innerHTML = '';
     body.appendChild(cfgMakeEl('p', 'cfg-intro', 'Los identificadores internos (A, B, C…) son fijos y no cambian. La designación es solo el nombre que se muestra. Un aula oculta no se elimina: conserva sus datos y reaparece al volver a activarla.'));
+
+    // Estado de intercambio (arriba, para que se vea sin desplazarse)
+    var sh = cfgMakeEl('div', 'cfg-share'); sh.id = 'cfg-share-status';
+    body.appendChild(sh);
+    aulasRefreshShareLine();
 
     // Dirección
     var dSec = cfgMakeEl('div', 'cfg-row cfg-row-dir');
@@ -2186,7 +2420,7 @@
     body.appendChild(add);
     var st = cfgMakeEl('div', 'cfg-sync'); st.id = 'cfg-sync-status'; st.textContent = aulasCfgSyncStatus || '';
     body.appendChild(st);
-    body.appendChild(cfgMakeEl('p', 'cfg-note', 'Nota: las contraseñas son una barrera blanda del lado del cliente, no seguridad real. La configuración se guarda en este navegador y, si la sincronización con GitHub está configurada en esta sesión, también en el repositorio para que otros navegadores con acceso la reciban.'));
+    body.appendChild(cfgMakeEl('p', 'cfg-note', 'Nota: las contraseñas son una barrera blanda del lado del cliente, no seguridad real. El archivo de configuración del repositorio es público: contiene solo huellas (hash) de las contraseñas, pero una contraseña débil puede adivinarse. Use al menos ' + AULAS_PW_MIN_LEN + ' caracteres y evite palabras comunes.'));
   }
   function openConfigPanel(){
     if (!userContext || userContext.role !== 'direccion') return;
@@ -2242,11 +2476,18 @@
     inicioOnReady = onReady;
     aulasLoadLocal();
     try{ loadGithubConfig(); }catch(err){}
-    renderInicioButtons();
-    // Si hay sincronización con GitHub configurada en este navegador, intenta traer la configuración compartida.
-    aulasPullRemote();
-
     var saved = loadUserContext();
+    // Sin sesión guardada y sin token: el Inicio espera (plazo corto) a la configuración compartida del repositorio
+    // para no mostrar aulas ocultas ni contraseñas obsoletas. Con sesión guardada la carga ocurre en segundo plano.
+    aulasInicioLoading = !saved && !aulasRemoteAvailable() && typeof fetch === 'function' && !!aulasPublicSource();
+    renderInicioButtons();
+    aulasLoadPublicConfig(function(changed){
+      aulasInicioLoading = false;
+      renderInicioButtons();
+      if (changed){ try{ aulasOnConfigChanged(); }catch(err){} }
+      aulasRefreshStatusLine();
+    });
+
     // Una sesión guardada en un aula que Dirección ocultó (o que ya no existe) no se reanuda: vuelve al Inicio.
     if (saved && saved.role === 'aula' && !isAulaVisible(saved.aula)){
       try{ localStorage.removeItem(USER_CONTEXT_KEY); }catch(err){}
