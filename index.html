@@ -530,6 +530,26 @@
   .tool-btn-wrap.open .tool-submenu-row{ display:flex; }
   .tool-btn-wrap.open > .tool-btn{ background:var(--hover-tint); }
   .tool-submenu-row.open{ display:flex; }
+  /* MCC aéreas: la polilínea real (Corredor / Línea de rumbo) queda invisible pero seleccionable;
+     lo visible son sus companions recortados contra los círculos. */
+  .mcca-hidden{ stroke-opacity:0 !important; }
+  /* Botones de herramientas DERIVADAS (todo .tool-btn dentro de un .tool-submenu-row): celda de
+     tamaño fijo e idéntico (ancho x alto), zona de ícono de la misma altura y etiqueta de máximo
+     2 líneas que se achica (ver fitToolSubmenuLabels) o se recorta, nunca se desborda. Así los
+     submenús no se ven desordenados cuando las etiquetas tienen distinta longitud. */
+  .tool-submenu-row:not(#tareas-submenu):not(#mcc-misiones-submenu){ max-width:min(272px, calc(100vw - 16px)) !important; }
+  .tool-submenu-row .tool-btn{
+    box-sizing:border-box; width:62px; height:58px; min-width:62px; max-width:62px; flex:0 0 62px;
+    padding:5px 2px 3px; gap:2px; justify-content:flex-start; align-items:center; overflow:hidden; text-align:center;
+  }
+  .tool-submenu-row .tool-btn svg{ width:22px; height:22px; flex:0 0 22px; }
+  .tool-submenu-row .tool-btn > span{
+    display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden;
+    box-sizing:border-box; width:100%; max-width:100%; min-width:0; flex:1 1 auto;
+    text-align:center; line-height:1.14; letter-spacing:0; font-size:8.4px; overflow-wrap:normal; word-break:normal; hyphens:manual;
+  }
+  .tool-submenu-row .tool-btn > span.fit-break{ overflow-wrap:anywhere; }
+  .tool-submenu-row .tool-btn-wrap{ flex:0 0 62px; width:62px; }
   #tareas-submenu.open{ display:flex; }
   .tarea-icon-btn{
     width:38px; height:38px; border:1px solid transparent; border-radius:7px; background:transparent;
@@ -1212,29 +1232,47 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4"/></svg>
           <span>MCC</span>
         </button>
-        <div class="tool-submenu-row" id="mcc-submenu" style="flex-wrap:wrap; max-width:220px;">
-          <button class="tool-btn" data-tool="mcc:zona" title="Zona: polígono libre con límite de magnitud único (arrastrable, apunta al centroide) y texto interno opcional"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12,3 21,9.5 17.8,20 6.2,20 3,9.5"/></svg><span>Zona</span></button>
-          <button class="tool-btn" data-tool="mcc:direccionataque" title="Dirección de ataque: flecha simple con opciones de Ataque Principal, Futuro y Simulado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg><span>Dir. ataque</span></button>
-          <button class="tool-btn" data-tool="mcc:ejeavance" title="Eje de Avance: flecha con texto interno y opción de Eje Simulado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg><span>Eje avance</span></button>
-          <button class="tool-btn" data-tool="mcc:emboscada" title="Emboscada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2" y1="6" x2="9" y2="6"/><line x1="2" y1="9" x2="9" y2="9"/><line x1="2" y1="12" x2="9" y2="12"/><path d="M9,4 A8,8 0 0,1 9,20" stroke-width="1.8"/><line x1="12" y1="12" x2="21" y2="12" stroke-width="1.8"/><polyline points="17,8 21,12 17,16" stroke-width="1.8"/></svg><span>Emboscada</span></button>
-          <button class="tool-btn" data-tool="mcc:frentecubierto" title="Frente cubierto: igual a Seguridad sin las cajas 'S', con una Unidad configurable al centro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="8" height="8"/><path d="M8,12 L3,15 M16,12 L21,15"/></svg><span>Frente cub.</span></button>
-          <button class="tool-btn" data-tool="mcc:limiteelementos" title="Límite entre elementos: trazo libre con nombre sin borde ni fondo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 16c1.5-5 3-6.5 4.5-6.5S9 13 10.5 13s2-7 4-7 1.5 9 3.5 9 1.5-3.5 3-3.5"/></svg><span>Lím. elem.</span></button>
-          <button class="tool-btn" data-tool="mcc:limitecombate" title="Límite de combate: puntos de coordinación, texto en los extremos y modo Línea de Contacto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="18" x2="20" y2="6"/><circle cx="4" cy="18" r="2.4"/><circle cx="20" cy="6" r="2.4"/></svg><span>Lím. combate</span></button>
-          <button class="tool-btn" data-tool="mcc:puntocoordinacion" title="Punto de coordinación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><line x1="6.5" y1="6.5" x2="17.5" y2="17.5"/><line x1="6.5" y1="17.5" x2="17.5" y2="6.5"/></svg><span>Pto. coord.</span></button>
-          <button class="tool-btn" data-tool="mcc:puntocontrol" title="Punto de control"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="10"/><polygon points="12,14 16,20 8,20" fill="currentColor" stroke="none"/></svg><span>Pto. control</span></button>
-          <button class="tool-btn" data-tool="mcc:puntocontacto" title="Punto de contacto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="10"/><line x1="12" y1="14" x2="12" y2="21"/></svg><span>Pto. contacto</span></button>
-          <button class="tool-btn" data-tool="mcc:puntocomprobacion" title="Punto de comprobación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/></svg><span>Pto. comprob.</span></button>
-          <button class="tool-btn" data-tool="mcc:puntoconexion" title="Punto de conexión"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/></svg><span>Pto. conexión</span></button>
-          <button class="tool-btn" data-tool="mcc:via" title="Vía de infiltración: doble línea con nombre opcional"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 18c4-9 14-9 18-13" /><path d="M3 21c4-9 14-9 18-13" /></svg><span>Vía infilt.</span></button>
-          <button class="tool-btn" data-tool="mcc:camino" title="Camino: línea única con nombre opcional"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20c4-10 14-10 18-16"/></svg><span>Camino</span></button>
-          <div class="tool-btn-wrap" id="mcc-misiones-wrap">
-            <button class="tool-btn" data-tool="mcc-misiones-toggle" title="Misiones Tácticas: las 16 tareas tácticas, también disponibles desde MCC">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="16" y2="12"/><polyline points="12 6 18 12 12 18"/></svg>
-              <span>Misiones</span>
-            </button>
-            <div id="mcc-misiones-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:220px;"></div>
-          </div>
+        <div class="tool-submenu-row" id="mcc-submenu" style="flex-wrap:wrap;">
+          <button class="tool-btn" data-tool="mcc-ter-toggle" title="MCC Terrestres: medidas de coordinación y control terrestres"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4"/></svg><span>MCC Terrestres</span></button>
+          <button class="tool-btn" data-tool="mcc-aer-toggle" title="MCC Aéreas: medidas de coordinación y control aéreas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 L12 21.5"/><path d="M3 9.5 L21 14.5"/><path d="M8 16 L5 20 M16 16 L19 20"/></svg><span>MCC Aéreas</span></button>
         </div>
+      </div>
+      <div id="mcc-ter-submenu" class="tool-submenu-row" style="flex-wrap:wrap;">
+          <button class="tool-btn" data-tool="mcc:zona" title="Zona: polígono libre con límite de magnitud único (arrastrable, apunta al centroide) y texto interno opcional"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12,3 21,9.5 17.8,20 6.2,20 3,9.5"/></svg><span>Zona</span></button>
+        <button class="tool-btn" data-tool="mcc:direccionataque" title="Dirección de ataque: flecha simple con opciones de Ataque Principal, Futuro y Simulado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg><span>Dir. ataque</span></button>
+        <button class="tool-btn" data-tool="mcc:ejeavance" title="Eje de Avance: flecha con texto interno y opción de Eje Simulado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg><span>Eje avance</span></button>
+        <button class="tool-btn" data-tool="mcc:emboscada" title="Emboscada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2" y1="6" x2="9" y2="6"/><line x1="2" y1="9" x2="9" y2="9"/><line x1="2" y1="12" x2="9" y2="12"/><path d="M9,4 A8,8 0 0,1 9,20" stroke-width="1.8"/><line x1="12" y1="12" x2="21" y2="12" stroke-width="1.8"/><polyline points="17,8 21,12 17,16" stroke-width="1.8"/></svg><span>Emboscada</span></button>
+        <button class="tool-btn" data-tool="mcc:frentecubierto" title="Frente cubierto: igual a Seguridad sin las cajas 'S', con una Unidad configurable al centro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="8" height="8"/><path d="M8,12 L3,15 M16,12 L21,15"/></svg><span>Frente cub.</span></button>
+        <button class="tool-btn" data-tool="mcc:limiteelementos" title="Límite entre elementos: trazo libre con nombre sin borde ni fondo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 16c1.5-5 3-6.5 4.5-6.5S9 13 10.5 13s2-7 4-7 1.5 9 3.5 9 1.5-3.5 3-3.5"/></svg><span>Lím. elem.</span></button>
+        <button class="tool-btn" data-tool="mcc:limitecombate" title="Límite de combate: puntos de coordinación, texto en los extremos y modo Línea de Contacto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="18" x2="20" y2="6"/><circle cx="4" cy="18" r="2.4"/><circle cx="20" cy="6" r="2.4"/></svg><span>Lím. combate</span></button>
+        <button class="tool-btn" data-tool="mcc:puntocoordinacion" title="Punto de coordinación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><line x1="6.5" y1="6.5" x2="17.5" y2="17.5"/><line x1="6.5" y1="17.5" x2="17.5" y2="6.5"/></svg><span>Pto. coord.</span></button>
+        <button class="tool-btn" data-tool="mcc:puntocontrol" title="Punto de control"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="10"/><polygon points="12,14 16,20 8,20" fill="currentColor" stroke="none"/></svg><span>Pto. control</span></button>
+        <button class="tool-btn" data-tool="mcc:puntocontacto" title="Punto de contacto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="10"/><line x1="12" y1="14" x2="12" y2="21"/></svg><span>Pto. contacto</span></button>
+        <button class="tool-btn" data-tool="mcc:puntocomprobacion" title="Punto de comprobación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/></svg><span>Pto. comprob.</span></button>
+        <button class="tool-btn" data-tool="mcc:puntoconexion" title="Punto de conexión"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/></svg><span>Pto. conexión</span></button>
+        <button class="tool-btn" data-tool="mcc:via" title="Vía de infiltración: doble línea con nombre opcional"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 18c4-9 14-9 18-13" /><path d="M3 21c4-9 14-9 18-13" /></svg><span>Vía infilt.</span></button>
+        <button class="tool-btn" data-tool="mcc:camino" title="Camino: línea única con nombre opcional"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20c4-10 14-10 18-16"/></svg><span>Camino</span></button>
+        <div class="tool-btn-wrap" id="mcc-misiones-wrap">
+          <button class="tool-btn" data-tool="mcc-misiones-toggle" title="Misiones Tácticas: las 16 tareas tácticas, también disponibles desde MCC">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="16" y2="12"/><polyline points="12 6 18 12 12 18"/></svg>
+            <span>Misiones</span>
+          </button>
+          <div id="mcc-misiones-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:220px;"></div>
+        </div>
+      </div>
+      <div id="mcc-aer-submenu" class="tool-submenu-row" style="flex-wrap:wrap;">
+          <button class="tool-btn" data-tool="mcca:pca" title="Punto de Control Aéreo: círculo con PCA y número editable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5" stroke-width="2.8"/><text x="12" y="14.6" text-anchor="middle" font-size="6.6" font-family="Arial" fill="currentColor" stroke="none">PCA</text></svg><span>PCA</span></button>
+          <button class="tool-btn" data-tool="mcca:pll" title="Punto de llamada: círculo con PLL y texto editable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><text x="12" y="14.6" text-anchor="middle" font-size="6.6" font-weight="700" font-family="Arial" fill="currentColor" stroke="none">PLL</text></svg><span>PLL</span></button>
+          <button class="tool-btn" data-tool="mcca:piaa" title="Punto Inicial de Apoyo Aéreo: cuadrado con PIAA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" stroke-width="2.6"/><text x="12" y="14.6" text-anchor="middle" font-size="6" font-weight="700" font-family="Arial" fill="currentColor" stroke="none">PIAA</text></svg><span>PIAA</span></button>
+          <button class="tool-btn" data-tool="mcca:pcc" title="Punto de control de las comunicaciones: doble círculo con PCC y texto editable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><circle cx="12" cy="12" r="6.6" stroke-width="1.5"/><text x="12" y="14.2" text-anchor="middle" font-size="5.2" font-family="Arial" fill="currentColor" stroke="none">PCC</text></svg><span>PCC</span></button>
+          <button class="tool-btn" data-tool="mcca:pt" title="Punto Terminal (Actividades aeromóviles): doble círculo con PT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" stroke-width="2"/><circle cx="12" cy="12" r="6.4" stroke-width="2"/><text x="12" y="14.3" text-anchor="middle" font-size="5.6" font-family="Arial" fill="currentColor" stroke="none">PT</text></svg><span>PT</span></button>
+          <button class="tool-btn" data-tool="mcca:corredor" title="Corredor Aéreo: banda de ancho real (FT) con nodos PCA/PCC y cuadro de datos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6.5h9.5l4.5 6"/><path d="M5 15.5h6l3.5 4.5"/><circle cx="5" cy="11" r="4.5" stroke-width="1.6"/><circle cx="18.5" cy="19" r="3.4" stroke-width="1.6"/></svg><span>Corredor</span></button>
+          <button class="tool-btn" data-tool="mcca:direccionataque" title="Dirección de Ataque Aérea: dirección de ataque con marcador aéreo y campos Desde/Hasta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3.5"/><path d="M5.5 8.5v7l4-3.5z M13.5 8.5v7l-4-3.5z" stroke-width="1.6"/><path d="M13.5 12h7.5"/><path d="M18 8.5L21.5 12 18 15.5"/></svg><span>Dir. ataque aérea</span></button>
+          <button class="tool-btn" data-tool="mcca:avenida" title="Avenida de aproximación Aérea: avenida de aproximación con la opción Av Aprox Aérea activada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7c5 0 8 10 14 10"/><path d="M3 17c5 0 8-10 14-10"/><path d="M15 12.5l5 4.5-1-6" stroke-width="1.8"/></svg><span>Av. aprox. aérea</span></button>
+          <button class="tool-btn" data-tool="mcca:rumbo" title="Línea de rumbo: dos PCA unidos por una línea con rumbo editable"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="3.6" stroke-width="1.5"/><circle cx="19" cy="12" r="3.6" stroke-width="1.5"/><line x1="8.6" y1="12" x2="15.4" y2="12" stroke-width="3"/></svg><span>Línea de rumbo</span></button>
+          <button class="tool-btn" data-tool="mcca:zor" title="Zona de Operaciones Restringida: polígono libre con inscripción ZOR"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,3 21,9.5 17.8,20 6.2,20 3,9.5"/><text x="12" y="14.2" text-anchor="middle" font-size="5.4" font-weight="700" font-family="Arial" fill="currentColor" stroke="none">ZOR</text></svg><span>ZOR</span></button>
+          <button class="tool-btn" data-tool="mcca:zvp" title="Zona de vuelo prohibido: rectángulo con esquinas derechas biseladas (ZVP)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h13l5 3v8l-4 3H3z"/><text x="8.5" y="12.6" text-anchor="middle" font-size="5.4" font-weight="700" font-family="Arial" fill="currentColor" stroke="none">ZVP</text></svg><span>ZVP</span></button>
+          <button class="tool-btn" data-tool="mcca:zvr" title="Zona de vuelo restringido: rectángulo con esquinas derechas biseladas (ZVR)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h13l5 3v8l-4 3H3z"/><text x="8.5" y="12.6" text-anchor="middle" font-size="5.4" font-weight="700" font-family="Arial" fill="currentColor" stroke="none">ZVR</text></svg><span>ZVR</span></button>
       </div>
       <div id="tareas-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:220px;"></div>
       <div id="ingenieros-submenu" class="tool-submenu-row" style="flex-wrap:wrap; max-width:160px;">
@@ -4460,8 +4498,8 @@
     // con mccArrowPending) — se resalta el botón contenedor mientras cualquiera esté activa.
     var mccToggleBtn = document.querySelector('#draw-toolbar [data-tool="mcc-toggle"]');
     if (mccToggleBtn){
-      var mccToolActive = ['mccpoint','mccline','mcczona'].indexOf(activeToolName) !== -1 ||
-        (activeToolName === 'arrow' && !!arrowPendingMccKind) ||
+      var mccToolActive = ['mccpoint','mccline','mcczona','mccaplace','mccacorredor'].indexOf(activeToolName) !== -1 ||
+        (activeToolName === 'arrow' && (!!arrowPendingMccKind || arrowPendingAv)) ||
         (activeToolName === 'tacticaltask' && mccTacticalTaskPending);
       mccToggleBtn.classList.toggle('active', mccToolActive);
     }
@@ -6621,7 +6659,10 @@
     stopMccPointTool();
     stopMccLineTool();
     stopMccZonaTool();
+    stopMccaTools();
     arrowPendingMccKind = null;
+    arrowPendingAereoDA = false;
+    arrowPendingAv = false;
     mccTacticalTaskPending = false;
     stopUnidadesTool();
     stopEquiposTool();
@@ -6659,7 +6700,8 @@
      de un objeto ya existente. Se intercepta en fase de captura (antes de que la forma se quede
      con el clic) y se reenvía como un clic de mapa genuino con la coordenada correcta. */
   mapContainer.addEventListener('click', function(e){
-    if (!activeToolName || !drawHandlers[activeToolName] || typeof drawHandlers[activeToolName].enabled !== 'function' || !drawHandlers[activeToolName].enabled()) return;
+    var drawFwd = activeToolName && drawHandlers[activeToolName] && typeof drawHandlers[activeToolName].enabled === 'function' && drawHandlers[activeToolName].enabled();
+    if (!drawFwd && !mccaClickToolActive()) return;
     var landedOnShape = e.target && e.target.closest && (e.target.closest('path') || e.target.closest('.leaflet-marker-icon'));
     if (!landedOnShape) return;
     e.stopPropagation();
@@ -8255,7 +8297,8 @@
       tailRightOffset: a.tailRightOffset ? { x:a.tailRightOffset.x, y:a.tailRightOffset.y } : null,
       corridorEnabled: !!a.corridorEnabled, corridorEchelon: a.corridorEchelon || '', mainAttack: !!a.mainAttack,
       avAproxAerea: !!a.avAproxAerea,
-      mccKind: a.mccKind || null, futuro: !!a.futuro, simulado: !!a.simulado, labelText: a.labelText || '' };
+      mccKind: a.mccKind || null, futuro: !!a.futuro, simulado: !!a.simulado, labelText: a.labelText || '',
+      aereo: !!a.aereo, desde: a.desde || '', hasta: a.hasta || '', bgOpacity: (a.bgOpacity != null) ? a.bgOpacity : undefined };
   }
 
   // Replica exactamente el cálculo geométrico de computeArrowPoints (bezier, arco, punto
@@ -8473,7 +8516,9 @@
       // de computeArrowPoints (que genera el asta ancha tipo polígono de las demás flechas).
       var dgeo = computeDireccionAtaqueCenterline(arrow);
       var vHead = [dgeo.leftArm, dgeo.tip, dgeo.rightArm];
-      if (arrow.labelText){
+      if (arrow.aereo){
+        pts = mccaAereoOutlinePts(arrow, dgeo, vHead);
+      } else if (arrow.labelText){
         // El texto (curvo, sigue el trazo) corta un hueco en la línea. El ancho del hueco sale
         // del ancho REAL del texto medido en pantalla (px) y se convierte a metros con la
         // relación metros/px del propio trazo, centrado en la mitad del arco.
@@ -8500,6 +8545,7 @@
       outline.setLatLngs(pts);
       outline.setStyle(style);
     }
+    if (arrow.aereo || (shape._shapeId && arrowAereoMarks[shape._shapeId])) syncArrowAereo(shape);
   }
   function removeArrowOutline(shape){
     var o = arrowOutlines[shape._shapeId];
@@ -9308,6 +9354,9 @@
     } else if (shape._isTacticalTask){
       otherHandlesCleanup = createTacticalTaskHandles(shape);
       otherHandlesShapeRef = shape;
+    } else if (mccaIsAir(shape) && (shape._isMccLine || (shape._isMccPolygon && shape._mcc.type !== 'a_zor'))){
+      otherHandlesCleanup = createMccaHandles(shape);
+      otherHandlesShapeRef = shape;
     } else if (shape._mccText && shape._mccText.enabled && (shape._isMccPolygon || (shape._isArrow && shape._arrow && shape._arrow.mccKind === 'ejeavance'))){
       otherHandlesCleanup = createMccTextRotationHandle(shape);
       otherHandlesShapeRef = shape;
@@ -9853,6 +9902,7 @@
       syncDoubleLineCompanion(shape);
       if (shape._rectHandles) positionRectangleHandle(shape);
       syncLengthLabel(shape);
+      if (mccaIsAir(shape)) mccaAfterGeomChange(shape);
     }
   }
 
@@ -9872,7 +9922,7 @@
     if (shape._isText){ shape._text.latlng = L.latLng(snap); shape.setLatLng(snap); if (shape._textHandles) positionTextHandle(shape); return; }
     if (shape._isImageOverlay){ shape.setBounds(snap); positionImageHandles(shape); return; }
     if (shape instanceof L.Marker || shape instanceof L.Circle){ shape.setLatLng(snap); return; }
-    if (shape.getLatLngs){ shape.setLatLngs(snap); syncDoubleLineCompanion(shape); if (shape._rectHandles) positionRectangleHandle(shape); syncLengthLabel(shape); return; }
+    if (shape.getLatLngs){ shape.setLatLngs(snap); syncDoubleLineCompanion(shape); if (shape._rectHandles) positionRectangleHandle(shape); syncLengthLabel(shape); if (mccaIsAir(shape)) mccaAfterGeomChange(shape); return; }
   }
 
   function pushMoveUndo(shape, beforeSnap){
@@ -10033,7 +10083,7 @@
     mapContainer.removeEventListener('pointercancel', arrowPointerCancel);
     arrowPointerId = null;
     if (arrowShape){ map.removeLayer(arrowShape); removeArrowOutline(arrowShape); arrowShape = null; }
-    arrowPendingMccKind = null;
+    arrowPendingMccKind = null; arrowPendingAereoDA = false; arrowPendingAv = false;
   }
   function arrowPointerUp(ev){
     if (ev.pointerId !== arrowPointerId) return;
@@ -10062,6 +10112,17 @@
       // "Dirección de ataque" debe ser una flecha simple SIN relleno (solo trazo), a diferencia
       // del resto de las flechas de la app que sí llevan relleno translúcido.
       if (finalArrow._arrow.mccKind === 'direccionataque') finalArrow.setStyle({ fillOpacity: 0 });
+    }
+    if (arrowPendingAereoDA){
+      // "Dirección de Ataque Aérea": misma flecha con el marcador aéreo (dos triángulos) y Desde/Hasta.
+      arrowPendingAereoDA = false;
+      if (finalArrow._arrow.mccKind === 'direccionataque'){ finalArrow._arrow.aereo = true; finalArrow._arrow.desde = ''; finalArrow._arrow.hasta = ''; finalArrow._arrow.bgOpacity = 0; }
+    }
+    if (arrowPendingAv){
+      // "Avenida de aproximación Aérea": la flecha genérica con "Av Aprox Aérea" activada y fondo transparente.
+      arrowPendingAv = false;
+      finalArrow._arrow.avAproxAerea = true; finalArrow._arrow.bgOpacity = 0;
+      finalArrow.setStyle({ fillColor: '#ffffff', fillOpacity: 0 }); finalArrow._fillColorRaw = '#ffffff';
     }
     active.group.addLayer(finalArrow);
     attachShapeInteractivity(finalArrow, active);
@@ -10150,8 +10211,23 @@
     updateToolbarUI();
   }
 
+  // Ajusta las etiquetas de los botones derivados para que quepan en su celda fija: primero se
+  // reduce el tamaño de letra (hasta 5.5px) y, como último recurso, se permite partir la palabra;
+  // el CSS limita además a 2 líneas con recorte. Solo mide cuando el submenú está visible.
+  function fitToolSubmenuLabels(rowEl){
+    if (!rowEl) return;
+    rowEl.querySelectorAll('.tool-btn > span').forEach(function(sp){
+      sp.classList.remove('fit-break');
+      sp.style.fontSize = '';
+      var fs = 8.4, guard = 0;
+      function overflows(){ return sp.scrollWidth > sp.clientWidth + 0.5 || sp.scrollHeight > sp.clientHeight + 0.5; }
+      while (guard++ < 12 && fs > 5.5 && overflows()){ fs -= 0.4; sp.style.fontSize = fs.toFixed(1) + 'px'; }
+      if (overflows()) sp.classList.add('fit-break');
+    });
+  }
   function positionFloatingSubmenu(submenuEl, anchorEl){
     if (submenuEl.parentNode !== document.body) document.body.appendChild(submenuEl);
+    fitToolSubmenuLabels(submenuEl);
     var margin = 8;
     var anchorRect = anchorEl.getBoundingClientRect();
     var subRect = submenuEl.getBoundingClientRect();
@@ -10173,7 +10249,7 @@
   // camino (por ejemplo, elegir una tarea de "Tareas" no cerraba "Ingenieros" ni "Pasajes" si
   // habían quedado abiertos de una navegación previa), así que un cuadro flotante podía quedar
   // pegado en pantalla al cambiar de herramienta. Ahora se centraliza en una sola función.
-  var ALL_TOOL_SUBMENU_IDS = ['tactica-wrap','tactica-submenu','tareas-submenu','lineaofensiva-submenu','pasajes-submenu','ingenieros-submenu','camposminados-submenu','obstaculos-submenu','vehiculos-wrap','vehiculos-submenu','mcc-wrap','mcc-submenu','mcc-misiones-wrap','mcc-misiones-submenu'];
+  var ALL_TOOL_SUBMENU_IDS = ['tactica-wrap','tactica-submenu','tareas-submenu','lineaofensiva-submenu','pasajes-submenu','ingenieros-submenu','camposminados-submenu','obstaculos-submenu','vehiculos-wrap','vehiculos-submenu','mcc-wrap','mcc-submenu','mcc-ter-submenu','mcc-aer-submenu','mcc-misiones-wrap','mcc-misiones-submenu'];
   function closeToolSubmenus(keepIds){
     keepIds = keepIds || [];
     ALL_TOOL_SUBMENU_IDS.forEach(function(id){
@@ -10271,13 +10347,25 @@
         if (nowOpenMcc) positionFloatingSubmenu(mccSubmenu, btn);
         return;
       }
+      if (tool === 'mcc-ter-toggle' || tool === 'mcc-aer-toggle'){
+        // MCC se divide en dos herramientas derivadas (mismo patrón que Vehículos): cada una abre
+        // su propia fila de herramientas.
+        ev.stopPropagation();
+        var mccDerivId = (tool === 'mcc-ter-toggle') ? 'mcc-ter-submenu' : 'mcc-aer-submenu';
+        var mccDerivSub = document.getElementById(mccDerivId);
+        var nowOpenMD = !mccDerivSub.classList.contains('open');
+        closeToolSubmenus(nowOpenMD ? ['mcc-wrap','mcc-submenu',mccDerivId] : ['mcc-wrap','mcc-submenu']);
+        mccDerivSub.classList.toggle('open', nowOpenMD);
+        if (nowOpenMD) positionFloatingSubmenu(mccDerivSub, btn);
+        return;
+      }
       if (tool === 'mcc-misiones-toggle'){
         ev.stopPropagation();
         renderMccMisionesSubmenu();
         var mccMisWrap = document.getElementById('mcc-misiones-wrap');
         var mccMisSubmenu = document.getElementById('mcc-misiones-submenu');
         var nowOpenMM = !mccMisSubmenu.classList.contains('open');
-        closeToolSubmenus(nowOpenMM ? ['mcc-wrap','mcc-submenu','mcc-misiones-wrap','mcc-misiones-submenu'] : []);
+        closeToolSubmenus(nowOpenMM ? ['mcc-wrap','mcc-submenu','mcc-ter-submenu','mcc-misiones-wrap','mcc-misiones-submenu'] : ['mcc-wrap','mcc-submenu','mcc-ter-submenu']);
         mccMisWrap.classList.toggle('open', nowOpenMM);
         mccMisSubmenu.classList.toggle('open', nowOpenMM);
         if (nowOpenMM) positionFloatingSubmenu(mccMisSubmenu, btn);
@@ -10286,6 +10374,12 @@
       if (tool && tool.indexOf('mcc:') === 0){
         ev.stopPropagation();
         dispatchMccTool(tool.split(':')[1]);
+        closeToolSubmenus();
+        return;
+      }
+      if (tool && tool.indexOf('mcca:') === 0){
+        ev.stopPropagation();
+        dispatchMccaTool(tool.split(':')[1]);
         closeToolSubmenus();
         return;
       }
@@ -10362,7 +10456,9 @@
     var mccSub = document.getElementById('mcc-submenu');
     var mccMisWrapEl = document.getElementById('mcc-misiones-wrap');
     var mccMisSub = document.getElementById('mcc-misiones-submenu');
-    var allSubs = [wrap, tacticaSub, tareasSub, loSub, pasajesSub, ingenierosSub, cmSub, obsSub, vehWrapEl, vehSub, mccWrapEl, mccSub, mccMisWrapEl, mccMisSub];
+    var mccTerSub = document.getElementById('mcc-ter-submenu');
+    var mccAerSub = document.getElementById('mcc-aer-submenu');
+    var allSubs = [wrap, tacticaSub, tareasSub, loSub, pasajesSub, ingenierosSub, cmSub, obsSub, vehWrapEl, vehSub, mccWrapEl, mccSub, mccTerSub, mccAerSub, mccMisWrapEl, mccMisSub];
     var insideAny = allSubs.some(function(el){ return el && el.contains(ev.target); });
     if (!insideAny){
       allSubs.forEach(function(el){ if (el) el.classList.remove('open'); });
@@ -10530,12 +10626,14 @@
   }
 
   function defaultShapeName(shape){
+    if (shape._isArrow && shape._arrow && shape._arrow.aereo) return 'Dirección de Ataque Aérea ' + shapeCounter;
+    if (shape._isArrow && shape._arrow && shape._arrow.avAproxAerea && !shape._arrow.mccKind && shape._arrow.bgOpacity != null) return 'Avenida de aproximación Aérea ' + shapeCounter;
     if (shape._isArrow && shape._arrow && shape._arrow.mccKind === 'direccionataque') return 'Dirección de ataque ' + shapeCounter;
     if (shape._isArrow && shape._arrow && shape._arrow.mccKind === 'ejeavance') return 'Eje de avance ' + shapeCounter;
     if (shape._isArrow) return 'Ataque ' + shapeCounter;
     if (shape._isMccPoint) return (MCC_KIND_LABELS[shape._mcc.type] || 'Punto MCC') + ' ' + shapeCounter;
     if (shape._isMccLine) return (MCC_KIND_LABELS[shape._mcc.type] || 'Línea MCC') + ' ' + shapeCounter;
-    if (shape._isMccPolygon) return 'Zona ' + shapeCounter;
+    if (shape._isMccPolygon) return ((shape._mcc && shape._mcc.air && MCC_KIND_LABELS[shape._mcc.type]) ? MCC_KIND_LABELS[shape._mcc.type] : 'Zona') + ' ' + shapeCounter;
     if (shape._isMilSymbol) return 'Unidad ' + shapeCounter;
     if (shape._isEllipse) return 'Elipse ' + shapeCounter;
     if (shape._isText) return 'Texto ' + shapeCounter;
@@ -10683,10 +10781,16 @@
   });
 
   /* ---------------- STYLE EDITING (shared by list + properties panel) ---------------- */
+  function mccaStyleChanged(shape){
+    if (!mccaIsAir(shape) || shape._isMccPoint) return;
+    if (shape._mccText && shape._mccText.fixed){ shape._mccText.color = shape.options.color; syncMccTextCompanion(shape); }
+    syncMccAereo(shape);
+  }
   function applyStrokeColor(shape, color){
     shape.setStyle({ color: color });
     syncArrowOutline(shape);
     syncArrowMainAttack(shape);
+    mccaStyleChanged(shape);
   }
   function applyFillColor(shape, color){
     shape.setStyle({ fillColor: color });
@@ -10695,6 +10799,7 @@
     shape.setStyle({ opacity: val });
     syncArrowOutline(shape);
     syncArrowMainAttack(shape);
+    mccaStyleChanged(shape);
   }
   function applyFillOpacity(shape, val){
     shape.setStyle({ fillOpacity: val });
@@ -10704,6 +10809,7 @@
     syncDoubleLineCompanion(shape);
     syncArrowOutline(shape);
     syncArrowMainAttack(shape);
+    mccaStyleChanged(shape);
   }
   var doubleLineCompanions = {};
   function removeDoubleLineCompanion(shape){
@@ -10832,6 +10938,7 @@
     syncAllMccLineCompanions();
     syncAllMccZonaCompanions();
     syncAllMccTextCompanions();
+    syncAllMccAereo();
     if (isReadOnlyMode()){
       applyReadOnlySweep(list);
     }
@@ -13115,7 +13222,10 @@
       body.appendChild(infraBlock);
     }
 
-    if (kind === 'mccpoint'){
+    if ((kind === 'mccpoint' || kind === 'mccline' || kind === 'mccpolygon') && mccaIsAir(shape)){
+      body.appendChild(buildMccaPanel(shape));
+    }
+    if (kind === 'mccpoint' && !mccaIsAir(shape)){
       var mpBlock = document.createElement('div');
       mpBlock.className = 'style-block';
       var mpTitle = document.createElement('div');
@@ -13197,7 +13307,7 @@
       body.appendChild(mpBlock);
     }
 
-    if (kind === 'mccline'){
+    if (kind === 'mccline' && !mccaIsAir(shape)){
       var mlBlock = document.createElement('div');
       mlBlock.className = 'style-block';
       var mlTitle = document.createElement('div');
@@ -13361,7 +13471,7 @@
       body.appendChild(mlBlock);
     }
 
-    if (kind === 'mccpolygon'){
+    if (kind === 'mccpolygon' && !mccaIsAir(shape)){
       var zBlock = document.createElement('div');
       zBlock.className = 'style-block';
       var zTitle = document.createElement('div');
@@ -13970,7 +14080,7 @@
       mccArrowBlock.className = 'style-block';
       var mccArrowTitle = document.createElement('div');
       mccArrowTitle.className = 'veh-section-label';
-      mccArrowTitle.textContent = (shape._arrow.mccKind === 'direccionataque') ? 'Dirección de ataque' : 'Eje de Avance';
+      mccArrowTitle.textContent = shape._arrow.aereo ? 'Dirección de Ataque Aérea' : ((shape._arrow.mccKind === 'direccionataque') ? 'Dirección de ataque' : 'Eje de Avance');
       mccArrowBlock.appendChild(mccArrowTitle);
 
       if (shape._arrow.mccKind === 'direccionataque'){
@@ -14052,7 +14162,11 @@
         mccArrowBlock.appendChild(buildMccTextPanel(shape));
       }
 
+      if (shape._arrow.aereo) mccArrowBlock.appendChild(buildMccaArrowExtraPanel(shape));
       body.appendChild(mccArrowBlock);
+    }
+    if (kind === 'arrow' && shape._arrow && !shape._arrow.mccKind && shape._arrow.avAproxAerea && shape._arrow.bgOpacity != null){
+      body.appendChild(buildMccaArrowExtraPanel(shape));
     }
 
     var actions = document.createElement('div');
@@ -14168,7 +14282,11 @@
           mccKind: shape._arrow.mccKind || null,
           futuro: !!shape._arrow.futuro,
           simulado: !!shape._arrow.simulado,
-          labelText: shape._arrow.labelText || ''
+          labelText: shape._arrow.labelText || '',
+          aereo: !!shape._arrow.aereo,
+          desde: shape._arrow.desde || '',
+          hasta: shape._arrow.hasta || '',
+          bgOpacity: (shape._arrow.bgOpacity != null) ? shape._arrow.bgOpacity : undefined
         };
       }
       if (shape && shape._mccText){
@@ -14411,6 +14529,13 @@
           updateArmaLeftLabel(am);
           return am;
         }
+        if (p.mcc && p.mcc.air && MCCA_POINT_KINDS.indexOf(p.mcc.type) !== -1){
+          var apm = mccaNormalizeParams(p.mcc.type, p.mcc);
+          var apmk = L.marker(latlng, { icon: buildMccPointIcon(apm) });
+          apmk._isMccPoint = true;
+          apmk._mcc = apm;
+          return apmk;
+        }
         if (p.mcc && MCC_POINT_KINDS.indexOf(p.mcc.type) !== -1){
           var mpp = Object.assign(defaultMccPointParams(p.mcc.type), p.mcc);
           var mpm = L.marker(latlng, { icon: buildMccPointIcon(mpp) });
@@ -14463,7 +14588,11 @@
             mccKind: p.arrow.mccKind || null,
             futuro: !!p.arrow.futuro,
             simulado: !!p.arrow.simulado,
-            labelText: p.arrow.labelText || ''
+            labelText: p.arrow.labelText || '',
+            aereo: !!p.arrow.aereo,
+            desde: p.arrow.desde || '',
+            hasta: p.arrow.hasta || '',
+            bgOpacity: (p.arrow.bgOpacity != null) ? p.arrow.bgOpacity : undefined
           };
           if (p.arrow.mccKind) layer._isMccArrow = true;
           rebuildArrow(layer);
@@ -14475,6 +14604,10 @@
         if (p.mcc && p.mcc.type === 'zona'){
           layer._isMccPolygon = true;
           layer._mcc = Object.assign(defaultMccZonaParams(), p.mcc);
+        }
+        if (p.mcc && p.mcc.air){
+          if (MCCA_LINE_KINDS.indexOf(p.mcc.type) !== -1){ layer._isMccLine = true; layer._mcc = mccaNormalizeParams(p.mcc.type, p.mcc); }
+          else if (MCCA_POLY_KINDS.indexOf(p.mcc.type) !== -1){ layer._isMccPolygon = true; layer._mcc = mccaNormalizeParams(p.mcc.type, p.mcc); }
         }
         if (p.mccText){
           layer._mccText = Object.assign(defaultMccTextParams(), p.mccText);
@@ -14545,6 +14678,8 @@
         if (layer._isMccLine) syncMccLineCompanion(layer);
         if (layer._isMccPolygon) syncMccZonaCompanion(layer);
         if (layer._mccText && layer._mccText.enabled) syncMccTextCompanion(layer);
+        if (mccaIsAir(layer) && !layer._isMccPoint) syncMccAereo(layer);
+        if (layer._isArrow && layer._arrow && layer._arrow.aereo) syncArrowAereo(layer);
       }
     };
   }
@@ -15613,9 +15748,11 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
   /* ================================  5 "PUNTO DE..." (markers)  ================================ */
   function defaultMccPointParams(type){
+    if (MCCA_POINT_KINDS.indexOf(type) !== -1) return mccaDefaults(type);
     return { type: type, text: '', scale: 1, color: '#1F3864', fillOpacity: 1 };
   }
   function buildMccPointIcon(mp){
+    if (mp.air) return buildMccAereoPointIcon(mp);
     var scale = mp.scale || 1;
     var color = mp.color || '#1F3864';
     var text = mp.text || '';
@@ -16072,7 +16209,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     return L.divIcon({ className:'', html: html, iconSize:[0,0], iconAnchor:[0,0] });
   }
   function syncMccLineCompanion(shape){
-    if (!shape._isMccLine){ removeMccLineCompanion(shape); return; }
+    if (!shape._isMccLine || (shape._mcc && shape._mcc.air)){ removeMccLineCompanion(shape); return; }
     var owner = findLayerOfShape(shape);
     if (!owner) return;
     var mcc = shape._mcc;
@@ -16322,9 +16459,17 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     finalPoly._fillStyleKey = 'solid';
     finalPoly._isMccPolygon = true;
     finalPoly._mcc = defaultMccZonaParams();
+    if (mccZonaKind === 'a_zor'){
+      // Zona de Operaciones Restringida: fondo transparente + inscripción "ZOR" arrastrable.
+      finalPoly.setStyle({ fillColor: '#ffffff', fillOpacity: 0 });
+      finalPoly._fillColorRaw = '#ffffff';
+      finalPoly._mcc = mccaDefaults('a_zor');
+      finalPoly._mccText = mccaNewZorText(active.color, 22);
+    }
     active.group.addLayer(finalPoly);
     attachShapeInteractivity(finalPoly, active);
     syncMccZonaCompanion(finalPoly);
+    if (finalPoly._mccText && finalPoly._mccText.enabled) syncMccTextCompanion(finalPoly);
     recordAddShape(active, finalPoly);
     renderLayerList();
     selectedShape = finalPoly;
@@ -16333,10 +16478,13 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     mccZonaShape = null;
     disableAllTools();
   }
-  function activateMccZonaTool(){
-    if (activeToolName === 'mcczona'){ disableAllTools(); return; }
+  var mccZonaKind = 'zona';
+  function activateMccZonaTool(kind){
+    kind = kind || 'zona';
+    if (activeToolName === 'mcczona' && mccZonaKind === kind){ disableAllTools(); return; }
     if (!getActiveLayer()){ alert('Cree o seleccione una capa antes de dibujar.'); return; }
     disableAllTools();
+    mccZonaKind = kind;
     mccZonaActive = true;
     map.dragging.disable();
     mapContainer.style.cursor = 'crosshair';
@@ -16347,6 +16495,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
   function stopMccZonaTool(){
     mccZonaActive = false;
+    mccZonaKind = 'zona';
     mccZonaPointerId = null;
     map.dragging.enable();
     mapContainer.style.cursor = '';
@@ -16425,7 +16574,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     if (e){ e.marker.remove(); delete mccZonaCompanions[shape._shapeId]; }
   }
   function syncMccZonaCompanion(shape){
-    if (!shape._isMccPolygon){ removeMccZonaCompanion(shape); return; }
+    if (!shape._isMccPolygon || (shape._mcc && shape._mcc.air)){ removeMccZonaCompanion(shape); return; }
     var owner = findLayerOfShape(shape);
     if (!owner) return;
     var boundary = zonaBoundaryLatLngs(shape);
@@ -16494,7 +16643,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     // fracciones de píxel — prácticamente invisible; por eso "no funcionaba". Ahora boxWidth/
     // boxHeight son directamente píxeles de pantalla, igual que cualquier otra etiqueta de la app.
     var w = Math.max(t.boxWidth || 140, 10), h = Math.max(t.boxHeight || 40, 8);
-    var fs = Math.max(8, Math.min(h*0.45, 60));
+    var fs = t.fontSize ? Math.max(4, t.fontSize) : Math.max(8, Math.min(h*0.45, 60));
     var html = '<div style="width:100%;height:100%;transform:rotate(' + (t.rotation||0) + 'deg);transform-origin:50% 50%;' +
       'background:transparent;border:none;padding:2px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;' +
       'font-family:Calibri,Arial,sans-serif;font-size:' + fs + 'px;font-weight:700;color:' + (t.color||'#1A1A1A') + ';white-space:pre-wrap;overflow:hidden;">' +
@@ -16773,6 +16922,1117 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       '</svg>';
   }
 
+  /* =================================================================================
+     ========================  MCC AÉREAS (Medidas de Coordinación y Control)  =======
+     =================================================================================
+     Doce herramientas derivadas de "MCC Aéreas". Todas guardan sus datos en shape._mcc con
+     air:true (puntos / líneas / polígonos) o en shape._arrow (Dirección de Ataque Aérea y
+     Avenida de aproximación Aérea), por lo que se exportan/importan con el mismo mecanismo
+     que las MCC terrestres. REGLA COMÚN: el fondo de TODOS los símbolos es transparente por
+     defecto (bgOpacity = 0); el control "Opacidad del fondo" lo vuelve blanco opaco. */
+  var MCCA_POINT_KINDS = ['a_pca','a_pll','a_piaa','a_pcc','a_pt'];
+  var MCCA_LINE_KINDS = ['a_corredor','a_rumbo'];
+  var MCCA_POLY_KINDS = ['a_zor','a_zvp','a_zvr'];
+  var MCCA_LABELS = {
+    a_pca: 'Punto de Control Aéreo', a_pll: 'Punto de llamada', a_piaa: 'Punto Inicial de Apoyo Aéreo',
+    a_pcc: 'Punto de control de las comunicaciones', a_pt: 'Punto Terminal (Actividades aeromóviles)',
+    a_corredor: 'Corredor Aéreo', a_rumbo: 'Línea de rumbo', a_zor: 'Zona de Operaciones Restringida',
+    a_zvp: 'Zona de vuelo prohibido', a_zvr: 'Zona de vuelo restringido'
+  };
+  Object.keys(MCCA_LABELS).forEach(function(k){ MCC_KIND_LABELS[k] = MCCA_LABELS[k]; });
+  var MCCA_FT = 0.3048;                       // 1 FT = 0.3048 m
+  var MCCA_FAM = 'Calibri,Arial,sans-serif';
+  var mccaGroups = {};                        // shapeId -> L.layerGroup reconstruido en cada sync
+  var mccaBoxes = {};                         // shapeId -> marcador del cuadro de datos (Corredor)
+  var arrowAereoMarks = {};                   // shapeId -> marcador aéreo de la Dirección de Ataque Aérea
+
+  function mccaDefaults(type){
+    var p = { type: type, air: true, bgOpacity: 0 };
+    if (MCCA_POINT_KINDS.indexOf(type) !== -1){ p.text = ''; p.text2 = ''; p.textBelow = ''; p.scale = 1; p.color = '#1F3864'; }
+    else if (type === 'a_rumbo'){ p.num1 = ''; p.num2 = ''; p.scale = 1; }
+    else if (type === 'a_corredor'){
+      p.widthFt = 1200; p.nodes = [];
+      p.box = { dx: 0, dy: 0, fontSize: 12, cotaMin: '', cotaMax: '', desde: '', hasta: '' };
+    }
+    else if (type === 'a_zvp' || type === 'a_zvr'){
+      p.lengthM = 1000; p.widthM = 600; p.elemento = ''; p.altMin = ''; p.altMax = ''; p.d = ''; p.h = ''; p.fontScale = 1;
+    }
+    else if (type === 'a_zor'){ p.fontSize = 22; }
+    return p;
+  }
+  function mccaNormalizeParams(type, saved){
+    var p = Object.assign(mccaDefaults(type), saved || {});
+    if (type === 'a_corredor') p.box = Object.assign(mccaDefaults(type).box, (saved && saved.box) || {});
+    return p;
+  }
+  function mccaIsAir(shape){ return !!(shape && shape._mcc && shape._mcc.air); }
+  function mccaFlat(shape){
+    var ll = shape.getLatLngs();
+    while (Array.isArray(ll) && Array.isArray(ll[0])) ll = ll[0];
+    return ll;
+  }
+  function mccaSetFlat(shape, arr){ shape.setLatLngs(arr); }
+  function mccaBearing(a, b){ return taskBearingDeg(localXY(a, b)); }
+  function mccaPad3(v){
+    v = Math.round(v) % 360; if (v < 0) v += 360;
+    return ('000' + v).slice(-3);
+  }
+  function mccaFmtBearing(b){ return mccaPad3(b) + '′'; }
+  function mccaFwd(shape){ return function(e){ shape.fire('click', e); }; }
+  function mccaEnsureHidden(shape){
+    // Las líneas base de Corredor / Línea de rumbo se dibujan como companions (recortadas contra
+    // los círculos); la polilínea real queda invisible (stroke-opacity:0) pero seleccionable.
+    shape.options.className = 'mcca-hidden';
+    if (shape._path && L.DomUtil) L.DomUtil.addClass(shape._path, 'mcca-hidden');
+  }
+
+  /* ---------------- Símbolo circular / cuadrado con 1-2 líneas de texto ---------------- */
+  function mccaCircleSymbol(o){
+    var d = o.d, sw = o.sw, color = o.color || '#1F3864', bg = o.bg || 0;
+    var pad = (o.pad != null) ? o.pad : 2;
+    var below = o.below ? String(o.below) : '';
+    var fsB = Math.max(9, 12 * (o.scale || 1));
+    var belowW = below ? mccTextWidthPx(below, fsB) + 8 : 0;
+    var W = Math.max(d + pad, belowW), H = d + pad + (below ? fsB * 1.3 + 2 : 0);
+    var cx = W / 2, cy = d / 2 + pad / 2;
+    var minF = (o.minFont != null) ? o.minFont : 7;
+    var svg = '', innerHalf, boxW;
+    if (o.shape === 'square'){
+      var s = d * 0.92;
+      svg += '<rect x="' + (cx - s/2 + sw/2).toFixed(2) + '" y="' + (cy - s/2 + sw/2).toFixed(2) + '" width="' + (s - sw).toFixed(2) + '" height="' + (s - sw).toFixed(2) +
+        '" fill="#fff" fill-opacity="' + bg + '" stroke="' + color + '" stroke-width="' + sw.toFixed(2) + '"/>';
+      innerHalf = s/2 - sw; boxW = innerHalf * 1.85;
+    } else {
+      var R = d/2 - sw/2 - (pad ? 0.5 : 0);
+      svg += '<circle cx="' + cx.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + R.toFixed(2) + '" fill="#fff" fill-opacity="' + bg + '" stroke="' + color + '" stroke-width="' + sw.toFixed(2) + '"/>';
+      innerHalf = R - sw/2;
+      if (o.ring === 'double'){
+        var R2 = R - sw - (o.gap || 2);
+        svg += '<circle cx="' + cx.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + Math.max(R2, 0.5).toFixed(2) + '" fill="none" stroke="' + color + '" stroke-width="' + sw.toFixed(2) + '"/>';
+        innerHalf = R2 - sw/2;
+      }
+      boxW = innerHalf * 1.56;
+    }
+    function fit(text, maxF){ return Math.max(minF, Math.min(maxF, boxW * 1.7 / Math.max(String(text).length, 1))); }
+    function T(t, y, f){
+      return '<text x="' + cx.toFixed(2) + '" y="' + y.toFixed(2) + '" text-anchor="middle" font-family="' + MCCA_FAM + '" font-size="' + f.toFixed(2) +
+        '" font-weight="' + (o.bold ? 700 : 400) + '" fill="' + color + '">' + escapeHtmlText(t) + '</text>';
+    }
+    var line1 = o.line1 ? String(o.line1) : '', line2 = o.line2 ? String(o.line2) : '';
+    if (line1 || line2){
+      if (line1 && line2){
+        var fs = fit(line1, innerHalf * 0.58);
+        var fs2 = Math.min(fs, fit(line2, innerHalf * 0.58));
+        svg += T(line1, cy - fs * 0.18, fs) + T(line2, cy + fs2 * 0.92, fs2);
+      } else {
+        var t1 = line1 || line2;
+        var fs1 = fit(t1, innerHalf * 0.76);
+        svg += T(t1, cy + fs1 * 0.35, fs1);
+      }
+    }
+    if (below) svg += T(below, d + pad + fsB, fsB);
+    var html = '<svg width="' + W.toFixed(2) + '" height="' + H.toFixed(2) + '" viewBox="0 0 ' + W.toFixed(2) + ' ' + H.toFixed(2) + '" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">' + svg + '</svg>';
+    return { html: html, W: W, H: H, cx: cx, cy: cy };
+  }
+  function mccaSymbolIcon(sym){
+    return L.divIcon({ className: '', html: sym.html, iconSize: [sym.W, sym.H], iconAnchor: [sym.cx, sym.cy] });
+  }
+  function mccaPointSymbolOpts(mp){
+    var sc = mp.scale || 1, t = mp.type;
+    var o = { d: 46 * sc, color: mp.color || '#1F3864', bg: mp.bgOpacity || 0, scale: sc, below: mp.textBelow || '' };
+    if (t === 'a_pca'){ o.ring = 'single'; o.sw = 3.4 * sc; o.line1 = 'PCA'; o.line2 = mp.text2 || ''; }
+    else if (t === 'a_pll'){ o.ring = 'single'; o.sw = 2.4 * sc; o.line1 = 'PLL'; o.line2 = mp.text2 || ''; o.bold = true; }
+    else if (t === 'a_piaa'){ o.shape = 'square'; o.sw = 3.2 * sc; o.line1 = 'PIAA'; o.bold = true; }
+    else if (t === 'a_pcc'){ o.ring = 'double'; o.sw = 1.7 * sc; o.gap = 2.2 * sc; o.line1 = 'PCC'; o.line2 = mp.text2 || ''; }
+    else if (t === 'a_pt'){ o.ring = 'double'; o.sw = 2.3 * sc; o.gap = 2.8 * sc; o.line1 = 'PT'; }
+    return o;
+  }
+  function buildMccAereoPointIcon(mp){ return mccaSymbolIcon(mccaCircleSymbol(mccaPointSymbolOpts(mp))); }
+
+  /* ---------------- Historial (undo/redo) de las MCC aéreas ---------------- */
+  function mccaSnapshot(shape){
+    var s = { mcc: JSON.parse(JSON.stringify(shape._mcc)), mccText: shape._mccText ? JSON.parse(JSON.stringify(shape._mccText)) : null, ll: null, pos: null };
+    if (shape.getLatLng) s.pos = [shape.getLatLng().lat, shape.getLatLng().lng];
+    else s.ll = mccaFlat(shape).map(function(p){ return [p.lat, p.lng]; });
+    return s;
+  }
+  function mccaApplyStyle(shape){
+    if (shape._isMccPolygon && shape._mcc && shape._mcc.air){
+      shape.setStyle({ fillColor: '#ffffff', fillOpacity: shape._mcc.bgOpacity || 0 });
+      shape._fillColorRaw = '#ffffff';
+    }
+  }
+  function mccaRefreshShape(shape){
+    if (shape._isMccPoint) shape.setIcon(buildMccPointIcon(shape._mcc));
+    else if (shape._isArrow) syncArrowOutline(shape);
+    else syncMccAereo(shape);
+    if (shape._mccText && shape._mccText.enabled) syncMccTextCompanion(shape);
+    if (shape._mccaRefresh) shape._mccaRefresh();
+  }
+  function mccaRefreshHandles(shape){
+    if (selectedShape === shape && shape._mccaH){ syncOtherHandlesForSelection(null); syncOtherHandlesForSelection(shape); }
+  }
+  function mccaRestore(shape, s){
+    if (s.ll) mccaSetFlat(shape, s.ll.map(function(a){ return L.latLng(a[0], a[1]); }));
+    if (s.pos) shape.setLatLng(L.latLng(s.pos[0], s.pos[1]));
+    shape._mcc = JSON.parse(JSON.stringify(s.mcc));
+    if (s.mccText) shape._mccText = JSON.parse(JSON.stringify(s.mccText));
+    mccaApplyStyle(shape);
+    mccaRefreshShape(shape);
+    if (shape._mccText && shape._mccText.enabled) syncMccTextCompanion(shape);
+    mccaRefreshHandles(shape);
+    if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape));
+    renderLayerList();
+  }
+  function mccaPushUndo(shape, before){
+    var after = mccaSnapshot(shape);
+    if (JSON.stringify(before) === JSON.stringify(after)) return;
+    pushAction(function(){ mccaRestore(shape, before); }, function(){ mccaRestore(shape, after); });
+  }
+  // Registra un cambio hecho desde el panel de propiedades como una acción deshacer/rehacer.
+  function mccaBindUndo(el, takeSnap, applySnap){
+    var last = takeSnap(), dirty = false;
+    function mark(){ if (!dirty) last = takeSnap(); }
+    el.addEventListener('focus', mark);
+    el.addEventListener('pointerdown', mark);
+    el.addEventListener('mousedown', mark);
+    el.addEventListener('input', function(){ if (!dirty){ last = takeSnap(); dirty = true; } });
+    el.addEventListener('change', function(){
+      var a = takeSnap(), b = last;
+      dirty = false; last = a;
+      if (JSON.stringify(a) === JSON.stringify(b)) return;
+      pushAction(function(){ applySnap(b); }, function(){ applySnap(a); });
+    });
+  }
+  function mccaShapeUndoBinder(shape){
+    return function(el){ mccaBindUndo(el, function(){ return mccaSnapshot(shape); }, function(s){ mccaRestore(shape, s); }); };
+  }
+
+  /* ---------------- Alta de herramientas ---------------- */
+  var mccaPlaceKind = null, mccaPlaceHandler = null;
+  var mccaCorr = null;
+  var arrowPendingAereoDA = false;
+  var arrowPendingAv = false;
+  function mccaClickToolActive(){
+    return activeToolName === 'mccaplace' || activeToolName === 'mccacorredor';
+  }
+  function dispatchMccaTool(key){
+    if (['pca','pll','piaa','pcc','pt'].indexOf(key) !== -1) activateMccPointTool('a_' + key);
+    else if (key === 'corredor') activateMccaCorredorTool();
+    else if (key === 'direccionataque') activateMccaArrowTool('da');
+    else if (key === 'avenida') activateMccaArrowTool('av');
+    else if (key === 'rumbo' || key === 'zvp' || key === 'zvr') activateMccaPlaceTool('a_' + key);
+    else if (key === 'zor') activateMccZonaTool('a_zor');
+  }
+  function mccaFinishCreate(active, shape){
+    active.group.addLayer(shape);
+    attachShapeInteractivity(shape, active);
+    syncMccAereo(shape);
+    if (shape._mccText && shape._mccText.enabled) syncMccTextCompanion(shape);
+    recordAddShape(active, shape);
+    renderLayerList();
+    selectedShape = shape;
+    showProperties(shape, active);
+    disableAllTools();      // herramienta de un solo uso
+  }
+  function stopMccaTools(){
+    var had = !!(mccaPlaceHandler || mccaCorr);
+    if (mccaPlaceHandler){ map.off('click', mccaPlaceHandler); mccaPlaceHandler = null; }
+    mccaPlaceKind = null;
+    if (mccaCorr){
+      map.off('click', mccaCorr.click); map.off('mousemove', mccaCorr.move); map.off('dblclick', mccaCorr.dbl);
+      document.removeEventListener('keydown', mccaCorr.key);
+      if (mccaCorr.preview) map.removeLayer(mccaCorr.preview);
+      if (map.doubleClickZoom && map.doubleClickZoom.enable) map.doubleClickZoom.enable();
+      mccaCorr = null;
+    }
+    if (had) mapContainer.style.cursor = '';
+  }
+
+  function mccaCreateZV(type, center){
+    var active = getActiveLayer();
+    var mpp = metersPerPixel(center.lat, map.getZoom());
+    var m = mccaDefaults(type);
+    m.lengthM = Math.round(230 * mpp); m.widthM = Math.round(135 * mpp);
+    var poly = L.polygon(mccaZVPoints(center, m.lengthM, m.widthM), { color: active.color, weight: 3, opacity: 1, fillColor: '#ffffff', fillOpacity: 0 });
+    poly._fillColorRaw = '#ffffff'; poly._fillStyleKey = 'solid';
+    poly._isMccPolygon = true; poly._mcc = m;
+    mccaFinishCreate(active, poly);
+    return poly;
+  }
+  function mccaCreateRumbo(latlng){
+    var active = getActiveLayer();
+    var mpp = metersPerPixel(latlng.lat, map.getZoom());
+    var p2 = fromLocalXY(latlng, 0, 210 * mpp);            // rumbo inicial 090 (este)
+    var line = L.polyline([latlng, p2], { color: active.color, weight: 4, opacity: 1, className: 'mcca-hidden' });
+    line._isMccLine = true; line._mcc = mccaDefaults('a_rumbo');
+    mccaFinishCreate(active, line);
+    return line;
+  }
+  function activateMccaPlaceTool(kind){
+    if (activeToolName === 'mccaplace' && mccaPlaceKind === kind){ disableAllTools(); return; }
+    if (!getActiveLayer()){ alert('Cree o seleccione una capa antes de colocar el símbolo.'); return; }
+    disableAllTools();
+    mccaPlaceKind = kind;
+    activeToolName = 'mccaplace';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    mccaPlaceHandler = function(e){
+      if (!getActiveLayer()) return;
+      var k = mccaPlaceKind;
+      if (k === 'a_rumbo') mccaCreateRumbo(e.latlng);
+      else mccaCreateZV(k, e.latlng);
+    };
+    map.on('click', mccaPlaceHandler);
+  }
+
+  /* Corredor Aéreo: se traza haciendo clic en cada nodo; doble clic o Enter terminan; Esc cancela. */
+  function activateMccaCorredorTool(){
+    if (activeToolName === 'mccacorredor'){ disableAllTools(); return; }
+    if (!getActiveLayer()){ alert('Cree o seleccione una capa antes de dibujar.'); return; }
+    disableAllTools();
+    activeToolName = 'mccacorredor';
+    var st = { latlngs: [], preview: null };
+    mccaCorr = st;
+    var active = getActiveLayer();
+    st.click = function(e){
+      st.latlngs.push(e.latlng);
+      if (!st.preview) st.preview = L.polyline(st.latlngs, { color: active.color, weight: 2, dashArray: '5 5', interactive: false }).addTo(map);
+      else st.preview.setLatLngs(st.latlngs);
+    };
+    st.move = function(e){
+      if (!st.preview || !st.latlngs.length) return;
+      st.preview.setLatLngs(st.latlngs.concat([e.latlng]));
+    };
+    st.dbl = function(){ mccaFinishCorridor(); };
+    st.key = function(ev){
+      if (ev.key === 'Enter'){ ev.preventDefault(); mccaFinishCorridor(); }
+      else if (ev.key === 'Escape'){ disableAllTools(); }
+    };
+    map.on('click', st.click); map.on('mousemove', st.move); map.on('dblclick', st.dbl);
+    document.addEventListener('keydown', st.key);
+    if (map.doubleClickZoom && map.doubleClickZoom.disable) map.doubleClickZoom.disable();
+    mapContainer.style.cursor = 'crosshair';
+    updateToolbarUI();
+  }
+  function mccaFinishCorridor(){
+    var st = mccaCorr;
+    if (!st) return;
+    // Un doble clic produce dos clics casi en el mismo punto: se descartan nodos repetidos.
+    var pts = [];
+    st.latlngs.forEach(function(ll){
+      var last = pts[pts.length - 1];
+      if (last){ var a = mccLLToPx(last), b = mccLLToPx(ll); if (Math.hypot(a.x - b.x, a.y - b.y) < 4) return; }
+      pts.push(ll);
+    });
+    if (pts.length < 2) return;       // faltan nodos: se sigue trazando
+    var active = getActiveLayer();
+    var mid = pts[Math.floor(pts.length / 2)];
+    var mpp = metersPerPixel(mid.lat, map.getZoom());
+    var m = mccaDefaults('a_corredor');
+    m.widthFt = Math.max(50, Math.round((38 * mpp) / MCCA_FT / 50) * 50);   // ~38 px de ancho en el zoom actual
+    var line = L.polyline(pts, { color: active.color, weight: 2, opacity: 1, className: 'mcca-hidden' });
+    line._isMccLine = true; line._mcc = m;
+    mccaNormalizeNodes(line);
+    var halfM = m.widthFt * MCCA_FT / 2;
+    m.box.dx = -(halfM + 12 * mpp); m.box.dy = -halfM;       // bajo el primer nodo
+    mccaFinishCreate(active, line);
+  }
+  function mccaNormalizeNodes(shape){
+    var m = shape._mcc, n = mccaFlat(shape).length;
+    if (!Array.isArray(m.nodes)) m.nodes = [];
+    while (m.nodes.length < n){
+      var i = m.nodes.length;
+      m.nodes.push({ code: (i === 0 || i === n - 1) ? 'PCA' : 'PCC', num: '' });
+    }
+    if (m.nodes.length > n) m.nodes.length = n;
+  }
+
+  function activateMccaArrowTool(which){
+    // Reutiliza la herramienta de flecha; los indicadores se fijan DESPUÉS de activarla porque
+    // activateArrowTool() llama a disableAllTools() (que los limpia).
+    activateArrowTool();
+    if (activeToolName !== 'arrow') return;      // se apagó (alternar)
+    if (which === 'da'){ arrowPendingMccKind = 'direccionataque'; arrowPendingAereoDA = true; }
+    else arrowPendingAv = true;
+  }
+
+  /* =============================  SINCRONIZACIÓN (companions)  ============================= */
+  function removeMccAereo(shape){
+    var id = shape._shapeId;
+    var g = mccaGroups[id];
+    if (g){ g.remove(); delete mccaGroups[id]; }
+    var b = mccaBoxes[id];
+    if (b){ b.remove(); delete mccaBoxes[id]; }
+  }
+  function syncMccAereo(shape){
+    if (!shape || !mccaIsAir(shape) || !shape._shapeId) return;
+    if (shape._isMccPoint) return;
+    var t = shape._mcc.type;
+    if (MCCA_LINE_KINDS.indexOf(t) !== -1) mccaEnsureHidden(shape);
+    var owner = findLayerOfShape(shape);
+    if (!owner){ removeMccAereo(shape); return; }
+    var oldG = mccaGroups[shape._shapeId];
+    if (oldG){ oldG.remove(); delete mccaGroups[shape._shapeId]; }
+    if (!owner.visible){
+      var ob = mccaBoxes[shape._shapeId];
+      if (ob){ ob.remove(); delete mccaBoxes[shape._shapeId]; }
+      return;
+    }
+    var g = null;
+    if (t === 'a_rumbo') g = mccaBuildRumbo(shape);
+    else if (t === 'a_corredor') g = mccaBuildCorredor(shape);
+    else if (t === 'a_zvp' || t === 'a_zvr') g = mccaBuildZV(shape);
+    if (g){ g.addTo(map); mccaGroups[shape._shapeId] = g; }
+    if (t === 'a_corredor') mccaSyncCorridorBox(shape, owner);
+  }
+  function syncAllMccAereo(){
+    var live = {};
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){
+        if (!s._shapeId) return;
+        if (mccaIsAir(s) && !s._isMccPoint){ live[s._shapeId] = true; syncMccAereo(s); }
+        else if (s._isArrow && s._arrow && (s._arrow.aereo)){ live[s._shapeId] = true; }
+      });
+    });
+    Object.keys(mccaGroups).forEach(function(id){ if (!live[id]){ mccaGroups[id].remove(); delete mccaGroups[id]; } });
+    Object.keys(mccaBoxes).forEach(function(id){ if (!live[id]){ mccaBoxes[id].remove(); delete mccaBoxes[id]; } });
+    // marcadores de la Dirección de Ataque Aérea
+    layers.forEach(function(l){
+      l.group.eachLayer(function(s){ if (s._isArrow && s._arrow && s._arrow.aereo) syncArrowAereo(s); });
+    });
+    Object.keys(arrowAereoMarks).forEach(function(id){ if (!live[id]){ arrowAereoMarks[id].remove(); delete arrowAereoMarks[id]; } });
+    if (selectedShape && selectedShape._mccaH && selectedShape._mccaH.reposition) selectedShape._mccaH.reposition();
+  }
+  function mccaStyleOf(shape){
+    return { color: shape.options.color, opacity: shape.options.opacity != null ? shape.options.opacity : 1, weight: shape.options.weight || 2 };
+  }
+
+  /* ---------------- Línea de rumbo ---------------- */
+  function mccaRumboOpts(shape, num){
+    var sc = shape._mcc.scale || 1;
+    return { d: 48 * sc, ring: 'double', sw: 1.9 * sc, gap: 2.4 * sc, color: shape.options.color, bg: shape._mcc.bgOpacity || 0, scale: sc, line1: 'PCA', line2: num || '' };
+  }
+  function mccaBuildRumbo(shape){
+    var m = shape._mcc, ll = mccaFlat(shape);
+    if (ll.length < 2) return null;
+    var p1 = ll[0], p2 = ll[1], st = mccaStyleOf(shape);
+    var g = L.layerGroup();
+    var d = 48 * (m.scale || 1), r = d / 2;
+    var a = mccLLToPx(p1), b = mccLLToPx(p2);
+    var dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+    var ux = len ? dx / len : 1, uy = len ? dy / len : 0;
+    var bearing = mccaBearing(p1, p2);
+    if (len > d + 1){
+      L.polyline([mccPxToLL({ x: a.x + ux * r, y: a.y + uy * r }), mccPxToLL({ x: b.x - ux * r, y: b.y - uy * r })],
+        { color: st.color, weight: st.weight, opacity: st.opacity, interactive: false, lineCap: 'butt' }).addTo(g);
+    }
+    [[p1, m.num1], [p2, m.num2]].forEach(function(e){
+      L.marker(e[0], { icon: mccaSymbolIcon(mccaCircleSymbol(mccaRumboOpts(shape, e[1]))), interactive: true, keyboard: false, zIndexOffset: 640 })
+        .on('click', mccaFwd(shape)).addTo(g);
+    });
+    // número de rumbo sobre la línea, en su dirección y siempre legible
+    var mid = mccPxToLL({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+    L.marker(mid, { icon: mccBorderlessLabelIcon(mccaFmtBearing(bearing), bearing, st.color, false, 14, 11 + st.weight / 2), interactive: false, keyboard: false, zIndexOffset: 660 }).addTo(g);
+    return g;
+  }
+
+  /* ---------------- Corredor Aéreo ---------------- */
+  function mccaCorridorGeom(shape){
+    var ll = mccaFlat(shape), m = shape._mcc;
+    var pts = ll.map(mccLLToPx);
+    var lat = (ll[0].lat + ll[ll.length - 1].lat) / 2;
+    var mpp = metersPerPixel(lat, map.getZoom());
+    var wPx = (m.widthFt * MCCA_FT) / mpp;
+    var segs = [];
+    for (var k = 0; k < pts.length - 1; k++){
+      var dx = pts[k+1].x - pts[k].x, dy = pts[k+1].y - pts[k].y, len = Math.hypot(dx, dy) || 1e-6;
+      var u = { x: dx / len, y: dy / len };
+      segs.push({ a: pts[k], b: pts[k+1], len: len, u: u, n: { x: -u.y, y: u.x }, i: k });
+    }
+    return { pts: pts, wPx: wPx, h: wPx / 2, segs: segs, mpp: mpp };
+  }
+  function mccaLineIntersect(p, u, q, v){
+    var cr = u.x * v.y - u.y * v.x;
+    if (Math.abs(cr) < 1e-6) return null;
+    var t = ((q.x - p.x) * v.y - (q.y - p.y) * v.x) / cr;
+    return { x: p.x + u.x * t, y: p.y + u.y * t };
+  }
+  // Bordes paralelos a la línea central, de cada lado. En el lado interior de una curva los dos
+  // bordes se recortan en su cruce; en el exterior quedan abiertos y los cierra el círculo del nodo.
+  function mccaCorridorSides(geo){
+    var out = [], segs = geo.segs, h = geo.h, n = segs.length;
+    [1, -1].forEach(function(s){
+      function A(k){ return { x: segs[k].a.x + s*h*segs[k].n.x, y: segs[k].a.y + s*h*segs[k].n.y }; }
+      function B(k){ return { x: segs[k].b.x + s*h*segs[k].n.x, y: segs[k].b.y + s*h*segs[k].n.y }; }
+      var cur = [A(0)];
+      for (var i = 1; i < n; i++){
+        var Ap = A(i-1), An = A(i);
+        var X = mccaLineIntersect(Ap, segs[i-1].u, An, segs[i].u);
+        var ok = false;
+        if (X){
+          var t1 = (X.x - Ap.x) * segs[i-1].u.x + (X.y - Ap.y) * segs[i-1].u.y;
+          var t2 = (X.x - An.x) * segs[i].u.x + (X.y - An.y) * segs[i].u.y;
+          ok = t1 >= 0 && t1 <= segs[i-1].len && t2 >= 0 && t2 <= segs[i].len;
+        } else {
+          // segmentos paralelos y consecutivos: el borde continúa sin interrupción
+          var Bp = B(i-1);
+          if (Math.hypot(Bp.x - An.x, Bp.y - An.y) < 0.5){ cur.push(Bp); continue; }
+        }
+        if (ok) cur.push(X);
+        else { cur.push(B(i-1)); out.push(cur); cur = [A(i)]; }
+      }
+      cur.push(B(n-1)); out.push(cur);
+    });
+    return out;
+  }
+  function mccaBuildCorredor(shape){
+    var m = shape._mcc, ll = mccaFlat(shape);
+    if (ll.length < 2) return null;
+    mccaNormalizeNodes(shape);
+    var st = mccaStyleOf(shape);
+    var geo = mccaCorridorGeom(shape), h = geo.h;
+    var g = L.layerGroup();
+    function toLL(p){ return mccPxToLL(p); }
+    // fondo (blanco con la opacidad elegida): rectángulos + círculos en UN solo path (sin acumular alfa)
+    var rings = [];
+    geo.segs.forEach(function(s){
+      rings.push([[toLL({ x: s.a.x + s.n.x*h, y: s.a.y + s.n.y*h }), toLL({ x: s.b.x + s.n.x*h, y: s.b.y + s.n.y*h }),
+                   toLL({ x: s.b.x - s.n.x*h, y: s.b.y - s.n.y*h }), toLL({ x: s.a.x - s.n.x*h, y: s.a.y - s.n.y*h })]]);
+    });
+    if (h >= 1) geo.pts.forEach(function(p){
+      var ring = [];
+      for (var q = 0; q < 28; q++){ var an = q * 2 * Math.PI / 28; ring.push(toLL({ x: p.x + Math.cos(an) * h, y: p.y + Math.sin(an) * h })); }
+      rings.push([ring]);
+    });
+    var fillPoly = L.polygon(rings, { stroke: false, fill: true, fillColor: '#ffffff', fillOpacity: m.bgOpacity || 0, fillRule: 'nonzero', interactive: true });
+    fillPoly.on('click', mccaFwd(shape));
+    fillPoly.addTo(g);
+    // bordes
+    mccaCorridorSides(geo).forEach(function(pl){
+      if (pl.length < 2) return;
+      L.polyline(pl.map(toLL), { color: st.color, weight: st.weight, opacity: st.opacity, interactive: false, lineJoin: 'round' }).addTo(g);
+    });
+    // círculos de nodo: diámetro = ancho de la banda
+    if (geo.wPx >= 4 && geo.wPx < 4000){
+      geo.pts.forEach(function(p, i){
+        var nd = m.nodes[i] || { code: '', num: '' };
+        var sym = mccaCircleSymbol({ d: geo.wPx, pad: 0, ring: 'single', sw: Math.max(1, Math.min(2.2, geo.wPx * 0.05)), color: st.color, bg: 0,
+          line1: nd.code, line2: nd.num, bold: true, minFont: 3 });
+        L.marker(ll[i], { icon: mccaSymbolIcon(sym), interactive: true, keyboard: false, zIndexOffset: 640 }).on('click', mccaFwd(shape)).addTo(g);
+      });
+    }
+    // nombre (= campo NOMBRE) a lo largo de cada segmento, en su dirección y legible
+    var name = shape._customName || '';
+    if (name){
+      geo.segs.forEach(function(s, k){
+        var span = s.len - geo.wPx;
+        if (span < 14) return;
+        var fs = Math.min(geo.wPx * 0.42, 18);
+        var tw = mccTextWidthPx(name, fs);
+        if (tw > span - 8) fs = fs * (span - 8) / tw;
+        if (fs < 6) return;
+        var mid = { x: (s.a.x + s.b.x) / 2, y: (s.a.y + s.b.y) / 2 };
+        var bearing = mccaBearing(ll[k], ll[k+1]);
+        L.marker(toLL(mid), { icon: mccBorderlessLabelIcon(name, bearing, st.color, false, fs, 0), interactive: false, keyboard: false, zIndexOffset: 660 }).addTo(g);
+      });
+    }
+    return g;
+  }
+  function mccaBoxIcon(shape){
+    var m = shape._mcc, b = m.box, ft = Math.round(m.widthFt * 10) / 10;
+    var rows = [['NOMBRE:', shape._customName || ''], ['Ancho:', ft + ' FT'], ['Cota Mínima:', b.cotaMin || ''], ['Cota Máxima:', b.cotaMax || ''],
+      ['Desde:', b.desde || ''], ['Hasta:', b.hasta || '']];
+    var fs = Math.max(6, b.fontSize || 12), color = shape.options.color;
+    var colW = 0, valW = 0;
+    rows.forEach(function(r){ colW = Math.max(colW, mccTextWidthPx(r[0], fs) * 0.9); valW = Math.max(valW, mccTextWidthPx(r[1], fs) * 0.9); });
+    var html = '<div class="mcca-box" style="font-family:' + MCCA_FAM + ';font-size:' + fs + 'px;line-height:1.35;color:' + color + ';background:transparent;border:none;white-space:nowrap;">' +
+      '<table style="border-collapse:collapse;background:transparent;border:none;"><tbody>' +
+      rows.map(function(r){ return '<tr><td style="padding:0 ' + (fs * 1.4).toFixed(1) + 'px 0 0;border:none;">' + escapeHtmlText(r[0]) + '</td><td style="padding:0;border:none;">' + escapeHtmlText(r[1]) + '</td></tr>'; }).join('') +
+      '</tbody></table></div>';
+    return L.divIcon({ className: '', html: html, iconSize: [Math.ceil(colW + valW + fs * 1.6), Math.ceil(fs * 1.35 * rows.length)], iconAnchor: [0, 0] });
+  }
+  function mccaSyncCorridorBox(shape, owner){
+    var id = shape._shapeId, m = shape._mcc, b = m.box;
+    var ll = mccaFlat(shape);
+    var pos = fromLocalXY(ll[0], b.dx || 0, b.dy || 0);
+    var mk = mccaBoxes[id];
+    if (!mk){
+      mk = L.marker(pos, { icon: mccaBoxIcon(shape), draggable: true, zIndexOffset: 700, title: 'Arrastre para mover el cuadro de datos' });
+      var before = null;
+      mk.on('dragstart', function(){ mk._mccaDragging = true; before = mccaSnapshot(shape); });
+      mk.on('drag', function(){
+        var loc = localXY(mccaFlat(shape)[0], mk.getLatLng());
+        shape._mcc.box.dx = loc.x; shape._mcc.box.dy = loc.y;
+      });
+      mk.on('dragend', function(){
+        mk._mccaDragging = false;
+        if (before) mccaPushUndo(shape, before);
+        before = null;
+        if (typeof scheduleSave === 'function') scheduleSave();
+      });
+      mccaBoxes[id] = mk;
+    } else if (!mk._mccaDragging){
+      mk.setLatLng(pos);
+      mk.setIcon(mccaBoxIcon(shape));
+    }
+    if (!map.hasLayer(mk)) mk.addTo(map);
+  }
+
+  /* ---------------- Zona de vuelo prohibido / restringido ---------------- */
+  // Contorno en proporciones (u: este 0..1, v: abajo 0..1): rectángulo con las dos esquinas del
+  // lado derecho biseladas (la superior más corta, la inferior más larga, como en la imagen).
+  var MCCA_ZV_SHAPE = [[0, 0], [0.88, 0], [1, 0.16], [1, 0.82], [0.8, 1], [0, 1]];
+  function mccaZVPoints(center, lengthM, widthM){
+    return MCCA_ZV_SHAPE.map(function(p){ return fromLocalXY(center, widthM * (0.5 - p[1]), lengthM * (p[0] - 0.5)); });
+  }
+  function mccaZVCenter(shape){ return shape.getBounds().getCenter(); }
+  function mccaZVSetGeom(shape, center, lengthM, widthM){
+    shape._mcc.lengthM = lengthM; shape._mcc.widthM = widthM;
+    mccaSetFlat(shape, mccaZVPoints(center, lengthM, widthM));
+  }
+  function mccaZVLines(shape){
+    var m = shape._mcc, code = (m.type === 'a_zvr') ? 'ZVR' : 'ZVP';
+    function val(v, suf){ v = String(v == null ? '' : v); return v ? v + (suf || '') : ''; }
+    return [
+      { t: code, k: 1.35 },
+      { t: String(m.elemento || ''), k: 1 },
+      { t: '', k: 0.55 },
+      { t: 'Altitud Min:' + (m.altMin ? ' ' + val(m.altMin, ' FT') : ''), k: 1 },
+      { t: 'Altitud Máx:' + (m.altMax ? ' ' + val(m.altMax, ' FT') : ''), k: 1 },
+      { t: 'D:' + (m.d ? ' ' + m.d : ''), k: 1 },
+      { t: 'H:' + (m.h ? ' ' + m.h : ''), k: 1 }
+    ];
+  }
+  function mccaZVFont(lines, W, H, scale){
+    var units = 0, maxW100 = 1;
+    lines.forEach(function(l){ units += l.k; maxW100 = Math.max(maxW100, mccTextWidthPx(l.t, 100) * l.k); });
+    var fsH = (H - 10) / (units * 1.12);
+    var fsW = (W * 0.86 - 10) / maxW100 * 100;
+    return Math.max(0, Math.min(fsH, fsW, 60)) * (scale || 1);
+  }
+  function mccaBuildZV(shape){
+    var m = shape._mcc, g = L.layerGroup();
+    var b = shape.getBounds();
+    var a = mccLLToPx(b.getNorthWest()), c = mccLLToPx(b.getSouthEast());
+    var W = c.x - a.x, H = c.y - a.y;
+    var lines = mccaZVLines(shape);
+    var fs = mccaZVFont(lines, W, H, m.fontScale);
+    if (fs < 3.5 || W < 10 || H < 10) return g;
+    var color = shape.options.color;
+    var html = '<div class="mcca-zv-text" style="width:' + W.toFixed(1) + 'px;height:' + H.toFixed(1) + 'px;box-sizing:border-box;padding:4px 6px;overflow:hidden;font-family:' + MCCA_FAM +
+      ';font-weight:700;line-height:1.12;color:' + color + ';text-align:left;white-space:nowrap;">' +
+      lines.map(function(l){ return '<div style="font-size:' + (fs * l.k).toFixed(2) + 'px;min-height:' + (fs * l.k * 1.12).toFixed(2) + 'px;">' + (l.t ? escapeHtmlText(l.t) : '&nbsp;') + '</div>'; }).join('') + '</div>';
+    L.marker(b.getNorthWest(), { icon: L.divIcon({ className: '', html: html, iconSize: [W, H], iconAnchor: [0, 0] }), interactive: false, keyboard: false, zIndexOffset: 600 }).addTo(g);
+    return g;
+  }
+
+  /* ---------------- Zona de Operaciones Restringida (texto "ZOR" arrastrable) ---------------- */
+  function mccaZorApplySize(shape){
+    var t = shape._mccText, fs = Math.max(6, shape._mcc.fontSize || 22);
+    t.fontSize = fs; t.boxWidth = Math.ceil(mccTextWidthPx('ZOR', fs) + 16); t.boxHeight = Math.ceil(fs * 1.5);
+  }
+  function mccaNewZorText(color, fontSize){
+    var t = Object.assign(defaultMccTextParams(), { enabled: true, text: 'ZOR', color: color || '#1A1A1A', fixed: true });
+    t.fontSize = fontSize || 22;
+    t.boxWidth = Math.ceil(mccTextWidthPx('ZOR', t.fontSize) + 16); t.boxHeight = Math.ceil(t.fontSize * 1.5);
+    return t;
+  }
+
+  /* =============================  MANIJAS GRÁFICAS  ============================= */
+  function createMccaHandles(shape){
+    var t = shape._mcc.type, cleanup = null;
+    if (t === 'a_rumbo') cleanup = createMccaRumboHandles(shape);
+    else if (t === 'a_corredor') cleanup = createMccaCorredorHandles(shape);
+    else if (t === 'a_zvp' || t === 'a_zvr') cleanup = createMccaZVHandles(shape);
+    return function(){ if (cleanup) cleanup(); shape._mccaH = null; };
+  }
+  function mccaAfterHandleEdit(shape){
+    if (shape._mccaRefresh) shape._mccaRefresh();
+  }
+
+  function createMccaRumboHandles(shape){
+    function ptsNow(){ return mccaFlat(shape); }
+    function rotPos(){
+      var l = ptsNow(), a = mccLLToPx(l[0]), b = mccLLToPx(l[1]);
+      var dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+      var r = 24 * (shape._mcc.scale || 1) + 26;
+      return mccPxToLL({ x: b.x + dx / len * r, y: b.y + dy / len * r });
+    }
+    var l0 = ptsNow();
+    var startM = L.marker(l0[0], { draggable: true, icon: makeHandleIcon('#1F3864', 14), zIndexOffset: 2000, title: 'Arrastre para mover todo el símbolo (primer PCA)' }).addTo(map);
+    var lenM = L.marker(l0[1], { draggable: true, icon: makeHandleIcon('#4C7A57', 14), zIndexOffset: 2001, title: 'Arrastre a lo largo de la línea para cambiar su longitud' }).addTo(map);
+    var rotM = L.marker(rotPos(), { draggable: true, icon: makeHandleIcon('#B8962E', 16), zIndexOffset: 2000, title: 'Arrastre para girar el rumbo alrededor del primer PCA' }).addTo(map);
+    function reposition(){ var l = ptsNow(); startM.setLatLng(l[0]); lenM.setLatLng(l[1]); rotM.setLatLng(rotPos()); }
+    var before = null, ref = null;
+    function begin(){ before = mccaSnapshot(shape); var l = ptsNow(); ref = { p1: l[0], p2: l[1] }; }
+    function end(){ if (before) mccaPushUndo(shape, before); before = null; reposition(); renderLayerList(); }
+    startM.on('dragstart', begin).on('drag', function(){
+      var np1 = startM.getLatLng(), d = localXY(ref.p1, np1);
+      var np2 = fromLocalXY(ref.p2, d.x, d.y);
+      mccaSetFlat(shape, [np1, np2]); syncMccAereo(shape);
+      lenM.setLatLng(np2); rotM.setLatLng(rotPos()); mccaAfterHandleEdit(shape);
+    }).on('dragend', end);
+    lenM.on('dragstart', begin).on('drag', function(){
+      var v = localXY(ref.p1, ref.p2), L0 = Math.hypot(v.x, v.y) || 1, u = { x: v.x / L0, y: v.y / L0 };
+      var h = localXY(ref.p1, lenM.getLatLng());
+      var Ln = Math.max(10, h.x * u.x + h.y * u.y);
+      var np2 = fromLocalXY(ref.p1, u.x * Ln, u.y * Ln);
+      mccaSetFlat(shape, [ref.p1, np2]); syncMccAereo(shape);
+      lenM.setLatLng(np2); rotM.setLatLng(rotPos()); mccaAfterHandleEdit(shape);
+    }).on('dragend', end);
+    rotM.on('dragstart', begin).on('drag', function(){
+      var v = localXY(ref.p1, ref.p2), L0 = Math.hypot(v.x, v.y) || 1;
+      var b = taskBearingDeg(localXY(ref.p1, rotM.getLatLng())) * Math.PI / 180;
+      var np2 = fromLocalXY(ref.p1, L0 * Math.cos(b), L0 * Math.sin(b));
+      mccaSetFlat(shape, [ref.p1, np2]); syncMccAereo(shape);
+      lenM.setLatLng(np2); mccaAfterHandleEdit(shape);
+    }).on('dragend', end);
+    shape._mccaH = { reposition: reposition, startM: startM, lenM: lenM, rotM: rotM };
+    return function cleanup(){ map.removeLayer(startM); map.removeLayer(lenM); map.removeLayer(rotM); };
+  }
+
+  // Cambia el rumbo (grados, azimut geográfico) girando el 2.º PCA alrededor del 1.º.
+  function mccaRumboSetBearing(shape, deg){
+    var l = mccaFlat(shape), v = localXY(l[0], l[1]), L0 = Math.hypot(v.x, v.y);
+    var b = deg * Math.PI / 180;
+    mccaSetFlat(shape, [l[0], fromLocalXY(l[0], L0 * Math.cos(b), L0 * Math.sin(b))]);
+    syncMccAereo(shape);
+    if (shape._mccaH) shape._mccaH.reposition();
+  }
+  function mccaRumboSetLength(shape, meters){
+    var l = mccaFlat(shape), v = localXY(l[0], l[1]), L0 = Math.hypot(v.x, v.y) || 1;
+    var Ln = Math.max(10, meters);
+    mccaSetFlat(shape, [l[0], fromLocalXY(l[0], v.x / L0 * Ln, v.y / L0 * Ln)]);
+    syncMccAereo(shape);
+    if (shape._mccaH) shape._mccaH.reposition();
+  }
+  function mccaRumboLengthM(shape){ var l = mccaFlat(shape), v = localXY(l[0], l[1]); return Math.hypot(v.x, v.y); }
+
+  /* ---- Corredor: nodos (arrastrar / doble clic = quitar), "+" en cada punto medio, y manija de ancho ---- */
+  function mccaInsertNode(shape, afterIdx, latlng){
+    var before = mccaSnapshot(shape);
+    var l = mccaFlat(shape).slice();
+    l.splice(afterIdx + 1, 0, latlng);
+    mccaSetFlat(shape, l);
+    shape._mcc.nodes.splice(afterIdx + 1, 0, { code: 'PCC', num: '' });
+    mccaNormalizeNodes(shape);
+    syncMccAereo(shape);
+    mccaPushUndo(shape, before);
+    mccaRefreshHandles(shape);
+    if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape));
+    renderLayerList();
+  }
+  function mccaAppendNode(shape){
+    var l = mccaFlat(shape), n = l.length;
+    var v = localXY(l[n-2], l[n-1]), L0 = Math.hypot(v.x, v.y) || 1;
+    var step = Math.max(L0, shape._mcc.widthFt * MCCA_FT * 2);
+    var nl = fromLocalXY(l[n-1], v.x / L0 * step, v.y / L0 * step);
+    var before = mccaSnapshot(shape);
+    l = l.slice(); l.push(nl);
+    mccaSetFlat(shape, l);
+    if (shape._mcc.nodes.length) shape._mcc.nodes[shape._mcc.nodes.length - 1].code = 'PCC';
+    shape._mcc.nodes.push({ code: 'PCA', num: '' });
+    mccaNormalizeNodes(shape);
+    syncMccAereo(shape);
+    mccaPushUndo(shape, before);
+    mccaRefreshHandles(shape);
+    if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape));
+    renderLayerList();
+  }
+  function mccaRemoveNode(shape, idx){
+    var l = mccaFlat(shape);
+    if (l.length <= 2) return false;
+    var before = mccaSnapshot(shape);
+    l = l.slice(); l.splice(idx, 1);
+    mccaSetFlat(shape, l);
+    shape._mcc.nodes.splice(idx, 1);
+    mccaNormalizeNodes(shape);
+    syncMccAereo(shape);
+    mccaPushUndo(shape, before);
+    mccaRefreshHandles(shape);
+    if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape));
+    renderLayerList();
+    return true;
+  }
+  function createMccaCorredorHandles(shape){
+    var nodeMs = [], midMs = [], widthM = null;
+    var before = null;
+    function widthPos(){
+      var geo = mccaCorridorGeom(shape), s = geo.segs[0];
+      return mccPxToLL({ x: (s.a.x + s.b.x) / 2 + s.n.x * geo.h, y: (s.a.y + s.b.y) / 2 + s.n.y * geo.h });
+    }
+    function midPos(k){
+      var l = mccaFlat(shape);
+      return fromLocalXY(l[k], localXY(l[k], l[k+1]).x / 2, localXY(l[k], l[k+1]).y / 2);
+    }
+    function reposition(skipNode){
+      var l = mccaFlat(shape);
+      if (l.length !== nodeMs.length){ mccaRefreshHandles(shape); return; }
+      nodeMs.forEach(function(mk, i){ if (i !== skipNode) mk.setLatLng(l[i]); });
+      midMs.forEach(function(mk, k){ mk.setLatLng(midPos(k)); });
+      if (widthM && !widthM._mccaDragging) widthM.setLatLng(widthPos());
+    }
+    var l0 = mccaFlat(shape);
+    l0.forEach(function(ll, i){
+      var mk = L.marker(ll, { draggable: true, icon: makeHandleIcon('#1F3864', 14), zIndexOffset: 2000, title: 'Arrastre para mover el nodo; doble clic para quitarlo' }).addTo(map);
+      mk.on('dragstart', function(){ before = mccaSnapshot(shape); });
+      mk.on('drag', function(){
+        var l = mccaFlat(shape).slice(); l[i] = mk.getLatLng();
+        mccaSetFlat(shape, l); syncMccAereo(shape); reposition(i); mccaAfterHandleEdit(shape);
+      });
+      mk.on('dragend', function(){ if (before) mccaPushUndo(shape, before); before = null; renderLayerList(); });
+      mk.on('dblclick', function(e){ if (e.originalEvent) L.DomEvent.stop(e.originalEvent); mccaRemoveNode(shape, i); });
+      nodeMs.push(mk);
+    });
+    for (var k = 0; k < l0.length - 1; k++){
+      (function(kk){
+        var mk = L.marker(midPos(kk), { draggable: false, icon: makeHandleIcon('#B8962E', 10), zIndexOffset: 1900, title: 'Clic para agregar un nodo aquí' }).addTo(map);
+        mk.on('click', function(e){ if (e.originalEvent) L.DomEvent.stop(e.originalEvent); mccaInsertNode(shape, kk, mk.getLatLng()); });
+        midMs.push(mk);
+      })(k);
+    }
+    widthM = L.marker(widthPos(), { draggable: true, icon: makeHandleIcon('#4C7A57', 14), zIndexOffset: 2001, title: 'Arrastre para cambiar el ancho del corredor (FT)' }).addTo(map);
+    widthM.on('dragstart', function(){ widthM._mccaDragging = true; before = mccaSnapshot(shape); });
+    widthM.on('drag', function(){
+      var l = mccaFlat(shape), v = localXY(l[0], l[1]), L0 = Math.hypot(v.x, v.y) || 1;
+      var nrm = { x: -v.y / L0, y: v.x / L0 };
+      var mid = fromLocalXY(l[0], v.x / 2, v.y / 2);
+      var h = localXY(mid, widthM.getLatLng());
+      var perp = Math.abs(h.x * nrm.x + h.y * nrm.y);
+      shape._mcc.widthFt = Math.max(10, Math.round(2 * perp / MCCA_FT * 10) / 10);
+      syncMccAereo(shape); reposition(-1); widthM.setLatLng(widthPos()); mccaAfterHandleEdit(shape);
+    });
+    widthM.on('dragend', function(){ widthM._mccaDragging = false; if (before) mccaPushUndo(shape, before); before = null; reposition(-1); renderLayerList(); });
+    shape._mccaH = { reposition: function(){ reposition(-1); }, nodeMs: nodeMs, midMs: midMs, widthM: widthM };
+    return function cleanup(){
+      nodeMs.concat(midMs).forEach(function(mk){ map.removeLayer(mk); });
+      map.removeLayer(widthM);
+    };
+  }
+
+  /* ---- ZVP / ZVR: manijas de largo (borde derecho) y ancho (borde superior) ---- */
+  function createMccaZVHandles(shape){
+    function pos(){
+      var c = mccaZVCenter(shape), m = shape._mcc;
+      return { east: fromLocalXY(c, 0, m.lengthM / 2), north: fromLocalXY(c, m.widthM / 2, m.lengthM * (0.44 - 0.5)) };
+    }
+    var p0 = pos();
+    var eastM = L.marker(p0.east, { draggable: true, icon: makeHandleIcon('#1F3864', 15), zIndexOffset: 2000, title: 'Largo: arrastre el borde derecho' }).addTo(map);
+    var northM = L.marker(p0.north, { draggable: true, icon: makeHandleIcon('#4C7A57', 15), zIndexOffset: 2000, title: 'Ancho: arrastre el borde superior' }).addTo(map);
+    function reposition(){ var p = pos(); eastM.setLatLng(p.east); northM.setLatLng(p.north); }
+    var before = null, ref = null;
+    eastM.on('dragstart', function(){
+      before = mccaSnapshot(shape);
+      var c = mccaZVCenter(shape), m = shape._mcc;
+      ref = { west: fromLocalXY(c, 0, -m.lengthM / 2), W: m.widthM };
+    }).on('drag', function(){
+      var Ln = Math.max(10, localXY(ref.west, eastM.getLatLng()).y);
+      mccaZVSetGeom(shape, fromLocalXY(ref.west, 0, Ln / 2), Ln, ref.W);
+      syncMccAereo(shape); reposition(); mccaAfterHandleEdit(shape);
+    }).on('dragend', function(){ if (before) mccaPushUndo(shape, before); before = null; renderLayerList(); });
+    northM.on('dragstart', function(){
+      before = mccaSnapshot(shape);
+      var c = mccaZVCenter(shape), m = shape._mcc;
+      ref = { south: fromLocalXY(c, -m.widthM / 2, 0), L: m.lengthM };
+    }).on('drag', function(){
+      var Wn = Math.max(10, localXY(ref.south, northM.getLatLng()).x);
+      mccaZVSetGeom(shape, fromLocalXY(ref.south, Wn / 2, 0), ref.L, Wn);
+      syncMccAereo(shape); reposition(); mccaAfterHandleEdit(shape);
+    }).on('dragend', function(){ if (before) mccaPushUndo(shape, before); before = null; renderLayerList(); });
+    shape._mccaH = { reposition: reposition, eastM: eastM, northM: northM };
+    return function cleanup(){ map.removeLayer(eastM); map.removeLayer(northM); };
+  }
+  function mccaZVResize(shape, lengthM, widthM){
+    var c = mccaZVCenter(shape);
+    mccaZVSetGeom(shape, c, Math.max(10, lengthM), Math.max(10, widthM));
+    syncMccAereo(shape);
+    if (shape._mccaH) shape._mccaH.reposition();
+  }
+
+  /* =============================  DIRECCIÓN DE ATAQUE AÉREA  ============================= */
+  // Divide una polilínea en tramos dejando huecos (arco en metros: c = centro, h = semiancho).
+  function mccaMultiGapCut(latlngs, gaps){
+    var cum = [0];
+    for (var i = 1; i < latlngs.length; i++) cum.push(cum[i-1] + distanceMeters(latlngs[i-1], latlngs[i]));
+    var total = cum[cum.length - 1] || 0.0001;
+    function ptAt(arc){
+      var k = 0; while (k < cum.length - 2 && cum[k+1] < arc) k++;
+      var span = cum[k+1] - cum[k], f = span > 0 ? (arc - cum[k]) / span : 0;
+      var a = latlngs[k], b = latlngs[k+1];
+      return L.latLng(a.lat + (b.lat - a.lat) * f, a.lng + (b.lng - a.lng) * f);
+    }
+    var cuts = gaps.map(function(g){ return [Math.max(0, g.c - g.h), Math.min(total, g.c + g.h)]; }).sort(function(x, y){ return x[0] - y[0]; });
+    var bounds = [[0, null]];
+    var edges = [0];
+    var pieces = [], s = 0;
+    cuts.concat([[total, total]]).forEach(function(cut){
+      var e = cut[0];
+      if (e - s > 0.01){
+        var poly = [ptAt(s)];
+        for (var j = 0; j < latlngs.length; j++) if (cum[j] > s + 1e-6 && cum[j] < e - 1e-6) poly.push(latlngs[j]);
+        poly.push(ptAt(e));
+        pieces.push(poly);
+      }
+      s = Math.max(s, cut[1]);
+    });
+    return pieces;
+  }
+  var MCCA_DA_HALF_W = 17, MCCA_DA_H = 28;
+  function mccaArrowMarkerPlan(centerline){
+    var info = mccPathPxInfo(centerline);
+    var total = info.total;
+    if (!(total >= 24)) return null;
+    var c = Math.max(MCCA_DA_HALF_W + 6, Math.min(48, total * 0.3));
+    var p1 = mccPxAtArc(info, Math.max(0, c - 6)), p2 = mccPxAtArc(info, Math.min(total, c + 6));
+    var bearing = Math.atan2(p2.x - p1.x, -(p2.y - p1.y)) * 180 / Math.PI;
+    if (bearing < 0) bearing += 360;
+    return { c: c, info: info, ll: mccPxToLL(mccPxAtArc(info, c)), bearing: bearing, total: total };
+  }
+  function mccaArrowMarkerIcon(arrow, color, bearing){
+    var rot = labelRotationForBearing(bearing), bg = arrow.bgOpacity || 0, hw = MCCA_DA_HALF_W, H = MCCA_DA_H;
+    var sw = 2;
+    var svg = '<svg width="' + (hw*2) + '" height="' + H + '" viewBox="0 0 ' + (hw*2) + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="position:absolute;left:' + (-hw) + 'px;top:' + (-H/2) + 'px;overflow:visible;">' +
+      '<polygon points="' + (sw/2) + ',' + (sw/2) + ' ' + hw + ',' + (H/2) + ' ' + (sw/2) + ',' + (H - sw/2) + '" fill="#fff" fill-opacity="' + bg + '" stroke="' + color + '" stroke-width="' + sw + '" stroke-linejoin="miter"/>' +
+      '<polygon points="' + (hw*2 - sw/2) + ',' + (sw/2) + ' ' + hw + ',' + (H/2) + ' ' + (hw*2 - sw/2) + ',' + (H - sw/2) + '" fill="#fff" fill-opacity="' + bg + '" stroke="' + color + '" stroke-width="' + sw + '" stroke-linejoin="miter"/></svg>';
+    var lines = [];
+    if (arrow.desde) lines.push('Desde: ' + arrow.desde);
+    if (arrow.hasta) lines.push('Hasta: ' + arrow.hasta);
+    var txt = lines.length ? '<div class="mcca-da-text" style="position:absolute;left:0;top:' + (H/2 + 4) + 'px;transform:translateX(-50%);white-space:nowrap;text-align:center;font-family:' + MCCA_FAM + ';font-size:11px;font-weight:700;line-height:1.2;color:' + color + ';">' +
+      lines.map(escapeHtmlText).join('<br>') + '</div>' : '';
+    var html = '<div class="mcca-da-mark" style="position:relative;width:0;height:0;transform:rotate(' + rot + 'deg);transform-origin:0 0;pointer-events:none;">' + svg + txt + '</div>';
+    return L.divIcon({ className: '', html: html, iconSize: [0, 0], iconAnchor: [0, 0] });
+  }
+  function removeArrowAereo(shape){
+    var m = arrowAereoMarks[shape._shapeId];
+    if (m){ m.remove(); delete arrowAereoMarks[shape._shapeId]; }
+  }
+  function syncArrowAereo(shape){
+    if (!shape._isArrow || !shape._arrow || !shape._arrow.aereo || !shape._shapeId){ if (shape && shape._shapeId) removeArrowAereo(shape); return; }
+    var owner = findLayerOfShape(shape);
+    if (!owner){ removeArrowAereo(shape); return; }
+    var geo = computeDireccionAtaqueCenterline(shape._arrow);
+    var plan = mccaArrowMarkerPlan(geo.centerline);
+    if (!plan || !owner.visible){ removeArrowAereo(shape); return; }
+    var icon = mccaArrowMarkerIcon(shape._arrow, shape.options.color, plan.bearing);
+    var mk = arrowAereoMarks[shape._shapeId];
+    if (!mk){ mk = L.marker(plan.ll, { icon: icon, interactive: false, keyboard: false, zIndexOffset: 655 }); arrowAereoMarks[shape._shapeId] = mk; }
+    else { mk.setLatLng(plan.ll); mk.setIcon(icon); }
+    if (!map.hasLayer(mk)) mk.addTo(map);
+  }
+  function mccaAereoOutlinePts(arrow, dgeo, vHead){
+    var cpx = mccPathPxInfo(dgeo.centerline);
+    var cTotalM = 0;
+    for (var ci = 1; ci < dgeo.centerline.length; ci++) cTotalM += distanceMeters(dgeo.centerline[ci-1], dgeo.centerline[ci]);
+    var mPerPx = (cpx.total > 0) ? (cTotalM / cpx.total) : 1;
+    var gaps = [];
+    if (arrow.labelText){
+      var tw = mccTextWidthPx(String(arrow.labelText), DA_LABEL_FS);
+      gaps.push({ c: cTotalM * 0.5, h: Math.max(10, tw / 2 + 6) * mPerPx });
+    }
+    var plan = mccaArrowMarkerPlan(dgeo.centerline);
+    if (plan) gaps.push({ c: plan.c * mPerPx, h: (MCCA_DA_HALF_W + 0.5) * mPerPx });
+    if (!gaps.length) return [dgeo.centerline, vHead];
+    return mccaMultiGapCut(dgeo.centerline, gaps).concat([vHead]);
+  }
+  function mccaAfterGeomChange(shape){
+    syncMccAereo(shape);
+    if (shape._mccaH && shape._mccaH.reposition) shape._mccaH.reposition();
+    if (shape._mccText && shape._mccText.enabled) syncMccTextCompanion(shape);
+  }
+
+  /* =============================  PANEL DE PROPIEDADES  ============================= */
+  var MCCA_INPUT_CSS = 'width:92px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12px;text-align:right;';
+  function mccaPanelKit(block, bind, refresh){
+    var kit = {};
+    kit.field = function(label, el, extra){
+      var f = document.createElement('div'); f.className = 'style-field';
+      f.innerHTML = '<span>' + label + '</span>';
+      f.appendChild(el); if (extra) f.appendChild(extra);
+      block.appendChild(f); return f;
+    };
+    kit.text = function(label, get, set, opt){
+      opt = opt || {};
+      var i = document.createElement('input'); i.type = 'text'; i.value = get();
+      i.style.cssText = opt.css || MCCA_INPUT_CSS.replace('width:92px', 'width:120px').replace('text-align:right', 'text-align:left');
+      if (opt.placeholder) i.placeholder = opt.placeholder;
+      if (opt.dataKey) i.setAttribute('data-mcca', opt.dataKey);
+      bind(i);
+      i.addEventListener('input', function(ev){ set(ev.target.value); refresh(); });
+      kit.field(label, i); return i;
+    };
+    kit.num = function(label, get, set, o){
+      o = o || {};
+      var i = document.createElement('input'); i.type = 'number';
+      if (o.min != null) i.min = o.min; if (o.max != null) i.max = o.max; i.step = o.step || 1;
+      i.value = get(); i.style.cssText = MCCA_INPUT_CSS;
+      if (o.dataKey) i.setAttribute('data-mcca', o.dataKey);
+      bind(i);
+      function apply(ev){ var v = parseFloat(ev.target.value); if (!isFinite(v)) return; if (o.min != null) v = Math.max(o.min, v); if (o.max != null) v = Math.min(o.max, v); set(v); refresh(); }
+      i.addEventListener('input', apply);
+      i.addEventListener('change', apply);
+      kit.field(label, i); return i;
+    };
+    kit.range = function(label, get, set, min, max, step, fmt, dataKey){
+      var i = document.createElement('input'); i.type = 'range'; i.min = min; i.max = max; i.step = step; i.value = get();
+      if (dataKey) i.setAttribute('data-mcca', dataKey);
+      var pct = document.createElement('span'); pct.className = 'pct'; pct.textContent = fmt(get());
+      bind(i);
+      i.addEventListener('input', function(ev){ var v = parseFloat(ev.target.value); set(v); pct.textContent = fmt(v); refresh(); });
+      kit.field(label, i, pct); return i;
+    };
+    kit.color = function(label, get, set){
+      var i = document.createElement('input'); i.type = 'color'; i.value = get();
+      bind(i);
+      i.addEventListener('input', function(ev){ set(ev.target.value); refresh(); });
+      kit.field(label, i); return i;
+    };
+    kit.note = function(txt){
+      var h = document.createElement('div'); h.className = 'hint'; h.textContent = txt; block.appendChild(h); return h;
+    };
+    return kit;
+  }
+  function mccaBgSlider(kit, get, set){
+    // "Opacidad del fondo": 0 % = transparente (predeterminado) ... 100 % = blanco opaco.
+    return kit.range('Opacidad del fondo', function(){ return Math.round((get() || 0) * 100); }, function(v){ set(v / 100); },
+      0, 100, 1, function(v){ return Math.round(v) + '%'; }, 'bgOpacity');
+  }
+
+  function buildMccaPanel(shape){
+    var m = shape._mcc, t = m.type;
+    var block = document.createElement('div'); block.className = 'style-block';
+    var title = document.createElement('div'); title.className = 'veh-section-label';
+    title.textContent = MCC_KIND_LABELS[t] || 'MCC aérea';
+    block.appendChild(title);
+    var bind = mccaShapeUndoBinder(shape);
+    function refresh(){ mccaRefreshShape(shape); }
+    var kit = mccaPanelKit(block, bind, refresh);
+    shape._mccaRefresh = null;
+
+    if (MCCA_POINT_KINDS.indexOf(t) !== -1){
+      if (t === 'a_pca') kit.text('Número (segunda línea)', function(){ return m.text2 || ''; }, function(v){ m.text2 = v; }, { dataKey: 'text2', placeholder: 'en blanco' });
+      if (t === 'a_pll' || t === 'a_pcc') kit.text('Texto (segunda línea)', function(){ return m.text2 || ''; }, function(v){ m.text2 = v; }, { dataKey: 'text2', placeholder: 'en blanco' });
+      kit.text('Texto bajo el símbolo (opcional)', function(){ return m.textBelow || ''; }, function(v){ m.textBelow = v; }, { dataKey: 'textBelow' });
+      kit.range('Tamaño', function(){ return m.scale || 1; }, function(v){ m.scale = v; }, 0.5, 3, 0.1, function(v){ return Math.round(v * 100) + '%'; }, 'scale');
+      kit.color('Color', function(){ return m.color || '#1F3864'; }, function(v){ m.color = v; });
+      mccaBgSlider(kit, function(){ return m.bgOpacity; }, function(v){ m.bgOpacity = v; });
+    }
+    else if (t === 'a_rumbo'){
+      var rumboIn = kit.num('Rumbo (°, 0 = norte, horario)', function(){ return Math.round(mccaBearing(mccaFlat(shape)[0], mccaFlat(shape)[1]) % 360); },
+        function(v){ mccaRumboSetBearing(shape, ((v % 360) + 360) % 360); }, { min: 0, max: 360, step: 1, dataKey: 'rumbo' });
+      var lenIn = kit.num('Longitud (km)', function(){ return Math.round(mccaRumboLengthM(shape)) / 1000; },
+        function(v){ mccaRumboSetLength(shape, v * 1000); }, { min: 0.01, step: 0.01, dataKey: 'longitud' });
+      kit.text('Número del primer PCA', function(){ return m.num1 || ''; }, function(v){ m.num1 = v; }, { dataKey: 'num1', placeholder: 'ej. 34' });
+      kit.text('Número del segundo PCA', function(){ return m.num2 || ''; }, function(v){ m.num2 = v; }, { dataKey: 'num2', placeholder: 'ej. 35' });
+      kit.range('Tamaño de los PCA', function(){ return m.scale || 1; }, function(v){ m.scale = v; }, 0.5, 3, 0.1, function(v){ return Math.round(v * 100) + '%'; }, 'scale');
+      mccaBgSlider(kit, function(){ return m.bgOpacity; }, function(v){ m.bgOpacity = v; });
+      kit.note('Arrastre la manija azul (primer PCA) para mover el símbolo, la verde para cambiar la longitud y la dorada para girar el rumbo alrededor del primer PCA.');
+      shape._mccaRefresh = function(){
+        if (document.activeElement !== rumboIn) rumboIn.value = Math.round(mccaBearing(mccaFlat(shape)[0], mccaFlat(shape)[1]) % 360);
+        if (document.activeElement !== lenIn) lenIn.value = Math.round(mccaRumboLengthM(shape)) / 1000;
+      };
+    }
+    else if (t === 'a_corredor'){
+      var widthIn = kit.num('Ancho (FT)', function(){ return Math.round(m.widthFt * 10) / 10; }, function(v){ m.widthFt = Math.max(10, v); }, { min: 10, step: 10, dataKey: 'widthFt' });
+      kit.note('NOMBRE = campo "Nombre" de arriba (se dibuja a lo largo de cada segmento). 1 FT = 0,3048 m; los círculos de los nodos miden lo mismo que el ancho.');
+      kit.text('Cota Mínima', function(){ return m.box.cotaMin || ''; }, function(v){ m.box.cotaMin = v; }, { dataKey: 'cotaMin', placeholder: 'ej. 1000 m' });
+      kit.text('Cota Máxima', function(){ return m.box.cotaMax || ''; }, function(v){ m.box.cotaMax = v; }, { dataKey: 'cotaMax', placeholder: 'ej. 4000 m' });
+      kit.text('Desde', function(){ return m.box.desde || ''; }, function(v){ m.box.desde = v; }, { dataKey: 'desde', placeholder: 'ej. 270600May25' });
+      kit.text('Hasta', function(){ return m.box.hasta || ''; }, function(v){ m.box.hasta = v; }, { dataKey: 'hasta', placeholder: 'ej. 271800May25' });
+      kit.num('Tamaño del texto del cuadro (px)', function(){ return m.box.fontSize || 12; }, function(v){ m.box.fontSize = v; }, { min: 6, max: 60, step: 1, dataKey: 'boxFont' });
+      mccaBgSlider(kit, function(){ return m.bgOpacity; }, function(v){ m.bgOpacity = v; });
+      // Nodos: código (1.ª línea) y número (2.ª línea) editables; agregar / quitar.
+      var nTitle = document.createElement('div'); nTitle.className = 'veh-section-label'; nTitle.textContent = 'Nodos (código / número)'; nTitle.style.marginTop = '6px';
+      block.appendChild(nTitle);
+      mccaNormalizeNodes(shape);
+      m.nodes.forEach(function(nd, i){
+        var row = document.createElement('div'); row.className = 'style-field'; row.setAttribute('data-mcca-node', i);
+        var lab = document.createElement('span'); lab.textContent = 'Nodo ' + (i + 1); row.appendChild(lab);
+        var wrap = document.createElement('span'); wrap.style.cssText = 'display:flex;gap:4px;align-items:center;';
+        var ci = document.createElement('input'); ci.type = 'text'; ci.value = nd.code || ''; ci.setAttribute('data-mcca', 'node-code-' + i);
+        ci.style.cssText = MCCA_INPUT_CSS.replace('width:92px', 'width:52px').replace('text-align:right', 'text-align:center');
+        var ni = document.createElement('input'); ni.type = 'text'; ni.value = nd.num || ''; ni.setAttribute('data-mcca', 'node-num-' + i);
+        ni.style.cssText = ci.style.cssText;
+        bind(ci); bind(ni);
+        ci.addEventListener('input', function(ev){ shape._mcc.nodes[i].code = ev.target.value; refresh(); });
+        ni.addEventListener('input', function(ev){ shape._mcc.nodes[i].num = ev.target.value; refresh(); });
+        wrap.appendChild(ci); wrap.appendChild(ni);
+        var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'outline-btn'; rm.textContent = '✕'; rm.title = 'Quitar este nodo';
+        rm.setAttribute('data-mcca', 'node-remove-' + i);
+        rm.disabled = m.nodes.length <= 2;
+        rm.addEventListener('click', function(){ mccaRemoveNode(shape, i); });
+        wrap.appendChild(rm);
+        row.appendChild(wrap); block.appendChild(row);
+      });
+      var add = document.createElement('button'); add.type = 'button'; add.className = 'outline-btn'; add.textContent = '+ Agregar nodo al final'; add.style.width = '100%';
+      add.setAttribute('data-mcca', 'node-add');
+      add.addEventListener('click', function(){ mccaAppendNode(shape); });
+      block.appendChild(add);
+      kit.note('También: arrastre un nodo para moverlo, doble clic sobre él para quitarlo, clic en el punto dorado entre dos nodos para insertar uno, y la manija verde para el ancho. El cuadro de datos se arrastra por separado.');
+      shape._mccaRefresh = function(){ if (document.activeElement !== widthIn) widthIn.value = Math.round(m.widthFt * 10) / 10; };
+      // el nombre se actualiza mientras se escribe
+      var ni0 = document.getElementById('shape-name-input');
+      if (ni0) ni0.addEventListener('input', function(){ shape._customName = ni0.value; syncMccAereo(shape); });
+    }
+    else if (t === 'a_zvp' || t === 'a_zvr'){
+      var code = (t === 'a_zvr') ? 'ZVR' : 'ZVP';
+      kit.note('Designación fija: ' + code + ' (no editable).');
+      var lenZ = kit.num('Largo (m)', function(){ return Math.round(m.lengthM); }, function(v){ mccaZVResize(shape, v, m.widthM); }, { min: 10, step: 10, dataKey: 'lengthM' });
+      var widZ = kit.num('Ancho (m)', function(){ return Math.round(m.widthM); }, function(v){ mccaZVResize(shape, m.lengthM, v); }, { min: 10, step: 10, dataKey: 'widthM' });
+      kit.text('Elemento', function(){ return m.elemento || ''; }, function(v){ m.elemento = v; }, { dataKey: 'elemento', placeholder: 'ej. DE 2' });
+      kit.text('Altitud Min (FT)', function(){ return m.altMin || ''; }, function(v){ m.altMin = v; }, { dataKey: 'altMin', placeholder: 'ej. 2700' });
+      kit.text('Altitud Máx (FT)', function(){ return m.altMax || ''; }, function(v){ m.altMax = v; }, { dataKey: 'altMax', placeholder: 'ej. 21000' });
+      kit.text('D (desde)', function(){ return m.d || ''; }, function(v){ m.d = v; }, { dataKey: 'd', placeholder: 'ej. 030001Jul25' });
+      kit.text('H (hasta)', function(){ return m.h || ''; }, function(v){ m.h = v; }, { dataKey: 'h', placeholder: 'ej. 032300Jul25' });
+      kit.range('Tamaño del texto', function(){ return m.fontScale || 1; }, function(v){ m.fontScale = v; }, 0.3, 1.6, 0.05, function(v){ return Math.round(v * 100) + '%'; }, 'fontScale');
+      mccaBgSlider(kit, function(){ return m.bgOpacity; }, function(v){ m.bgOpacity = v; mccaApplyStyle(shape); });
+      kit.note('Arrastre la manija azul (borde derecho) para el largo y la verde (borde superior) para el ancho.');
+      shape._mccaRefresh = function(){
+        if (document.activeElement !== lenZ) lenZ.value = Math.round(m.lengthM);
+        if (document.activeElement !== widZ) widZ.value = Math.round(m.widthM);
+      };
+    }
+    else if (t === 'a_zor'){
+      kit.note('Inscripción fija: ZOR. Arrástrela en el mapa a cualquier lugar y gírela con la manija dorada.');
+      kit.num('Tamaño del texto (px)', function(){ return m.fontSize || 22; }, function(v){ m.fontSize = v; if (shape._mccText){ mccaZorApplySize(shape); } }, { min: 8, max: 160, step: 1, dataKey: 'fontSize' });
+      mccaBgSlider(kit, function(){ return m.bgOpacity; }, function(v){ m.bgOpacity = v; mccaApplyStyle(shape); });
+    }
+    return block;
+  }
+
+  // Campos propios de la Dirección de Ataque Aérea (se agregan al bloque "Dirección de ataque").
+  function mccaArrowBinder(shape){
+    return function(el){
+      mccaBindUndo(el, function(){ return cloneArrowState(shape._arrow); }, function(s){
+        shape._arrow = cloneArrowState(s);
+        if (!shape._arrow.mccKind && shape._arrow.avAproxAerea) shape.setStyle({ fillColor: '#ffffff', fillOpacity: shape._arrow.bgOpacity || 0 });
+        rebuildArrow(shape);
+        if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape));
+        renderLayerList();
+      });
+    };
+  }
+  function buildMccaArrowExtraPanel(shape){
+    var block = document.createElement('div'); block.className = 'style-block';
+    var title = document.createElement('div'); title.className = 'veh-section-label';
+    title.textContent = shape._arrow.aereo ? 'Marcador aéreo' : 'Avenida de aproximación Aérea';
+    block.appendChild(title);
+    var bind = mccaArrowBinder(shape);
+    function refresh(){ if (shape._arrow.aereo){ syncArrowOutline(shape); } }
+    var kit = mccaPanelKit(block, bind, refresh);
+    if (shape._arrow.aereo){
+      kit.text('Desde:', function(){ return shape._arrow.desde || ''; }, function(v){ shape._arrow.desde = v; }, { dataKey: 'desde' });
+      kit.text('Hasta:', function(){ return shape._arrow.hasta || ''; }, function(v){ shape._arrow.hasta = v; }, { dataKey: 'hasta' });
+      kit.range('Opacidad del fondo', function(){ return Math.round((shape._arrow.bgOpacity || 0) * 100); }, function(v){ shape._arrow.bgOpacity = v / 100; },
+        0, 100, 1, function(v){ return Math.round(v) + '%'; }, 'bgOpacity');
+    } else {
+      kit.range('Opacidad del fondo', function(){ return Math.round((shape._arrow.bgOpacity || 0) * 100); },
+        function(v){ shape._arrow.bgOpacity = v / 100; shape.setStyle({ fillColor: '#ffffff', fillOpacity: v / 100 }); shape._fillColorRaw = '#ffffff'; },
+        0, 100, 1, function(v){ return Math.round(v) + '%'; }, 'bgOpacity');
+    }
+    return block;
+  }
+
   function startApp(){
     loadGithubConfig();
     document.querySelectorAll('.collapsible-header').forEach(function(header){
@@ -16904,6 +18164,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     map.on('zoomend', syncAllMccLineCompanions);
     map.on('zoomend', syncAllMccZonaCompanions);
     map.on('zoomend', syncAllMccTextCompanions);
+    map.on('zoomend', syncAllMccAereo);
     map.on('zoomend', syncAllArrowOutlines);
     setInterval(saveStateToStorage, 8000);
 
