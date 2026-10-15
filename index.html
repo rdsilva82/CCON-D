@@ -3183,6 +3183,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     if (direccionBroadcastLoaded){ renderDireccionBroadcastList(); return; }
     if (direccionBroadcastLoading) return;
     direccionBroadcastLoading = true;
+    clearBroadcastLayers();   // una recarga reemplaza el overlay anterior (sin duplicar capas ni companions)
     var basePath = direccionBroadcastBasePath();
     var indexState = null;
     fetch(githubContentsUrl(basePath + '/index.json', true), { headers: githubAuthHeaders() })
@@ -3227,6 +3228,14 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         direccionBroadcastLoading = false;
         console.error('No se pudieron cargar las capas de Dirección:', err);
       });
+  }
+
+  /* Retira del mapa el overlay de Dirección (grupos y companions) y vacía la lista. */
+  function clearBroadcastLayers(){
+    if (!broadcastLayers.length) return;
+    broadcastLayers.forEach(function(l){ setLayerCompanionsVisible(l, false); map.removeLayer(l.group); });
+    broadcastLayers = [];
+    syncAllCompanions();   // barre los companions que ya no pertenecen a ninguna capa
   }
 
   function buildBroadcastLayerTree(node, indexEntries, parentBroadcastId){
@@ -4602,7 +4611,11 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     if (!node) return;
     node.visible = visible;
     if (visible) map.addLayer(node.group); else map.removeLayer(node.group);
+    setLayerCompanionsVisible(node, visible);
     getBroadcastChildren(id).forEach(function(child){ setBroadcastLayerVisibilityRecursive(child.id, visible); });
+    // Los companions que se reconstruyen según `owner.visible` (MCC, zonas, texto, aéreo...) se
+    // reajustan con el barrido global; así el overlay se comporta igual que una capa propia.
+    syncAllCompanions();
   }
   function applyReadOnlySweep(container){
     container.querySelectorAll('input, select, button').forEach(function(el){
@@ -4665,11 +4678,8 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     return result;
   }
 
-  function setLayerVisibilityRecursive(id, visible){
-    var node = getLayer(id);
-    if (!node) return;
-    node.visible = visible;
-    if (visible) map.addLayer(node.group); else map.removeLayer(node.group);
+  /* Muestra/oculta los companions (decoraciones, etiquetas, íconos auxiliares) de todos los objetos de una capa. */
+  function setLayerCompanionsVisible(node, visible){
     node.group.eachLayer(function(s){
       var ind = supplyIndicators[s._shapeId];
       if (ind){ if (visible) ind.addTo(map); else map.removeLayer(ind); }
@@ -4702,6 +4712,14 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       var nameL = nameLabelLayers[s._shapeId];
       if (nameL){ if (visible) nameL.addTo(map); else map.removeLayer(nameL); }
     });
+  }
+
+  function setLayerVisibilityRecursive(id, visible){
+    var node = getLayer(id);
+    if (!node) return;
+    node.visible = visible;
+    if (visible) map.addLayer(node.group); else map.removeLayer(node.group);
+    setLayerCompanionsVisible(node, visible);
     getChildren(id).forEach(function(child){ setLayerVisibilityRecursive(child.id, visible); });
   }
 
@@ -4787,7 +4805,22 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   function getLayer(id){ return layers.find(function(l){ return l.id === id; }); }
   function getActiveLayer(){ return getLayer(activeLayerId); }
   function findLayerOfShape(shape){
-    return layers.find(function(l){ return l.group.hasLayer(shape); });
+    return layers.find(function(l){ return l.group.hasLayer(shape); }) ||
+           broadcastLayers.find(function(l){ return l.group.hasLayer(shape); });
+  }
+  /* Capas propias + capas de Dirección mostradas en modo lectura (broadcastLayers). Los
+     companions (decoraciones, textos, íconos auxiliares) de ambas se construyen, sincronizan en
+     cada zoom y se limpian con el MISMO código; por eso los barridos syncAll* recorren esta lista.
+     Todo lo que guarda/exporta/deshace sigue usando solo `layers`. */
+  function renderedLayers(){ return layers.concat(broadcastLayers); }
+  /* Los companions arrastrables (texto MCC, magnitud de zona, cuadro del corredor) solo se pueden
+     mover en capas editables: el overlay de Dirección (y las aulas vistas por Dirección en modo
+     vista) es de solo lectura. */
+  function companionsEditable(owner){
+    if (!owner) return true;
+    if (owner._broadcastReadOnly) return false;
+    if (owner._direccionAula && isReadOnlyMode()) return false;
+    return true;
   }
 
   function setActiveLayer(id){
@@ -5270,7 +5303,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllNameLabels(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){
         var k = shapeKind(s);
         if (s._showName && (k === 'polygon' || k === 'polyline')) liveIds[s._shapeId] = s;
@@ -5311,7 +5344,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllLengthLabels(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){
         if (s._showLength && shapeKind(s) === 'polyline') liveIds[s._shapeId] = s;
       });
@@ -5360,7 +5393,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllMilRadius(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){
         if (s._isMilSymbol && s._mil && (s._mil.unitType === 'obus' || s._mil.unitType === 'radarmilitar')) liveIds[s._shapeId] = s;
         else if (s._isArma && s._arma && s._arma.radioAccionEnabled) liveIds[s._shapeId] = s;
@@ -8382,7 +8415,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllCamposMinadosCompanions(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._isCamposMinados){ liveIds[s._shapeId] = s; syncCamposMinadosCompanion(s); } });
     });
     Object.keys(camposMinadosLayers).forEach(function(id){
@@ -9023,7 +9056,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllTacticalTaskCompanions(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._task){ liveIds[s._shapeId] = s; syncTacticalTaskCompanion(s); } });
     });
     Object.keys(tacticalTaskLayers).forEach(function(id){
@@ -9208,7 +9241,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllSupplyIndicators(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){
         if (s._shapeId && s._supply != null){ liveIds[s._shapeId] = s; }
       });
@@ -9365,7 +9398,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllEmisoraCoverage(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){
         if (s._isInfra && s._infra && s._infra.tipo === 'emisora'){ liveIds[s._shapeId] = s; }
       });
@@ -9878,7 +9911,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllArrowOutlines(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._isArrow) { liveIds[s._shapeId] = s; syncArrowOutline(s); } });
     });
     Object.keys(arrowOutlines).forEach(function(id){
@@ -10000,7 +10033,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllArrowCorridors(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._isArrow && s._arrow.corridorEnabled) liveIds[s._shapeId] = s; });
     });
     Object.keys(arrowCorridorLines).forEach(function(id){
@@ -10043,7 +10076,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllArrowMainAttacks(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._isArrow && s._arrow.mainAttack) liveIds[s._shapeId] = s; });
     });
     Object.keys(arrowMainAttackMarks).forEach(function(id){
@@ -10292,7 +10325,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function syncAllDefensiveLineCompanions(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._defensiveLine){ liveIds[s._shapeId] = s; syncDefensiveLineCompanion(s); } });
     });
     Object.keys(defensiveLineLayers).forEach(function(id){
@@ -10447,7 +10480,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 
   function syncAllLimiteCompanions(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._limite && s._limite.enabled) liveIds[s._shapeId] = s; });
     });
     Object.keys(limiteLines).forEach(function(id){
@@ -12229,6 +12262,28 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   var direccionAulaSectionCollapsed = {};
   function isAulaSectionCollapsed(letra){ return direccionAulaSectionCollapsed[letra] !== false; }
 
+  /* Reconstruye los companions de TODAS las capas dibujadas (propias y overlay de Dirección). */
+  function syncAllCompanions(){
+    syncAllSupplyIndicators();
+    syncAllEmisoraCoverage();
+    syncAllMilRadius();
+    syncAllLengthLabels();
+    syncAllArrowOutlines();
+    syncAllArrowCorridors();
+    syncAllArrowMainAttacks();
+    syncAllLimiteCompanions();
+    syncAllDefensiveLineCompanions();
+    syncAllTacticalTaskCompanions();
+    syncAllCamposMinadosCompanions();
+    syncAllNameLabels();
+    syncAllArrowSimulados();
+    syncAllArrowLabels();
+    syncAllMccLineCompanions();
+    syncAllMccZonaCompanions();
+    syncAllMccTextCompanions();
+    syncAllMccAereo();
+  }
+
   function renderLayerList(){
     var list = document.getElementById('layer-list');
     list.innerHTML = '';
@@ -12255,24 +12310,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       if (readOnly && node._direccionAula && isAulaSectionCollapsed(node._direccionAula)) return;
       list.appendChild(buildLayerCard(node, 0));
     });
-    syncAllSupplyIndicators();
-    syncAllEmisoraCoverage();
-    syncAllMilRadius();
-    syncAllLengthLabels();
-    syncAllArrowOutlines();
-    syncAllArrowCorridors();
-    syncAllArrowMainAttacks();
-    syncAllLimiteCompanions();
-    syncAllDefensiveLineCompanions();
-    syncAllTacticalTaskCompanions();
-    syncAllCamposMinadosCompanions();
-    syncAllNameLabels();
-    syncAllArrowSimulados();
-    syncAllArrowLabels();
-    syncAllMccLineCompanions();
-    syncAllMccZonaCompanions();
-    syncAllMccTextCompanions();
-    syncAllMccAereo();
+    syncAllCompanions();
     if (isReadOnlyMode()){
       applyReadOnlySweep(list);
     }
@@ -18016,7 +18054,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
   function syncAllMccLineCompanions(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._isMccLine){ liveIds[s._shapeId] = s; syncMccLineCompanion(s); } });
     });
     Object.keys(mccLineCompanions).forEach(function(id){
@@ -18236,7 +18274,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var color = shape.options.color;
     var entry = mccZonaCompanions[shape._shapeId];
     if (!entry){
-      var marker = L.marker(pos, { icon: buildZonaMagnitudeIcon(bearing-180, color, shape._mcc.echelon), draggable:true, zIndexOffset:650, title:'Arrastre para reposicionar el límite sobre el borde de la zona' });
+      var marker = L.marker(pos, { icon: buildZonaMagnitudeIcon(bearing-180, color, shape._mcc.echelon), draggable:companionsEditable(owner), zIndexOffset:650, title:'Arrastre para reposicionar el límite sobre el borde de la zona' });
       // IMPORTANTE: el boundary y el centroide se calculan UNA SOLA VEZ al iniciar el arrastre
       // (no en cada evento 'drag'), porque polygonCentroidLatLng usa turf.centroid sobre el
       // polígono completo — recalcularlo en cada pixel de movimiento, sobre un polígono de
@@ -18269,7 +18307,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
   function syncAllMccZonaCompanions(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._isMccPolygon){ liveIds[s._shapeId] = s; syncMccZonaCompanion(s); } });
     });
     Object.keys(mccZonaCompanions).forEach(function(id){
@@ -18342,7 +18380,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var icon = buildMccTextIcon(shape._mccText);
     var m = mccTextCompanions[shape._shapeId];
     if (!m){
-      m = L.marker(pos, { icon: icon, draggable:true, zIndexOffset:700, title:'Arrastre para mover el texto' });
+      m = L.marker(pos, { icon: icon, draggable:companionsEditable(owner), zIndexOffset:700, title:'Arrastre para mover el texto' });
       m.on('drag', function(){
         var a2 = mccTextAnchor(shape);
         if (!a2) return;
@@ -18356,12 +18394,15 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     } else {
       m.setLatLng(pos);
       m.setIcon(icon);
+      // Respeta la visibilidad de la capa dueña (también para el overlay de Dirección).
+      if (owner.visible){ if (!map.hasLayer(m)) m.addTo(map); }
+      else if (map.hasLayer(m)) map.removeLayer(m);
     }
     if (shape._mccTextHandles) positionMccTextHandle(shape);
   }
   function syncAllMccTextCompanions(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._mccText && s._mccText.enabled){ liveIds[s._shapeId] = s; syncMccTextCompanion(s); } });
     });
     Object.keys(mccTextCompanions).forEach(function(id){
@@ -18540,7 +18581,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
   function syncAllArrowSimulados(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._isArrow && s._arrow.simulado) liveIds[s._shapeId] = s; });
     });
     Object.keys(arrowSimuladoMarks).forEach(function(id){
@@ -18580,7 +18621,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
   function syncAllArrowLabels(){
     var liveIds = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._isArrow && s._arrow.labelText) liveIds[s._shapeId] = s; });
     });
     Object.keys(arrowLabelMarks).forEach(function(id){
@@ -18981,7 +19022,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
   function syncAllMccAereo(){
     var live = {};
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){
         if (!s._shapeId) return;
         if (mccaIsAir(s) && !s._isMccPoint){ live[s._shapeId] = true; syncMccAereo(s); }
@@ -18991,7 +19032,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     Object.keys(mccaGroups).forEach(function(id){ if (!live[id]){ mccaGroups[id].remove(); delete mccaGroups[id]; } });
     Object.keys(mccaBoxes).forEach(function(id){ if (!live[id]){ mccaBoxes[id].remove(); delete mccaBoxes[id]; } });
     // marcadores de la Dirección de Ataque Aérea
-    layers.forEach(function(l){
+    renderedLayers().forEach(function(l){
       l.group.eachLayer(function(s){ if (s._isArrow && s._arrow && s._arrow.aereo) syncArrowAereo(s); });
     });
     Object.keys(arrowAereoMarks).forEach(function(id){ if (!live[id]){ arrowAereoMarks[id].remove(); delete arrowAereoMarks[id]; } });
@@ -19182,7 +19223,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var pos = fromLocalXY(ll[0], b.dx || 0, b.dy || 0);
     var mk = mccaBoxes[id];
     if (!mk){
-      mk = L.marker(pos, { icon: mccaBoxIcon(shape), draggable: true, zIndexOffset: 700, title: 'Arrastre para mover el cuadro de datos' });
+      mk = L.marker(pos, { icon: mccaBoxIcon(shape), draggable: companionsEditable(owner), zIndexOffset: 700, title: 'Arrastre para mover el cuadro de datos' });
       var before = null;
       mk.on('dragstart', function(){ mk._mccaDragging = true; before = mccaSnapshot(shape); });
       mk.on('drag', function(){
