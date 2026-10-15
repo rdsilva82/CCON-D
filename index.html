@@ -977,6 +977,69 @@
   body.theme-digital #draw-toolbar .tool-btn.active,
   body.theme-digital .tool-submenu-row .tool-btn.active{ box-shadow:0 0 8px rgba(34,211,238,.45); }
 
+
+  /* ---------- ASISTENTE DE CONFIGURACIÓN INICIAL DE SINCRONIZACIÓN ---------- */
+  #ghs-screen{
+    position:fixed; inset:0; z-index:5100; background:linear-gradient(135deg,var(--navy-deep),var(--navy));
+    display:flex; align-items:flex-start; justify-content:center; padding:20px 16px; overflow-y:auto;
+  }
+  #ghs-screen.hide{ display:none; }
+  #ghs-card{
+    background:var(--surface); border-radius:16px; padding:28px 32px 22px; max-width:560px; width:100%; margin:auto 0;
+    box-shadow:0 12px 40px rgba(0,0,0,.4); border-top:4px solid var(--gold); box-sizing:border-box;
+  }
+  #ghs-card .pw-crest{ margin-bottom:8px; }
+  #ghs-card h1{ font-size:19px; color:var(--navy); margin:0 0 6px; text-align:center; }
+  .ghs-lead{ font-size:13px; color:var(--muted); margin:0 0 16px; text-align:center; line-height:1.5; }
+  .ghs-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 12px; }
+  .ghs-field{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+  .ghs-field.wide{ grid-column:1 / -1; }
+  .ghs-field label{ font-size:12px; font-weight:700; color:var(--navy); }
+  .ghs-field .ghs-help{ font-size:11px; color:var(--muted); font-weight:400; }
+  .ghs-field input[type=text], .ghs-field input[type=password]{
+    width:100%; box-sizing:border-box; font-family:inherit; font-size:14px; padding:9px 11px;
+    border:2px solid var(--border); border-radius:8px; color:var(--navy); background:var(--surface);
+  }
+  .ghs-token-row input{ flex:1; min-width:0; }
+  .ghs-field input:focus{ outline:none; border-color:var(--gold); }
+  .ghs-field input[aria-invalid=true]{ border-color:#B3261E; }
+  .ghs-token-row{ display:flex; gap:6px; }
+  .ghs-token-row button{
+    font-family:inherit; font-size:12px; font-weight:700; border:2px solid var(--border); background:var(--surface-alt);
+    color:var(--navy); border-radius:8px; padding:0 12px; cursor:pointer;
+  }
+  .ghs-check{ display:flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:var(--navy); cursor:pointer; }
+  #ghs-error{ margin:12px 0 0; font-size:13px; font-weight:700; color:#B3261E; line-height:1.4; }
+  #ghs-error:empty{ display:none; }
+  #ghs-error.warn{ color:#6B4E00; background:#FFF6D6; border:1px solid var(--gold); border-radius:8px; padding:8px 10px; font-weight:600; }
+  #ghs-status{ margin:10px 0 0; font-size:12.5px; color:var(--muted); }
+  #ghs-status:empty{ display:none; }
+  .ghs-actions{ display:flex; gap:8px; margin-top:14px; }
+  .ghs-actions .ghs-primary{
+    flex:1; background:var(--navy); color:#fff; border:none; border-radius:8px; font-family:inherit;
+    font-weight:700; font-size:14px; padding:11px 22px; cursor:pointer;
+  }
+  .ghs-actions .ghs-primary:hover{ background:var(--navy-deep); }
+  .ghs-actions .ghs-secondary{
+    font-family:inherit; font-weight:700; font-size:13px; padding:10px 16px; border-radius:8px; cursor:pointer;
+    border:2px solid var(--navy); background:var(--surface); color:var(--navy);
+  }
+  .ghs-note{ font-size:11.5px; color:var(--muted); line-height:1.5; background:var(--bg); border:1px dashed var(--border); border-radius:7px; padding:8px 10px; margin-top:14px; }
+  .ghs-note a{ color:var(--navy); font-weight:700; }
+  .ghs-skip-wrap{ text-align:center; margin-top:14px; }
+  .ghs-linklike{ background:none; border:none; font-family:inherit; font-size:11.5px; color:var(--muted); text-decoration:underline; cursor:pointer; padding:4px; }
+  .ghs-linklike:hover{ color:var(--navy); }
+  #ghs-skip-confirm{ margin-top:10px; font-size:12.5px; color:var(--text); background:#FFF6D6; border:1px solid var(--gold); border-radius:8px; padding:10px 12px; line-height:1.5; text-align:left; }
+  #ghs-skip-confirm[hidden]{ display:none; }
+  #ghs-skip-confirm .ghs-actions{ margin-top:8px; justify-content:flex-end; }
+  @media (max-width:520px){
+    #ghs-screen{ padding:10px; }
+    #ghs-card{ padding:20px 16px 16px; }
+    .ghs-grid{ grid-template-columns:1fr; }
+    .ghs-actions{ flex-direction:column-reverse; }
+    #ghs-skip-confirm .ghs-actions{ flex-direction:column; }
+  }
+
   /* ---------- CONTRASEÑA Y CONFIGURACIÓN DE AULAS ---------- */
   .pw-scrim, .cfg-scrim{
     display:none; position:fixed; inset:0; z-index:5200; background:rgba(10,20,40,.72);
@@ -1078,6 +1141,64 @@
     </div>
     <div id="aula-grid"></div>
   </div>
+</div>
+
+<div id="ghs-screen" class="hide" role="dialog" aria-modal="true" aria-labelledby="ghs-title">
+  <form id="ghs-card" novalidate autocomplete="off">
+    <div class="pw-crest">&#128273;</div>
+    <h1 id="ghs-title">Configuración inicial de sincronización</h1>
+    <p class="ghs-lead" id="ghs-lead"></p>
+    <div class="ghs-grid">
+      <div class="ghs-field">
+        <label for="ghs-user">Usuario de GitHub (propietario)</label>
+        <input type="text" id="ghs-user" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="usuario" aria-describedby="ghs-error">
+      </div>
+      <div class="ghs-field">
+        <label for="ghs-repo">Repositorio</label>
+        <input type="text" id="ghs-repo" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="nombre-del-repositorio" aria-describedby="ghs-error">
+      </div>
+      <div class="ghs-field wide" style="margin-top:-4px;"><span class="ghs-help">También puede pegar <b>usuario/repositorio</b> o la dirección completa de github.com en el campo Repositorio.</span></div>
+      <div class="ghs-field">
+        <label for="ghs-branch">Rama</label>
+        <input type="text" id="ghs-branch" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="main" aria-describedby="ghs-error">
+      </div>
+      <div class="ghs-field">
+        <label for="ghs-path">Ruta de datos</label>
+        <input type="text" id="ghs-path" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="data/estado.json" aria-describedby="ghs-error">
+      </div>
+      <div class="ghs-field wide">
+        <label for="ghs-token">Token de acceso personal</label>
+        <div class="ghs-token-row">
+          <input type="password" id="ghs-token" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Pegue aquí su token" aria-describedby="ghs-error">
+          <button type="button" id="ghs-toggle" aria-pressed="false" aria-label="Mostrar u ocultar el token">Mostrar</button>
+        </div>
+      </div>
+      <div class="ghs-field wide">
+        <label class="ghs-check"><input type="checkbox" id="ghs-auto" checked> Sincronización automática</label>
+      </div>
+    </div>
+    <div id="ghs-error" role="alert" aria-live="assertive"></div>
+    <div id="ghs-status" role="status" aria-live="polite"></div>
+    <div class="ghs-actions">
+      <button type="button" class="ghs-secondary" id="ghs-cancel" hidden>Cancelar</button>
+      <button type="submit" class="ghs-primary" id="ghs-test-btn">Probar y guardar</button>
+    </div>
+    <div class="ghs-note">
+      &#128274; El token se guarda <b>solo en este navegador</b>; nunca viaja en el enlace ni se publica en el repositorio.
+      Use un token <b>fine-grained limitado a este único repositorio</b>, con el permiso <b>Contents: Read and write</b>.
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Crear un token en GitHub &#8599;</a>
+    </div>
+    <div class="ghs-skip-wrap" id="ghs-skip-wrap">
+      <button type="button" class="ghs-linklike" id="ghs-skip">Continuar sin sincronizar (solo este navegador)</button>
+      <div id="ghs-skip-confirm" role="alertdialog" aria-labelledby="ghs-skip-text" hidden>
+        <div id="ghs-skip-text">Sin sincronización, lo que haga <b>no se compartirá</b> con los demás equipos y se usará la configuración local por defecto (aulas y contraseñas). Esta pantalla volverá a aparecer en su próxima visita hasta que configure la sincronización.</div>
+        <div class="ghs-actions">
+          <button type="button" class="ghs-secondary" id="ghs-skip-no">Volver</button>
+          <button type="button" class="ghs-secondary" id="ghs-skip-yes">Continuar sin sincronizar</button>
+        </div>
+      </div>
+    </div>
+  </form>
 </div>
 
 <div class="pw-scrim" id="pw-scrim">
@@ -1232,6 +1353,7 @@
         <input type="checkbox" id="gh-autosync-input" checked> Sincronización automática
       </label>
       <button class="primary-btn" id="gh-save-config-btn">Guardar configuración</button>
+      <button class="outline-btn" id="gh-wizard-btn" type="button" title="Abre el asistente: verifica el token, el repositorio y la rama antes de guardar">&#128273; Asistente: probar conexión y guardar</button>
       <div class="hint">💡 Como no vas a copiar y pegar aquí el mismo token que compartiste antes (por seguridad, revócalo y genera uno nuevo), solo falta que lo pegues en el campo de arriba la primera vez que abras la página en cada dispositivo — el resto ya queda listo.</div>
       <div class="gh-actions">
         <button class="outline-btn" id="gh-push-btn">⇧ Subir cambios</button>
@@ -2304,7 +2426,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         openPasswordPrompt('aula', letra, function(){
           if (!isAulaVisible(letra)) return; // se ocultó mientras tanto
           userContext = { role:'aula', aula: letra };
-          saveUserContext(userContext);
+          saveUserContext(userContext); ghsMarkInicioSession();
           activateUserContext(inicioOnReady);
         });
       });
@@ -2316,7 +2438,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     direccionBtn.addEventListener('click', function(){
       openPasswordPrompt('direccion', null, function(){
         userContext = { role:'direccion', visibleAulas: [] };
-        saveUserContext(userContext);
+        saveUserContext(userContext); ghsMarkInicioSession();
         activateUserContext(inicioOnReady);
       });
     });
@@ -2534,12 +2656,258 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     return '';
   }
 
-  function initUserSelector(onReady){
+  /* ---------------- ASISTENTE DE CONFIGURACIÓN INICIAL DE SINCRONIZACIÓN (GitHub) ---------------- */
+  // Primera acción en un navegador sin sincronización completa (repo + token): pide usuario, repositorio, rama,
+  // ruta y token, los verifica con GitHub y los guarda con la misma función que el diálogo de configuración.
+  // No hay ningún repositorio fijo en el código: cada despliegue se conecta al suyo.
+  var GHS_SKIP_KEY = 'first_run_setup_skipped_v1';     // sessionStorage: omitido solo durante esta sesión
+  var GHS_INICIO_KEY = 'inicio_session_started_v1';    // localStorage: este navegador ya entró por el Inicio
+  var GHS_TIMEOUT_MS = 15000;
+  var GHS_FIELD_IDS = { user:'ghs-user', repo:'ghs-repo', branch:'ghs-branch', path:'ghs-path', token:'ghs-token' };
+  var ghsState = { mode: 'gate', onDone: null, busy: false, roSig: null };
+
+  function ghsMarkInicioSession(){ try{ localStorage.setItem(GHS_INICIO_KEY, '1'); }catch(err){} }
+  // ¿Hay que mostrar el asistente antes del Inicio? Una sesión guardada que no pasó por el Inicio real
+  // (contexto inyectado, instalaciones anteriores a esta función) no lo muestra.
+  function ghsNeeded(saved){
+    if (githubConfigured()) return false;
+    try{ if (sessionStorage.getItem(GHS_SKIP_KEY) === '1') return false; }catch(err){}
+    if (saved){
+      var viaInicio = false;
+      try{ viaInicio = localStorage.getItem(GHS_INICIO_KEY) === '1'; }catch(err){}
+      if (!viaInicio) return false;
+    }
+    return true;
+  }
+  // Acepta: usuario + nombre; "usuario/repo" en cualquiera de los dos campos; URL https://github.com/usuario/repo(.git)(/tree/…); git@github.com:usuario/repo.git
+  function ghsParseRepoInput(userTxt, repoTxt){
+    var u = String(userTxt == null ? '' : userTxt).trim(), r = String(repoTxt == null ? '' : repoTxt).trim();
+    var URLRE = /^(?:git@github\.com:|(?:https?:\/\/)?(?:www\.)?github\.com\/)([^\/\s?#]+)(?:\/([^\/\s?#]+))?/i;
+    function clean(x){ return String(x || '').replace(/\.git$/i, ''); }
+    var owner = '', name = '', m;
+    if ((m = URLRE.exec(r))){ owner = m[1]; name = clean(m[2]); }
+    else if (r.indexOf('/') !== -1){
+      var parts = r.replace(/^\/+|\/+$/g, '').split('/');
+      if (parts.length !== 2) return { ok:false, field:'repo', msg:'El repositorio debe tener la forma usuario/repositorio o la dirección completa de github.com.' };
+      owner = parts[0]; name = clean(parts[1]);
+    } else name = clean(r);
+    var uOwner = '';
+    if ((m = URLRE.exec(u))){ uOwner = m[1]; if (!name) name = clean(m[2]); }
+    else if (u.indexOf('/') !== -1){
+      var up = u.replace(/^\/+|\/+$/g, '').split('/');
+      if (up.length !== 2) return { ok:false, field:'user', msg:'Indique solo el usuario u organización propietaria (por ejemplo: miusuario).' };
+      uOwner = up[0]; if (!name) name = clean(up[1]);
+    } else uOwner = u.replace(/^@/, '');
+    owner = owner || uOwner;
+    if (!owner) return { ok:false, field:'user', msg:'Escriba el usuario (o la organización) de GitHub propietario del repositorio.' };
+    if (!name) return { ok:false, field:'repo', msg:'Escriba el nombre del repositorio.' };
+    if (!/^[A-Za-z0-9_.-]+$/.test(owner)) return { ok:false, field:'user', msg:'El usuario solo puede contener letras, números, guiones, guion bajo y punto.' };
+    if (!/^[A-Za-z0-9_.-]+$/.test(name) || name === '.' || name === '..') return { ok:false, field:'repo', msg:'El nombre del repositorio solo puede contener letras, números, guiones, guion bajo y punto.' };
+    return { ok:true, owner: owner, name: name, repo: owner + '/' + name };
+  }
+  function ghsValidateInputs(f){
+    var pr = ghsParseRepoInput(f.user, f.repo);
+    if (!pr.ok) return pr;
+    var branch = String(f.branch || '').trim() || 'main';
+    if (!/^[A-Za-z0-9._\/-]+$/.test(branch) || /\.\.|^\/|\/$|\/\//.test(branch)) return { ok:false, field:'branch', msg:'El nombre de la rama no es válido (use letras, números, punto, guion y barras).' };
+    var path = String(f.path || '').trim().replace(/^\/+/, '') || 'data/estado.json';
+    if (/[?#\\]/.test(path) || /(^|\/)\.\.(\/|$)/.test(path) || /\/\//.test(path) || /\/$/.test(path)) return { ok:false, field:'path', msg:'La ruta de datos no es válida (ejemplo: data/estado.json).' };
+    var token = String(f.token || '').trim();
+    if (!token) return { ok:false, field:'token', msg:'Pegue el token de acceso personal de GitHub.' };
+    if (!/^[\x21-\x7E]+$/.test(token)) return { ok:false, field:'token', msg:'El token contiene espacios o caracteres no válidos. Cópielo de nuevo, completo y sin espacios.' };
+    return { ok:true, cfg: normalizeGithubConfig(pr.repo, branch, path, token, !!f.autoSync), owner: pr.owner, name: pr.name };
+  }
+  function ghsRequest(url, token){
+    var ctrl = null, timer = null;
+    try{ if (typeof AbortController === 'function') ctrl = new AbortController(); }catch(err){ ctrl = null; }
+    var p = new Promise(function(resolve, reject){
+      timer = setTimeout(function(){ try{ if (ctrl) ctrl.abort(); }catch(err){} reject({ timeout:true }); }, GHS_TIMEOUT_MS);
+      var opts = { headers: githubHeadersFor(token) };
+      if (ctrl) opts.signal = ctrl.signal;
+      fetch(url, opts).then(function(res){
+        var rem = null;
+        try{ rem = res.headers && res.headers.get ? res.headers.get('x-ratelimit-remaining') : null; }catch(err){}
+        var jp = res.json ? res.json().catch(function(){ return null; }) : Promise.resolve(null);
+        return jp.then(function(body){ resolve({ status: res.status, ok: !!res.ok, body: body, remaining: rem }); });
+      }).catch(reject);
+    });
+    return p.then(function(r){ clearTimeout(timer); return r; }, function(e){ clearTimeout(timer); throw e; });
+  }
+  function ghsHttpMsg(r, cfg){
+    var msg = r.body && r.body.message ? String(r.body.message) : '';
+    if (r.status === 401) return 'El token no es válido, venció o fue revocado (GitHub respondió 401). Genere uno nuevo y péguelo completo.';
+    if (r.status === 429 || (r.status === 403 && (r.remaining === '0' || /rate limit|abuse|secondary/i.test(msg))))
+      return 'GitHub limitó temporalmente las consultas (límite de velocidad). Espere unos minutos e intente de nuevo.';
+    if (r.status === 403) return 'El token no tiene acceso a este repositorio (403). Verifique que el token fine-grained incluya el repositorio ' + cfg.repo + ' y el permiso Contents.';
+    if (r.status === 404) return 'No se encontró el repositorio “' + cfg.repo + '”, o el token no tiene acceso a él. Revise el usuario y el nombre; con un token fine-grained, confirme que este repositorio esté seleccionado.';
+    return 'GitHub respondió con un error inesperado (HTTP ' + r.status + '). Intente de nuevo en unos minutos.';
+  }
+  // Verifica token + repositorio + rama con peticiones reales. NO crea nada: la carpeta de datos se crea en el primer envío.
+  function ghsRunChecks(cfg){
+    var base = 'https://api.github.com/repos/' + cfg.repo;
+    return ghsRequest(base, cfg.token).then(function(r){
+      if (!r.ok) return { ok:false, msg: ghsHttpMsg(r, cfg), field: r.status === 401 ? 'token' : 'repo' };
+      var b = r.body || {};
+      var push = b.permissions && typeof b.permissions.push === 'boolean' ? b.permissions.push : null;
+      var brUrl = base + '/branches/' + cfg.branch.split('/').map(encodeURIComponent).join('/');
+      return ghsRequest(brUrl, cfg.token).then(function(r2){
+        if (r2.status === 404) return { ok:false, field:'branch', msg: 'La rama “' + cfg.branch + '” no existe en ' + cfg.repo + (b.default_branch ? '. La rama predeterminada del repositorio es “' + b.default_branch + '”.' : '.') };
+        if (!r2.ok) return { ok:false, field:'repo', msg: ghsHttpMsg(r2, cfg) };
+        return { ok:true, readOnly: push === false, defaultBranch: b.default_branch || '' };
+      });
+    }).catch(function(err){
+      if (err && err.timeout) return { ok:false, field:null, msg:'GitHub no respondió a tiempo. Revise su conexión e intente de nuevo.' };
+      return { ok:false, field:null, msg:'No hay conexión con GitHub. Revise su conexión a Internet (o el proxy/cortafuegos) e intente de nuevo.' };
+    });
+  }
+  function ghsEl(id){ return document.getElementById(id); }
+  function ghsFieldEl(name){ return GHS_FIELD_IDS[name] ? ghsEl(GHS_FIELD_IDS[name]) : null; }
+  function ghsClearInvalid(){ Object.keys(GHS_FIELD_IDS).forEach(function(n){ var e = ghsFieldEl(n); if (e) e.removeAttribute('aria-invalid'); }); }
+  function ghsShowError(msg, field, warn){
+    var box = ghsEl('ghs-error');
+    box.textContent = msg || '';
+    box.classList.toggle('warn', !!warn);
+    ghsClearInvalid();
+    var el = field ? ghsFieldEl(field) : null;
+    if (el){ el.setAttribute('aria-invalid', 'true'); try{ el.focus(); }catch(err){} }
+  }
+  function ghsSetStatus(txt){ ghsEl('ghs-status').textContent = txt || ''; }
+  function ghsRefreshButtonLabel(){
+    ghsEl('ghs-test-btn').textContent = ghsState.roSig ? 'Continuar en solo lectura' : 'Probar y guardar';
+  }
+  function ghsSetBusy(b){
+    ghsState.busy = b;
+    var btn = ghsEl('ghs-test-btn');
+    btn.disabled = b;
+    btn.setAttribute('aria-busy', b ? 'true' : 'false');
+    if (b) btn.textContent = 'Probando…'; else ghsRefreshButtonLabel();
+  }
+  // Valores iniciales: configuración parcial existente > ?cfgrepo / recordado > AULAS_PUBLIC_CONFIG > derivación de GitHub Pages.
+  function ghsPrefill(){
+    var gh = githubConfig || {};
+    var src = null;
+    try{ src = aulasPublicSource(); }catch(err){ src = null; }
+    var repo = (src && src.repo) || (gh.repo && /\//.test(gh.repo) ? gh.repo : '') || '';
+    var parts = repo.split('/');
+    return {
+      user: parts.length === 2 ? parts[0] : '',
+      repo: parts.length === 2 ? parts[1] : '',
+      branch: gh.branch || (src && src.branch) || 'main',
+      path: gh.path || (src && src.syncPath) || AULAS_DEFAULT_SYNC_PATH,
+      token: gh.token || '',
+      autoSync: gh.autoSync === undefined ? true : !!gh.autoSync
+    };
+  }
+  function ghsOpen(mode, onDone){
+    ghsState = { mode: mode, onDone: onDone || null, busy: false, roSig: null };
+    var v = ghsPrefill();
+    ghsEl('ghs-user').value = v.user; ghsEl('ghs-repo').value = v.repo;
+    ghsEl('ghs-branch').value = v.branch; ghsEl('ghs-path').value = v.path;
+    ghsEl('ghs-token').value = v.token; ghsEl('ghs-auto').checked = v.autoSync;
+    ghsEl('ghs-token').type = 'password'; ghsEl('ghs-toggle').textContent = 'Mostrar'; ghsEl('ghs-toggle').setAttribute('aria-pressed', 'false');
+    ghsShowError('', null); ghsSetStatus(''); ghsSetBusy(false);
+    ghsEl('ghs-skip-confirm').hidden = true;
+    var gate = mode === 'gate';
+    ghsEl('ghs-skip-wrap').style.display = gate ? '' : 'none';
+    ghsEl('ghs-cancel').hidden = gate;
+    ghsEl('ghs-lead').textContent = gate
+      ? 'Para compartir el mapa y la configuración con los demás equipos, conecte este navegador al repositorio de GitHub. Se hace una sola vez por navegador, antes del primer uso.'
+      : 'Verifique el token, el repositorio y la rama con GitHub antes de guardar la sincronización.';
+    ghsEl('ghs-screen').classList.remove('hide');
+    var order = ['ghs-user', 'ghs-repo', 'ghs-token', 'ghs-branch', 'ghs-path'];
+    var target = order.filter(function(id){ return !ghsEl(id).value.trim(); })[0] || 'ghs-token';
+    try{ ghsEl(target).focus(); }catch(err){}
+  }
+  function ghsClose(){ ghsEl('ghs-screen').classList.add('hide'); }
+  function ghsFinish(){
+    ghsClose();
+    ghsEl('ghs-token').value = '';
+    var cb = ghsState.onDone;
+    ghsState.onDone = null;
+    if (ghsState.mode === 'settings'){
+      githubFileSha = null;
+      try{ fillGithubConfigInputs(); }catch(err){}
+      githubPull(true);
+      direccionBroadcastCache = null;
+      loadDireccionBroadcastPanel();
+    }
+    if (cb) cb();
+  }
+  function ghsSubmit(){
+    if (ghsState.busy) return;
+    ghsShowError('', null);
+    var v = ghsValidateInputs({
+      user: ghsEl('ghs-user').value, repo: ghsEl('ghs-repo').value, branch: ghsEl('ghs-branch').value,
+      path: ghsEl('ghs-path').value, token: ghsEl('ghs-token').value, autoSync: ghsEl('ghs-auto').checked
+    });
+    if (!v.ok){ ghsShowError(v.msg, v.field); return; }
+    // Si se pegó usuario/repo o una URL, deja los campos en su forma canónica.
+    ghsEl('ghs-user').value = v.owner; ghsEl('ghs-repo').value = v.name;
+    var cfg = v.cfg;
+    var sig = JSON.stringify([cfg.repo, cfg.branch, cfg.token]);
+    ghsSetBusy(true);
+    ghsSetStatus('Verificando token, repositorio y rama en GitHub…');
+    ghsRunChecks(cfg).then(function(res){
+      if (!res.ok){ ghsState.roSig = null; ghsSetBusy(false); ghsSetStatus(''); ghsShowError(res.msg, res.field); return; }
+      if (res.readOnly && ghsState.roSig !== sig){
+        ghsState.roSig = sig;
+        ghsSetBusy(false); ghsSetStatus('');
+        ghsShowError('Este token solo tiene permiso de lectura sobre ' + cfg.repo + ': podrá ver los datos compartidos, pero no podrá subir cambios. Para guardar cambios cree un token con Contents: Read and write. Si desea continuar en solo lectura, pulse “Continuar en solo lectura”.', null, true);
+        return;
+      }
+      applyGithubConfig(cfg);
+      ghsSetStatus('Conexión verificada. Descargando la configuración compartida…');
+      var proceeded = false, guard = null;
+      function proceed(){ if (proceeded) return; proceeded = true; clearTimeout(guard); ghsSetBusy(false); ghsSetStatus(''); ghsFinish(); }
+      guard = setTimeout(proceed, GHS_TIMEOUT_MS);
+      try{ aulasPullRemote(function(){ proceed(); }); } catch(err){ proceed(); }
+    });
+  }
+  (function ghsWire(){
+    var form = ghsEl('ghs-card');
+    if (!form) return;
+    form.addEventListener('submit', function(ev){ ev.preventDefault(); ghsSubmit(); });
+    ['ghs-user','ghs-repo','ghs-branch','ghs-path','ghs-token','ghs-auto'].forEach(function(id){
+      ghsEl(id).addEventListener('input', function(){
+        if (ghsState.roSig){ ghsState.roSig = null; ghsRefreshButtonLabel(); ghsShowError('', null); }
+        else if (ghsEl('ghs-error').textContent){ ghsClearInvalid(); }
+      });
+    });
+    ghsEl('ghs-toggle').addEventListener('click', function(){
+      var inp = ghsEl('ghs-token'), show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      this.textContent = show ? 'Ocultar' : 'Mostrar';
+      this.setAttribute('aria-pressed', show ? 'true' : 'false');
+      inp.focus();
+    });
+    ghsEl('ghs-skip').addEventListener('click', function(){ ghsEl('ghs-skip-confirm').hidden = false; ghsEl('ghs-skip-no').focus(); });
+    ghsEl('ghs-skip-no').addEventListener('click', function(){ ghsEl('ghs-skip-confirm').hidden = true; ghsEl('ghs-skip').focus(); });
+    ghsEl('ghs-skip-yes').addEventListener('click', function(){
+      try{ sessionStorage.setItem(GHS_SKIP_KEY, '1'); }catch(err){}
+      var cb = ghsState.onDone; ghsState.onDone = null;
+      ghsClose();
+      if (cb) cb();
+    });
+    ghsEl('ghs-cancel').addEventListener('click', function(){ if (!ghsState.busy) ghsClose(); });
+    document.addEventListener('keydown', function(ev){
+      if (ev.key === 'Escape' && ghsState.mode === 'settings' && !ghsState.busy && !ghsEl('ghs-screen').classList.contains('hide')) ghsClose();
+    });
+    var wiz = document.getElementById('gh-wizard-btn');
+    if (wiz) wiz.addEventListener('click', function(){ ghsOpen('settings', null); });
+  })();
+
+  function initUserSelector(onReady, afterSetup){
     var screen = document.getElementById('user-select-screen');
     inicioOnReady = onReady;
     aulasLoadLocal();
-    try{ loadGithubConfig(); }catch(err){}
+    if (!afterSetup){ try{ loadGithubConfig(); }catch(err){} }
     var saved = loadUserContext();
+    // Primera acción en un navegador sin sincronización: configurar GitHub antes de cualquier otra cosa.
+    if (!afterSetup && ghsNeeded(saved)){
+      screen.classList.add('hide');
+      ghsOpen('gate', function(){ initUserSelector(onReady, true); });
+      return;
+    }
     // Sin sesión guardada y sin token: el Inicio espera (plazo corto) a la configuración compartida del repositorio
     // para no mostrar aulas ocultas ni contraseñas obsoletas. Con sesión guardada la carga ocurre en segundo plano.
     aulasInicioLoading = !saved && !aulasRemoteAvailable() && typeof fetch === 'function' && !!aulasPublicSource();
@@ -3231,8 +3599,25 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     if (withRef) url += '?ref=' + encodeURIComponent(githubConfig.branch || 'main');
     return url;
   }
+  function githubHeadersFor(token){
+    return { 'Authorization':'Bearer ' + token, 'Accept':'application/vnd.github+json' };
+  }
   function githubAuthHeaders(){
-    return { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' };
+    return githubHeadersFor(githubConfig.token);
+  }
+  // Normaliza los datos de sincronización (mismos valores por defecto que el diálogo de configuración).
+  function normalizeGithubConfig(repo, branch, path, token, autoSync){
+    return {
+      repo: String(repo || '').trim().replace(/^\/+|\/+$/g,''),
+      branch: String(branch || '').trim() || 'main',
+      path: String(path || '').trim().replace(/^\/+/,'') || 'data/estado.json',
+      token: String(token || '').trim(),
+      autoSync: !!autoSync
+    };
+  }
+  function applyGithubConfig(cfg){
+    githubConfig = cfg;
+    persistGithubConfig();
   }
   function resolveFileText(data){
     if (data.content) return Promise.resolve(base64ToUtf8(data.content));
@@ -4003,14 +4388,15 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
 
   document.getElementById('gh-save-config-btn').addEventListener('click', function(){
-    var repo = document.getElementById('gh-repo-input').value.trim().replace(/^\/+|\/+$/g,'');
-    var branch = document.getElementById('gh-branch-input').value.trim() || 'main';
-    var path = document.getElementById('gh-path-input').value.trim().replace(/^\/+/,'') || 'data/estado.json';
-    var token = document.getElementById('gh-token-input').value.trim();
-    var autoSync = document.getElementById('gh-autosync-input').checked;
-    if (!repo || !token){ alert('Complete al menos el repositorio y el token de acceso.'); return; }
-    githubConfig = { repo: repo, branch: branch, path: path, token: token, autoSync: autoSync };
-    persistGithubConfig();
+    var cfg = normalizeGithubConfig(
+      document.getElementById('gh-repo-input').value,
+      document.getElementById('gh-branch-input').value,
+      document.getElementById('gh-path-input').value,
+      document.getElementById('gh-token-input').value,
+      document.getElementById('gh-autosync-input').checked
+    );
+    if (!cfg.repo || !cfg.token){ alert('Complete al menos el repositorio y el token de acceso.'); return; }
+    applyGithubConfig(cfg);
     githubFileSha = null;
     githubPull(true);
     direccionBroadcastCache = null;
