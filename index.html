@@ -803,19 +803,33 @@
     background:#10192B;
   }
   body.mode-clima #clima-panel{ display:block; }
+  /* Capas (de abajo hacia arriba): iframe de Windy -> el MISMO mapa principal (#map, con sus calcos
+     renderizados por la tubería completa, sin teselas y transparente) -> barra de herramientas.
+     El mapa de calcos nunca captura el puntero (ni sus paneles, marcadores ni tooltips): el menú de
+     Windy (cambio de capa: viento/lluvia/temperatura...) y el paneo de Windy quedan siempre libres.
+     La barra de herramientas tampoco bloquea los huecos entre sus botones. */
   #clima-toolbar{
     position:absolute; top:14px; left:50%; transform:translateX(-50%); z-index:10;
-    display:flex; gap:8px;
+    display:flex; flex-wrap:wrap; justify-content:center; gap:8px; max-width:calc(100% - 24px);
+    pointer-events:none;
   }
+  #clima-toolbar > *{ pointer-events:auto; }
   #clima-toolbar button{ box-shadow:0 2px 10px rgba(0,0,0,.35); }
+  #clima-nav-toggle-label,
   #clima-overlay-toggle-label{
     display:flex; align-items:center; gap:5px; background:var(--surface); padding:7px 12px; border-radius:8px;
     font-size:12px; font-weight:600; color:var(--navy); box-shadow:0 2px 10px rgba(0,0,0,.35); cursor:pointer;
   }
   #clima-iframe{ position:absolute; inset:0; width:100%; height:100%; border:none; }
-  #clima-overlay-map{ position:absolute; inset:0; width:100%; height:100%; z-index:3; pointer-events:auto; background:transparent; }
-  #clima-overlay-map.hidden{ display:none; pointer-events:none; }
-  #clima-overlay-map .leaflet-container{ background:transparent; }
+  #clima-panel #map{
+    position:absolute !important; top:0; left:0; right:0; bottom:0; width:100%; height:100%;
+    z-index:3; background:transparent !important; pointer-events:none !important;
+  }
+  #clima-panel #map *{ pointer-events:none !important; }
+  #clima-panel #map .leaflet-tile-pane,
+  #clima-panel #map .leaflet-control-container{ display:none !important; }
+  body.clima-nav #clima-panel #map{ pointer-events:auto !important; }
+  body.clima-no-calcos #clima-panel #map{ visibility:hidden; }
 
   /* ---------- PANEL PERSONAL ---------- */
   #personal-panel{
@@ -1749,10 +1763,12 @@
 <div id="clima-panel">
   <div id="clima-toolbar">
     <button class="primary-btn" id="clima-center-btn">📍 Centrar en mi mapa</button>
-    <label id="clima-overlay-toggle-label" title="Arrastre o haga zoom sobre el mapa para mover Windy junto con los calcos"><input type="checkbox" id="clima-overlay-toggle" checked> Ver calcos</label>
+    <label id="clima-overlay-toggle-label" title="Mostrar u ocultar los calcos sobre Windy"><input type="checkbox" id="clima-overlay-toggle" checked> Ver calcos</label>
+    <button class="outline-btn" id="clima-zoom-out" title="Alejar (Windy y calcos)">&minus;</button>
+    <button class="outline-btn" id="clima-zoom-in" title="Acercar (Windy y calcos)">+</button>
+    <label id="clima-nav-toggle-label" title="Si lo activa, arrastrar/rueda mueve el mapa y Windy lo sigue; mientras esté activo los controles de Windy no se pueden pulsar"><input type="checkbox" id="clima-nav-toggle"> Mover mapa con calcos</label>
   </div>
   <iframe id="clima-iframe" title="Clima (Windy)" allow="geolocation"></iframe>
-  <div id="clima-overlay-map"></div>
 </div>
 
 <div id="personal-panel">
@@ -3356,6 +3372,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 
   var applyingRemoteState = false;
   function scheduleSave(){
+    if (climaViewActive) return;   // la vista temporal de la pestaña Clima no se guarda ni se sincroniza
     lastLocalEditTime = Date.now();
     var skipPush = applyingRemoteState;
     if (saveTimer) clearTimeout(saveTimer);
@@ -16333,6 +16350,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   function setMode(mode){
     document.body.classList.remove('mode-edicion','mode-coa','mode-enfoque','mode-personal','mode-clima');
     document.body.classList.add('mode-' + mode);
+    if (mode !== 'clima') leaveClima();
     modeEdicionBtn.classList.toggle('active', mode === 'edicion');
     modeCoaBtn.classList.toggle('active', mode === 'coa');
     modeEnfoqueBtn.classList.toggle('active', mode === 'enfoque');
@@ -16371,86 +16389,89 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   modeClimaBtn.addEventListener('click', function(){ setMode('clima'); });
 
   /* ---------------- PANEL CLIMA (Windy embebido) ---------------- */
-  var climaOverlayMap = null;
-  function ensureClimaOverlayMap(){
-    if (climaOverlayMap) return climaOverlayMap;
-    climaOverlayMap = L.map('clima-overlay-map', {
-      zoomControl:true, attributionControl:false, dragging:true, scrollWheelZoom:true,
-      doubleClickZoom:true, boxZoom:true, keyboard:true, touchZoom:true, tap:true,
-      fadeAnimation:false, inertia:true
-    });
-    climaOverlayMap.zoomControl.setPosition('bottomright');
-    var syncTimer = null;
-    climaOverlayMap.on('moveend zoomend', function(){
-      if (climaFollowSuspended) return;
-      clearTimeout(syncTimer);
-      syncTimer = setTimeout(pushOverlayViewToWindy, 550);
-    });
-    return climaOverlayMap;
-  }
+  /* La pestaña Clima NO crea un segundo mapa ni redibuja los objetos con una versión simplificada:
+     mientras está activa, el MISMO mapa principal (#map, con todas sus capas y companions ya
+     construidos por la tubería completa) se coloca encima del iframe de Windy, sin teselas y con
+     fondo transparente. Así los símbolos, decoraciones, textos y tamaños por zoom son idénticos a
+     los de la pestaña Edición. El mapa no captura el puntero (CSS), por lo que Windy se maneja con
+     normalidad. La vista de Edición se restaura al salir y no se guarda ni sincroniza la vista
+     temporal de Clima (ver scheduleSave). */
+  var climaViewActive = false;
+  var climaSavedView = null;
+  var climaMapHome = null;
   var climaFollowSuspended = false;
-  function pushOverlayViewToWindy(){
-    var m = climaOverlayMap;
-    if (!m) return;
-    var center = m.getCenter();
-    var zoom = Math.min(Math.max(Math.round(m.getZoom()), 3), 12);
-    var lat = center.lat.toFixed(3), lng = center.lng.toFixed(3);
-    var url = 'https://embed.windy.com/embed2.html?lat=' + lat + '&lon=' + lng +
+  var climaLeaving = false;
+  var climaSyncTimer = null;
+  var CLIMA_MIN_ZOOM = 3, CLIMA_MAX_ZOOM = 12;
+  function climaClampZoom(z){ return Math.min(Math.max(Math.round(z), CLIMA_MIN_ZOOM), CLIMA_MAX_ZOOM); }
+  function climaWindyUrl(lat, lng, zoom){
+    lat = lat.toFixed(3); lng = lng.toFixed(3);
+    return 'https://embed.windy.com/embed2.html?lat=' + lat + '&lon=' + lng +
       '&detailLat=' + lat + '&detailLon=' + lng +
       '&width=650&height=450&zoom=' + zoom + '&level=surface&overlay=wind' +
       '&menu=&message=true&marker=true&calendar=now&pressure=&type=map' +
       '&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1';
-    document.getElementById('clima-iframe').src = url;
   }
-  function renderClimaOverlayShapes(){
-    var m = ensureClimaOverlayMap();
-    m.eachLayer(function(l){ m.removeLayer(l); });
-    layers.forEach(function(layerObj){
-      if (!layerObj.visible) return;
-      var geo;
-      try{ geo = layerToGeoJSON(layerObj); } catch(err){ return; }
-      if (!geo || !geo.features || !geo.features.length) return;
-      L.geoJSON(geo, {
-        style: function(feature){
-          var p = feature.properties || {};
-          return {
-            color: p.color || layerObj.color || '#1F3864',
-            weight: p.weight || 2,
-            dashArray: p.dashArray || null,
-            fillColor: p.fillColor || p.color || layerObj.color || '#1F3864',
-            fillOpacity: p.fillOpacity != null ? p.fillOpacity : 0.35,
-            opacity: p.opacity != null ? p.opacity : 1
-          };
-        },
-        pointToLayer: function(feature, latlng){
-          var p = feature.properties || {};
-          return L.circleMarker(latlng, { radius:6, color:'#fff', weight:1.5, fillColor: p.color || layerObj.color || '#1F3864', fillOpacity:1 });
-        }
-      }).addTo(m);
-    });
+  function enterClima(){
+    if (climaViewActive) return;
+    climaSavedView = { center: map.getCenter(), zoom: map.getZoom() };
+    var mapEl = map.getContainer();
+    climaMapHome = { parent: mapEl.parentNode, next: mapEl.nextSibling };
+    climaViewActive = true;
+    document.getElementById('clima-panel').appendChild(mapEl);
+  }
+  function leaveClima(){
+    if (!climaViewActive) return;
+    clearTimeout(climaSyncTimer);
+    climaFollowSuspended = true;
+    climaLeaving = true;
+    var mapEl = map.getContainer();
+    if (climaMapHome && climaMapHome.parent) climaMapHome.parent.insertBefore(mapEl, climaMapHome.next && climaMapHome.next.parentNode === climaMapHome.parent ? climaMapHome.next : null);
+    var v = climaSavedView;
+    map.invalidateSize({ animate:false });
+    if (v) map.setView(v.center, v.zoom, { animate:false });
+    climaViewActive = false;
+    climaLeaving = false;
+    climaFollowSuspended = false;
+    climaSavedView = null;
+    climaMapHome = null;
+    document.body.classList.remove('clima-nav');
+    var navChk = document.getElementById('clima-nav-toggle');
+    if (navChk) navChk.checked = false;
+  }
+  function pushOverlayViewToWindy(){
+    if (!climaViewActive) return;
+    var c = map.getCenter();
+    document.getElementById('clima-iframe').src = climaWindyUrl(c.lat, c.lng, climaClampZoom(map.getZoom()));
   }
   function centerClimaOnMap(){
-    var center = map.getCenter();
-    var zoom = Math.min(Math.max(map.getZoom(), 3), 12);
-    var lat = center.lat.toFixed(3), lng = center.lng.toFixed(3);
-    var url = 'https://embed.windy.com/embed2.html?lat=' + lat + '&lon=' + lng +
-      '&detailLat=' + lat + '&detailLon=' + lng +
-      '&width=650&height=450&zoom=' + zoom + '&level=surface&overlay=wind' +
-      '&menu=&message=true&marker=true&calendar=now&pressure=&type=map' +
-      '&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1';
-    document.getElementById('clima-iframe').src = url;
-    var m = ensureClimaOverlayMap();
+    enterClima();
+    var v = climaSavedView || { center: map.getCenter(), zoom: map.getZoom() };
+    var zoom = climaClampZoom(v.zoom);
+    document.getElementById('clima-iframe').src = climaWindyUrl(v.center.lat, v.center.lng, zoom);
     climaFollowSuspended = true;
-    setTimeout(function(){
-      m.invalidateSize();
-      m.setView(center, zoom);
-      renderClimaOverlayShapes();
-      setTimeout(function(){ climaFollowSuspended = false; }, 300);
-    }, 60);
+    map.invalidateSize({ animate:false });
+    map.setView(v.center, zoom, { animate:false });
+    setTimeout(function(){ climaFollowSuspended = false; }, 300);
   }
+  map.on('zoomend', function(){
+    if (!climaViewActive || climaLeaving) return;
+    var z = map.getZoom(), cz = climaClampZoom(z);
+    if (z !== cz) map.setZoom(cz, { animate:false });
+  });
+  map.on('moveend zoomend', function(){
+    if (!climaViewActive || climaFollowSuspended) return;
+    clearTimeout(climaSyncTimer);
+    climaSyncTimer = setTimeout(pushOverlayViewToWindy, 550);
+  });
   document.getElementById('clima-center-btn').addEventListener('click', centerClimaOnMap);
+  document.getElementById('clima-zoom-in').addEventListener('click', function(){ if (climaViewActive) map.setZoom(climaClampZoom(map.getZoom() + 1)); });
+  document.getElementById('clima-zoom-out').addEventListener('click', function(){ if (climaViewActive) map.setZoom(climaClampZoom(map.getZoom() - 1)); });
   document.getElementById('clima-overlay-toggle').addEventListener('change', function(ev){
-    document.getElementById('clima-overlay-map').classList.toggle('hidden', !ev.target.checked);
+    document.body.classList.toggle('clima-no-calcos', !ev.target.checked);
+  });
+  document.getElementById('clima-nav-toggle').addEventListener('change', function(ev){
+    document.body.classList.toggle('clima-nav', ev.target.checked);
   });
 
   /* ---------------- PANEL ENFOQUE OPERACIONAL (imagen a pantalla completa) ---------------- */
