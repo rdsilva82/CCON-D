@@ -113,12 +113,12 @@
     display:none !important;
   }
   #read-only-banner{
-    display:none; position:fixed; top:56px; left:0; right:0; z-index:850;
+    display:none; position:fixed; top:var(--hdr-h,56px); left:0; right:0; z-index:850;
     background:var(--warning-bg,#7A5B00); color:#fff; text-align:center; font-size:12px; font-weight:700;
     padding:6px; letter-spacing:.3px;
   }
   body.read-only-mode #read-only-banner{ display:block; }
-  body.read-only-mode .app-grid{ height:calc(100% - 56px - 36px); margin-top:36px; }
+  body.read-only-mode .app-grid{ height:calc(100% - var(--hdr-h,56px) - 36px); margin-top:36px; }
   #direccion-aula-switch-wrap{ margin-left:8px; font-weight:400; }
   #direccion-aula-toggles{ display:inline-flex; gap:4px; vertical-align:middle; }
   .direccion-aula-toggle{
@@ -138,7 +138,8 @@
 
   /* ---------- HEADER ---------- */
   header{
-    height:56px;
+    height:var(--hdr-h,56px);
+    position:relative;
     background:linear-gradient(90deg,var(--navy-deep),var(--navy));
     color:#fff;
     display:flex;
@@ -167,6 +168,20 @@
   header .brand .theme-toggle-btn:hover{ background:rgba(255,255,255,.26); }
   header .brand .theme-toggle-btn svg{ flex-shrink:0; }
   header h1{ font-size:15px; margin:0; line-height:1.2; font-weight:700; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* ---------- AVISO DE USO ACADÉMICO (recuadro rojo sobre fondo blanco, igual en tema claro y oscuro) ---------- */
+  .uso-academico-banner{
+    display:block; box-sizing:border-box; width:fit-content; max-width:100%; margin:0 auto;
+    background:#FFFFFF !important; color:#C00000 !important; border:2px solid #C00000; border-radius:4px;
+    padding:4px 10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; line-height:1.25; text-align:center;
+    font-size:clamp(11px, 3.1vw, 15px); white-space:normal; overflow-wrap:anywhere; text-overflow:clip;
+  }
+  #user-select-card h1.uso-academico-banner{ margin:0 auto 10px auto; font-size:clamp(11px, 3.3vw, 16px); }
+  #ghs-card .uso-academico-banner{ margin:0 auto 14px auto; font-size:clamp(10.5px, 3vw, 13px); }
+  header h1.uso-academico-banner{
+    font-size:11.5px; padding:2px 8px; margin:0; white-space:nowrap; overflow:hidden; text-overflow:clip; letter-spacing:.2px; line-height:1.2;
+    max-width:100%;
+  }
   header .subtitle{ font-size:11px; color:var(--gold-light); font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:min(60vw,720px); }
   #user-select-org{ font-size:13px; font-weight:700; color:var(--gold); margin:0 0 6px 0; overflow-wrap:anywhere; line-height:1.3; }
   #user-select-org:empty{ display:none; }
@@ -226,7 +241,10 @@
   /* Tabletas y teléfonos: se cede el título; las pestañas y los botones de usuario se desplazan en su propia
      franja (sin salirse de la pantalla) y los cajones laterales (☰ ▤) siempre quedan visibles. */
   @media (max-width: 900px){
-    header .brand > div{ display:none; }
+    :root{ --hdr-h:82px; }
+    header{ padding-top:28px; }
+    header .brand > div{ display:block; position:absolute; top:4px; left:8px; right:8px; text-align:center; }
+    header h1.uso-academico-banner{ white-space:normal; font-size:clamp(9.5px, 2.9vw, 12px); padding:2px 6px; }
     header .mode-switcher{ flex-shrink:1; min-width:96px; margin:0; }
     header .header-right{ flex:1 1 210px; min-width:190px; justify-content:flex-end; }
     header .brand{ flex-shrink:0; }
@@ -241,7 +259,7 @@
   .app-grid{
     display:grid;
     grid-template-columns: var(--col-left, 280px) var(--col-direccion, 0px) 1fr var(--col-right, 300px);
-    height:calc(100% - 56px);
+    height:calc(100% - var(--hdr-h,56px));
   }
   #left-panel{ grid-column: 1; grid-row: 1; }
   #direccion-panel{ grid-column: 2; grid-row: 1; }
@@ -685,7 +703,7 @@
   @media (max-width: 980px){
     .app-grid{ grid-template-columns: 1fr; }
     aside{
-      position:fixed; top:56px; bottom:0; width:82%; max-width:330px; height:auto;
+      position:fixed; top:var(--hdr-h,56px); bottom:0; width:82%; max-width:330px; height:auto;
       z-index:1500; box-shadow:0 0 24px rgba(0,0,0,.25);
       transition:transform .25s ease;
     }
@@ -704,7 +722,7 @@
   }
 
   .scrim{
-    display:none; position:fixed; inset:56px 0 0 0; background:rgba(0,0,0,.35); z-index:1400;
+    display:none; position:fixed; inset:var(--hdr-h,56px) 0 0 0; background:rgba(0,0,0,.35); z-index:1400;
   }
   .scrim.show{ display:block; }
 
@@ -733,6 +751,15 @@
   .move-box-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .move-box-row label{ font-size:12px; color:var(--muted); font-weight:600; }
   .move-box-row input{ width:112px; border:1px solid var(--border); border-radius:6px; padding:4px 6px; font-family:inherit; font-size:12px; text-align:right; }
+  .move-box-head{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
+  .move-fmt-toggle{ display:inline-flex; border:1px solid var(--navy); border-radius:6px; overflow:hidden; flex-shrink:0; }
+  .move-fmt-toggle button{ font-family:inherit; font-size:10.5px; font-weight:700; padding:2px 7px; border:none; background:var(--surface,#fff); color:var(--navy); cursor:pointer; line-height:1.3; }
+  .move-fmt-toggle button.active{ background:var(--navy); color:#fff; }
+  #move-box.fmt-dms{ width:236px; }
+  #move-box.fmt-dms .move-box-row input{ width:150px; }
+  .move-box-row input.invalid{ border-color:#B3261E; background:#FFF1F0; }
+  .move-box-error{ font-size:11px; color:#B3261E; font-weight:700; line-height:1.3; }
+  .move-box-error:empty{ display:none; }
   .move-box-hint{ font-size:10px; color:var(--muted); line-height:1.4; }
   #move-done-btn{ padding:6px 10px; font-size:12px; }
 
@@ -801,7 +828,7 @@
 
   /* ---------- PANEL ENFOQUE OPERACIONAL ---------- */
   #enfoque-panel{
-    display:none; position:fixed; inset:56px 0 0 0; z-index:1100;
+    display:none; position:fixed; inset:var(--hdr-h,56px) 0 0 0; z-index:1100;
     background:#10192B;
   }
   body.mode-enfoque #enfoque-panel{ display:block; }
@@ -871,7 +898,7 @@
 
   /* ---------- PANEL CLIMA (Windy) ---------- */
   #clima-panel{
-    display:none; position:fixed; inset:56px 0 0 0; z-index:1100;
+    display:none; position:fixed; inset:var(--hdr-h,56px) 0 0 0; z-index:1100;
     background:#10192B;
   }
   body.mode-clima #clima-panel{ display:block; }
@@ -905,7 +932,7 @@
 
   /* ---------- PANEL PERSONAL ---------- */
   #personal-panel{
-    display:none; position:fixed; inset:56px 0 0 0; z-index:1100;
+    display:none; position:fixed; inset:var(--hdr-h,56px) 0 0 0; z-index:1100;
     background:var(--bg); overflow-y:auto; padding:18px 22px 40px 22px;
   }
   body.mode-personal #personal-panel{ display:block; }
@@ -1235,7 +1262,7 @@
 <div id="user-select-screen">
   <div id="user-select-card">
     <div class="crest" style="margin:0 auto 14px auto;">NS</div>
-    <h1>Sistema de Anotación Cartográfica</h1>
+    <h1 class="uso-academico-banner">SOLO DE USO ACADEMICO DENTRO DEL AMBITO ESDEG</h1>
     <div id="user-select-org"></div>
     <p id="user-select-subtitle">Seleccione el usuario que va a operar esta sesión</p>
     <div id="user-name-step" style="display:none;">
@@ -1249,6 +1276,7 @@
 
 <div id="ghs-screen" class="hide" role="dialog" aria-modal="true" aria-labelledby="ghs-title">
   <form id="ghs-card" novalidate autocomplete="off">
+    <div class="uso-academico-banner">SOLO DE USO ACADEMICO DENTRO DEL AMBITO ESDEG</div>
     <div class="pw-crest">&#128273;</div>
     <h1 id="ghs-title">Configuración inicial de sincronización</h1>
     <p class="ghs-lead" id="ghs-lead"></p>
@@ -1357,7 +1385,7 @@
       <span>Tema</span>
     </button>
     <div>
-      <h1>Sistema de Anotación Cartográfica</h1>
+      <h1 class="uso-academico-banner">SOLO DE USO ACADEMICO DENTRO DEL AMBITO ESDEG</h1>
       <div class="subtitle" id="header-subtitle">División de Ejército III, Colombia</div>
     </div>
   </div>
@@ -1805,7 +1833,13 @@
     </div>
 
     <div id="move-box">
-      <div class="move-box-title">Mover elemento</div>
+      <div class="move-box-head">
+        <div class="move-box-title">Mover elemento</div>
+        <div class="move-fmt-toggle" role="group" aria-label="Formato de coordenadas">
+          <button type="button" id="move-fmt-dec" class="active" aria-pressed="true" title="Grados decimales">Dec</button>
+          <button type="button" id="move-fmt-dms" aria-pressed="false" title="Grados, minutos y segundos">GMS</button>
+        </div>
+      </div>
       <div class="move-box-row">
         <label for="move-lat-input">Lat</label>
         <input type="number" id="move-lat-input" step="0.000001">
@@ -1814,6 +1848,7 @@
         <label for="move-lng-input">Lon</label>
         <input type="number" id="move-lng-input" step="0.000001">
       </div>
+      <div class="move-box-error" id="move-box-error" role="alert"></div>
       <div class="move-box-hint">Arrastre el objeto en el mapa o escriba las coordenadas</div>
       <button class="outline-btn" id="move-done-btn">Listo</button>
     </div>
@@ -11615,6 +11650,84 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   var moveLatInput = document.getElementById('move-lat-input');
   var moveLngInput = document.getElementById('move-lng-input');
 
+
+  /* ---------- FORMATO DE COORDENADAS: grados decimales / grados-minutos-segundos (GMS) ---------- */
+  var COORD_FMT_KEY = 'move_coord_format_v1';
+  var coordFmt = 'dec';
+  try{ if (localStorage.getItem(COORD_FMT_KEY) === 'dms') coordFmt = 'dms'; }catch(e){}
+
+  // Decimal -> GMS. Se redondea en centésimas de segundo con enteros: el acarreo (59.999" -> minuto siguiente) sale exacto.
+  function dmsFormat(value, axis, decimals){
+    if (typeof value !== 'number' || !isFinite(value)) return '';
+    var dec = (decimals === undefined) ? 2 : decimals;
+    var k = Math.pow(10, dec);
+    var neg = value < 0;
+    var tot = Math.round(Math.abs(value) * 3600 * k);   // en unidades de 10^-dec segundos
+    var perMin = 60 * k, perDeg = 3600 * k;
+    var deg = Math.floor(tot / perDeg);
+    var rem = tot - deg * perDeg;
+    var min = Math.floor(rem / perMin);
+    var secU = rem - min * perMin;
+    var sec = (secU / k).toFixed(dec);
+    if (tot === 0) neg = false;
+    var h = axis === 'lat' ? (neg ? 'S' : 'N') : (neg ? 'W' : 'E');
+    return deg + '°' + min + "'" + sec + '"' + h;
+  }
+
+  // GMS (o decimal) -> decimal. Devuelve {ok:true,value} o {ok:false,error}.
+  function dmsParse(text, axis){
+    var lim = axis === 'lat' ? 90 : 180;
+    var nombre = axis === 'lat' ? 'Latitud' : 'Longitud';
+    var t = String(text == null ? '' : text).trim();
+    if (!t) return {ok:false, error: nombre + ': escriba un valor.'};
+    t = t.replace(/[−‒–—]/g, '-');
+    var letters = t.match(/[A-Za-z]/g) || [];
+    var hemi = null;
+    if (letters.length){
+      if (letters.length > 1) return {ok:false, error: nombre + ': formato no reconocido.'};
+      var L = letters[0].toUpperCase();
+      var okSet = axis === 'lat' ? 'NS' : 'EWO';
+      if (okSet.indexOf(L) === -1) return {ok:false, error: nombre + ': hemisferio inválido (' + L + ').'};
+      // la letra debe estar al inicio o al final
+      var idx = t.search(/[A-Za-z]/);
+      var before = t.slice(0, idx).trim(), after = t.slice(idx + 1).trim();
+      if (before && after) return {ok:false, error: nombre + ': el hemisferio va al inicio o al final.'};
+      hemi = L;
+      t = (before + ' ' + after).trim();
+    }
+    var minus = false;
+    if (/^[-+]/.test(t)){ minus = t.charAt(0) === '-'; t = t.slice(1).trim(); }
+    if (/[-+]/.test(t)) return {ok:false, error: nombre + ': signo inválido.'};
+    // símbolos de unidad -> separador
+    t = t.replace(/(?:''|′′|’’)/g, ' ').replace(/[°º˚′’″”"'`´:;]/g, ' ');
+    t = t.replace(/,/g, '.').trim();
+    if (!t) return {ok:false, error: nombre + ': escriba un valor.'};
+    var tok = t.split(/\s+/);
+    if (tok.length > 3) return {ok:false, error: nombre + ': demasiados componentes.'};
+    for (var i = 0; i < tok.length; i++){
+      if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(tok[i])) return {ok:false, error: nombre + ': formato no reconocido.'};
+    }
+    var d = parseFloat(tok[0]);
+    var m = tok.length > 1 ? parseFloat(tok[1]) : 0;
+    var sc = tok.length > 2 ? parseFloat(tok[2]) : 0;
+    if (tok.length > 1 && /\./.test(tok[0])) return {ok:false, error: nombre + ': los grados deben ser enteros si hay minutos.'};
+    if (tok.length > 2 && /\./.test(tok[1])) return {ok:false, error: nombre + ': los minutos deben ser enteros si hay segundos.'};
+    if (m >= 60) return {ok:false, error: nombre + ': los minutos deben ser menores de 60.'};
+    if (sc >= 60) return {ok:false, error: nombre + ': los segundos deben ser menores de 60.'};
+    var v = d + m / 60 + sc / 3600;
+    var negH = (hemi === 'S' || hemi === 'W' || hemi === 'O');
+    if (minus && hemi && !negH) return {ok:false, error: nombre + ': signo y hemisferio contradictorios.'};
+    var neg = minus || negH;
+    if (v > lim + 1e-12) return {ok:false, error: nombre + ': fuera de rango (máx. ±' + lim + '°).'};
+    if (v > lim) v = lim;
+    return {ok:true, value: neg ? -v : v};
+  }
+
+  function formatCoordPair(lat, lng, decimals){
+    if (coordFmt === 'dms') return dmsFormat(lat, 'lat') + ' ' + dmsFormat(lng, 'lng');
+    return lat.toFixed(decimals == null ? 5 : decimals) + ', ' + lng.toFixed(decimals == null ? 5 : decimals);
+  }
+
   function getShapeCenter(shape){
     if (shape instanceof L.Marker) return shape.getLatLng();
     if (shape instanceof L.Circle) return shape.getLatLng();
@@ -11709,18 +11822,73 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   function updateMoveBoxFromShape(shape){
     var c = getShapeCenter(shape);
     if (!c) return;
-    if (document.activeElement !== moveLatInput) moveLatInput.value = c.lat.toFixed(6);
-    if (document.activeElement !== moveLngInput) moveLngInput.value = c.lng.toFixed(6);
+    if (document.activeElement !== moveLatInput) moveLatInput.value = coordFmt === 'dms' ? dmsFormat(c.lat, 'lat') : c.lat.toFixed(6);
+    if (document.activeElement !== moveLngInput) moveLngInput.value = coordFmt === 'dms' ? dmsFormat(c.lng, 'lng') : c.lng.toFixed(6);
+    moveLatInput.dataset.shown = moveLatInput.value;
+    moveLngInput.dataset.shown = moveLngInput.value;
+    setMoveBoxError('');
   }
+
+  var moveBoxErrorEl = document.getElementById('move-box-error');
+  function setMoveBoxError(msg, bad){
+    moveBoxErrorEl.textContent = msg || '';
+    moveLatInput.classList.toggle('invalid', !!(bad && bad.lat));
+    moveLngInput.classList.toggle('invalid', !!(bad && bad.lng));
+    moveLatInput.setAttribute('aria-invalid', bad && bad.lat ? 'true' : 'false');
+    moveLngInput.setAttribute('aria-invalid', bad && bad.lng ? 'true' : 'false');
+  }
+
+  function applyMoveCoordFormat(fmt, persist){
+    coordFmt = fmt === 'dms' ? 'dms' : 'dec';
+    if (persist){ try{ localStorage.setItem(COORD_FMT_KEY, coordFmt); }catch(e){} }
+    var isDms = coordFmt === 'dms';
+    [moveLatInput, moveLngInput].forEach(function(inp){
+      inp.type = isDms ? 'text' : 'number';
+      if (isDms){ inp.removeAttribute('step'); inp.setAttribute('inputmode', 'text'); inp.setAttribute('autocomplete', 'off'); inp.setAttribute('spellcheck', 'false'); }
+      else { inp.setAttribute('step', '0.000001'); inp.removeAttribute('inputmode'); }
+    });
+    moveLatInput.placeholder = isDms ? "DD\u00B0MM'SS.ss\" N" : '';
+    moveLngInput.placeholder = isDms ? "DDD\u00B0MM'SS.ss\" W" : '';
+    moveBoxEl.classList.toggle('fmt-dms', isDms);
+    var bd = document.getElementById('move-fmt-dec'), bm = document.getElementById('move-fmt-dms');
+    bd.classList.toggle('active', !isDms); bd.setAttribute('aria-pressed', String(!isDms));
+    bm.classList.toggle('active', isDms); bm.setAttribute('aria-pressed', String(isDms));
+    setMoveBoxError('');
+    if (moveModeShape){
+      var c = getShapeCenter(moveModeShape);
+      if (c){
+        moveLatInput.value = isDms ? dmsFormat(c.lat, 'lat') : c.lat.toFixed(6);
+        moveLngInput.value = isDms ? dmsFormat(c.lng, 'lng') : c.lng.toFixed(6);
+        moveLatInput.dataset.shown = moveLatInput.value;
+        moveLngInput.dataset.shown = moveLngInput.value;
+      }
+    } else { moveLatInput.value = ''; moveLngInput.value = ''; }
+  }
+  document.getElementById('move-fmt-dec').addEventListener('click', function(){ applyMoveCoordFormat('dec', true); });
+  document.getElementById('move-fmt-dms').addEventListener('click', function(){ applyMoveCoordFormat('dms', true); });
+  applyMoveCoordFormat(coordFmt, false);
 
   function applyManualMoveCoords(){
     if (!moveModeShape) return;
     var shape = moveModeShape;
-    var newLat = parseFloat(moveLatInput.value);
-    var newLng = parseFloat(moveLngInput.value);
-    if (isNaN(newLat) || isNaN(newLng)) return;
     var center = getShapeCenter(shape);
     if (!center) return;
+    var newLat, newLng;
+    if (coordFmt === 'dms'){
+      // Texto sin cambios respecto de lo mostrado: se conserva el valor exacto (evita deriva por redondeo de la vista).
+      var rLat = (moveLatInput.value === moveLatInput.dataset.shown) ? {ok:true, value:center.lat} : dmsParse(moveLatInput.value, 'lat');
+      var rLng = (moveLngInput.value === moveLngInput.dataset.shown) ? {ok:true, value:center.lng} : dmsParse(moveLngInput.value, 'lng');
+      if (!rLat.ok || !rLng.ok){
+        setMoveBoxError((!rLat.ok ? rLat.error : rLng.error), {lat:!rLat.ok, lng:!rLng.ok});
+        return;
+      }
+      setMoveBoxError('');
+      newLat = rLat.value; newLng = rLng.value;
+    } else {
+      newLat = parseFloat(moveLatInput.value);
+      newLng = parseFloat(moveLngInput.value);
+      if (isNaN(newLat) || isNaN(newLng)) return;
+    }
     var dLat = newLat-center.lat, dLng = newLng-center.lng;
     if (dLat === 0 && dLng === 0) return;
     var beforeSnap = snapshotShapePosition(shape);
@@ -11728,6 +11896,9 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     pushMoveUndo(shape, beforeSnap);
     renderLayerList();
   }
+  function clearMoveInvalid(){ if (moveBoxErrorEl.textContent) setMoveBoxError(''); }
+  moveLatInput.addEventListener('input', clearMoveInvalid);
+  moveLngInput.addEventListener('input', clearMoveInvalid);
   moveLatInput.addEventListener('change', applyManualMoveCoords);
   moveLngInput.addEventListener('change', applyManualMoveCoords);
   document.getElementById('move-done-btn').addEventListener('click', function(){ exitMoveMode(); });
@@ -13273,14 +13444,14 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       } else if (shape._isMilSymbol){
         stats.tipo = 'Unidad militar';
         var p0 = shape.getLatLng();
-        stats.coordenadas = p0.lat.toFixed(5) + ', ' + p0.lng.toFixed(5);
+        stats.coordenadas = formatCoordPair(p0.lat, p0.lng);
       } else if (shape._isEllipse){
         stats.tipo = 'Elipse';
         stats.área = L.GeometryUtil.readableArea(Math.PI * shape._ellipse.radiusX * shape._ellipse.radiusY, true);
       } else if (shape._isText){
         stats.tipo = 'Cuadro de texto';
         var pt = shape.getLatLng();
-        stats.coordenadas = pt.lat.toFixed(5) + ', ' + pt.lng.toFixed(5);
+        stats.coordenadas = formatCoordPair(pt.lat, pt.lng);
       } else if (shape._isTarget){
         stats.tipo = 'Blanco';
       } else if (shape._isInfra){
@@ -13310,7 +13481,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       } else if (shape instanceof L.Marker){
         stats.tipo = 'Punto';
         var p = shape.getLatLng();
-        stats.coordenadas = p.lat.toFixed(5) + ', ' + p.lng.toFixed(5);
+        stats.coordenadas = formatCoordPair(p.lat, p.lng);
       }
     } catch(err){ /* geometry util may be unavailable in edge cases */ }
     return stats;
@@ -14886,7 +15057,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       var iPos = shape.getLatLng();
       var iCoordField = document.createElement('div');
       iCoordField.className = 'style-field';
-      iCoordField.innerHTML = '<span>Coordenadas</span><span style="font-weight:700;color:var(--navy);font-size:12px;">' + iPos.lat.toFixed(5) + ', ' + iPos.lng.toFixed(5) + '</span>';
+      iCoordField.innerHTML = '<span>Coordenadas</span><span style="font-weight:700;color:var(--navy);font-size:12px;">' + formatCoordPair(iPos.lat, iPos.lng) + '</span>';
       infraBlock.appendChild(iCoordField);
 
       var infraTipoField = document.createElement('div');
