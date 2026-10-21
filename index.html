@@ -6448,35 +6448,40 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   document.getElementById('gh-history-btn').addEventListener('click', function(){ githubFetchHistory(1); });
 
   function githubRestoreCommit(sha, dateLabel){
-    hmConfirmRestore(sha, '¿Restaurar la estructura de capas (nombres, orden, visibilidad, vista) tal como estaba el ' + dateLabel + '? El contenido de cada capa se completa con su versión más reciente — esto no revierte los objetos dibujados dentro de las capas, solo su organización.', function(){
+    hmConfirmRestore(sha, '¿Restaurar la versión completa del ' + dateLabel + '? Se recupera la estructura de capas (nombres, orden, visibilidad, vista) y también el contenido de cada capa tal como estaba en esa versión. Lo que hay ahora será reemplazado (se guarda una copia de respaldo local).', function(){
       updateSyncStatus('syncing','Restaurando…');
+      var missing = [];
       githubFetchTextAtRef(githubIndexPath(), sha).then(function(rawText){
         var indexState = JSON.parse(rawText);
-        saveLocalBackup();
-        applyingRemoteState = true;
-        applyRemoteState(indexState, { applyView:true });
-        applyingRemoteState = false;
-        var rootIds = getRootLayers().map(function(l){ return l.id; });
-        rootIds.forEach(function(id){ incompleteLayerLoads[id] = true; });
-        var chain = Promise.resolve();
-        rootIds.forEach(function(id){
+        // Descargar primero el contenido de cada capa en ESA versión; si algo falla no se toca el estado actual.
+        var ids = (indexState.layers || []).filter(function(l){ return !l.parentId; }).map(function(l){ return l.id; });
+        var nodes = {}, chain = Promise.resolve();
+        ids.forEach(function(id){
           chain = chain.then(function(){
-            return githubPullLayerFile(id).then(function(){
-              delete incompleteLayerLoads[id];
-            }).catch(function(err){
-              incompleteLayerLoads[id] = true;
+            return githubFetchTextAtRef(githubLayerFilePath(id), sha).then(function(t){ nodes[id] = JSON.parse(t); }, function(err){
+              if (err && err.status === 404) { missing.push(id); return; }
+              if (err && /404/.test(String(err.message || ''))) { missing.push(id); return; }
+              throw err;
             });
           });
         });
-        return chain.then(restorePendingAulas);
+        return chain.then(function(){
+          saveLocalBackup();
+          applyingRemoteState = true;
+          applyRemoteState(indexState, { applyView:true });
+          ids.forEach(function(id){ if (nodes[id]) applyLayerFileObject(nodes[id]); });
+          applyingRemoteState = false;
+          ids.forEach(function(id){
+            delete githubLayerRawCache[id];
+            delete lastPushedLayerSig[id];   // fuerza a subir el contenido restaurado
+          });
+          return restorePendingAulas();
+        });
       }).then(function(){
         renderLayerList();
         closeHistoryScrim();
-        if (Object.keys(incompleteLayerLoads).length){
-          updateSyncStatus('error','Estructura restaurada, pero algunas capas no se pudieron descargar por completo (' + incompleteLayerLoadsSummary() + '). No se subirán cambios hasta descargar de nuevo con éxito.');
-          return null;
-        }
-        updateSyncStatus('ok','Estructura restaurada, subiendo…');
+        updateSyncStatus('ok','Versión restaurada, subiendo…');
+        if (missing.length) alert('Versión restaurada. ' + missing.length + ' capa(s) no tenían archivo en esa versión y quedaron sin contenido.');
         return githubRefreshSha(githubIndexPath());
       }).then(function(sha2){
         if (sha2 == null) return;
