@@ -4435,7 +4435,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     var N = nodes.length, i = 0;
     function next(){
       if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
-      if (i >= N) return;
+      if (i >= N) return Promise.resolve();
       var node = nodes[i], lo = getLayer(prefix + node.id);
       i++;
       alpSet(ld, { phase: 'Dibujando capa ' + i + ' de ' + N + (lo ? ': ' + lo.name : ''), detail: '', pct: 65 + 35 * (i - 1) / N, indeterminate: false });
