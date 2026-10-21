@@ -129,7 +129,6 @@
   }
   .direccion-aula-toggle:hover{ background:rgba(255,255,255,.3); }
   .direccion-aula-toggle.on{ background:var(--surface); color:var(--toggle-on-text,#7A5B00); border-color:var(--surface); }
-  .direccion-aula-toggle.loading{ opacity:.55; cursor:wait; }
   .presence-badge{
     position:absolute; top:-6px; right:-6px; background:var(--gold); color:var(--navy-deep);
     border-radius:8px; font-size:9px; font-weight:800; padding:0 3px; line-height:13px; min-width:13px;
@@ -731,6 +730,8 @@
     align-items:center; justify-content:center;
   }
   .confirm-scrim.show{ display:flex; }
+  /* El diálogo de confirmación debe quedar SOBRE el panel de historial (ambos usan .confirm-scrim; antes el historial, que va después en el DOM, lo tapaba) */
+  #confirm-scrim{ z-index:3100; }
   .confirm-box{
     background:var(--panel-bg); border-radius:12px; padding:22px 22px 18px 22px;
     width:min(340px, 88vw); box-shadow:0 10px 34px rgba(0,0,0,.35); border-top:4px solid var(--gold);
@@ -1033,6 +1034,70 @@
   }
   @keyframes load-progress-spin{ to{ transform:rotate(360deg); } }
 
+  /* =====================================================================
+     PROGRESO DE CARGA DE AULAS (modo Dirección): una fila por aula sobre el mapa
+     ===================================================================== */
+  .direccion-aula-toggle.loading{ cursor:progress; }
+  .direccion-aula-toggle.loading::after{
+    content:''; position:absolute; inset:-4px; border-radius:8px; pointer-events:none;
+    border:2px solid rgba(255,255,255,.25); border-top-color:var(--gold-light); animation:load-progress-spin .8s linear infinite;
+  }
+  .direccion-aula-toggle.err{ border-color:#ff9c9c; box-shadow:0 0 0 2px #A33A3A; }
+  .direccion-aula-toggle.empty{ border-style:dashed; }
+  #aula-load-panel{
+    position:absolute; top:62px; left:50%; transform:translateX(-50%); z-index:1190;
+    width:min(400px, calc(100% - 24px)); display:flex; flex-direction:column; gap:8px; pointer-events:none;
+  }
+  #aula-load-panel:empty{ display:none; }
+  .alp-row{
+    pointer-events:auto; background:var(--panel-bg); color:var(--text); border:1px solid var(--border);
+    border-left:4px solid var(--gold); border-radius:10px; padding:9px 12px 10px; font-size:12.5px;
+    box-shadow:0 6px 18px rgba(0,0,0,.2); transition:opacity .5s ease, transform .5s ease;
+  }
+  .alp-row.fade{ opacity:0; transform:translateY(-6px); }
+  .alp-row[data-state="done"]{ border-left-color:var(--success-text); }
+  .alp-row[data-state="error"]{ border-left-color:var(--danger); background:var(--danger-tint); }
+  .alp-row[data-state="empty"]{ border-left-color:var(--navy-light); }
+  .alp-head{ display:flex; align-items:center; gap:8px; }
+  .alp-title{ flex:1; min-width:0; font-size:13px; color:var(--navy); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .alp-spin{
+    width:14px; height:14px; border-radius:50%; flex-shrink:0; border:2.5px solid var(--border); border-top-color:var(--gold);
+    animation:load-progress-spin .8s linear infinite;
+  }
+  .alp-row:not([data-state="loading"]):not([data-state="queued"]) .alp-spin{ display:none; }
+  .alp-row[data-state="queued"] .alp-spin{ animation:none; }
+  .alp-ico{ font-weight:800; flex-shrink:0; }
+  .alp-ico:empty{ display:none; }
+  .alp-row[data-state="done"] .alp-ico{ color:var(--success-text); }
+  .alp-row[data-state="error"] .alp-ico{ color:var(--danger); }
+  .alp-x{
+    background:transparent; border:0; color:var(--muted); font-size:18px; line-height:1; cursor:pointer;
+    width:28px; height:28px; margin:-6px -8px -6px 0; border-radius:6px; flex-shrink:0;
+  }
+  .alp-x:hover{ background:var(--hover-tint); color:var(--text); }
+  .alp-phase{ margin-top:5px; font-weight:700; overflow-wrap:anywhere; }
+  .alp-detail, .alp-hint{ margin-top:2px; font-size:11.5px; color:var(--muted); overflow-wrap:anywhere; }
+  .alp-detail:empty, .alp-hint:empty{ display:none; }
+  .alp-hint{ color:var(--gold); font-weight:700; }
+  .alp-bar{ margin-top:7px; height:6px; border-radius:3px; background:var(--border); overflow:hidden; position:relative; }
+  .alp-bar > i{ display:block; height:100%; width:0%; background:var(--gold); border-radius:3px; transition:width .25s ease; }
+  .alp-bar.indet > i{ position:absolute; width:35% !important; animation:alp-indet 1.1s ease-in-out infinite; }
+  .alp-row[data-state="done"] .alp-bar > i{ background:var(--success-text); }
+  @keyframes alp-indet{ 0%{ left:-35%; } 100%{ left:100%; } }
+  .alp-actions{ margin-top:8px; display:flex; gap:8px; }
+  .alp-retry{
+    background:var(--navy); color:#fff; border:0; border-radius:6px; padding:7px 14px; font:inherit; font-size:12px; font-weight:700; cursor:pointer; min-height:32px;
+  }
+  .alp-retry:hover{ background:var(--navy-light); }
+  body.theme-digital .alp-retry{ color:var(--navy-deep); }
+  @media (prefers-reduced-motion: reduce){
+    .alp-spin, .direccion-aula-toggle.loading::after{ animation-duration:2.4s; }
+    .alp-bar.indet > i{ animation-duration:2.6s; }
+  }
+  @media (max-width:600px){
+    #aula-load-panel{ top:58px; }
+  }
+
   .history-item{
     border:1px solid var(--border); border-radius:8px; padding:9px 11px;
     display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface-alt);
@@ -1042,6 +1107,65 @@
   .history-item-msg{ font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .history-item button{ flex-shrink:0; font-size:11px; padding:6px 10px; }
   .history-empty{ font-size:12.5px; color:var(--muted); text-align:center; padding:20px 10px; }
+  /* --- Métricas del historial (tamaño, capas, objetos, cambios entre versiones) --- */
+  :root{ --hm-up:#2E7D32; --hm-up-bg:#E3F3E5; --hm-down:#B3261E; --hm-down-bg:#FBE4E2; --hm-flash:#FBF4E1; }
+  body.theme-digital{ --hm-up:#5EE08A; --hm-up-bg:rgba(94,224,138,.14); --hm-down:#FF7A86; --hm-down-bg:rgba(255,93,108,.16); --hm-flash:rgba(34,211,238,.18); }
+  .hm-toolbar{
+    position:sticky; top:0; z-index:2; background:var(--panel-bg); padding:2px 0 8px; margin-bottom:2px;
+    border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:6px;
+  }
+  .hm-tb-row{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .hm-toolbar .hm-btn{ font-size:11px; padding:5px 9px; }
+  .hm-opts label{ font-size:11.5px; color:var(--text); display:inline-flex; align-items:center; gap:5px; cursor:pointer; }
+  .hm-progress{ display:none; align-items:center; gap:8px; font-size:11px; color:var(--muted); }
+  .hm-progress.on{ display:flex; }
+  .hm-bar{ flex:1; min-width:60px; height:7px; border-radius:4px; background:var(--divider-bg); overflow:hidden; }
+  .hm-bar > i{ display:block; height:100%; width:0; background:var(--gold); transition:width .2s; }
+  .hm-status{ font-size:11.5px; color:var(--danger); min-height:0; }
+  .hm-status:empty{ display:none; }
+  .hm-summary{ font-size:11px; color:var(--muted); }
+  .hm-rows{ display:flex; flex-direction:column; gap:8px; }
+  .hm-row{ align-items:flex-start; content-visibility:auto; contain-intrinsic-size:auto 78px; }
+  .hm-row .history-item-text{ flex:1; }
+  .hm-row .history-item-date{ white-space:normal; }
+  .hm-rel{ font-weight:400; color:var(--muted); font-size:11px; margin-left:4px; }
+  .hm-actions{ display:flex; flex-direction:column; gap:5px; align-items:stretch; flex-shrink:0; }
+  .hm-actions button{ white-space:nowrap; }
+  .hm-chips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; align-items:center; }
+  .hm-chip{
+    display:inline-flex; align-items:center; gap:3px; font:inherit; font-size:11px; line-height:1.25; padding:2px 7px; border-radius:10px;
+    background:var(--neutral-tint); color:var(--text); border:1px solid transparent; white-space:nowrap;
+  }
+  .hm-chip.hm-size{ font-weight:700; color:var(--navy); }
+  .hm-chip.hm-muted, .hm-chip.hm-na, .hm-chip.hm-load{ color:var(--muted); background:transparent; border-color:var(--border); }
+  .hm-chip.hm-up{ color:var(--hm-up); background:var(--hm-up-bg); font-weight:700; }
+  .hm-chip.hm-down{ color:var(--hm-down); background:var(--hm-down-bg); font-weight:700; }
+  .hm-chip.hm-flat{ color:var(--muted); }
+  .hm-chip.hm-retry{ cursor:pointer; color:var(--danger); border-color:var(--danger); background:transparent; }
+  .hm-chip.hm-more{ cursor:pointer; }
+  .hm-badge{ font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:10px; white-space:nowrap; }
+  .hm-badge.empty{ background:var(--hm-down-bg); color:var(--hm-down); }
+  .hm-badge.drop{ background:var(--hm-down); color:#fff; }
+  .hm-badge.good{ background:var(--hm-up); color:#fff; }
+  .hm-hl .hm-row.hm-drop{ border-color:var(--hm-down); box-shadow:inset 3px 0 0 var(--hm-down); }
+  .hm-hl .hm-row.hm-lastgood{ border-color:var(--hm-up); box-shadow:inset 3px 0 0 var(--hm-up); }
+  .hm-row.hm-flash{ background:var(--hm-flash); transition:background .4s; }
+  .hm-detail{ display:none; margin-top:6px; font-size:11px; color:var(--muted); line-height:1.45; border-top:1px dashed var(--border); padding-top:5px; }
+  .hm-row.open .hm-detail{ display:block; }
+  .hm-detail b{ color:var(--text); }
+  .hm-group{ border:1px dashed var(--border); border-radius:8px; background:var(--surface-alt); }
+  .hm-group > .hm-ghead{ display:flex; align-items:flex-start; gap:8px; justify-content:space-between; padding:8px 11px; cursor:pointer; }
+  .hm-group .hm-gtitle{ font-size:12px; font-weight:700; color:var(--navy); }
+  .hm-group .hm-gbody{ display:none; padding:0 6px 8px 6px; flex-direction:column; gap:6px; }
+  .hm-group.open .hm-gbody{ display:flex; }
+  .hm-gtoggle{ white-space:nowrap; flex-shrink:0; }
+  @media (max-width:520px){
+    .hm-toolbar{ position:static; }
+    .hm-row{ flex-direction:column; align-items:stretch; }
+    .hm-actions{ flex-direction:row; }
+    .hm-actions button{ flex:1; }
+    .hm-toolbar .hm-btn{ flex:1 1 auto; }
+  }
 
   /* =====================================================================
      TEMA "DIGITAL" — estilo visual alterno, moderno y en tonos azules.
@@ -1434,7 +1558,7 @@
 <div id="ui-floating-tooltip"></div>
 
 <div class="confirm-scrim" id="history-scrim">
-  <div class="confirm-box" role="dialog" aria-modal="true" style="width:min(480px,92vw); max-height:80vh; display:flex; flex-direction:column;">
+  <div class="confirm-box" role="dialog" aria-modal="true" style="width:min(560px,94vw); max-height:84vh; display:flex; flex-direction:column;">
     <div class="confirm-message" id="history-title" style="font-weight:700; margin-bottom:2px;">Historial</div>
     <div id="history-list" style="overflow-y:auto; flex:1; margin:8px 0; display:flex; flex-direction:column; gap:8px;"></div>
     <div class="confirm-actions">
@@ -1558,6 +1682,7 @@
       <span class="load-progress-text" id="load-progress-text">Cargando capas…</span>
       <div class="load-progress-track"><div class="load-progress-fill" id="load-progress-fill"></div></div>
     </div>
+    <div id="aula-load-panel" role="status" aria-live="polite" aria-atomic="false"></div>
 
     <div id="map-search-control">
       <div id="map-search-box">
@@ -2029,6 +2154,367 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     } catch(err){ return 'c' + Math.random().toString(36).slice(2, 10); }
   }
 
+  /* ============================================================================================
+     RED DE GITHUB: todas las peticiones a api.github.com pasan por githubFetch.
+     - Limitador global por pestaña: como máximo 4 peticiones simultáneas, separación mínima entre inicios y,
+       para escrituras (PUT/POST/DELETE), una pausa mayor (GitHub pide ~1 s entre peticiones que crean contenido).
+     - Reintentos con espera exponencial y jitter ante: error de red ("Failed to fetch"), tiempo agotado, 5xx, 429 y
+       403 por límite de peticiones (primario o secundario). Respeta Retry-After / X-RateLimit-Reset (tope 60 s).
+       Nunca reintenta 401/403 de permisos/404/409/422: esos los resuelve el código que llama (p. ej. conflicto de sha).
+     - Tras una respuesta de límite se fija una pausa global (cooldown): las demás peticiones esperan en vez de insistir.
+     - Peticiones condicionales (ETag / If-None-Match) opcionales: un 304 no cuenta contra el límite principal.
+     - Mensajes de error claros en español (red, sin conexión, límite, servidor, tiempo agotado, permisos).
+     - Los sondeos periódicos (ghPoller) se pausan con la pestaña oculta, llevan jitter y se espacian tras errores.
+     ============================================================================================ */
+  function ghOpt(name, def){ var v = window[name]; return (typeof v === 'number' && v >= 0) ? v : def; }
+  var GH_MAX_CONCURRENT = 4;
+  var GH_RETRY_CAP_MS = 60000;      // tope de espera por Retry-After / reinicio del límite
+  var ghActive = 0, ghWaiting = [], ghNextStartAt = 0, ghNextWriteAt = 0, ghCooldownUntil = 0, ghPumpTimer = null;
+  var ghFailStreak = 0;             // fallos de red/límite consecutivos (0 tras cualquier respuesta correcta)
+  var ghEtags = {};                 // url -> { etag, text } (sólo peticiones con { etag:true })
+  var ghStats = { started: 0, retries: 0, maxActive: 0, notModified: 0 };
+
+  function ghHeader(res, name){ try{ var h = res && res.headers; return (h && h.get) ? h.get(name) : null; }catch(e){ return null; } }
+  function ghOnline(){ try{ return !(typeof navigator !== 'undefined' && navigator.onLine === false); }catch(e){ return true; } }
+  function ghAbortError(){ var e = new Error('cancelado'); e.name = 'AbortError'; return e; }
+  function ghIsHidden(){ try{ return !!(document.hidden || document.visibilityState === 'hidden'); }catch(e){ return false; } }
+  function ghFmtWait(ms){
+    var s = Math.max(1, Math.round(ms / 1000));
+    if (s < 90) return s + ' s';
+    var m = Math.round(s / 60);
+    return m < 120 ? (m + ' min') : (Math.round(m / 60) + ' h');
+  }
+  function ghBackoffMs(attempt){
+    var exp = ghOpt('__ghBackoffMs', 500) * Math.pow(2, Math.max(0, attempt - 1));
+    return Math.round(exp * (0.25 + 0.75 * Math.random()));   // jitter: entre 25 % y 100 % del escalón
+  }
+  function ghSleep(ms, signal, onTick){
+    return new Promise(function(resolve, reject){
+      var end = Date.now() + ms, t = null, done = false;
+      function onAbort(){ fin(ghAbortError()); }
+      function fin(err){
+        if (done) return; done = true; clearTimeout(t);
+        if (signal) signal.removeEventListener('abort', onAbort);
+        if (err) reject(err); else resolve();
+      }
+      if (signal){ if (signal.aborted) return fin(ghAbortError()); signal.addEventListener('abort', onAbort); }
+      (function step(){
+        var left = end - Date.now();
+        if (left <= 0) return fin();
+        if (onTick){ try{ onTick(left); }catch(e){} }
+        t = setTimeout(step, onTick ? Math.min(left, ghOpt('__ghTickMs', 1000)) : left);
+      })();
+    });
+  }
+
+  // ---- Clasificación y mensajes ----
+  var GH_MSG = {
+    offline:   'Sin conexión a internet. Revise su red; sus cambios siguen guardados en este navegador.',
+    network:   'No se pudo comunicar con GitHub (la conexión se cortó o fue bloqueada). Si varias personas usan la misma red o el mismo token, puede ser un límite temporal de GitHub.',
+    timeout:   'GitHub tardó demasiado en responder.',
+    auth:      'El token no es válido, venció o fue revocado (HTTP 401). Genere uno nuevo en Configuración de GitHub.',
+    forbidden: 'El token no tiene permiso para esta operación (HTTP 403). Verifique que incluya este repositorio y el permiso Contents (lectura y escritura).',
+    notfound:  'No se encontró el archivo o repositorio en GitHub (HTTP 404).'
+  };
+  function ghMessage(kind, x){
+    x = x || {};
+    if (kind === 'ratelimit') return 'GitHub limitó las peticiones' + (x.waitMs ? ' (reintente en ' + ghFmtWait(x.waitMs) + ')' : ' temporalmente') + '. Suele ocurrir cuando muchas personas usan el mismo token o la misma red a la vez.';
+    if (kind === 'server') return 'GitHub tuvo un error temporal (HTTP ' + (x.status || '5xx') + ').';
+    if (kind === 'http') return 'GitHub respondió con un error inesperado (HTTP ' + (x.status || '?') + ').';
+    return GH_MSG[kind] || 'Error de red.';
+  }
+  function ghMakeError(kind, raw, x){
+    x = x || {};
+    var e = new Error(ghMessage(kind, x));
+    e.ghKind = kind; e.ghRaw = raw || null; e.status = x.status || 0; e.waitMs = x.waitMs || 0; e.attempts = x.attempts || 1;
+    e.transient = (kind === 'network' || kind === 'offline' || kind === 'timeout' || kind === 'ratelimit' || kind === 'server');
+    return e;
+  }
+  // Espera indicada por la respuesta (Retry-After, o reinicio del límite si quedan 0). 0 = no indicada.
+  function ghWaitFromHeaders(res){
+    var ra = ghHeader(res, 'retry-after');
+    if (ra != null && ra !== ''){
+      var n = parseInt(ra, 10);
+      if (n >= 0 && String(n) === String(ra).trim()) return n * 1000;
+      var d = Date.parse(ra);
+      if (d) return Math.max(0, d - Date.now());
+    }
+    if (String(ghHeader(res, 'x-ratelimit-remaining')) === '0'){
+      var reset = parseInt(ghHeader(res, 'x-ratelimit-reset'), 10);
+      if (reset > 0) return Math.max(1000, reset * 1000 - Date.now() + 1000);
+    }
+    return 0;
+  }
+  // Clasificación síncrona de una respuesta (sin leer el cuerpo).
+  function ghClassifyResponse(res){
+    var st = res.status;
+    if (st === 429) return { kind: 'ratelimit', waitMs: ghWaitFromHeaders(res) };
+    if (st === 403){
+      var rem = String(ghHeader(res, 'x-ratelimit-remaining')), ra = ghHeader(res, 'retry-after');
+      if (rem === '0' || (ra != null && ra !== '')) return { kind: 'ratelimit', waitMs: ghWaitFromHeaders(res) };
+      return { kind: 'forbidden', waitMs: 0 };
+    }
+    if (st === 401) return { kind: 'auth', waitMs: 0 };
+    if (st === 404) return { kind: 'notfound', waitMs: 0 };
+    if (st >= 500 && st !== 501) return { kind: 'server', waitMs: ghWaitFromHeaders(res) };
+    return { kind: 'http', waitMs: 0 };
+  }
+  // Como la anterior, pero un 403 sin cabeceras se revisa en el cuerpo ("secondary rate limit", "abuse").
+  function ghClassifyAsync(res){
+    var c = ghClassifyResponse(res);
+    if (res.status !== 403 || c.kind !== 'forbidden' || typeof res.clone !== 'function') return Promise.resolve(c);
+    return res.clone().text().then(function(t){
+      if (/rate limit|abuse|secondary/i.test(t || '')) return { kind: 'ratelimit', waitMs: ghWaitFromHeaders(res) || ghOpt('__ghSecondaryWaitMs', GH_RETRY_CAP_MS), secondary: true };
+      return c;
+    }, function(){ return c; });
+  }
+  // Error con mensaje claro para una respuesta HTTP no satisfactoria.
+  function ghHttpError(res){
+    var c = res.ghInfo || ghClassifyResponse(res);
+    var e = ghMakeError(c.kind, null, { status: res.status, waitMs: c.waitMs });
+    e.status = res.status;
+    return e;
+  }
+  // Mensaje legible para cualquier error (de githubFetch o de otro origen).
+  function ghErrorText(err){
+    if (!err) return 'Error desconocido.';
+    if (err.ghKind) return err.message;
+    var m = String(err.message || err);
+    if (/failed to fetch|networkerror|load failed|network request failed/i.test(m)) return ghOnline() ? GH_MSG.network : GH_MSG.offline;
+    return m;
+  }
+  function ghIsTransient(err){
+    if (!err) return false;
+    if (err.ghKind) return !!err.transient;
+    return /failed to fetch|networkerror|load failed|network request failed|timeout/i.test(String(err.message || err));
+  }
+
+  // ---- Limitador global ----
+  function ghAcquire(w){
+    return new Promise(function(resolve, reject){
+      w.resolve = resolve; w.reject = reject;
+      if (w.signal){
+        if (w.signal.aborted) return reject(ghAbortError());
+        w.onAbort = function(){ var i = ghWaiting.indexOf(w); if (i >= 0){ ghWaiting.splice(i, 1); reject(ghAbortError()); } };
+        w.signal.addEventListener('abort', w.onAbort);
+      }
+      ghWaiting.push(w);
+      ghPump();
+    });
+  }
+  function ghPump(){
+    if (ghPumpTimer){ clearTimeout(ghPumpTimer); ghPumpTimer = null; }
+    var minWait = Infinity;
+    while (ghWaiting.length && ghActive < ghOpt('__ghMaxConcurrent', GH_MAX_CONCURRENT)){
+      var now = Date.now(), pick = -1, pickPrio = -Infinity;
+      minWait = Infinity;
+      for (var i = 0; i < ghWaiting.length; i++){
+        var w = ghWaiting[i], wait = Math.max(0, ghNextStartAt - now);
+        if (!w.bypass) wait = Math.max(wait, ghCooldownUntil - now);
+        if (w.write) wait = Math.max(wait, ghNextWriteAt - now);
+        if (wait <= 0){ if ((w.priority || 0) > pickPrio){ pick = i; pickPrio = w.priority || 0; } }
+        else {
+          minWait = Math.min(minWait, wait);
+          if (!w.bypass && !w.notified && w.onWait && ghCooldownUntil - now > 0){
+            w.notified = true;
+            try{ w.onWait({ kind: 'ratelimit', until: ghCooldownUntil, waitMs: ghCooldownUntil - now }); }catch(e){}
+          }
+        }
+      }
+      if (pick < 0) break;
+      var chosen = ghWaiting.splice(pick, 1)[0];
+      if (chosen.signal && chosen.onAbort) chosen.signal.removeEventListener('abort', chosen.onAbort);
+      ghActive++; ghStats.started++;
+      if (ghActive > ghStats.maxActive) ghStats.maxActive = ghActive;
+      var t0 = Date.now();
+      ghNextStartAt = t0 + ghOpt('__ghSpacingMs', 60);
+      if (chosen.write) ghNextWriteAt = t0 + ghOpt('__ghWriteGapMs', 800);
+      (function(c){
+        var released = false;
+        c.resolve(function(){ if (released) return; released = true; ghActive = Math.max(0, ghActive - 1); ghPump(); });
+      })(chosen);
+    }
+    if (ghWaiting.length && ghActive < ghOpt('__ghMaxConcurrent', GH_MAX_CONCURRENT) && minWait < Infinity){
+      ghPumpTimer = setTimeout(ghPump, Math.max(5, minWait));
+    }
+  }
+  function ghStartCooldown(waitMs){
+    var until = Date.now() + Math.min(waitMs || GH_RETRY_CAP_MS, GH_RETRY_CAP_MS);
+    if (until > ghCooldownUntil) ghCooldownUntil = until;
+    return ghCooldownUntil;
+  }
+
+  function ghCachedResponse(entry, res){
+    var o = {
+      ok: true, status: 200, notModified: true, headers: res.headers,
+      json: function(){ try{ return Promise.resolve(JSON.parse(entry.text)); }catch(e){ return Promise.reject(e); } },
+      text: function(){ return Promise.resolve(entry.text); }
+    };
+    o.clone = function(){ return o; };
+    return o;
+  }
+
+  // githubFetch(url, fetchOptions, { retries, timeoutMs, signal, etag, onWait, priority, bypass })
+  // retries = reintentos ADICIONALES (por defecto 3 => hasta 4 intentos). Devuelve la Response (también para 4xx/5xx
+  // finales: quien llama decide) o rechaza con un Error clasificado (ghKind) si no hubo respuesta.
+  function githubFetch(url, opts, o){
+    opts = opts || {}; o = o || {};
+    var method = String(opts.method || 'GET').toUpperCase();
+    var write = method !== 'GET' && method !== 'HEAD';
+    var maxExtra = (o.retries == null) ? 3 : o.retries;
+    var timeoutMs = (o.timeoutMs == null) ? ghOpt('__ghTimeoutMs', 30000) : o.timeoutMs;
+    var signal = o.signal || opts.signal || null;
+    var attempt = 0;
+    var cached = o.etag ? ghEtags[url] : null;
+
+    function notify(info){ if (o.onWait){ info.attempt = attempt + 1; info.max = maxExtra + 1; try{ o.onWait(info); }catch(e){} } }
+    function once(){
+      attempt++;
+      return ghAcquire({ write: write, signal: signal, priority: o.priority || 0, onWait: o.onWait, bypass: !!o.bypass }).then(function(release){
+        var ctrl = null, tmo = null, timedOut = false, onAbort = null;
+        var init = {};
+        Object.keys(opts).forEach(function(k){ init[k] = opts[k]; });
+        if (cached) init.headers = Object.assign({}, opts.headers || {}, { 'If-None-Match': cached.etag });
+        try{ if (typeof AbortController === 'function') ctrl = new AbortController(); }catch(e){ ctrl = null; }
+        if (ctrl){
+          init.signal = ctrl.signal;
+          if (signal){ onAbort = function(){ try{ ctrl.abort(); }catch(e){} }; if (signal.aborted) onAbort(); else signal.addEventListener('abort', onAbort); }
+          if (timeoutMs > 0) tmo = setTimeout(function(){ timedOut = true; try{ ctrl.abort(); }catch(e){} }, timeoutMs);
+        } else if (signal){ init.signal = signal; }
+        var p; try{ p = fetch(url, init); }catch(e){ p = Promise.reject(e); }
+        return Promise.resolve(p).then(function(res){
+          if (tmo) clearTimeout(tmo);
+          release();       // el enlace con 'signal' se mantiene: cancelar sigue interrumpiendo la lectura del cuerpo
+          return { res: res };
+        }, function(err){
+          if (tmo) clearTimeout(tmo);
+          if (onAbort && signal) signal.removeEventListener('abort', onAbort);
+          release();
+          return { err: err, timedOut: timedOut };
+        });
+      });
+    }
+    function retryLater(info){
+      ghStats.retries++;
+      if (info.kind === 'ratelimit'){
+        var until = ghStartCooldown(info.waitMs || ghBackoffMs(attempt));
+        notify({ kind: 'ratelimit', until: until, waitMs: until - Date.now(), reason: info.kind });
+        return ghSleep(Math.min(Math.max(0, until - Date.now()), GH_RETRY_CAP_MS) + Math.round(Math.random() * ghOpt('__ghBackoffMs', 500)), signal).then(run);
+      }
+      var wait = Math.min(Math.max(info.waitMs || 0, ghBackoffMs(attempt)), GH_RETRY_CAP_MS);
+      var until2 = Date.now() + wait;
+      notify({ kind: 'retry', until: until2, waitMs: wait, reason: info.kind });
+      return ghSleep(wait, signal).then(run);
+    }
+    function run(){
+      return once().then(function(r){
+        if (r.err){
+          if (signal && signal.aborted) throw r.err;      // cancelado por quien llama: sin reintentos
+          var kind = r.timedOut ? 'timeout' : (ghOnline() ? 'network' : 'offline');
+          if (attempt <= maxExtra) return retryLater({ kind: kind });
+          ghFailStreak++;
+          throw ghMakeError(kind, r.err, { attempts: attempt });
+        }
+        var res = r.res;
+        if (res.status === 304 && cached){ ghFailStreak = 0; ghStats.notModified++; return ghCachedResponse(cached, res); }
+        if (res.ok || (res.status < 500 && res.status !== 429 && res.status !== 403)){
+          ghFailStreak = 0;
+          if (o.etag && res.ok){
+            var et = ghHeader(res, 'etag');
+            if (et && typeof res.clone === 'function'){
+              try{ res.clone().text().then(function(t){ ghEtags[url] = { etag: et, text: t }; }, function(){}); }catch(e){}
+            } else delete ghEtags[url];
+          }
+          return res;
+        }
+        return ghClassifyAsync(res).then(function(c){
+          res.ghInfo = c;
+          var retriable = c.kind === 'server' || c.kind === 'ratelimit';
+          if (!retriable){ ghFailStreak = 0; return res; }
+          // Límite que tardará mucho en reiniciarse (p. ej. cuota por hora agotada): no tiene sentido esperar aquí.
+          if (c.kind === 'ratelimit' && c.waitMs > GH_RETRY_CAP_MS){ ghStartCooldown(GH_RETRY_CAP_MS); ghFailStreak++; return res; }
+          if (c.kind === 'ratelimit') ghStartCooldown(c.waitMs || ghBackoffMs(attempt));
+          if (attempt <= maxExtra) return retryLater(c);
+          ghFailStreak++;
+          return res;
+        });
+      });
+    }
+    return run();
+  }
+
+  // ---- Indicador de espera en el estado de sincronización (#gh-status) y aviso no bloqueante ----
+  var ghStatusTimer = null;
+  function ghStopStatusTicker(){ if (ghStatusTimer){ clearInterval(ghStatusTimer); ghStatusTimer = null; } }
+  function ghStatusWait(info){
+    if (!info) return;
+    var until = info.until || (Date.now() + (info.waitMs || 0));
+    ghStopStatusTicker();
+    function paint(){
+      var left = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+      var txt = info.kind === 'ratelimit'
+        ? 'Límite de GitHub, esperando ' + left + ' s…'
+        : 'Reintentando en ' + left + ' s… (intento ' + Math.min(info.attempt + 1, info.max) + ' de ' + info.max + ')';
+      var el = document.getElementById('gh-status');
+      if (el){ el.className = 'gh-status syncing'; el.textContent = txt; }
+      if (left <= 0) ghStopStatusTicker();
+    }
+    paint();
+    ghStatusTimer = setInterval(paint, ghOpt('__ghTickMs', 1000));
+  }
+  var ghToastEl = null, ghToastTimer = null;
+  function ghToast(msg, kind, ms){
+    try{
+      if (!ghToastEl){
+        ghToastEl = document.createElement('div');
+        ghToastEl.id = 'gh-toast';
+        ghToastEl.setAttribute('role', 'status');
+        ghToastEl.setAttribute('aria-live', 'polite');
+        ghToastEl.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:100000;max-width:min(92vw,560px);padding:10px 14px;border-radius:8px;font:13px/1.35 Calibri,Arial,sans-serif;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.35);display:none;';
+        document.body.appendChild(ghToastEl);
+      }
+      ghToastEl.textContent = msg;
+      ghToastEl.dataset.kind = kind || 'info';
+      ghToastEl.style.background = kind === 'ok' ? '#2e7d32' : (kind === 'error' ? '#b3261e' : '#1F3864');
+      ghToastEl.style.borderLeft = '4px solid #B8962E';
+      ghToastEl.style.display = 'block';
+      if (ghToastTimer){ clearTimeout(ghToastTimer); ghToastTimer = null; }
+      if (ms) ghToastTimer = setTimeout(ghToastHide, ms);
+    }catch(e){}
+  }
+  function ghToastHide(){ if (ghToastEl) ghToastEl.style.display = 'none'; if (ghToastTimer){ clearTimeout(ghToastTimer); ghToastTimer = null; } }
+
+  // ---- Sondeos periódicos: jitter, pausa con la pestaña oculta y espaciado creciente tras errores ----
+  var ghPollers = [];
+  function ghPoller(name, baseMs, fn){
+    var p = { name: name, baseMs: baseMs, fn: fn, timer: null, running: false, stopped: false, runs: 0 };
+    function delay(){
+      var mult = Math.min(8, Math.pow(2, Math.min(ghFailStreak, 3)));
+      return Math.round(p.baseMs * mult * (0.8 + Math.random() * 0.4));
+    }
+    p.clear = function(){ if (p.timer){ clearTimeout(p.timer); p.timer = null; } };
+    p.schedule = function(ms){
+      p.clear();
+      if (p.stopped || ghIsHidden()) return;      // oculto: no se programa nada; visibilitychange lo reanuda
+      p.timer = setTimeout(p.tick, ms == null ? delay() : ms);
+    };
+    p.tick = function(){
+      p.timer = null;
+      if (p.stopped || ghIsHidden()) return;
+      p.running = true; p.runs++;
+      var r; try{ r = p.fn(); }catch(e){ r = null; }
+      function done(){ p.running = false; p.schedule(); }
+      Promise.resolve(r).then(done, done);
+    };
+    p.kick = function(){ if (p.stopped || p.running) return; p.schedule(ghOpt('__ghKickMinMs', 200) + Math.random() * ghOpt('__ghKickSpreadMs', 1300)); };
+    p.stop = function(){ p.stopped = true; p.clear(); var i = ghPollers.indexOf(p); if (i >= 0) ghPollers.splice(i, 1); };
+    ghPollers.push(p);
+    return p;
+  }
+  document.addEventListener('visibilitychange', function(){
+    ghPollers.slice().forEach(function(p){ if (ghIsHidden()) p.clear(); else p.kick(); });
+  });
+
   function ensureUserNameRegistered(onDone){
     var existing = loadUserName();
     if (existing){ onDone(); return; }
@@ -2418,8 +2904,8 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       };
     }
     function viaApi(){
-      return fetch('https://api.github.com/repos/' + src.repo + '/contents/' + encPath + (src.branch ? '?ref=' + encodeURIComponent(src.branch) : ''),
-        { signal: base.signal, headers: { 'Accept':'application/vnd.github+json' } }).then(function(res){
+      return githubFetch('https://api.github.com/repos/' + src.repo + '/contents/' + encPath + (src.branch ? '?ref=' + encodeURIComponent(src.branch) : ''),
+        { signal: base.signal, headers: { 'Accept':'application/vnd.github+json' } }, { retries: 0, bypass: true, timeoutMs: 0 }).then(function(res){
         var bad = textOf(res); if (bad) return bad;
         return res.json().then(function(d){
           if (d && typeof d.content === 'string' && d.content) return { k:'ok', text: base64ToUtf8(d.content) };
@@ -2521,9 +3007,10 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   function aulasSameCfg(a, b){ return JSON.stringify(a) === JSON.stringify(b); }
   function aulasFetchT(url, opts){
     return new Promise(function(resolve, reject){
-      var done = false;
-      var t = setTimeout(function(){ if (!done){ done = true; reject(new Error('timeout')); } }, window.__aulasPushTimeoutMs || 20000);
-      fetch(url, opts).then(function(r){ if (!done){ done = true; clearTimeout(t); resolve(r); } }, function(e){ if (!done){ done = true; clearTimeout(t); reject(e); } });
+      var done = false, ctrl = null;
+      try{ if (typeof AbortController === 'function') ctrl = new AbortController(); }catch(err){ ctrl = null; }
+      var t = setTimeout(function(){ if (!done){ done = true; if (ctrl){ try{ ctrl.abort(); }catch(err){} } reject(new Error('timeout')); } }, window.__aulasPushTimeoutMs || 20000);
+      githubFetch(url, opts, { retries: 2, timeoutMs: 0, signal: ctrl ? ctrl.signal : null }).then(function(r){ if (!done){ done = true; clearTimeout(t); resolve(r); } }, function(e){ if (!done){ done = true; clearTimeout(t); reject(e); } });
     });
   }
   // Lee el archivo remoto con su sha. Resuelve { cfg:null, sha:null } si no existe (404); rechaza con Error('HTTP n') u otro.
@@ -3161,7 +3648,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       timer = setTimeout(function(){ try{ if (ctrl) ctrl.abort(); }catch(err){} reject({ timeout:true }); }, GHS_TIMEOUT_MS);
       var opts = { headers: githubHeadersFor(token) };
       if (ctrl) opts.signal = ctrl.signal;
-      fetch(url, opts).then(function(res){
+      githubFetch(url, opts, { retries: 0, bypass: true, timeoutMs: 0 }).then(function(res){
         var rem = null;
         try{ rem = res.headers && res.headers.get ? res.headers.get('x-ratelimit-remaining') : null; }catch(err){}
         var jp = res.json ? res.json().catch(function(){ return null; }) : Promise.resolve(null);
@@ -3486,21 +3973,557 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 
   /* ---------------- DIRECCIÓN: superposición de varias aulas a la vez (solo lectura) ---------------- */
   var direccionAulaCache = {};
-  var direccionAulaLoading = {};
+  var direccionAulaLoading = {};   // letra -> estado de la carga en curso (objeto "ld"), o falsy si no hay
 
   function direccionAulaBasePath(letra){
     return githubConfig.path.replace(/\.json$/i, '') + '/aula' + letra;
   }
 
+  /* ----- Progreso de carga de un aula (retroalimentación visible, cancelación, errores con "Reintentar") -----
+     Mismas solicitudes que antes (índice + un archivo por capa raíz, y el blob de git si el archivo es grande);
+     solo se agrega seguimiento, límite de tiempo, cancelación y dibujo capa por capa. */
+  var ALP_MAX_CONCURRENT = 3;
+  var alpActive = 0, alpQueue = [], alpSeq = 0;
+  function alpOpt(name, def){ var v = window[name]; return (typeof v === 'number' && v > 0) ? v : def; }
+  function alpErr(kind, message){ var e = new Error(message); e.alpKind = kind; return e; }
+  function alpYield(){
+    return new Promise(function(resolve){
+      var done = false;
+      function go(){ if (!done){ done = true; resolve(); } }
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go);
+      setTimeout(go, 40);
+    });
+  }
+  function alpFmtBytes(n){
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(n < 10240 ? 1 : 0) + ' KB';
+    return (n / 1048576).toFixed(1) + ' MB';
+  }
+  function alpAulaName(letra){ var n = aulaLabel(letra); return /^aula\b/i.test(n) ? n : ('Aula ' + n); }
+  function alpStale(ld){ return ld.cancelled || direccionAulaLoading[ld.letra] !== ld; }
+  function alpFindBtn(letra){
+    var wrap = document.getElementById('direccion-aula-toggles');
+    if (!wrap) return null;
+    return Array.from(wrap.children).filter(function(b){ return b.dataset.letra === letra; })[0] || null;
+  }
+
+  // ---- Panel de progreso (una fila por aula) ----
+  function alpPanel(){ return document.getElementById('aula-load-panel'); }
+  function alpRowFor(ld){
+    var panel = alpPanel();
+    if (!panel) return null;
+    if (ld.row && ld.row.parentNode === panel) return ld.row;
+    Array.from(panel.children).forEach(function(r){ if (r.dataset.letra === ld.letra) panel.removeChild(r); });
+    var row = document.createElement('div');
+    row.className = 'alp-row';
+    row.dataset.letra = ld.letra;
+    row.innerHTML =
+      '<div class="alp-head"><span class="alp-spin" aria-hidden="true"></span><span class="alp-ico" aria-hidden="true"></span>' +
+      '<strong class="alp-title"></strong>' +
+      '<button type="button" class="alp-x"></button></div>' +
+      '<div class="alp-phase"></div><div class="alp-detail"></div><div class="alp-hint"></div>' +
+      '<div class="alp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i></i></div>' +
+      '<div class="alp-actions"><button type="button" class="alp-retry">Reintentar</button></div>';
+    row.querySelector('.alp-x').addEventListener('click', function(){
+      if (ld.state === 'queued' || ld.state === 'loading') alpCancel(ld.letra);
+      else alpDismiss(ld);
+    });
+    row.querySelector('.alp-retry').addEventListener('click', function(){ alpRetry(ld.letra); });
+    panel.appendChild(row);
+    ld.row = row;
+    return row;
+  }
+  function alpRender(ld){
+    var row = alpRowFor(ld);
+    if (!row) return;
+    var busy = ld.state === 'queued' || ld.state === 'loading';
+    row.dataset.state = ld.state;
+    row.setAttribute('aria-busy', busy ? 'true' : 'false');
+    row.querySelector('.alp-title').textContent = busy ? ('Cargando ' + alpAulaName(ld.letra)) : (ld.title || alpAulaName(ld.letra));
+    row.querySelector('.alp-ico').textContent = ld.state === 'done' ? '✓' : (ld.state === 'error' ? '⚠' : (ld.state === 'empty' ? 'ⓘ' : ''));
+    row.querySelector('.alp-phase').textContent = ld.phase || '';
+    row.querySelector('.alp-detail').textContent = ld.detail || '';
+    row.querySelector('.alp-hint').textContent = (busy && ld.slow) ? 'Sigue cargando… las aulas con muchos objetos pueden tardar. Puede cancelar con ×.' : '';
+    var x = row.querySelector('.alp-x');
+    x.textContent = '×';
+    x.setAttribute('aria-label', busy ? ('Cancelar la carga de ' + alpAulaName(ld.letra)) : 'Cerrar aviso');
+    x.title = busy ? 'Cancelar la carga' : 'Cerrar';
+    var bar = row.querySelector('.alp-bar');
+    bar.style.display = busy || ld.state === 'done' ? '' : 'none';
+    bar.classList.toggle('indet', busy && !!ld.indeterminate);
+    bar.setAttribute('aria-label', 'Progreso de carga de ' + alpAulaName(ld.letra));
+    if (ld.indeterminate && busy) bar.removeAttribute('aria-valuenow'); else bar.setAttribute('aria-valuenow', String(Math.round(ld.pct)));
+    bar.firstChild.style.width = (ld.state === 'done' ? 100 : ld.pct) + '%';
+    row.querySelector('.alp-actions').style.display = (ld.state === 'error' || ld.state === 'empty') ? '' : 'none';
+    row.querySelector('.alp-retry').textContent = ld.state === 'empty' ? 'Volver a consultar' : 'Reintentar';
+  }
+  function alpSet(ld, patch){
+    if (alpStale(ld)) return;
+    Object.keys(patch).forEach(function(k){
+      if (k === 'pct') ld.pct = Math.max(ld.pct, patch.pct);   // el avance nunca retrocede
+      else ld[k] = patch[k];
+    });
+    alpTouch(ld);
+    alpRender(ld);
+  }
+  function alpRemoveRow(ld){
+    if (ld.fadeTimer){ clearTimeout(ld.fadeTimer); ld.fadeTimer = null; }
+    if (ld.rmTimer){ clearTimeout(ld.rmTimer); ld.rmTimer = null; }
+    if (ld.row && ld.row.parentNode) ld.row.parentNode.removeChild(ld.row);
+    ld.row = null;
+  }
+  function alpDismiss(ld){
+    alpRemoveRow(ld);
+    var btn = alpFindBtn(ld.letra);
+    if (btn && ld.state === 'error') btn.classList.remove('err');
+  }
+  function alpAutoHide(ld, ms){
+    ld.fadeTimer = setTimeout(function(){
+      if (ld.row) ld.row.classList.add('fade');
+      ld.rmTimer = setTimeout(function(){ alpRemoveRow(ld); }, 600);
+    }, ms);
+  }
+  // Estado final (done / empty / error): la fila deja de ser "ocupada"
+  function alpFinishRow(ld, state, patch){
+    ld.state = state;
+    Object.keys(patch || {}).forEach(function(k){ ld[k] = patch[k]; });
+    alpClearTimers(ld);
+    if (state === 'done'){ ld.pct = 100; ld.indeterminate = false; }
+    alpRender(ld);
+    if (state === 'done') alpAutoHide(ld, alpOpt('__alpDoneMs', 3500));
+    else if (state === 'empty') alpAutoHide(ld, alpOpt('__alpEmptyMs', 12000));
+  }
+
+  // ---- Vigilancia: sugerencia "Sigue cargando…" a los 8 s y límite de tiempo (60 s sin avance) ----
+  function alpClearTimers(ld){
+    if (ld.slowTimer){ clearTimeout(ld.slowTimer); ld.slowTimer = null; }
+    if (ld.idleTimer){ clearTimeout(ld.idleTimer); ld.idleTimer = null; }
+    if (ld.cdTimer){ clearInterval(ld.cdTimer); ld.cdTimer = null; }
+  }
+  function alpTouch(ld){
+    if (ld.state !== 'loading') return;
+    if (ld.idleTimer){ clearTimeout(ld.idleTimer); ld.idleTimer = null; }
+    if (ld.noTimeout) return;   // el dibujo local no depende de la red
+    ld.idleTimer = setTimeout(function(){
+      if (alpStale(ld) || ld.state !== 'loading') return;
+      ld.timedOut = true;
+      alpAbortNow(ld, alpErr('timeout', 'tiempo agotado'));
+    }, alpOpt('__alpTimeoutMs', 60000));
+  }
+  function alpAbortNow(ld, err){
+    try { ld.ctrl.abort(); } catch(e){}
+    if (ld.rejectAbort) ld.rejectAbort(err);
+  }
+  function alpRace(ld, p){ return Promise.race([p, ld.abortP]); }
+
+  // ---- Red: fetch con señal de cancelación, errores clasificados y lectura en streaming con bytes ----
+  function alpHttpError(res){
+    var st = res.status, h = res.headers && res.headers.get ? function(n){ return res.headers.get(n); } : function(){ return null; };
+    if (st === 429 || (st === 403 && (h('x-ratelimit-remaining') === '0' || h('retry-after')))){
+      var e = alpErr('ratelimit', 'límite de peticiones');
+      e.status = st; e.waitMs = ghWaitFromHeaders(res);
+      var reset = parseInt(h('x-ratelimit-reset'), 10);
+      if (reset > 0){ var mins = Math.max(1, Math.ceil((reset * 1000 - Date.now()) / 60000)); if (mins < 600) e.waitMin = mins; }
+      return e;
+    }
+    if (st === 401 || st === 403) return alpErr('auth', 'HTTP ' + st);
+    var eh = alpErr('http', 'HTTP ' + st);
+    eh.status = st;
+    return eh;
+  }
+  function alpFetch(ld, url){
+    var p;
+    try {
+      p = githubFetch(url, { headers: githubAuthHeaders(), signal: ld.ctrl.signal },
+        { retries: 0, signal: ld.ctrl.signal, onWait: function(info){
+          // Pausa global por límite de GitHub: se muestra la cuenta atrás y se evita que el vigilante de 60 s la tome por un bloqueo.
+          if (alpStale(ld) || !info || info.kind !== 'ratelimit') return;
+          alpTicker(ld, info.until, function(left){ return 'Límite de GitHub, esperando ' + left + ' s…'; });
+        } });
+    } catch(e){ p = Promise.reject(e); }
+    return alpRace(ld, p).then(function(res){
+      if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+      if (!res.ok && res.status !== 404) throw alpHttpError(res);
+      alpTouch(ld);
+      return res;
+    }, function(e){
+      if (e && e.alpKind) throw e;
+      if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+      if (ld.timedOut) throw alpErr('timeout', 'tiempo agotado');
+      var ne = alpErr('network', ghErrorText(e));
+      ne.ghKind = e && e.ghKind;
+      throw ne;
+    });
+  }
+  // Cuenta atrás visible en la fila de progreso; cada segundo cuenta como avance (no dispara el límite de tiempo).
+  function alpTicker(ld, until, labelFn, onEnd){
+    if (ld.cdTimer){ clearInterval(ld.cdTimer); ld.cdTimer = null; }
+    function stop(){ if (ld.cdTimer){ clearInterval(ld.cdTimer); ld.cdTimer = null; } if (onEnd) onEnd(); }
+    function tick(){
+      if (alpStale(ld) || ld.state !== 'loading'){ stop(); return; }
+      var left = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+      alpSet(ld, { phase: labelFn(left), indeterminate: true });
+      if (left <= 0) stop();
+    }
+    ld.cdTimer = setInterval(tick, alpOpt('__alpTickMs', 1000));
+    tick();
+  }
+  function alpCountdown(ld, waitMs, labelFn){
+    var until = Date.now() + waitMs;
+    return alpRace(ld, new Promise(function(resolve){ alpTicker(ld, until, labelFn, resolve); }));
+  }
+  // ¿Vale la pena reintentar automáticamente este fallo? (red, límite de GitHub de corta espera, 5xx, tiempo de una petición)
+  function alpTransient(err, ld){
+    var k = err && err.alpKind;
+    if (!k || ld.timedOut) return false;
+    if (k === 'network') return true;
+    if (k === 'ratelimit') return !(err.waitMs > GH_RETRY_CAP_MS);
+    if (k === 'http') return err.status >= 500 && err.status !== 501;
+    return false;
+  }
+  function alpShortReason(err){
+    var k = err && err.alpKind;
+    if (k === 'ratelimit') return 'GitHub limitó temporalmente las peticiones.';
+    if (k === 'network') return err.ghKind === 'offline' ? 'Sin conexión a internet.' : (err.ghKind === 'timeout' ? 'GitHub tardó demasiado en responder.' : 'No se pudo comunicar con GitHub (conexión cortada o bloqueada).');
+    if (k === 'http') return 'El repositorio respondió con un error (' + err.message + ').';
+    return '';
+  }
+  // Descarga un archivo con reintentos automáticos (cuenta atrás visible). El avance de los archivos ya bajados se conserva.
+  function alpGetFileRetry(ld, url, o){
+    var tries = 0, max = alpOpt('__alpMaxTries', 4);
+    function attempt(){
+      tries++;
+      return alpGetFile(ld, url, o).catch(function(err){
+        if (err) err.tries = tries;
+        if (alpStale(ld) || tries >= max || !alpTransient(err, ld)) throw err;
+        var k = tries, base = alpOpt('__alpRetryBaseMs', 4000);
+        var wait = err.waitMs ? Math.min(err.waitMs, GH_RETRY_CAP_MS) : Math.round(base * Math.pow(2, k - 1) + Math.random() * base * 0.25);
+        ld.detail = alpShortReason(err);
+        return alpCountdown(ld, wait, function(left){
+          return 'Reintentando en ' + left + ' s (intento ' + (k + 1) + ' de ' + max + ')…';
+        }).then(function(){
+          if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+          alpSet(ld, { phase: 'Reintentando (intento ' + (k + 1) + ' de ' + max + ')…', detail: '', indeterminate: true });
+          return attempt();
+        });
+      });
+    }
+    return attempt();
+  }
+  // Lee el cuerpo como JSON. onBytes(cargado, total|0) se llama a medida que llegan los datos.
+  function alpBody(ld, res, onBytes){
+    function badJson(){ return alpErr('json', 'JSON inválido'); }
+    var canStream = res.body && typeof res.body.getReader === 'function' && typeof TextDecoder !== 'undefined';
+    if (!canStream){
+      return alpRace(ld, res.json()).then(function(v){ onBytes(0, 0, true); return v; }, function(e){
+        if (e && e.alpKind) throw e;
+        if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+        if (ld.timedOut) throw alpErr('timeout', 'tiempo agotado');
+        if (e instanceof SyntaxError || (e && e.name === 'SyntaxError')) throw badJson();
+        throw alpErr('network', (e && e.message) || 'sin conexión');
+      });
+    }
+    var reader = res.body.getReader(), chunks = [], loaded = 0;
+    var total = parseInt(res.headers && res.headers.get && res.headers.get('content-length'), 10) || 0;
+    function step(){
+      return alpRace(ld, reader.read()).then(function(r){
+        if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+        if (r.done) return;
+        chunks.push(r.value); loaded += r.value.length;
+        alpTouch(ld);
+        onBytes(loaded, total, false);
+        return step();
+      });
+    }
+    return step().then(function(){
+      var all = new Uint8Array(loaded), off = 0;
+      chunks.forEach(function(c){ all.set(c, off); off += c.length; });
+      try { return JSON.parse(new TextDecoder('utf-8').decode(all)); } catch(e){ throw badJson(); }
+    }, function(e){
+      try { reader.cancel(); } catch(_){}
+      if (e && e.alpKind) throw e;
+      if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+      if (ld.timedOut) throw alpErr('timeout', 'tiempo agotado');
+      throw alpErr('network', (e && e.message) || 'conexión interrumpida');
+    });
+  }
+  // Descarga un archivo del repositorio (contents API y, si es grande, el blob de git) y lo devuelve ya parseado.
+  // Devuelve null si no existe (404). fileIdx/fileTotal: posición en la descarga; label: nombre mostrado.
+  function alpGetFile(ld, url, o){
+    var base = o.base, span = o.span;
+    function report(frac, loaded, total, stream){
+      var pctTxt = (stream && total && loaded <= total) ? (' (' + Math.round(loaded * 100 / total) + '%)') : '';
+      var bytesTxt = stream ? (alpFmtBytes(loaded) + (total && loaded <= total ? ' de ' + alpFmtBytes(total) : '') + pctTxt) : '';
+      alpSet(ld, {
+        phase: 'Descargando datos del aula…',
+        detail: o.text + (bytesTxt ? ' · ' + bytesTxt : ''),
+        pct: base + span * Math.min(1, frac),
+        indeterminate: false
+      });
+    }
+    if (!o.first) report(0, 0, 0, false);
+    return alpFetch(ld, url).then(function(res){
+      if (res.status === 404) return null;
+      report(0, 0, 0, false);
+      return alpBody(ld, res, function(l, t, ns){ report(t && l <= t ? 0.3 * l / t : 0.15, l, t, !ns); }).then(function(data){
+        var text;
+        if (data && data.content){
+          try { text = base64ToUtf8(data.content); } catch(e){ throw alpErr('json', 'JSON inválido'); }
+          return text;
+        }
+        if (data && data.sha){
+          return alpFetch(ld, 'https://api.github.com/repos/' + githubConfig.repo + '/git/blobs/' + data.sha).then(function(r2){
+            return alpBody(ld, r2, function(l, t, ns){ report(t && l <= t ? 0.3 + 0.7 * l / t : 0.5, l, t, !ns); });
+          }).then(function(blob){
+            if (!blob || !blob.content) throw alpErr('format', 'Sin contenido.');
+            try { return base64ToUtf8(blob.content); } catch(e){ throw alpErr('json', 'JSON inválido'); }
+          });
+        }
+        throw alpErr('format', 'No se encontró contenido.');
+      }).then(function(txt){
+        try { var v = JSON.parse(txt); } catch(e){ throw alpErr('json', 'JSON inválido'); }
+        report(1, 0, 0, false);
+        return v;
+      });
+    });
+  }
+
+  function alpErrorMessage(err, letra){
+    var k = err && err.alpKind;
+    if (k === 'auth') return 'No se pudo acceder al repositorio (' + err.message + '). Revisa el token de sincronización: puede haber vencido o no tener acceso.';
+    if (k === 'ratelimit') return 'GitHub limitó temporalmente las peticiones (límite alcanzado).' + (err.waitMin ? ' Espere unos ' + err.waitMin + ' min e intente de nuevo.' : ' Espere unos minutos e intente de nuevo.') + (err.tries > 1 ? ' (se reintentó ' + err.tries + ' veces)' : '');
+    if (k === 'timeout') return 'La carga tardó demasiado (sin respuesta del repositorio).';
+    if (k === 'network') return (err.ghKind === 'offline' ? 'Sin conexión a internet. Revise su red.' : 'Sin conexión con el repositorio. Revise su red.') +
+      (err.ghKind === 'timeout' ? ' (GitHub tardó demasiado en responder)' : '') +
+      (err.tries > 1 ? ' Se reintentó ' + err.tries + ' veces; si varias personas cargan a la vez puede ser un límite temporal de GitHub: espere un minuto y use Reintentar.' : '');
+    if (k === 'json') return 'Los datos del aula están dañados (JSON inválido).';
+    if (k === 'http') return 'El repositorio respondió con un error (' + err.message + ').' + (err.tries > 1 ? ' Se reintentó ' + err.tries + ' veces; use Reintentar en un momento.' : '');
+    if (k === 'render') return 'No se pudieron dibujar las capas del aula.';
+    return 'No se pudo cargar ' + aulaLabel(letra) + ': ' + (err ? ghErrorText(err) : 'error desconocido');
+  }
+
+  // ---- Ciclo de vida de la carga ----
+  function alpBtnState(btn, state, title){
+    if (!btn) return;
+    ['loading', 'err', 'empty'].forEach(function(c){ btn.classList.toggle(c, c === state); });
+    if (state === 'loading') btn.setAttribute('aria-busy', 'true'); else btn.removeAttribute('aria-busy');
+    if (title) btn.title = title;
+  }
+  function alpBtnReset(btn, letra){
+    if (!btn) return;
+    btn.classList.remove('loading'); btn.removeAttribute('aria-busy');
+    btn.title = 'Mostrar/ocultar ' + aulaLabel(letra);
+  }
+  function alpStart(letra, btn){
+    var ld = { letra: letra, btn: btn, token: ++alpSeq, ctrl: new AbortController(), state: 'queued', pct: 0, indeterminate: true,
+      phase: 'En cola…', detail: '', slow: false, cancelled: false, timedOut: false };
+    ld.abortP = new Promise(function(_, rej){ ld.rejectAbort = rej; });
+    ld.abortP.catch(function(){});
+    direccionAulaLoading[letra] = ld;
+    alpBtnState(btn, 'loading', 'Cargando ' + alpAulaName(letra) + '… (clic para cancelar)');
+    alpRender(ld);
+    alpQueue.push(ld);
+    alpPump();
+  }
+  function alpPump(){
+    while (alpActive < ALP_MAX_CONCURRENT && alpQueue.length){
+      var ld = alpQueue.shift();
+      if (alpStale(ld)) continue;
+      alpActive++;
+      alpRun(ld).then(function(){}, function(){}).then(function(){ alpActive--; alpPump(); });
+    }
+  }
+  // Cancelación (clic en el botón del aula, en la × o al ocultar el aula): aborta las descargas y deshace lo ya dibujado.
+  function alpCancel(letra, opts){
+    var ld = direccionAulaLoading[letra];
+    if (!ld) return false;
+    ld.cancelled = true;
+    direccionAulaLoading[letra] = null;
+    alpClearTimers(ld);
+    alpAbortNow(ld, alpErr('cancel', 'cancelado'));
+    alpQueue = alpQueue.filter(function(q){ return q !== ld; });
+    alpRemoveRow(ld);
+    direccionUnmergeAula(letra);
+    var btn = ld.btn || alpFindBtn(letra);
+    alpBtnReset(btn, letra);
+    if (!(opts && opts.fromToggle)){
+      if (btn) btn.classList.remove('on');
+      if (userContext) {
+        userContext.visibleAulas = (userContext.visibleAulas || []).filter(function(x){ return x !== letra; });
+        saveUserContext(userContext);
+      }
+    }
+    renderLayerList();
+    return true;
+  }
+  function alpRetry(letra){
+    var btn = alpFindBtn(letra);
+    var old = direccionAulaLoading[letra];
+    if (old) return;
+    var prev = alpLastRows[letra];
+    if (prev) alpRemoveRow(prev);
+    delete direccionAulaCache[letra];
+    direccionUnmergeAula(letra);
+    if (userContext){
+      if ((userContext.visibleAulas || []).indexOf(letra) === -1) userContext.visibleAulas.push(letra);
+      saveUserContext(userContext);
+    }
+    if (btn) btn.classList.add('on');
+    direccionToggleAula(letra, true, btn);
+    renderLayerList();
+  }
+  var alpLastRows = {};
+  function alpCountResult(letra){
+    var ls = layers.filter(function(l){ return l._direccionAula === letra; });
+    var objs = 0; ls.forEach(function(l){ objs += l.group.getLayers().length; });
+    return { layers: ls.length, objects: objs };
+  }
+  function alpPlural(n, one, many){ return n + ' ' + (n === 1 ? one : many); }
+  function alpSummary(letra){
+    var c = alpCountResult(letra);
+    return alpPlural(c.layers, 'capa', 'capas') + ', ' + alpPlural(c.objects, 'objeto', 'objetos');
+  }
+
+  function alpRun(ld){
+    var letra = ld.letra, basePath = direccionAulaBasePath(letra);
+    ld.state = 'loading';
+    ld.phase = 'Conectando con el repositorio…'; ld.detail = ''; ld.indeterminate = true; ld.pct = Math.max(ld.pct, 2);
+    ld.slowTimer = setTimeout(function(){ if (!alpStale(ld) && ld.state === 'loading'){ ld.slow = true; alpRender(ld); } }, alpOpt('__alpSlowMs', 8000));
+    alpTouch(ld);
+    alpRender(ld);
+    var indexState = null, rootEntries = [], layerNodes = {};
+    return alpGetFileRetry(ld, githubContentsUrl(basePath + '/index.json', true), { first: true, base: 5, span: 7, text: 'Índice del aula' }).then(function(idx){
+      indexState = idx;
+      if (!indexState) return null;
+      var entries = indexState.layers || [];
+      rootEntries = entries.filter(function(e){ return !e.parentId; });
+      var total = rootEntries.length, chain = Promise.resolve();
+      rootEntries.forEach(function(e, i){
+        chain = chain.then(function(){
+          return alpGetFileRetry(ld, githubContentsUrl(basePath + '/layers/' + e.id + '.json', true), { base: 12 + 48 * i / total, span: 48 / total, text: 'Archivo ' + (i + 1) + ' de ' + total + ' · ' + (e.name || e.id) }).then(function(node){
+            if (node) layerNodes[e.id] = node;
+          });
+        });
+      });
+      return chain;
+    }).then(function(){
+      if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+      if (!indexState){
+        direccionAulaCache[letra] = { indexEntries: [], layerNodes: {}, noData: true };
+        return alpEnd(ld, 'empty', 'El aula aún no ha publicado datos', 'Todavía no hay información publicada para este aula. Cuando el aula la publique, use «Volver a consultar».');
+      }
+      direccionAulaCache[letra] = { indexEntries: indexState.layers || [], layerNodes: layerNodes };
+      ld.noTimeout = true;
+      alpSet(ld, { phase: 'Procesando capas…', detail: '', pct: 62, indeterminate: false });
+      return alpYield().then(function(){ return alpDraw(ld); });
+    }).catch(function(err){
+      if (alpStale(ld) || (err && err.alpKind === 'cancel')) return;
+      alpFail(ld, err);
+    });
+  }
+  // Dibuja las capas de a una (con pausas para que la interfaz respire y la barra avance).
+  function alpDraw(ld){
+    var letra = ld.letra, cache = direccionAulaCache[letra];
+    if (!isAulaVisible(letra)){ return alpEnd(ld, 'silent'); }   // se ocultó mientras cargaba
+    if (!cache.indexEntries.length){
+      return alpEnd(ld, 'empty', 'Aula sin capas', 'El aula está disponible pero todavía no tiene capas.');
+    }
+    var prefix = direccionMergeBegin(letra, cache);
+    renderLayerList();
+    var nodes = [];
+    Object.keys(cache.layerNodes).forEach(function(k){ (function walk(n){ nodes.push(n); (n.children || []).forEach(walk); })(cache.layerNodes[k]); });
+    var N = nodes.length, i = 0;
+    function next(){
+      if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+      if (i >= N) return;
+      var node = nodes[i], lo = getLayer(prefix + node.id);
+      i++;
+      alpSet(ld, { phase: 'Dibujando capa ' + i + ' de ' + N + (lo ? ': ' + lo.name : ''), detail: '', pct: 65 + 35 * (i - 1) / N, indeterminate: false });
+      return alpYield().then(function(){
+        if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+        var l2 = direccionApplyNodeOnly(node, prefix);
+        if (l2 && l2.visible) map.addLayer(l2.group);
+        if (!node.parentId && (i % 4 === 0 || i === N)) renderLayerList();
+        return next();
+      });
+    }
+    return next().then(function(){
+      if (alpStale(ld)) throw alpErr('cancel', 'cancelado');
+      direccionMergeFinish(letra);
+      renderLayerList();
+      alpEnd(ld, 'done');
+    }, function(err){
+      if (err && err.alpKind) throw err;
+      delete direccionAulaCache[letra];
+      var e2 = alpErr('render', (err && err.message) || 'error'); e2.original = err; throw e2;
+    });
+  }
+  function alpDetach(ld){
+    alpClearTimers(ld);
+    if (direccionAulaLoading[ld.letra] === ld) direccionAulaLoading[ld.letra] = null;
+    alpBtnReset(ld.btn || alpFindBtn(ld.letra), ld.letra);
+  }
+  // Cierre exitoso: 'done' (confirmación que se desvanece), 'empty' (aviso informativo) o 'silent'
+  function alpEnd(ld, kind, title, detail){
+    alpDetach(ld);
+    var btn = ld.btn || alpFindBtn(ld.letra);
+    if (kind === 'silent'){ alpRemoveRow(ld); renderLayerList(); return; }
+    alpLastRows[ld.letra] = ld;
+    if (kind === 'done'){
+      alpFinishRow(ld, 'done', { title: 'Carga completa', phase: alpAulaName(ld.letra) + ' cargada: ' + alpSummary(ld.letra), detail: '' });
+    } else {
+      if (btn) alpBtnState(btn, 'empty', aulaLabel(ld.letra) + ': ' + title);
+      alpFinishRow(ld, 'empty', { title: alpAulaName(ld.letra), phase: title, detail: detail });
+    }
+  }
+  function alpFail(ld, err){
+    var letra = ld.letra;
+    alpDetach(ld);
+    direccionUnmergeAula(letra);   // sin capas a medio dibujar
+    var btn = ld.btn || alpFindBtn(letra);
+    if (btn){ btn.classList.remove('on'); alpBtnState(btn, 'err', aulaLabel(letra) + ': error de carga (clic para reintentar)'); }
+    if (userContext){
+      userContext.visibleAulas = (userContext.visibleAulas || []).filter(function(x){ return x !== letra; });
+      saveUserContext(userContext);
+    }
+    alpLastRows[letra] = ld;
+    alpFinishRow(ld, 'error', { title: 'No se pudo cargar ' + alpAulaName(letra), phase: alpErrorMessage(err, letra), detail: '', errKind: err && err.alpKind });
+    renderLayerList();
+  }
+  // Aviso breve cuando el aula se muestra desde la memoria (sin descargar de nuevo)
+  function alpCachedToast(letra, btn){
+    var cache = direccionAulaCache[letra];
+    var ld = { letra: letra, btn: btn, state: 'done', pct: 100, cancelled: false };
+    if (!cache.indexEntries.length){
+      alpLastRows[letra] = ld;
+      if (btn) alpBtnState(btn, 'empty', aulaLabel(letra) + ': ' + (cache.noData ? 'sin datos publicados' : 'sin capas'));
+      alpFinishRow(ld, 'empty', { title: alpAulaName(letra), phase: cache.noData ? 'El aula aún no ha publicado datos' : 'Aula sin capas',
+        detail: cache.noData ? 'Todavía no hay información publicada para este aula. Cuando el aula la publique, use «Volver a consultar».' : 'El aula está disponible pero todavía no tiene capas.' });
+      return;
+    }
+    alpLastRows[letra] = ld;
+    alpFinishRow(ld, 'done', { title: 'Aula mostrada', phase: alpAulaName(letra) + ' cargada: ' + alpSummary(letra), detail: '' });
+    alpAutoHide(ld, alpOpt('__alpCachedMs', 2500));
+  }
+
   function direccionToggleAula(letra, on, btn){
     if (!on){
+      var wasLoading = alpCancel(letra, { fromToggle: true });
+      var shown = alpLastRows[letra];
+      if (shown && shown.state !== 'queued' && shown.state !== 'loading'){ alpRemoveRow(shown); }
+      var b0 = btn || alpFindBtn(letra);
+      if (b0){ b0.classList.remove('err'); b0.classList.remove('empty'); }
       direccionUnmergeAula(letra);
       renderLayerList();
       return;
     }
     if (direccionAulaCache[letra]){
+      var b1 = btn || alpFindBtn(letra);
+      alpBtnState(b1, null);
+      var prevRow = alpLastRows[letra]; if (prevRow) alpRemoveRow(prevRow);
       direccionMergeAulaIntoLayers(letra);
       renderLayerList();
+      alpCachedToast(letra, b1);
       return;
     }
     if (!githubConfigured()){
@@ -3511,61 +4534,12 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       return;
     }
     if (direccionAulaLoading[letra]) return;
-    direccionAulaLoading[letra] = true;
-    if (btn) btn.classList.add('loading');
-    var basePath = direccionAulaBasePath(letra);
-    fetch(githubContentsUrl(basePath + '/index.json', true), { headers: githubAuthHeaders() })
-      .then(function(res){
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
-      .then(function(data){
-        if (!data) return null;
-        return resolveFileText(data).then(function(rawText){ return JSON.parse(rawText); });
-      })
-      .then(function(indexState){
-        if (!indexState){ direccionAulaCache[letra] = { indexEntries: [], layerNodes: {} }; return; }
-        var rootIds = (indexState.layers || []).filter(function(e){ return !e.parentId; }).map(function(e){ return e.id; });
-        var layerNodes = {};
-        var chain = Promise.resolve();
-        rootIds.forEach(function(id){
-          chain = chain.then(function(){
-            return fetch(githubContentsUrl(basePath + '/layers/' + id + '.json', true), { headers: githubAuthHeaders() })
-              .then(function(res2){
-                if (res2.status === 404) return null;
-                if (!res2.ok) throw new Error('HTTP ' + res2.status);
-                return res2.json();
-              })
-              .then(function(data2){
-                if (!data2) return;
-                return resolveFileText(data2).then(function(rawText2){ layerNodes[id] = JSON.parse(rawText2); });
-              });
-          });
-        });
-        return chain.then(function(){
-          direccionAulaCache[letra] = { indexEntries: indexState.layers || [], layerNodes: layerNodes };
-        });
-      })
-      .then(function(){
-        direccionAulaLoading[letra] = false;
-        if (btn) btn.classList.remove('loading');
-        if (!isAulaVisible(letra)){ renderLayerList(); return; } // se ocultó mientras cargaba
-        direccionMergeAulaIntoLayers(letra);
-        renderLayerList();
-      })
-      .catch(function(err){
-        direccionAulaLoading[letra] = false;
-        if (btn){ btn.classList.remove('loading'); btn.classList.remove('on'); }
-        userContext.visibleAulas = (userContext.visibleAulas || []).filter(function(x){ return x !== letra; });
-        saveUserContext(userContext);
-        alert('No se pudo cargar ' + aulaLabel(letra) + ': ' + err.message);
-      });
+    var prev = alpLastRows[letra]; if (prev) alpRemoveRow(prev);
+    alpStart(letra, btn || alpFindBtn(letra));
   }
 
-  function direccionMergeAulaIntoLayers(letra){
-    var cache = direccionAulaCache[letra];
-    if (!cache) return;
+  /* Mezcla las capas de un aula en `layers`. Se divide en pasos para poder dibujar progresivamente. */
+  function direccionMergeBegin(letra, cache){
     direccionUnmergeAula(letra);
     var prefix = 'd_' + letra + '_';
     var letraOffset = AULAS.indexOf(letra) * 100000;
@@ -3583,12 +4557,28 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       };
       layers.push(lo);
     });
+    return prefix;
+  }
+  function direccionApplyNodeOnly(node, prefix){
+    var lo = getLayer(prefix + node.id);
+    if (lo && node.geojson && node.geojson.features && node.geojson.features.length){
+      reconstructGeoJSONInto(node.geojson, lo);
+    }
+    return lo;
+  }
+  function direccionMergeFinish(letra){
+    layers.filter(function(l){ return l._direccionAula === letra; }).forEach(function(l){
+      if (l.visible && !map.hasLayer(l.group)) map.addLayer(l.group);
+    });
+  }
+  function direccionMergeAulaIntoLayers(letra){
+    var cache = direccionAulaCache[letra];
+    if (!cache) return;
+    var prefix = direccionMergeBegin(letra, cache);
     Object.keys(cache.layerNodes).forEach(function(origId){
       direccionApplyNode(cache.layerNodes[origId], prefix);
     });
-    layers.filter(function(l){ return l._direccionAula === letra; }).forEach(function(l){
-      if (l.visible) map.addLayer(l.group);
-    });
+    direccionMergeFinish(letra);
   }
 
   function direccionApplyNode(node, prefix){
@@ -3625,10 +4615,10 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     clearBroadcastLayers();   // una recarga reemplaza el overlay anterior (sin duplicar capas ni companions)
     var basePath = direccionBroadcastBasePath();
     var indexState = null;
-    fetch(githubContentsUrl(basePath + '/index.json', true), { headers: githubAuthHeaders() })
+    githubFetch(githubContentsUrl(basePath + '/index.json', true), { headers: githubAuthHeaders() })
       .then(function(res){
         if (res.status === 404) return null;
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw ghHttpError(res);
         return res.json();
       })
       .then(function(data){
@@ -3642,10 +4632,10 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         var chain = Promise.resolve();
         rootIds.forEach(function(id){
           chain = chain.then(function(){
-            return fetch(githubContentsUrl(basePath + '/layers/' + id + '.json', true), { headers: githubAuthHeaders() })
+            return githubFetch(githubContentsUrl(basePath + '/layers/' + id + '.json', true), { headers: githubAuthHeaders() })
               .then(function(res2){
                 if (res2.status === 404) return null;
-                if (!res2.ok) throw new Error('HTTP ' + res2.status);
+                if (!res2.ok) throw ghHttpError(res2);
                 return res2.json();
               })
               .then(function(data2){
@@ -3990,6 +4980,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
 
   function updateSyncStatus(kind, text){
+    ghStopStatusTicker();
     var el = document.getElementById('gh-status');
     el.className = 'gh-status ' + kind;
     el.textContent = text;
@@ -4066,13 +5057,14 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
   function applyGithubConfig(cfg){
     githubConfig = cfg;
+    ghEtags = {};   // las ETag guardadas pertenecen a la configuración anterior
     persistGithubConfig();
   }
   function resolveFileText(data){
     if (data.content) return Promise.resolve(base64ToUtf8(data.content));
     if (data.sha){
-      return fetch('https://api.github.com/repos/' + githubConfig.repo + '/git/blobs/' + data.sha, { headers: githubAuthHeaders() })
-        .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      return githubFetch('https://api.github.com/repos/' + githubConfig.repo + '/git/blobs/' + data.sha, { headers: githubAuthHeaders() })
+        .then(function(r){ if (!r.ok) throw ghHttpError(r); return r.json(); })
         .then(function(blob){ if (!blob || !blob.content) throw new Error('Sin contenido.'); return base64ToUtf8(blob.content); });
     }
     return Promise.reject(new Error('No se encontró contenido.'));
@@ -4121,13 +5113,14 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     syncInProgress = true;
     updateSyncStatus('syncing','Descargando…');
     if (!isBackground) showLoadProgressOverlay();
-    return fetch(githubContentsUrl(githubIndexPath(), true), { headers: githubAuthHeaders() })
+    return githubFetch(githubContentsUrl(githubIndexPath(), true), { headers: githubAuthHeaders() },
+      { etag: !!isBackground, onWait: isBackground ? null : ghStatusWait, priority: isBackground ? -1 : 0 })
       .then(function(res){
         if (res.status === 404) return githubMigrateLegacy(isBackground).then(function(result){
           if (!isBackground) hideLoadProgressOverlay();
           return result;
         });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw ghHttpError(res);
         return res.json().then(function(data){
           if (isBackground && data.sha === githubShas.index){
             updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
@@ -4192,8 +5185,8 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
           });
         });
       }).catch(function(err){
-        updateSyncStatus('error','Error al descargar: ' + err.message);
-        if (showAlertOnError) alert('No se pudo descargar desde GitHub: ' + err.message);
+        updateSyncStatus('error','Error al descargar: ' + ghErrorText(err));
+        if (showAlertOnError) alert('No se pudo descargar desde GitHub: ' + ghErrorText(err));
         if (!isBackground) hideLoadProgressOverlay();
         syncInProgress = false;
         return false;
@@ -4201,10 +5194,10 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
 
   function githubPullEnfoqueFile(){
-    return fetch(githubContentsUrl(githubEnfoquePath(), true), { headers: githubAuthHeaders() })
+    return githubFetch(githubContentsUrl(githubEnfoquePath(), true), { headers: githubAuthHeaders() }, { onWait: ghStatusWait })
       .then(function(res){
         if (res.status === 404) return;
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw ghHttpError(res);
         return res.json().then(function(data){
           if (githubShas.enfoque === data.sha) return;
           return resolveFileText(data).then(function(rawText){
@@ -4222,10 +5215,10 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   var githubLayerRawCache = {}; // id -> último texto JSON de capa aplicado con éxito
 
   function githubPullLayerFile(id){
-    return fetch(githubContentsUrl(githubLayerFilePath(id), true), { headers: githubAuthHeaders() })
+    return githubFetch(githubContentsUrl(githubLayerFilePath(id), true), { headers: githubAuthHeaders() }, { onWait: ghStatusWait })
       .then(function(res){
         if (res.status === 404) return;
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw ghHttpError(res);
         return res.json().then(function(data){
           if (githubShas.layers[id] === data.sha && githubLayerRawCache[id]){
             // El contenido remoto no cambió, pero el grupo local de esta capa se
@@ -4250,13 +5243,13 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
 
   function githubMigrateLegacy(isBackground){
-    return fetch(githubApiUrl(true), { headers: githubAuthHeaders() }).then(function(res){
+    return githubFetch(githubApiUrl(true), { headers: githubAuthHeaders() }, { onWait: isBackground ? null : ghStatusWait }).then(function(res){
       if (res.status === 404){
         updateSyncStatus('ok','Repositorio conectado (sin datos aún)');
         syncInProgress = false;
         return false;
       }
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) throw ghHttpError(res);
       return res.json().then(function(data){
         return resolveFileText(data).then(function(rawText){
           var state = JSON.parse(rawText);
@@ -4321,6 +5314,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     return computeGithubPushTasks().length > 0;
   }
 
+  var githubLastPushError = null;   // último error de subida (para decidir si conviene reintentar sola)
   function githubPush(){
     if (isReadOnlyMode()) return Promise.resolve(false);
     if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
@@ -4350,21 +5344,23 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       if (i >= tasks.length) return Promise.resolve(true);
       return githubPushOneFile(tasks[i]).then(function(){ persistSyncState(); return runNext(i + 1); });
     }
+    githubLastPushError = null;
     return runNext(0).then(function(){
       syncInProgress = false;
       updateSyncStatus('ok','Sincronizado ' + new Date().toLocaleTimeString());
       return true;
     }).catch(function(err){
       syncInProgress = false;
-      updateSyncStatus('error','Error al subir: ' + err.message);
+      githubLastPushError = err;
+      updateSyncStatus('error','Error al subir: ' + ghErrorText(err));
       return false;
     });
   }
 
   function githubRefreshSha(path){
-    return fetch(githubContentsUrl(path, true), { headers: githubAuthHeaders() }).then(function(res){
+    return githubFetch(githubContentsUrl(path, true), { headers: githubAuthHeaders() }, { onWait: ghStatusWait }).then(function(res){
       if (res.status === 404) return null;
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) throw ghHttpError(res);
       return res.json().then(function(data){ return data.sha; });
     });
   }
@@ -4375,14 +5371,15 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 
     if (task.kind === 'deleteLayer'){
       if (!knownSha){ delete lastPushedLayerSig[task.id]; return Promise.resolve(); }
-      return fetch(githubContentsUrl(task.path), {
+      return githubFetch(githubContentsUrl(task.path), {
         method:'DELETE',
         headers: Object.assign({ 'Content-Type':'application/json' }, githubAuthHeaders()),
         body: JSON.stringify({ message:'Eliminar capa - ' + new Date().toISOString(), sha: knownSha, branch: githubConfig.branch || 'main' })
-      }).then(function(res){
+      }, { onWait: ghStatusWait }).then(function(res){
         if ((res.status === 409 || res.status === 422) && retriesLeft > 0){
           return githubRefreshSha(task.path).then(function(sha){ githubShas.layers[task.id] = sha; return githubPushOneFile(task, retriesLeft - 1); });
         }
+        if (!res.ok && res.ghInfo && (res.ghInfo.kind === 'ratelimit' || res.ghInfo.kind === 'server')) throw ghHttpError(res);
         delete githubShas.layers[task.id];
         delete lastPushedLayerSig[task.id];
       });
@@ -4394,11 +5391,11 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       branch: githubConfig.branch || 'main'
     };
     if (knownSha) body.sha = knownSha;
-    return fetch(githubContentsUrl(task.path), {
+    return githubFetch(githubContentsUrl(task.path), {
       method:'PUT',
       headers: Object.assign({ 'Content-Type':'application/json' }, githubAuthHeaders()),
       body: JSON.stringify(body)
-    }).then(function(res){
+    }, { onWait: ghStatusWait }).then(function(res){
       if ((res.status === 409 || res.status === 422) && retriesLeft > 0){
         return githubRefreshSha(task.path).then(function(sha){
           if (task.kind === 'index') githubShas.index = sha;
@@ -4408,7 +5405,11 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         });
       }
       return res.json().then(function(data){
-        if (!res.ok) throw new Error((data.message || ('HTTP ' + res.status)) + ' — pulse "Subir cambios" para reintentar.');
+        if (!res.ok){
+          var ge = ghHttpError(res);
+          // Límite / servidor / permisos / no encontrado: mensaje claro en español; otros (p. ej. 422 de validación): el texto de GitHub.
+          throw new Error((ge.ghKind === 'http' ? (data.message || ge.message) : ge.message) + ' — pulse "Subir cambios" para reintentar.');
+        }
         if (task.kind === 'index'){ githubShas.index = data.content.sha; lastPushedIndexSig = task.sig; }
         else if (task.kind === 'enfoque'){ githubShas.enfoque = data.content.sha; lastPushedEnfoqueSig = task.sig; }
         else { githubShas.layers[task.id] = data.content.sha; lastPushedLayerSig[task.id] = task.sig; }
@@ -4423,8 +5424,9 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
 
   /* ---------------- PRESENCIA: quién está conectado a cada aula ---------------- */
-  var PRESENCE_STALE_MS = 90000; // una entrada sin heartbeat en 90s se considera desconectada
-  var PRESENCE_INTERVAL_MS = 30000;
+  var PRESENCE_STALE_MS = 300000; // una entrada sin latido en 5 min se considera desconectada
+  var PRESENCE_INTERVAL_MS = 45000;  // cada cuánto se LEE la presencia (con ETag; antes 30 s con lectura + escritura)
+  var PRESENCE_WRITE_MS = 120000;    // el latido propio se ESCRIBE como mucho cada ~2 min (antes: en cada ciclo de 30 s)
   var presenceCache = {};   // letra -> { clients: { clientId: {name, lastSeen, role} } }
   var presenceShas = {};    // letra -> sha conocido del presence.json de esa aula
   var presencePending = {}; // letra -> true mientras hay una sincronización en curso (evita solapes)
@@ -4484,16 +5486,20 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     }
   }
 
+  // La presencia es informativa y de baja prioridad: va siempre detrás de las acciones del usuario en el limitador, se lee con
+  // ETag (un 304 no cuenta contra el límite principal) y sólo se ESCRIBE (un commit en el repositorio) cuando hace falta
+  // renovar el latido propio (cada PRESENCE_WRITE_MS), no en cada lectura.
   function presenceSyncAula(letra, retriesLeft){
     if (!githubConfigured()) return Promise.resolve();
     if (retriesLeft == null) retriesLeft = 2;
     if (presencePending[letra] && retriesLeft === 2) return Promise.resolve();
     presencePending[letra] = true;
     var path = githubPresencePath(letra);
-    return fetch(githubContentsUrl(path, true), { headers: githubAuthHeaders() })
+    var netOpts = { retries: 1, priority: -1 };   // escritura de latido: baja prioridad y un solo reintento
+    return githubFetch(githubContentsUrl(path, true), { headers: githubAuthHeaders() }, { retries: 1, priority: -1, etag: true })
       .then(function(res){
         if (res.status === 404) return { sha: null, data: { clients: {} } };
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw ghHttpError(res);
         return res.json().then(function(fileData){
           return resolveFileText(fileData).then(function(text){
             var data;
@@ -4503,20 +5509,25 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
           });
         });
       })
-      .catch(function(){ return { sha: presenceShas[letra] || null, data: { clients: {} } }; })
+      .catch(function(){ return { sha: presenceShas[letra] || null, data: { clients: {} }, failed: true }; })
       .then(function(result){
+        if (result.failed) return;   // sin lectura fiable no se escribe (evita pisar a los demás y no insiste en plena congestión)
         var data = result.data;
         var now = Date.now();
+        var myId = getClientId();
+        var role = (userContext && userContext.role === 'direccion') ? 'direccion' : 'aula';
+        var name = getUserName() || 'Sin nombre';
+        var prev = data.clients[myId];
         Object.keys(data.clients).forEach(function(id){
           if (now - (data.clients[id].lastSeen || 0) > PRESENCE_STALE_MS) delete data.clients[id];
         });
-        data.clients[getClientId()] = {
-          name: getUserName() || 'Sin nombre',
-          lastSeen: now,
-          role: (userContext && userContext.role === 'direccion') ? 'direccion' : 'aula'
-        };
+        // ¿Hay que renovar el latido? Sólo si no estoy registrado, cambió mi nombre/rol o el último latido ya envejeció.
+        var needWrite = !prev || prev.name !== name || prev.role !== role || (now - (prev.lastSeen || 0)) >= PRESENCE_WRITE_MS;
+        if (needWrite) data.clients[myId] = { name: name, lastSeen: now, role: role };
+        else if (!data.clients[myId]) data.clients[myId] = prev;
         presenceCache[letra] = data;
         renderPresenceUI();
+        if (!needWrite) return;
 
         var body = {
           message: 'Presencia AULA ' + letra + ' - ' + new Date().toISOString(),
@@ -4524,12 +5535,13 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
           branch: githubConfig.branch || 'main'
         };
         if (result.sha) body.sha = result.sha;
-        return fetch(githubContentsUrl(path), {
+        return githubFetch(githubContentsUrl(path), {
           method: 'PUT',
           headers: Object.assign({ 'Content-Type':'application/json' }, githubAuthHeaders()),
           body: JSON.stringify(body)
-        }).then(function(res){
+        }, netOpts).then(function(res){
           if ((res.status === 409 || res.status === 422) && retriesLeft > 0){
+            delete ghEtags[githubContentsUrl(path, true)];
             presencePending[letra] = false;
             return presenceSyncAula(letra, retriesLeft - 1);
           }
@@ -4543,14 +5555,16 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
 
   function presenceTick(){
-    if (!githubConfigured()) return;
-    presenceRelevantAulas().forEach(function(letra){ presenceSyncAula(letra); });
+    if (!githubConfigured()) return Promise.resolve();
+    return Promise.all(presenceRelevantAulas().map(function(letra){ return presenceSyncAula(letra); }));
   }
 
+  var presencePoller = null;
   function startPresenceLoop(){
-    if (presenceTimer) clearInterval(presenceTimer);
-    setTimeout(presenceTick, 1500);
-    presenceTimer = setInterval(presenceTick, PRESENCE_INTERVAL_MS);
+    if (presencePoller) presencePoller.stop();
+    presencePoller = ghPoller('presence', PRESENCE_INTERVAL_MS, presenceTick);
+    // El primer latido sale con retardo aleatorio para que muchas pestañas abiertas a la vez no sincronicen sus peticiones.
+    presencePoller.schedule(1500 + Math.random() * ghOpt('__ghPresenceFirstSpreadMs', 4000));
   }
 
   /* ---------------- COPIAS DE SEGURIDAD LOCALES ---------------- */
@@ -4602,11 +5616,12 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 
   var historyScrim = document.getElementById('history-scrim');
   function openHistoryScrim(title){
+    if (typeof hmDispose === 'function') hmDispose();
     document.getElementById('history-title').textContent = title;
     document.getElementById('history-list').innerHTML = '<div class="history-empty">Cargando…</div>';
     historyScrim.classList.add('show');
   }
-  function closeHistoryScrim(){ historyScrim.classList.remove('show'); }
+  function closeHistoryScrim(){ historyScrim.classList.remove('show'); if (typeof hmDispose === 'function') hmDispose(); }
   document.getElementById('history-close-btn').addEventListener('click', closeHistoryScrim);
   historyScrim.addEventListener('click', function(ev){ if (ev.target === historyScrim) closeHistoryScrim(); });
 
@@ -4653,66 +5668,787 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 
   /* ---------------- HISTORIAL DE GITHUB Y RESTAURACIÓN ---------------- */
   function githubFetchTextAtRef(path, refOrSha){
-    return fetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + encodeURIComponent(path).replace(/%2F/g, '/') + '?ref=' + encodeURIComponent(refOrSha), {
+    return githubFetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + encodeURIComponent(path).replace(/%2F/g, '/') + '?ref=' + encodeURIComponent(refOrSha), {
       headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
     }).then(function(res){
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) throw ghHttpError(res);
       return res.json();
     }).then(function(data){ return resolveFileText(data); });
   }
 
-  function githubFetchHistory(page){
+  /* ---------------- MÉTRICAS DEL HISTORIAL: tamaño, capas y objetos de cada versión ----------------
+     Cada versión de la lista es un commit. Los commits son inmutables, así que las métricas se calculan una sola vez y se
+     guardan (memoria + sessionStorage). Para no agotar el límite de GitHub nada se pide de forma anticipada:
+       · Etapa 1 (tamaño): 1 petición por versión — árbol git del commit (blobs con su tamaño, sin descargar contenido).
+         Si el árbol viene truncado: listado de la carpeta del aula + árbol de "layers" (se reutiliza por sha).
+         En el historial de una capa: 1 petición "contents" al archivo de esa capa en ese commit (trae tamaño y contenido).
+       · Etapa 2 (contenido: capas y objetos): índice + archivos de capa por blob, con caché por sha de blob (un archivo de capa que
+         no cambió entre dos versiones se descarga una sola vez). Sólo bajo demanda (detalle de fila, "Calcular contenido",
+         diálogo de restauración).
+       · Las etapas se ejecutan para las filas visibles (IntersectionObserver, lotes de <= 6) o con los botones de la barra,
+         siempre con prioridad baja en githubFetch y sin reintentos silenciosos: ante un límite se pausa con cuenta atrás. */
+  var HM_BATCH = 6, HM_MIN_BYTES = 1024, HM_EMPTY_OBJS = 2, HM_DROP_RATIO = 0.5, HM_SS_KEY = 'hist_metrics_v1', HM_SS_MAX = 600;
+  var hmMem = {}, hmTrees = {}, hmBlobObjs = {}, hmBlobIdx = {}, hmSsLoaded = false, hmSsTimer = null;
+  var hmCtx = null;
+  var hmStats = { req: 0, stage1: 0, stage2: 0, cacheHits: 0 };
+
+  function hmSsLoad(){
+    if (hmSsLoaded) return; hmSsLoaded = true;
+    try{
+      var o = JSON.parse(sessionStorage.getItem(HM_SS_KEY) || '{}');
+      Object.keys(o).forEach(function(k){ if (!hmMem[k] && o[k] && typeof o[k] === 'object') hmMem[k] = o[k]; });
+    }catch(e){}
+  }
+  function hmSsSave(){
+    if (hmSsTimer) return;
+    hmSsTimer = setTimeout(function(){
+      hmSsTimer = null;
+      try{
+        var keys = Object.keys(hmMem);
+        if (keys.length > HM_SS_MAX) keys = keys.slice(keys.length - HM_SS_MAX);
+        var out = {};
+        keys.forEach(function(k){ var c = {}; Object.keys(hmMem[k]).forEach(function(f){ if (f !== 'blobs') c[f] = hmMem[k][f]; }); out[k] = c; });
+        sessionStorage.setItem(HM_SS_KEY, JSON.stringify(out));
+      }catch(e){}
+    }, 400);
+  }
+  function hmKey(ctx, sha){ return ctx.mode + '|' + githubConfig.repo + '|' + ctx.path + '|' + sha; }
+
+  // ---- Formato ----
+  function hmFmtBytes(n){
+    n = Math.abs(n || 0);
+    if (n < 1024) return n + ' B';
+    if (n < 1048576){ var k = n / 1024; return (k < 10 ? k.toFixed(1).replace(/\.0$/, '') : Math.round(k)) + ' KB'; }
+    var mb = n / 1048576; return (mb < 10 ? mb.toFixed(1).replace(/\.0$/, '') : Math.round(mb)) + ' MB';
+  }
+  function hmSigned(n, fmt){ return (n < 0 ? '−' : '+') + fmt(Math.abs(n)); }
+  function hmFmtAbs(iso){
+    try{
+      return new Date(iso).toLocaleString(undefined, { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    }catch(e){ return String(iso); }
+  }
+  function hmFmtDay(iso){
+    try{ return new Date(iso).toLocaleDateString(undefined, { day:'2-digit', month:'short', year:'numeric' }); }catch(e){ return String(iso); }
+  }
+  function hmFmtClock(iso){
+    try{ return new Date(iso).toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }catch(e){ return String(iso); }
+  }
+  function hmFmtRel(ms){
+    var s = Math.max(0, Math.round((Date.now() - ms) / 1000));
+    if (s < 60) return 'hace ' + s + ' s';
+    var m = Math.round(s / 60); if (m < 60) return 'hace ' + m + ' min';
+    var h = Math.round(m / 60); if (h < 48) return 'hace ' + h + ' h';
+    var d = Math.round(h / 24); if (d < 60) return 'hace ' + d + ' d';
+    return 'hace ' + Math.round(d / 30) + ' meses';
+  }
+  function hmFmtMetrics(m){
+    if (!m) return 'calculando…';
+    if (m.none) return '—';
+    var p = [hmFmtBytes(m.b)];
+    if (m.l != null) p.push(m.l + (m.l === 1 ? ' capa' : ' capas'));
+    if (m.o != null) p.push(m.o + (m.o === 1 ? ' objeto' : ' objetos'));
+    return p.join(', ');
+  }
+
+  // ---- Reglas (puras): casi vacía, caída, parecidas ----
+  function hmNearEmpty(m){ return !!m && !m.none && (m.o != null ? m.o <= HM_EMPTY_OBJS : (m.cb || 0) < HM_MIN_BYTES); }
+  // m = versión más nueva, p = la anterior (más antigua). Caída brusca: pasa de contenido real a casi vacía, o los objetos / el
+  // tamaño del contenido bajan al 50 % o menos.
+  function hmIsDrop(m, p){
+    if (!m || !p || m.none || p.none) return false;
+    if (hmNearEmpty(p)) return false;
+    if (hmNearEmpty(m)) return true;
+    if (m.o != null && p.o != null && p.o > HM_EMPTY_OBJS && m.o <= p.o * HM_DROP_RATIO) return true;
+    if ((p.cb || 0) >= HM_MIN_BYTES && (m.cb || 0) <= (p.cb || 0) * HM_DROP_RATIO) return true;
+    return false;
+  }
+  function hmSimilar(a, b){
+    if (!a || !b || a.none || b.none) return false;
+    return a.b === b.b && a.f === b.f && (a.o == null || b.o == null || a.o === b.o);
+  }
+  function hmDelta(m, p){
+    if (!m || !p || m.none || p.none) return null;
+    var dB = m.b - p.b, dO = (m.o != null && p.o != null) ? m.o - p.o : null, dL = (m.l != null && p.l != null) ? m.l - p.l : null;
+    var drop = hmIsDrop(m, p);
+    var kind = drop ? 'down' : ((dO != null ? dO > 0 : dB > 0) ? 'up' : 'flat');
+    return { dB: dB, dO: dO, dL: dL, drop: drop, kind: kind };
+  }
+
+  // ---- Red (prioridad baja, sin reintentos silenciosos) ----
+  function hmApiUrl(p){ return 'https://api.github.com/repos/' + githubConfig.repo + p; }
+  function hmEnc(path){ return encodeURIComponent(path).replace(/%2F/g, '/'); }
+  function hmGet(ctx, url){
+    hmStats.req++;
+    return githubFetch(url, { headers: githubAuthHeaders() }, { priority: -2, retries: 0, signal: ctx.ac ? ctx.ac.signal : null }).then(function(res){
+      if (res.ok) return res;
+      if (res.status === 404 || res.status === 409 || res.status === 422){ var e = new Error('No existe en esta versión.'); e.hmNone = true; e.status = res.status; throw e; }
+      throw ghHttpError(res);
+    });
+  }
+  function hmTree(ctx, treeSha, recursive){
+    if (!recursive && hmTrees[treeSha]){ hmStats.cacheHits++; return Promise.resolve(hmTrees[treeSha]); }
+    return hmGet(ctx, hmApiUrl('/git/trees/' + encodeURIComponent(treeSha) + (recursive ? '?recursive=1' : ''))).then(function(r){ return r.json(); }).then(function(d){
+      var t = { entries: (d && Array.isArray(d.tree)) ? d.tree : [], truncated: !!(d && d.truncated) };
+      if (!recursive) hmTrees[treeSha] = t;
+      return t;
+    });
+  }
+  function hmBlobText(ctx, sha){
+    return hmGet(ctx, hmApiUrl('/git/blobs/' + encodeURIComponent(sha))).then(function(r){ return r.json(); }).then(function(b){
+      if (!b || b.content == null) throw new Error('Sin contenido.');
+      return base64ToUtf8(String(b.content));
+    });
+  }
+  function hmCountNode(node){
+    var o = 0, n = 0;
+    (function walk(x){
+      if (!x || typeof x !== 'object') return;
+      n++;
+      var f = x.geojson && x.geojson.features;
+      if (f && f.length) o += f.length;
+      (x.children || []).forEach(walk);
+    })(node);
+    return { o: o, n: n };
+  }
+  // Si ya se conocen (por caché de blobs) todos los conteos, completa capas/objetos sin pedir nada.
+  function hmTryFinish(ctx, m){
+    if (!m || m.none || m.o != null) return;
+    var o = 0, n = 0, all = true;
+    (m.blobs || []).forEach(function(b){ var c = hmBlobObjs[b.sha]; if (c){ o += c.o; n += c.n; } else all = false; });
+    if (!all) return;
+    if (ctx.mode === 'layer'){ m.o = o; m.l = n; return; }
+    var li = m.idxSha ? hmBlobIdx[m.idxSha] : null;
+    if (li != null || !m.idxSha){ m.o = o; m.l = (li != null ? li : null); }
+  }
+
+  // ---- Etapa 1: tamaño ----
+  function hmEntriesFromTree(entries, base){
+    var idxPath = base + '/index.json', lp = base + '/layers/';
+    var ex = { ib: 0, idxSha: null, layers: [], found: false };
+    entries.forEach(function(e){
+      if (!e || (e.type && e.type !== 'blob') || typeof e.path !== 'string') return;
+      if (e.path === idxPath){ ex.ib = e.size || 0; ex.idxSha = e.sha; ex.found = true; }
+      else if (e.path.indexOf(lp) === 0 && /\.json$/i.test(e.path) && e.path.indexOf('/', lp.length) === -1){
+        ex.layers.push({ id: e.path.slice(lp.length, -5), sha: e.sha, size: e.size || 0 }); ex.found = true;
+      }
+    });
+    return ex;
+  }
+  function hmBuildAula(ex, partial){
+    var cb = 0; ex.layers.forEach(function(l){ cb += l.size; });
+    return { b: ex.ib + cb, cb: cb, ib: ex.ib, f: ex.layers.length, p: !!partial, o: null, l: null, idxSha: ex.idxSha, blobs: ex.layers };
+  }
+  function hmStage1Aula(ctx, item){
+    return hmTree(ctx, item.treeSha || item.sha, true).then(function(t){
+      if (!t.truncated){ var ex = hmEntriesFromTree(t.entries, ctx.path); return ex.found ? hmBuildAula(ex, false) : { none: true }; }
+      return hmAulaFallback(ctx, item);
+    });
+  }
+  function hmAulaFallback(ctx, item){
+    return hmGet(ctx, hmApiUrl('/contents/' + hmEnc(ctx.path) + '?ref=' + encodeURIComponent(item.sha))).then(function(r){ return r.json(); }).then(function(list){
+      if (!Array.isArray(list)) return { none: true };
+      var ex = { ib: 0, idxSha: null, layers: [], found: false }, dir = null;
+      list.forEach(function(e){
+        if (e.name === 'index.json' && e.type === 'file'){ ex.ib = e.size || 0; ex.idxSha = e.sha; ex.found = true; }
+        else if (e.name === 'layers' && e.type === 'dir') dir = e;
+      });
+      if (!dir) return ex.found ? hmBuildAula(ex, false) : { none: true };
+      return hmTree(ctx, dir.sha, false).then(function(t2){
+        t2.entries.forEach(function(e){
+          if (e && e.type === 'blob' && /\.json$/i.test(e.path || '')){ ex.layers.push({ id: e.path.slice(0, -5), sha: e.sha, size: e.size || 0 }); ex.found = true; }
+        });
+        return hmBuildAula(ex, t2.truncated || list.length >= 1000);
+      });
+    });
+  }
+  function hmStage1Layer(ctx, item){
+    return hmGet(ctx, hmApiUrl('/contents/' + hmEnc(ctx.path) + '?ref=' + encodeURIComponent(item.sha))).then(function(r){ return r.json(); }).then(function(d){
+      if (!d || Array.isArray(d) || d.type === 'dir') return { none: true };
+      var size = d.size != null ? d.size : 0;
+      var m = { b: size, cb: size, ib: 0, f: 1, p: false, o: null, l: null, blobs: [{ id: ctx.layerId, sha: d.sha, size: size }] };
+      if (d.content && d.encoding !== 'none'){
+        try{ hmBlobObjs[d.sha] = hmCountNode(JSON.parse(base64ToUtf8(d.content))); }catch(e){}
+      }
+      hmTryFinish(ctx, m);
+      return m;
+    });
+  }
+  function hmStage1(ctx, item){
+    hmStats.stage1++;
+    return ctx.mode === 'layer' ? hmStage1Layer(ctx, item) : hmStage1Aula(ctx, item);
+  }
+
+  // ---- Etapa 2: capas y objetos (por blob, con caché) ----
+  function hmStage2(ctx, item, m){
+    hmStats.stage2++;
+    var pre = m.blobs ? Promise.resolve(m) : hmStage1(ctx, item).then(function(f){ if (f.none) return f; m.blobs = f.blobs; m.idxSha = f.idxSha; return m; });
+    return pre.then(function(m1){
+      if (m1.none) return m1;
+      var chain = Promise.resolve();
+      if (ctx.mode === 'aula' && m1.idxSha && hmBlobIdx[m1.idxSha] == null){
+        chain = chain.then(function(){
+          return hmBlobText(ctx, m1.idxSha).then(function(txt){
+            var st = JSON.parse(txt);
+            hmBlobIdx[m1.idxSha] = Array.isArray(st.layers) ? st.layers.length : 0;
+          }, function(e){ if (!e.hmNone) throw e; hmBlobIdx[m1.idxSha] = 0; });
+        });
+      }
+      (m1.blobs || []).forEach(function(b){
+        if (hmBlobObjs[b.sha]) return;
+        chain = chain.then(function(){
+          if (hmBlobObjs[b.sha]) return;
+          return hmBlobText(ctx, b.sha).then(function(txt){
+            try{ hmBlobObjs[b.sha] = hmCountNode(JSON.parse(txt)); }catch(e){ hmBlobObjs[b.sha] = { o: 0, n: 0, bad: true }; }
+          }, function(e){ if (!e.hmNone) throw e; hmBlobObjs[b.sha] = { o: 0, n: 0, bad: true }; });
+        });
+      });
+      return chain.then(function(){ hmTryFinish(ctx, m1); return m1; });
+    });
+  }
+
+  // ---- Orquestación por fila ----
+  function hmAfterMetrics(ctx, item){
+    if (ctx !== hmCtx) return;
+    hmRenderRow(ctx, item);
+    var newer = ctx.items[item.i - 1]; if (newer) hmRenderRow(ctx, newer);
+    ctx.dirtyLayout = true; hmSoonLayout(ctx);
+    hmUpdateSummary(ctx);
+  }
+  function hmCompute(ctx, item, level){
+    if (item.busy){ var again = function(){ return hmCompute(ctx, item, level); }; return item.busy.then(again, again); }
+    var key = hmKey(ctx, item.sha);
+    if (!item.m && hmMem[key]){ item.m = hmMem[key]; hmStats.cacheHits++; }
+    var m = item.m;
+    if (m && !m.none && m.o == null && m.blobs) hmTryFinish(ctx, m);
+    var need1 = !m, need2 = level >= 2 && !!m && !m.none && m.o == null;
+    if (!need1 && !need2) return Promise.resolve(m);
+    item.err = null;
+    var p = Promise.resolve().then(function(){
+      return need1 ? hmStage1(ctx, item) : m;
+    }).then(function(m1){
+      if (need1){ hmMem[key] = m1; item.m = m1; hmAfterMetrics(ctx, item); }
+      if (level >= 2 && !m1.none && m1.o == null) return hmStage2(ctx, item, m1);
+      return m1;
+    }).then(function(m2){
+      hmMem[key] = m2; item.m = m2;
+      return m2;
+    }).catch(function(err){
+      if (err && err.hmNone && !item.m){ item.m = { none: true }; hmMem[key] = item.m; return item.m; }
+      if (err && err.hmNone){ return item.m; }
+      throw err;
+    });
+    item.busy = p;
+    hmRenderRow(ctx, item);
+    return p.then(function(r){ item.busy = null; hmSsSave(); hmAfterMetrics(ctx, item); return r; }, function(err){
+      item.busy = null;
+      if (err && err.name === 'AbortError'){ hmAfterMetrics(ctx, item); throw err; }
+      if (!(err && err.ghKind === 'ratelimit')) item.err = err;
+      hmAfterMetrics(ctx, item);
+      throw err;
+    });
+  }
+
+  // ---- Cola con pausa ante límite ----
+  function hmEnqueue(ctx, item, level){
+    if (item.q >= level) return;
+    item.q = level;
+    ctx.queue.push({ item: item, level: level });
+    hmPump(ctx);
+  }
+  function hmPump(ctx){
+    if (ctx !== hmCtx) return;
+    if (ctx.paused) return;
+    if (ctx.queue.length && typeof ghCooldownUntil === 'number' && ghCooldownUntil - Date.now() > 250){ hmPause(ctx, ghCooldownUntil - Date.now()); return; }
+    while (ctx.active < ctx.par && ctx.queue.length){
+      var job = ctx.queue.shift(); ctx.active++;
+      (function(job){
+        hmCompute(ctx, job.item, job.level).then(function(){ hmJobDone(ctx, job, false); }, function(err){
+          if (err && err.ghKind === 'ratelimit'){ ctx.queue.unshift(job); ctx.active--; hmPause(ctx, err.waitMs || (typeof ghCooldownUntil === 'number' ? ghCooldownUntil - Date.now() : 0) || 30000); return; }
+          if (err && err.name === 'AbortError'){ job.item.q = 0; ctx.active--; hmProgress(ctx); hmPump(ctx); return; }
+          hmJobDone(ctx, job, true);
+        });
+      })(job);
+    }
+    if (!ctx.active && !ctx.queue.length) hmIdle(ctx);
+  }
+  function hmJobDone(ctx, job, failed){
+    job.item.q = 0; ctx.active--;
+    if (ctx.bulk){ ctx.bulk.done++; if (failed) ctx.bulk.fail++; }
+    hmProgress(ctx);
+    hmPump(ctx);
+  }
+  function hmPause(ctx, waitMs){
+    if (ctx !== hmCtx) return;
+    var until = Date.now() + Math.max(1000, waitMs || 0);
+    ctx.paused = { until: until };
+    if (ctx.pauseTimer) clearInterval(ctx.pauseTimer);
+    function paint(){
+      var left = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+      var st = ctx.el && ctx.el.status;
+      if (st) st.textContent = 'Límite de GitHub, reintenta en ' + left + ' s…';
+      if (left <= 0){
+        clearInterval(ctx.pauseTimer); ctx.pauseTimer = null; ctx.paused = null;
+        if (st) st.textContent = '';
+        hmPump(ctx);
+      }
+    }
+    paint();
+    if (ctx.paused) ctx.pauseTimer = setInterval(paint, ghOpt('__ghTickMs', 1000));
+  }
+  function hmIdle(ctx){
+    if (ctx.bulk){
+      var b = ctx.bulk; ctx.bulk = null;
+      if (ctx.el && ctx.el.progress) ctx.el.progress.classList.remove('on');
+      if (ctx.el && ctx.el.status && !ctx.paused) ctx.el.status.textContent = b.fail ? ('No se pudo calcular ' + b.fail + ' de ' + b.total + ' versiones (use ↻ en cada fila).') : '';
+      var cb = ctx.afterBulk; ctx.afterBulk = null; if (cb) cb();
+    }
+    hmUpdateSummary(ctx);
+    hmSoonVisible(ctx);
+  }
+  function hmProgress(ctx){
+    if (!ctx.el || !ctx.el.progress) return;
+    var b = ctx.bulk;
+    if (!b){ ctx.el.progress.classList.remove('on'); return; }
+    ctx.el.progress.classList.add('on');
+    ctx.el.progressBar.style.width = (b.total ? Math.round(100 * b.done / b.total) : 100) + '%';
+    ctx.el.progressText.textContent = b.label + ' ' + b.done + '/' + b.total;
+  }
+  function hmBulk(ctx, level, label, filter){
+    if (ctx.bulk) return;
+    var jobs = ctx.items.filter(filter);
+    if (!jobs.length){ if (ctx.afterBulk){ var cb = ctx.afterBulk; ctx.afterBulk = null; cb(); } return; }
+    ctx.bulk = { total: jobs.length, done: 0, fail: 0, label: label };
+    if (ctx.el.status && !ctx.paused) ctx.el.status.textContent = '';
+    jobs.forEach(function(it){ it.err = null; });
+    jobs.forEach(function(it){ hmEnqueue(ctx, it, level); });
+    hmProgress(ctx);
+  }
+  function hmCancel(ctx){
+    ctx.queue.forEach(function(j){ j.item.q = 0; });
+    ctx.queue.length = 0; ctx.afterBulk = null;
+    try{ ctx.ac.abort(); }catch(e){}
+    try{ ctx.ac = (typeof AbortController === 'function') ? new AbortController() : null; }catch(e){ ctx.ac = null; }
+    if (ctx.pauseTimer){ clearInterval(ctx.pauseTimer); ctx.pauseTimer = null; }
+    ctx.paused = null;
+    ctx.bulk = null;   // los trabajos en vuelo terminan solos (AbortError)
+    if (ctx.el.status) ctx.el.status.textContent = 'Cálculo cancelado.';
+    hmProgress(ctx);
+  }
+
+  // ---- Filas visibles (carga perezosa) ----
+  function hmNeeds(it){ return !it.m && !it.busy && !it.err && !it.q; }
+  function hmSoonVisible(ctx){
+    if (ctx !== hmCtx || ctx.visTimer) return;
+    ctx.visTimer = setTimeout(function(){ ctx.visTimer = null; hmVisibleBatch(ctx); }, ghOpt('__hmVisDelayMs', 120));
+  }
+  function hmVisibleBatch(ctx){
+    if (ctx !== hmCtx || ctx.paused || ctx.bulk || ctx.queue.length || ctx.active) return;
+    var picked = [];
+    function add(it){ if (it && picked.length < HM_BATCH && picked.indexOf(it) < 0 && hmNeeds(it)) picked.push(it); }
+    for (var i = 0; i < ctx.items.length && picked.length < HM_BATCH; i++){
+      var it = ctx.items[i];
+      if (!it.vis || !hmNeeds(it)) continue;
+      add(it); add(ctx.items[i + 1]);   // la anterior (más antigua) sirve para calcular el cambio
+    }
+    picked.forEach(function(it){ hmEnqueue(ctx, it, 1); });
+  }
+
+  // ---- Presentación ----
+  function hmInfo(ctx, item){
+    var i = item.i, older = ctx.items[i + 1] || null, newer = i > 0 ? ctx.items[i - 1] : null, m = item.m;
+    var ok = !!m && !m.none;
+    var prev = older && older.m && !older.m.none ? older.m : null;
+    return {
+      m: ok ? m : null,
+      delta: ok ? hmDelta(m, prev) : null,
+      empty: ok && hmNearEmpty(m),
+      drop: ok && !!prev && hmIsDrop(m, prev),
+      lastGood: ok && !!newer && !!newer.m && hmIsDrop(newer.m, m),
+      hasOlder: !!older
+    };
+  }
+  function hmDeltaChip(inf){
+    var d = inf.delta;
+    if (!d){
+      if (!inf.hasOlder) return '';
+      return '<span class="hm-chip hm-flat" title="Falta calcular la versión anterior para comparar">Δ …</span>';
+    }
+    var parts = [];
+    if (d.dO != null && d.dO !== 0) parts.push(hmSigned(d.dO, String) + (Math.abs(d.dO) === 1 ? ' objeto' : ' objetos'));
+    if (d.dB !== 0) parts.push(hmSigned(d.dB, hmFmtBytes));
+    var txt = parts.length ? parts.join(' · ') : 'sin cambios';
+    return '<span class="hm-chip hm-' + d.kind + '" data-hm="delta" title="Cambio respecto de la versión anterior (más antigua)">' + (d.drop ? '▼ ' : (d.kind === 'up' ? '▲ ' : '')) + escapeHtmlText(txt) + '</span>';
+  }
+  function hmChipsHtml(ctx, item){
+    var m = item.m, h = '';
+    if (m && m.none){
+      h += '<span class="hm-chip hm-na" title="Esta versión no tiene datos en el formato actual (archivo ausente o formato anterior).">—</span>';
+    } else if (m){
+      var inf = hmInfo(ctx, item);
+      h += '<span class="hm-chip hm-size" data-hm="size" title="Tamaño total de ' + (ctx.mode === 'layer' ? 'esta capa' : 'índice + archivos de capa') + (m.p ? ' (parcial: el árbol de GitHub vino truncado)' : '') + '">' + (m.p ? '≥ ' : '') + hmFmtBytes(m.b) + '</span>';
+      h += m.l != null ? '<span class="hm-chip" data-hm="layers">' + m.l + (m.l === 1 ? ' capa' : ' capas') + '</span>'
+                       : '<span class="hm-chip hm-muted hm-more" data-hm="more" title="Capas y objetos se calculan bajo demanda (abra el detalle o use «Calcular contenido»)">capas —</span>';
+      h += m.o != null ? '<span class="hm-chip" data-hm="objs">' + m.o + (m.o === 1 ? ' objeto' : ' objetos') + '</span>'
+                       : '<span class="hm-chip hm-muted hm-more" data-hm="more" title="Capas y objetos se calculan bajo demanda (abra el detalle o use «Calcular contenido»)">objetos —</span>';
+      h += hmDeltaChip(inf);
+      if (inf.empty) h += '<span class="hm-badge empty" data-hm="empty" title="Esta versión tiene muy poco contenido">⚠ casi vacía</span>';
+      if (ctx.highlight){
+        if (inf.drop) h += '<span class="hm-badge drop" data-hm="drop">Caída aquí</span>';
+        if (inf.lastGood) h += '<span class="hm-badge good" data-hm="good">Última con contenido</span>';
+      }
+    } else if (!item.busy && !item.err){
+      h += '<span class="hm-chip hm-muted" title="Se calcula al hacerse visible o con «Calcular tamaños»">sin calcular</span>';
+    }
+    if (item.busy) h += '<span class="hm-chip hm-load" data-hm="busy">calculando…</span>';
+    if (item.err) h += '<button type="button" class="hm-chip hm-retry" data-hm="retry" title="' + escapeHtmlText(ghErrorText(item.err)) + ' — pulse para reintentar">↻</button>';
+    return h;
+  }
+  function hmDetailHtml(ctx, item){
+    var m = item.m;
+    if (!m) return 'Sin datos todavía.';
+    if (m.none) return 'Esta versión no contiene datos en el formato actual.';
+    var h = '<div><b>Versión</b> ' + escapeHtmlText(String(item.sha).slice(0, 7)) + ' · ' + escapeHtmlText(hmFmtAbs(item.date)) + '</div>';
+    if (ctx.mode === 'aula'){
+      h += '<div><b>Índice</b> ' + hmFmtBytes(m.ib) + ' · <b>' + m.f + '</b> archivo' + (m.f === 1 ? '' : 's') + ' de capa (' + hmFmtBytes(m.cb) + ')</div>';
+      if (m.blobs && m.blobs.length){
+        var big = m.blobs.slice().sort(function(a, b){ return b.size - a.size; })[0];
+        h += '<div><b>Archivo de capa más grande</b> ' + escapeHtmlText(big.id) + ' (' + hmFmtBytes(big.size) + ')</div>';
+      }
+    } else {
+      h += '<div><b>Archivo de la capa</b> ' + hmFmtBytes(m.b) + '</div>';
+    }
+    h += '<div><b>Capas</b> ' + (m.l != null ? m.l : '—') + ' · <b>Objetos</b> ' + (m.o != null ? m.o : (item.busy ? 'calculando…' : '—')) + '</div>';
+    if (m.p) h += '<div>Árbol truncado en GitHub: los valores son parciales.</div>';
+    return h;
+  }
+  function hmRenderRow(ctx, item){
+    if (!item.el || ctx !== hmCtx) return;
+    var chips = item.el.querySelector('.hm-chips');
+    if (chips) chips.innerHTML = hmChipsHtml(ctx, item);
+    var inf = hmInfo(ctx, item);
+    item.el.classList.toggle('hm-drop', !!inf.drop);
+    item.el.classList.toggle('hm-lastgood', !!inf.lastGood);
+    item.el.classList.toggle('hm-emptyrow', !!inf.empty);
+    var det = item.el.querySelector('.hm-detail');
+    if (det && item.el.classList.contains('open')) det.innerHTML = hmDetailHtml(ctx, item);
+  }
+  function hmRowEl(ctx, item){
+    var c = item.c;
+    var el = document.createElement('div');
+    el.className = 'history-item hm-row';
+    el.setAttribute('data-sha', item.sha);
+    var text = document.createElement('div');
+    text.className = 'history-item-text';
+    text.innerHTML = '<div class="history-item-date">' + escapeHtmlText(hmFmtAbs(item.date)) + '<span class="hm-rel">' + escapeHtmlText(hmFmtRel(item.ms)) + '</span></div>' +
+      '<div class="history-item-msg">' + escapeHtmlText(c.commit.message) + '</div><div class="hm-chips"></div><div class="hm-detail"></div>';
+    var acts = document.createElement('div');
+    acts.className = 'hm-actions';
+    var btn = document.createElement('button');
+    btn.className = 'outline-btn';
+    btn.textContent = 'Restaurar';
+    btn.addEventListener('click', function(){ ctx.spec.restore(c); });
+    var exp = document.createElement('button');
+    exp.className = 'outline-btn hm-exp';
+    exp.type = 'button';
+    exp.setAttribute('aria-expanded', 'false');
+    exp.textContent = 'Detalle ▾';
+    exp.addEventListener('click', function(){ hmToggleDetail(ctx, item); });
+    acts.appendChild(btn); acts.appendChild(exp);
+    el.appendChild(text); el.appendChild(acts);
+    text.addEventListener('click', function(ev){
+      var t = ev.target && ev.target.closest ? ev.target.closest('[data-hm]') : null;
+      if (!t) return;
+      var k = t.getAttribute('data-hm');
+      if (k === 'retry'){ item.err = null; hmRenderRow(ctx, item); hmEnqueue(ctx, item, item.m ? 2 : 1); }
+      else if (k === 'more') hmToggleDetail(ctx, item, true);
+    });
+    el.__hm = item;
+    return el;
+  }
+  function hmToggleDetail(ctx, item, forceOpen){
+    var open = forceOpen ? true : !item.el.classList.contains('open');
+    item.el.classList.toggle('open', open);
+    var b = item.el.querySelector('.hm-exp'); if (b){ b.setAttribute('aria-expanded', open ? 'true' : 'false'); b.textContent = open ? 'Detalle ▴' : 'Detalle ▾'; }
+    if (open){
+      item.err = null;
+      hmEnqueue(ctx, item, 2);
+      var older = ctx.items[item.i + 1]; if (older) hmEnqueue(ctx, older, 2);   // para comparar objetos
+    }
+    hmRenderRow(ctx, item);
+  }
+
+  // ---- Disposición: grupos de sincronizaciones similares ----
+  function hmSoonLayout(ctx){
+    if (ctx.layoutTimer) return;
+    ctx.layoutTimer = setTimeout(function(){
+      ctx.layoutTimer = null;
+      if (ctx === hmCtx && ctx.dirtyLayout){ ctx.dirtyLayout = false; if (ctx.collapse) hmLayout(ctx); }
+    }, ghOpt('__hmLayoutDelayMs', 150));
+  }
+  function hmGroupRuns(ctx){
+    var runs = [], cur = null;
+    ctx.items.forEach(function(it, i){
+      if (cur && hmSimilar(it.m, cur[cur.length - 1].m)) cur.push(it);
+      else { cur = [it]; runs.push(cur); }
+    });
+    return runs;
+  }
+  function hmLayout(ctx){
+    if (ctx !== hmCtx || !ctx.el) return;
+    var host = ctx.el.rows;
+    host.textContent = '';
+    host.classList.toggle('hm-hl', !!ctx.highlight);
+    ctx.groups = 0;
+    var frag = document.createDocumentFragment();
+    if (!ctx.collapse){
+      ctx.items.forEach(function(it){ frag.appendChild(it.el); });
+    } else {
+      hmGroupRuns(ctx).forEach(function(run){
+        if (run.length < 2){ frag.appendChild(run[0].el); return; }
+        ctx.groups++;
+        var key = run[0].sha, open = !!ctx.openGroups[key];
+        var g = document.createElement('div');
+        g.className = 'hm-group' + (open ? ' open' : '');
+        g.setAttribute('data-group', key);
+        var head = document.createElement('div');
+        head.className = 'hm-ghead';
+        var first = run[0], last = run[run.length - 1];
+        var badges = '';
+        var anyEmpty = run.some(function(it){ return hmInfo(ctx, it).empty; });
+        var anyDrop = run.some(function(it){ return hmInfo(ctx, it).drop; });
+        var anyGood = run.some(function(it){ return hmInfo(ctx, it).lastGood; });
+        if (anyEmpty) badges += '<span class="hm-badge empty">⚠ casi vacía</span>';
+        if (ctx.highlight && anyDrop) badges += '<span class="hm-badge drop">Caída aquí</span>';
+        if (ctx.highlight && anyGood) badges += '<span class="hm-badge good">Última con contenido</span>';
+        var dchip = hmDeltaChip(hmInfo(ctx, last));
+        head.innerHTML = '<div class="history-item-text"><div class="hm-gtitle">' + run.length + ' sincronizaciones similares</div>' +
+          '<div class="history-item-msg">' + escapeHtmlText(hmFmtClock(last.date)) + ' – ' + escapeHtmlText(hmFmtClock(first.date)) + ' · ' + escapeHtmlText(hmFmtDay(first.date)) + '</div>' +
+          '<div class="hm-chips"><span class="hm-chip hm-size">' + hmFmtBytes(first.m.b) + '</span>' +
+          (first.m.l != null ? '<span class="hm-chip">' + first.m.l + ' capas</span>' : '') + (first.m.o != null ? '<span class="hm-chip">' + first.m.o + ' objetos</span>' : '') + dchip + badges + '</div></div>' +
+          '<button type="button" class="outline-btn hm-gtoggle" aria-expanded="' + (open ? 'true' : 'false') + '">' + (open ? 'Ocultar ▴' : 'Ver ▾') + '</button>';
+        head.addEventListener('click', function(){
+          ctx.openGroups[key] = !ctx.openGroups[key];
+          g.classList.toggle('open', !!ctx.openGroups[key]);
+          var tb = head.querySelector('.hm-gtoggle'); tb.setAttribute('aria-expanded', ctx.openGroups[key] ? 'true' : 'false'); tb.textContent = ctx.openGroups[key] ? 'Ocultar ▴' : 'Ver ▾';
+        });
+        var body = document.createElement('div');
+        body.className = 'hm-gbody';
+        run.forEach(function(it){ body.appendChild(it.el); });
+        g.appendChild(head); g.appendChild(body);
+        frag.appendChild(g);
+      });
+    }
+    host.appendChild(frag);
+    hmObserveAll(ctx);
+    hmUpdateSummary(ctx);
+  }
+  function hmObserveAll(ctx){
+    if (!ctx.io) return;
+    ctx.items.forEach(function(it){ if (!it.observed){ it.observed = true; try{ ctx.io.observe(it.el); }catch(e){} } });
+  }
+  function hmUpdateSummary(ctx){
+    if (ctx !== hmCtx || !ctx.el || !ctx.el.summary) return;
+    var withM = 0, drops = 0;
+    ctx.items.forEach(function(it){ if (it.m && !it.m.none) withM++; if (hmInfo(ctx, it).drop) drops++; });
+    ctx.el.summary.textContent = ctx.items.length + ' versiones cargadas · ' + withM + ' con tamaño' + (drops ? ' · ' + drops + (drops === 1 ? ' caída detectada' : ' caídas detectadas') : '') + (ctx.groups ? ' · ' + ctx.groups + (ctx.groups === 1 ? ' grupo' : ' grupos') + ' de similares' : '');
+  }
+  function hmGoto(ctx){
+    if (ctx.bulk){ ctx.afterBulk = function(){ hmGoto2(ctx); }; return; }
+    var target = null;
+    for (var i = 0; i < ctx.items.length; i++){
+      var inf = hmInfo(ctx, ctx.items[i]);
+      if (inf.drop && ctx.items[i + 1]){ target = ctx.items[i + 1]; break; }
+    }
+    if (!target){
+      var pending = ctx.items.some(function(it){ return !it.m && !it.err; });
+      if (pending && !ctx.bulk){
+        ctx.afterBulk = function(){ hmGoto2(ctx); };
+        hmBulk(ctx, 1, 'Buscando caídas', function(it){ return !it.m; });
+        return;
+      }
+      hmGoto2(ctx); return;
+    }
+    hmFocusItem(ctx, target);
+  }
+  function hmGoto2(ctx){
+    if (ctx !== hmCtx) return;
+    for (var i = 0; i < ctx.items.length; i++){
+      if (hmInfo(ctx, ctx.items[i]).drop && ctx.items[i + 1]){ hmFocusItem(ctx, ctx.items[i + 1]); return; }
+    }
+    if (ctx.el.status) ctx.el.status.textContent = 'No se detectaron caídas bruscas en las ' + ctx.items.length + ' versiones cargadas' + (ctx.hasMore ? ' (cargue más antiguas para seguir buscando).' : '.');
+  }
+  function hmFocusItem(ctx, item){
+    if (ctx.el.status) ctx.el.status.textContent = '';
+    if (ctx.collapse){
+      var g = item.el.closest ? item.el.closest('.hm-group') : null;
+      if (g){ ctx.openGroups[g.getAttribute('data-group')] = true; hmLayout(ctx); }
+    }
+    ctx.focusSha = item.sha;
+    item.el.classList.add('hm-flash');
+    if (typeof item.el.scrollIntoView === 'function'){ try{ item.el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }catch(e){ item.el.scrollIntoView(); } }
+    setTimeout(function(){ item.el.classList.remove('hm-flash'); }, ghOpt('__hmFlashMs', 2500));
+  }
+
+  function hmDispose(){
+    var c = hmCtx; if (!c) return;
+    hmCtx = null;
+    try{ if (c.ac) c.ac.abort(); }catch(e){}
+    if (c.io){ try{ c.io.disconnect(); }catch(e){} }
+    [c.visTimer, c.layoutTimer].forEach(function(t){ if (t) clearTimeout(t); });
+    if (c.pauseTimer) clearInterval(c.pauseTimer);
+  }
+
+  function hmBuildToolbar(ctx, list){
+    list.innerHTML = '';
+    var tb = document.createElement('div');
+    tb.className = 'hm-toolbar'; tb.id = 'hm-toolbar';
+    tb.innerHTML =
+      '<div class="hm-tb-row">' +
+        '<button type="button" class="outline-btn hm-btn" id="hm-calc-sizes" title="Consulta el tamaño de todas las versiones cargadas (1 petición por versión)">Calcular tamaños</button>' +
+        '<button type="button" class="outline-btn hm-btn" id="hm-calc-content" title="Calcula capas y objetos de todas las versiones cargadas (descarga archivos; los que no cambiaron se reutilizan)">Calcular contenido</button>' +
+        '<button type="button" class="outline-btn hm-btn" id="hm-goto-good" title="Salta a la versión más reciente que aún tenía contenido antes de una caída brusca">⏮ Ir a la última versión con contenido</button>' +
+      '</div>' +
+      '<div class="hm-tb-row hm-opts">' +
+        '<label><input type="checkbox" id="hm-opt-highlight" checked> Resaltar caídas</label>' +
+        '<label><input type="checkbox" id="hm-opt-collapse"> Ocultar versiones casi idénticas</label>' +
+      '</div>' +
+      '<div class="hm-progress" id="hm-progress"><div class="hm-bar"><i id="hm-progress-bar"></i></div><span id="hm-progress-text"></span><button type="button" class="outline-btn hm-btn" id="hm-cancel">Cancelar</button></div>' +
+      '<div class="hm-status" id="hm-status" role="status" aria-live="polite"></div>' +
+      '<div class="hm-summary" id="hm-summary"></div>';
+    var rows = document.createElement('div');
+    rows.className = 'hm-rows hm-hl'; rows.id = 'hm-rows';
+    list.appendChild(tb); list.appendChild(rows);
+    ctx.el = { list: list, toolbar: tb, rows: rows, status: tb.querySelector('#hm-status'), progress: tb.querySelector('#hm-progress'),
+               progressBar: tb.querySelector('#hm-progress-bar'), progressText: tb.querySelector('#hm-progress-text'), summary: tb.querySelector('#hm-summary') };
+    tb.querySelector('#hm-calc-sizes').addEventListener('click', function(){ hmBulk(ctx, 1, 'Calculando tamaños', function(it){ return !it.m; }); });
+    tb.querySelector('#hm-calc-content').addEventListener('click', function(){ hmBulk(ctx, 2, 'Calculando contenido', function(it){ return !it.m || (!it.m.none && it.m.o == null); }); });
+    tb.querySelector('#hm-goto-good').addEventListener('click', function(){ hmGoto(ctx); });
+    tb.querySelector('#hm-cancel').addEventListener('click', function(){ hmCancel(ctx); });
+    tb.querySelector('#hm-opt-highlight').addEventListener('change', function(ev){
+      ctx.highlight = !!ev.target.checked; rows.classList.toggle('hm-hl', ctx.highlight);
+      ctx.items.forEach(function(it){ hmRenderRow(ctx, it); }); if (ctx.collapse) hmLayout(ctx);
+    });
+    tb.querySelector('#hm-opt-collapse').addEventListener('change', function(ev){ ctx.collapse = !!ev.target.checked; hmLayout(ctx); });
+  }
+
+  function hmNewCtx(spec){
+    hmSsLoad();
+    var ctx = { spec: spec, mode: spec.mode, path: spec.metricsPath || spec.path, layerId: spec.layerId || null, items: [], queue: [], active: 0, par: ghOpt('__hmParallel', 3),
+                paused: null, bulk: null, highlight: true, collapse: false, openGroups: {}, groups: 0, hasMore: false, page: 0, ac: null };
+    try{ ctx.ac = (typeof AbortController === 'function') ? new AbortController() : null; }catch(e){}
+    try{
+      if (typeof IntersectionObserver === 'function'){
+        ctx.io = new IntersectionObserver(function(entries){
+          entries.forEach(function(e){ var it = e.target.__hm; if (it) it.vis = e.isIntersecting; });
+          hmSoonVisible(ctx);
+        }, { root: document.getElementById('history-list'), rootMargin: '80px' });
+      }
+    }catch(e){ ctx.io = null; }
+    return ctx;
+  }
+  function hmAppendCommits(ctx, commits){
+    commits.forEach(function(c){
+      var date = (c.commit && c.commit.author && c.commit.author.date) || (c.commit && c.commit.committer && c.commit.committer.date) || '';
+      var item = { c: c, sha: c.sha, treeSha: c.commit && c.commit.tree && c.commit.tree.sha, date: date, ms: Date.parse(date) || Date.now(), i: ctx.items.length, m: null, busy: null, err: null, q: 0, vis: false, observed: false };
+      item.el = hmRowEl(ctx, item);
+      ctx.items.push(item);
+      var key = hmKey(ctx, item.sha);
+      if (hmMem[key]){ item.m = hmMem[key]; hmStats.cacheHits++; }
+    });
+    hmLayout(ctx);
+    ctx.items.forEach(function(it){ hmRenderRow(ctx, it); });
+    if (!ctx.io){ ctx.items.slice(0, 8).forEach(function(it){ it.vis = true; }); hmSoonVisible(ctx); }
+  }
+
+  // Carga una página de commits (historial de la estructura o de una capa) y construye/amplía la lista con métricas.
+  function hmLoadPage(spec, page){
     page = page || 1;
-    if (!githubConfigured()){ alert('Configure primero la sincronización con GitHub.'); return; }
-    if (page === 1) openHistoryScrim('Historial de la estructura (capas, nombres, orden, vista)');
     var list = document.getElementById('history-list');
     var loadMoreBtn = document.getElementById('history-load-more-btn');
     if (loadMoreBtn) loadMoreBtn.remove();
-    if (page === 1) list.innerHTML = '<div class="history-empty">Cargando…</div>';
-    fetch('https://api.github.com/repos/' + githubConfig.repo + '/commits?path=' + encodeURIComponent(githubIndexPath()) + '&per_page=100&page=' + page, {
-      headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
+    var ctx;
+    if (page === 1){
+      openHistoryScrim(spec.title);
+      ctx = hmCtx = hmNewCtx(spec);
+      list.innerHTML = '<div class="history-empty">Cargando…</div>';
+    } else {
+      ctx = hmCtx;
+      if (!ctx || ctx.spec !== spec) return;
+    }
+    githubFetch('https://api.github.com/repos/' + githubConfig.repo + '/commits?path=' + encodeURIComponent(spec.path) + '&per_page=100&page=' + page, {
+      headers: githubAuthHeaders()
     }).then(function(res){
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) throw ghHttpError(res);
       var hasMore = (res.headers.get('Link') || '').indexOf('rel="next"') !== -1;
       return res.json().then(function(commits){ return { commits: commits, hasMore: hasMore }; });
     }).then(function(result){
+      if (ctx !== hmCtx) return;
       var commits = result.commits;
-      if (page === 1) list.innerHTML = '';
-      if (page === 1 && !commits.length){
-        list.innerHTML = '<div class="history-empty">Todavía no hay sincronizaciones guardadas en GitHub.</div>';
-        return;
-      }
-      commits.forEach(function(c){
-        var item = document.createElement('div');
-        item.className = 'history-item';
-        var text = document.createElement('div');
-        text.className = 'history-item-text';
-        text.innerHTML = '<div class="history-item-date">' + formatHistoryDate(c.commit.author.date) + '</div><div class="history-item-msg">' + escapeHtmlText(c.commit.message) + '</div>';
-        var btn = document.createElement('button');
-        btn.className = 'outline-btn';
-        btn.textContent = 'Restaurar';
-        btn.addEventListener('click', function(){ githubRestoreCommit(c.sha, formatHistoryDate(c.commit.author.date)); });
-        item.appendChild(text);
-        item.appendChild(btn);
-        list.appendChild(item);
-      });
+      if (page === 1 && !commits.length){ list.innerHTML = '<div class="history-empty">' + spec.empty + '</div>'; return; }
+      if (page === 1) hmBuildToolbar(ctx, list);
+      ctx.page = page; ctx.hasMore = result.hasMore;
+      hmAppendCommits(ctx, commits);
       if (result.hasMore){
         var more = document.createElement('button');
         more.className = 'outline-btn';
         more.id = 'history-load-more-btn';
         more.style.cssText = 'width:100%;margin-top:4px;';
         more.textContent = 'Cargar sincronizaciones más antiguas…';
-        more.addEventListener('click', function(){ githubFetchHistory(page + 1); });
+        more.addEventListener('click', function(){ hmLoadPage(spec, page + 1); });
         list.appendChild(more);
       }
+      hmUpdateSummary(ctx);
     }).catch(function(err){
-      list.innerHTML = '<div class="history-empty">No se pudo cargar el historial: ' + escapeHtmlText(err.message) + '</div>';
+      if (ctx !== hmCtx) return;
+      var msg = '<div class="history-empty">No se pudo cargar el historial: ' + escapeHtmlText(ghErrorText(err)) + '</div>';
+      if (page === 1) list.innerHTML = msg; else list.insertAdjacentHTML('beforeend', msg);
     });
+  }
+
+  // Resumen de métricas para el diálogo de restauración: "Esta versión: …; la actual: …".
+  function hmRestoreSummary(sha){
+    var ctx = hmCtx;
+    if (!ctx || !ctx.items.length) return null;
+    var it = null; ctx.items.forEach(function(x){ if (x.sha === sha) it = x; });
+    var cur = ctx.items[0];
+    if (!it) return null;
+    function text(){
+      return 'Esta versión: ' + ((it.err || it.dlgFail) && !it.m ? 'no disponible' : hmFmtMetrics(it.m)) + '; la actual: ' + ((cur.err || cur.dlgFail) && !cur.m ? 'no disponible' : hmFmtMetrics(cur.m)) + '.';
+    }
+    function complete(x){ return x.m && (x.m.none || x.m.o != null); }
+    return { text: text, ctx: ctx, items: it === cur ? [it] : [it, cur], done: function(){ return complete(it) && complete(cur); } };
+  }
+  function hmConfirmRestore(sha, baseMsg, onYes){
+    var s = hmRestoreSummary(sha);
+    if (!s){ showConfirm(baseMsg, onYes); return; }
+    function full(){ return baseMsg + ' ' + s.text(); }
+    showConfirm(full(), onYes);
+    if (s.done()) return;
+    var shown = full();
+    function refresh(){
+      if (s.ctx !== hmCtx) return;
+      if (confirmScrim.classList.contains('show') && confirmMessage.textContent === shown){ shown = full(); confirmMessage.textContent = shown; }
+    }
+    s.items.forEach(function(x){
+      hmCompute(s.ctx, x, 2).then(refresh, function(){ x.dlgFail = true; refresh(); });
+    });
+  }
+
+  function githubFetchHistory(page){
+    page = page || 1;
+    if (!githubConfigured()){ alert('Configure primero la sincronización con GitHub.'); return; }
+    if (page > 1 && hmCtx && hmCtx.spec.mode === 'aula'){ hmLoadPage(hmCtx.spec, page); return; }
+    hmLoadPage({
+      mode: 'aula', title: 'Historial de la estructura (capas, nombres, orden, vista)',
+      path: githubIndexPath(), metricsPath: githubBasePath(),
+      empty: 'Todavía no hay sincronizaciones guardadas en GitHub.',
+      restore: function(c){ githubRestoreCommit(c.sha, formatHistoryDate(c.commit.author.date)); }
+    }, 1);
   }
   document.getElementById('gh-history-btn').addEventListener('click', function(){ githubFetchHistory(1); });
 
   function githubRestoreCommit(sha, dateLabel){
-    showConfirm('¿Restaurar la estructura de capas (nombres, orden, visibilidad, vista) tal como estaba el ' + dateLabel + '? El contenido de cada capa se completa con su versión más reciente — esto no revierte los objetos dibujados dentro de las capas, solo su organización.', function(){
+    hmConfirmRestore(sha, '¿Restaurar la estructura de capas (nombres, orden, visibilidad, vista) tal como estaba el ' + dateLabel + '? El contenido de cada capa se completa con su versión más reciente — esto no revierte los objetos dibujados dentro de las capas, solo su organización.', function(){
       updateSyncStatus('syncing','Restaurando…');
       githubFetchTextAtRef(githubIndexPath(), sha).then(function(rawText){
         var indexState = JSON.parse(rawText);
@@ -4756,55 +6492,17 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   function githubFetchLayerHistory(layerId, layerName, page){
     page = page || 1;
     if (!githubConfigured()){ alert('Configure primero la sincronización con GitHub.'); return; }
-    var path = githubLayerFilePath(layerId);
-    if (page === 1) openHistoryScrim('Historial de la capa "' + layerName + '"');
-    var list = document.getElementById('history-list');
-    var loadMoreBtn = document.getElementById('history-load-more-btn');
-    if (loadMoreBtn) loadMoreBtn.remove();
-    if (page === 1) list.innerHTML = '<div class="history-empty">Cargando…</div>';
-    fetch('https://api.github.com/repos/' + githubConfig.repo + '/commits?path=' + encodeURIComponent(path) + '&per_page=100&page=' + page, {
-      headers: githubAuthHeaders()
-    }).then(function(res){
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      var hasMore = (res.headers.get('Link') || '').indexOf('rel="next"') !== -1;
-      return res.json().then(function(commits){ return { commits: commits, hasMore: hasMore }; });
-    }).then(function(result){
-      var commits = result.commits;
-      if (page === 1) list.innerHTML = '';
-      if (page === 1 && !commits.length){
-        list.innerHTML = '<div class="history-empty">Todavía no hay sincronizaciones guardadas para esta capa.</div>';
-        return;
-      }
-      commits.forEach(function(c){
-        var item = document.createElement('div');
-        item.className = 'history-item';
-        var text = document.createElement('div');
-        text.className = 'history-item-text';
-        text.innerHTML = '<div class="history-item-date">' + formatHistoryDate(c.commit.author.date) + '</div><div class="history-item-msg">' + escapeHtmlText(c.commit.message) + '</div>';
-        var btn = document.createElement('button');
-        btn.className = 'outline-btn';
-        btn.textContent = 'Restaurar';
-        btn.addEventListener('click', function(){ githubRestoreLayerCommit(layerId, layerName, c.sha, formatHistoryDate(c.commit.author.date)); });
-        item.appendChild(text);
-        item.appendChild(btn);
-        list.appendChild(item);
-      });
-      if (result.hasMore){
-        var more = document.createElement('button');
-        more.className = 'outline-btn';
-        more.id = 'history-load-more-btn';
-        more.style.cssText = 'width:100%;margin-top:4px;';
-        more.textContent = 'Cargar sincronizaciones más antiguas…';
-        more.addEventListener('click', function(){ githubFetchLayerHistory(layerId, layerName, page + 1); });
-        list.appendChild(more);
-      }
-    }).catch(function(err){
-      list.innerHTML = '<div class="history-empty">No se pudo cargar el historial: ' + escapeHtmlText(err.message) + '</div>';
-    });
+    if (page > 1 && hmCtx && hmCtx.spec.mode === 'layer' && hmCtx.spec.layerId === layerId){ hmLoadPage(hmCtx.spec, page); return; }
+    hmLoadPage({
+      mode: 'layer', layerId: layerId, title: 'Historial de la capa "' + layerName + '"',
+      path: githubLayerFilePath(layerId),
+      empty: 'Todavía no hay sincronizaciones guardadas para esta capa.',
+      restore: function(c){ githubRestoreLayerCommit(layerId, layerName, c.sha, formatHistoryDate(c.commit.author.date)); }
+    }, 1);
   }
 
   function githubRestoreLayerCommit(layerId, layerName, sha, dateLabel){
-    showConfirm('¿Reemplazar el contenido de la capa "' + layerName + '" por la versión del ' + dateLabel + '? Las demás capas no se ven afectadas.', function(){
+    hmConfirmRestore(sha, '¿Reemplazar el contenido de la capa "' + layerName + '" por la versión del ' + dateLabel + '? Las demás capas no se ven afectadas.', function(){
       updateSyncStatus('syncing','Restaurando capa…');
       githubFetchTextAtRef(githubLayerFilePath(layerId), sha).then(function(rawText){
         var node = JSON.parse(rawText);
@@ -4852,14 +6550,38 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     loadDireccionBroadcastPanel();
   });
 
-  document.getElementById('gh-push-btn').addEventListener('click', function(){
-    githubPush().then(function(ok){
-      if (!ok){
-        var statusEl = document.getElementById('gh-status');
-        alert('No se pudo subir los cambios a GitHub.\n\n' + (statusEl ? statusEl.textContent : 'Error desconocido') + '\n\nSus cambios siguen guardados en este navegador; puede volver a intentar "Subir cambios" más tarde, pero no cierre ni recargue la página mientras tanto para no perderlos.');
+  // "Subir cambios": si falla por algo transitorio (red, límite de GitHub, servidor) NO se bloquea con un alert: aviso no
+  // bloqueante y reintento automático (hasta 3 veces, con espera creciente). Sólo tras agotar los reintentos, o ante un
+  // fallo no transitorio (token, permisos), se muestra el alert. Los cambios siguen guardados en este navegador en todo momento.
+  var ghPushRetryTimer = null, ghPushRetryN = 0;
+  var GH_PUSH_AUTO_RETRIES = 3;
+  var GH_PUSH_LOCAL_NOTE = 'Sus cambios siguen guardados en este navegador; puede volver a intentar "Subir cambios" más tarde, pero no cierre ni recargue la página mientras tanto para no perderlos.';
+  function ghCancelPushRetry(){ if (ghPushRetryTimer){ clearTimeout(ghPushRetryTimer); ghPushRetryTimer = null; } }
+  function ghManualPush(){
+    ghCancelPushRetry();
+    return githubPush().then(function(ok){
+      if (ok){ ghPushRetryN = 0; if (ghToastEl && ghToastEl.style.display !== 'none') ghToast('Cambios subidos a GitHub.', 'ok', 4000); return true; }
+      var err = githubLastPushError;
+      var statusEl = document.getElementById('gh-status');
+      var reason = err ? ghErrorText(err) : (statusEl ? statusEl.textContent : 'Error desconocido');
+      if (err && ghIsTransient(err) && ghPushRetryN < GH_PUSH_AUTO_RETRIES){
+        var n = ++ghPushRetryN;
+        var until = Date.now() + Math.round(ghOpt('__ghPushRetryBaseMs', 15000) * Math.pow(2, n - 1) * (0.8 + Math.random() * 0.4));
+        (function step(){
+          var left = until - Date.now();
+          if (left <= 0){ ghPushRetryTimer = null; ghToast('Reintentando subir los cambios (intento ' + (n + 1) + ' de ' + (GH_PUSH_AUTO_RETRIES + 1) + ')…', 'info', 0); ghManualPush(); return; }
+          ghToast('No se pudo subir a GitHub: ' + reason + ' Reintentando automáticamente en ' + Math.ceil(left / 1000) + ' s (intento ' + (n + 1) + ' de ' + (GH_PUSH_AUTO_RETRIES + 1) + '). ' + GH_PUSH_LOCAL_NOTE, 'info', 0);
+          ghPushRetryTimer = setTimeout(step, Math.min(ghOpt('__ghTickMs', 1000), left));
+        })();
+        return false;
       }
+      ghPushRetryN = 0;
+      ghToastHide();
+      alert('No se pudo subir los cambios a GitHub.\n\n' + reason + '\n\n' + GH_PUSH_LOCAL_NOTE);
+      return false;
     });
-  });
+  }
+  document.getElementById('gh-push-btn').addEventListener('click', function(){ ghPushRetryN = 0; ghManualPush(); });
   document.getElementById('gh-pull-btn').addEventListener('click', function(){
     showConfirm('Esto reemplazará lo que ve en pantalla por la última versión guardada en GitHub. ¿Continuar?', function(){ githubPull(true); });
   });
@@ -16352,13 +18074,67 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     return label ? slug(label) : 'ccon-d';
   }
 
+  // Subárbol de una capa: ella misma y todas sus subcapas (cualquier profundidad), en orden de árbol (padre antes que hijos).
+  function layerSubtreeNodes(layerObj){
+    var out = [layerObj];
+    (function walk(id){
+      getChildren(id).forEach(function(c){ out.push(c); walk(c.id); });
+    })(layerObj.id);
+    return out;
+  }
+  // Ruta legible desde la capa raíz del árbol hasta la capa ("Padre / Hijo / Nieto").
+  function layerPathOf(layerObj){
+    var names = [], cur = layerObj, guard = 0;
+    while (cur && guard++ < 64){ names.unshift(cur.name); cur = cur.parentId ? getLayer(cur.parentId) : null; }
+    return names.join(' / ');
+  }
+  // Arma la exportación de la capa activa. Capa sin subcapas: igual que siempre (un FeatureCollection de la capa).
+  // Capa con subcapas: UN FeatureCollection con los objetos de la capa y de TODAS sus subcapas (cada Feature trae
+  // layerId/layerPath) y, en properties.subcapas, el árbol (para poder reimportar la estructura).
+  function buildActiveLayerExport(active){
+    var nodes = layerSubtreeNodes(active);
+    var hasKids = nodes.length > 1;
+    var total = nodes.reduce(function(sum, n){ return sum + n.group.getLayers().length; }, 0);
+    if (total === 0){
+      return { empty: true, message: hasKids ? 'La capa activa y sus subcapas no tienen elementos para exportar.' : 'La capa activa no tiene elementos para exportar.' };
+    }
+    var filename = exportOwnerSlug() + '_' + slug(active.name) + '.geojson';
+    if (!hasKids) return { empty: false, fc: layerToGeoJSON(active), filename: filename, layerCount: 1 };
+    var features = [], entries = [];
+    nodes.forEach(function(n){
+      var sub = layerToGeoJSON(n);
+      var path = layerPathOf(n);
+      sub.features.forEach(function(ft){
+        ft.properties = ft.properties || {};
+        ft.properties.layerId = n.id;
+        ft.properties.layerPath = path;
+        features.push(ft);
+      });
+      entries.push({ id: n.id, name: n.name, path: path, color: n.color, visible: n.visible !== false, expanded: !!n.expanded,
+        parentId: n === active ? null : n.parentId, sortIndex: n.sortIndex, objetos: sub.features.length });
+    });
+    return { empty: false, filename: filename, layerCount: nodes.length, fc: {
+      type: 'FeatureCollection', features: features,
+      properties: { capa: active.name, color: active.color, aula: currentUserLabel(), generado: new Date().toISOString(), incluyeSubcapas: true, subcapas: entries }
+    } };
+  }
+  // Reimporta un FeatureCollection exportado con subcapas como árbol de capas (misma ruta que "todas las capas").
+  function subtreeCollectionToTree(data){
+    var entries = data && data.properties && data.properties.subcapas;
+    if (!Array.isArray(entries) || !entries.length || !Array.isArray(data.features)) return null;
+    if (!data.features.some(function(f){ return f && f.properties && f.properties.layerId; })) return null;
+    return { tipo: 'capas-completas-ccon-d', version: 1, layers: entries.map(function(e){
+      return { id: e.id, name: e.name, color: e.color, visible: e.visible, expanded: e.expanded, parentId: e.parentId || null, sortIndex: e.sortIndex,
+        geojson: { type: 'FeatureCollection', features: data.features.filter(function(f){ return f && f.properties && f.properties.layerId === e.id; }) } };
+    }) };
+  }
+
   document.getElementById('export-active-btn').addEventListener('click', function(){
     var active = getActiveLayer();
-    if (!active || active.group.getLayers().length === 0){
-      alert('La capa activa no tiene elementos para exportar.'); return;
-    }
-    var fc = layerToGeoJSON(active);
-    download(JSON.stringify(fc, null, 2), exportOwnerSlug() + '_' + slug(active.name) + '.geojson', 'application/geo+json');
+    if (!active){ alert('La capa activa no tiene elementos para exportar.'); return; }
+    var res = buildActiveLayerExport(active);
+    if (res.empty){ alert(res.message); return; }
+    download(JSON.stringify(res.fc, null, 2), res.filename, 'application/geo+json');
   });
 
   document.getElementById('export-all-btn').addEventListener('click', function(){
@@ -16643,6 +18419,13 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 
       if (data && data.tipo === 'capas-completas-ccon-d' && Array.isArray(data.layers)){
         importFullLayerTree(data);
+        ev.target.value = '';
+        return;
+      }
+
+      var subTree = subtreeCollectionToTree(data);
+      if (subTree){
+        importFullLayerTree(subTree);
         ev.target.value = '';
         return;
       }
@@ -17127,10 +18910,10 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     });
   }
   function enfoqueDirFetchAula(letra){
-    return fetch(githubContentsUrl(enfoqueDirPath(letra), true), { headers: githubAuthHeaders() })
+    return githubFetch(githubContentsUrl(enfoqueDirPath(letra), true), { headers: githubAuthHeaders() })
       .then(function(res){
         if (res.status === 404) return { status:'empty', images:[] };
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw ghHttpError(res);
         return res.json().then(function(data){
           return resolveFileText(data).then(function(txt){
             var imgs = enfoqueDirParse(JSON.parse(txt));
@@ -17153,7 +18936,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       return enfoqueDirFetchAula(l).then(function(r){
         if (gen === enfoqueDirGen) enfoqueDirCache[l] = { status: r.status, images: r.images, error:'' };
       }, function(err){
-        if (gen === enfoqueDirGen) enfoqueDirCache[l] = { status:'error', images:[], error: (err && err.message) ? err.message : 'Error de red' };
+        if (gen === enfoqueDirGen) enfoqueDirCache[l] = { status:'error', images:[], error: err ? ghErrorText(err) : 'Error de red' };
       }).then(function(){ if (gen === enfoqueDirGen) enfoqueDirRender(); return worker(); });
     }
     var n = Math.min(ENFOQUE_DIR_CONCURRENCY, queue.length), ws = [];
@@ -21307,7 +23090,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       // avisar al usuario para que espere unos segundos a que termine, en vez de cortarla
       // a mitad de camino (lo que dejaría el índice y el contenido de las capas
       // desincronizados entre sí en el repositorio).
-      if (syncInProgress){
+      if (syncInProgress || ghPushRetryTimer){
         ev.preventDefault();
         ev.returnValue = '';
         return '';
@@ -21320,7 +23103,9 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       }
     });
 
-    setInterval(function(){
+    // Sondeo periódico (cada ~60 s con jitter; en pausa con la pestaña oculta; más espaciado tras errores de GitHub).
+    if (window.__syncPoller) window.__syncPoller.stop();
+    window.__syncPoller = ghPoller('sync', 60000, function(){
       // El modo vista de DIRECCIÓN no tiene un estado "propio" que sincronizar (sus capas son
       // una superposición en memoria de las aulas, refrescadas por su propio mecanismo) — al
       // ejecutar aquí el pull genérico igual se corría el riesgo de reconstruir esa superposición
@@ -21334,10 +23119,11 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
         // reemplazaría lo que hay en pantalla por la última versión guardada en GitHub y el
         // cambio local se perdería sin aviso, dando la sensación de que la página "se reinició"
         // antes de guardar. En ese caso se reintenta subir primero.
-        if (hasPendingPushTasks()) githubPush();
-        else githubPull(false, true);
+        if (hasPendingPushTasks()) return githubPush();
+        return githubPull(false, true);
       }
-    }, 60000);
+    });
+    window.__syncPoller.schedule();
 
     startPresenceLoop();
   }
