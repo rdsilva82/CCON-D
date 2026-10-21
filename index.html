@@ -5667,10 +5667,10 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   document.getElementById('local-backups-btn').addEventListener('click', showLocalBackups);
 
   /* ---------------- HISTORIAL DE GITHUB Y RESTAURACIÓN ---------------- */
-  function githubFetchTextAtRef(path, refOrSha){
+  function githubFetchTextAtRef(path, refOrSha, bigFiles){
     return githubFetch('https://api.github.com/repos/' + githubConfig.repo + '/contents/' + encodeURIComponent(path).replace(/%2F/g, '/') + '?ref=' + encodeURIComponent(refOrSha), {
       headers: { 'Authorization':'Bearer ' + githubConfig.token, 'Accept':'application/vnd.github+json' }
-    }).then(function(res){
+    }, bigFiles ? { timeoutMs: 180000 } : undefined).then(function(res){
       if (!res.ok) throw ghHttpError(res);
       return res.json();
     }).then(function(data){ return resolveFileText(data); });
@@ -6450,15 +6450,15 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   function githubRestoreCommit(sha, dateLabel){
     hmConfirmRestore(sha, '¿Restaurar la versión completa del ' + dateLabel + '? Se recupera la estructura de capas (nombres, orden, visibilidad, vista) y también el contenido de cada capa tal como estaba en esa versión. Lo que hay ahora será reemplazado (se guarda una copia de respaldo local).', function(){
       updateSyncStatus('syncing','Restaurando…');
-      var missing = [];
+      var missing = [], restoredNodes = {};
       githubFetchTextAtRef(githubIndexPath(), sha).then(function(rawText){
         var indexState = JSON.parse(rawText);
         // Descargar primero el contenido de cada capa en ESA versión; si algo falla no se toca el estado actual.
         var ids = (indexState.layers || []).filter(function(l){ return !l.parentId; }).map(function(l){ return l.id; });
-        var nodes = {}, chain = Promise.resolve();
+        var nodes = restoredNodes, chain = Promise.resolve();
         ids.forEach(function(id){
           chain = chain.then(function(){
-            return githubFetchTextAtRef(githubLayerFilePath(id), sha).then(function(t){ nodes[id] = JSON.parse(t); }, function(err){
+            return githubFetchTextAtRef(githubLayerFilePath(id), sha, true).then(function(t){ nodes[id] = JSON.parse(t); }, function(err){
               if (err && err.status === 404) { missing.push(id); return; }
               if (err && /404/.test(String(err.message || ''))) { missing.push(id); return; }
               throw err;
@@ -6481,7 +6481,17 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         renderLayerList();
         closeHistoryScrim();
         updateSyncStatus('ok','Versión restaurada, subiendo…');
-        if (missing.length) alert('Versión restaurada. ' + missing.length + ' capa(s) no tenían archivo en esa versión y quedaron sin contenido.');
+        var expected = 0, loaded = 0;
+        try{
+          Object.keys(restoredNodes).forEach(function(id){ (function walk(n){ expected += (n.geojson && n.geojson.features || []).length; (n.children || []).forEach(walk); })(restoredNodes[id]); });
+          getRootLayers().forEach(function(rl){ (function walk(l){ loaded += l.group.getLayers().length; getChildren(l.id).forEach(walk); })(rl); });
+        }catch(e){}
+        var emptyRoots = getRootLayers().filter(function(rl){ return !restoredNodes[rl.id]; }).map(function(rl){ return rl.name; });
+        var msg = 'Versión restaurada: ' + loaded + ' objeto(s) cargados en el mapa de ' + expected + ' que tenía esa versión.';
+        if (missing.length || emptyRoots.length) msg += ' ' + (missing.length || emptyRoots.length) + ' capa(s) no tenían archivo en esa versión y quedaron sin contenido: ' + emptyRoots.join(', ') + '.';
+        if (loaded < expected) msg += ' ATENCIÓN: faltan ' + (expected - loaded) + ' objeto(s) que no se pudieron reconstruir.';
+        if (missing.length || loaded < expected || !expected) alert(msg);
+        updateSyncStatus('ok', msg);
         return githubRefreshSha(githubIndexPath());
       }).then(function(sha2){
         if (sha2 == null) return;
