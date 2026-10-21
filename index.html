@@ -4795,9 +4795,23 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     }, 500);
   }
 
+  var localStorageSaveFailed = false;
   function saveStateToStorage(){
-    try{ localStorage.setItem(STORAGE_KEY_FN(), JSON.stringify(buildStateObject())); }
-    catch(err){ /* almacenamiento no disponible; se continúa sin guardar */ }
+    var json = null;
+    try{ json = JSON.stringify(buildStateObject()); } catch(err){ return; }
+    try{ localStorage.setItem(STORAGE_KEY_FN(), json); localStorageSaveFailed = false; }
+    catch(err){
+      // Almacenamiento lleno: liberar las copias de respaldo locales (las más pesadas) y reintentar.
+      try{
+        Object.keys(localStorage).filter(function(k){ return k.indexOf('map_local_backups_v1__') === 0; }).forEach(function(k){ localStorage.removeItem(k); });
+        localStorage.setItem(STORAGE_KEY_FN(), json); localStorageSaveFailed = false;
+      } catch(err2){
+        if (!localStorageSaveFailed){
+          localStorageSaveFailed = true;
+          try{ updateSyncStatus('error', 'El almacenamiento de este navegador está lleno: el trabajo NO se está guardando localmente. Suba los cambios a GitHub y no recargue la página.'); }catch(e3){}
+        }
+      }
+    }
   }
 
   var pendingAulaRestore = [];
@@ -4886,6 +4900,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   var githubFileSha = null; // sha del archivo único legacy (solo para "Ver historial" y migración)
   var githubShas = { index: null, layers: {}, enfoque: null }; // sha conocido de cada archivo dividido
   var lastPushedIndexSig = null;
+  var lastPushedLayerCount = {}; // layerId -> nº de objetos del último contenido subido/descargado con éxito (protección contra subir capas vacías)
   var lastPushedLayerSig = {}; // layerId -> firma del último contenido subido con éxito
   var incompleteLayerLoads = {}; // layerId -> true mientras su contenido no se haya descargado con éxito tras el último reset de capas (evita subir una capa vacía por una descarga interrumpida)
   var githubPushTimer = null;
@@ -4951,6 +4966,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         enfoque: githubShas.enfoque,
         lastPushedIndexSig: lastPushedIndexSig,
         lastPushedLayerSig: lastPushedLayerSig,
+        lastPushedLayerCount: lastPushedLayerCount,
         lastPushedEnfoqueSig: lastPushedEnfoqueSig
       }));
     } catch(err){ /* almacenamiento no disponible */ }
@@ -4971,6 +4987,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       githubShas.enfoque = saved.enfoque || null;
       lastPushedIndexSig = saved.lastPushedIndexSig || null;
       lastPushedLayerSig = saved.lastPushedLayerSig || {};
+      lastPushedLayerCount = saved.lastPushedLayerCount || {};
       // Ojo: '' (sin Enfoque Operacional propio) es un valor válido y distinto de "nunca se
       // subió" — usar "||" aquí lo confundiría con null y generaría una tarea de subida
       // fantasma en cada arranque.
@@ -5226,6 +5243,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
             // volver a aplicarlo igual, sin necesidad de descargarlo de nuevo.
             var cachedNode = JSON.parse(githubLayerRawCache[id]);
             applyLayerFileObject(cachedNode);
+            lastPushedLayerCount[id] = ghCountNodeObjects(cachedNode);
             var cachedLayerObj = getLayer(id);
             if (cachedLayerObj) lastPushedLayerSig[id] = layerContentSignature(cachedLayerObj);
             return;
@@ -5235,6 +5253,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
             githubShas.layers[id] = data.sha;
             githubLayerRawCache[id] = rawText;
             applyLayerFileObject(node);
+            lastPushedLayerCount[id] = ghCountNodeObjects(node);
             var layerObj = getLayer(id);
             if (layerObj) lastPushedLayerSig[id] = layerContentSignature(layerObj);
           });
@@ -5279,6 +5298,11 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   // reconstruía una capa fantasma sin datos. Ver también el aviso al cerrar/recargar la
   // pestaña mientras hay una subida en curso, y loadPersistedSyncState/hasPendingPushTasks
   // más abajo para lo que pasa si la recarga ocurre de todas formas.
+  function ghCountNodeObjects(node){
+    var n = 0;
+    (function walk(x){ if (!x) return; n += ((x.geojson && x.geojson.features) || []).length; (x.children || []).forEach(walk); })(node);
+    return n;
+  }
   function computeGithubPushTasks(){
     var indexObj = buildIndexObject();
     var indexSig = indexContentSignature();
@@ -5292,7 +5316,8 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     getRootLayers().forEach(function(l){
       var sig = layerContentSignature(l);
       if (lastPushedLayerSig[l.id] !== sig){
-        tasks.push({ kind:'layer', id:l.id, path: githubLayerFilePath(l.id), content: buildLayerFileObject(l), sig: sig });
+        var lcontent = buildLayerFileObject(l);
+        tasks.push({ kind:'layer', id:l.id, name:l.name, path: githubLayerFilePath(l.id), content: lcontent, count: ghCountNodeObjects(lcontent), sig: sig });
       }
     });
     if (indexSig !== lastPushedIndexSig){
@@ -5315,7 +5340,8 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
 
   var githubLastPushError = null;   // último error de subida (para decidir si conviene reintentar sola)
-  function githubPush(){
+  function githubPush(opts){
+    opts = opts || {};
     if (isReadOnlyMode()) return Promise.resolve(false);
     if (!githubConfigured()){ updateSyncStatus('off','Sin configurar'); return Promise.resolve(false); }
     if (syncInProgress){ scheduleGithubPush(); return Promise.resolve(false); }
@@ -5329,10 +5355,31 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       updateSyncStatus('error', incompleteIds.length + ' capa(s) sin confirmar tras un corte de conexión (' + incompleteLayerLoadsSummary() + ') — pulse "Descargar última versión" antes de poder subir cambios.');
       return Promise.resolve(false);
     }
+    var tasks = computeGithubPushTasks();
+    // PROTECCIÓN CONTRA PÉRDIDA DE DATOS: no subir (de forma automática) una capa que pasaría de tener
+    // contenido a quedar casi vacía (caída >= 80 %). Suele ser señal de un estado local incompleto
+    // (descarga interrumpida, almacenamiento del navegador lleno, copia local antigua), no de un borrado real.
+    if (!opts.force){
+      var shrunk = tasks.filter(function(t){
+        if (t.kind !== 'layer') return false;
+        var prev = lastPushedLayerCount[t.id];
+        return prev != null && prev >= 5 && t.count <= prev * 0.2;
+      });
+      if (shrunk.length){
+        var desc = shrunk.map(function(t){ return '«' + (t.name || t.id) + '» pasaría de ' + lastPushedLayerCount[t.id] + ' a ' + t.count + ' objetos'; }).join('; ');
+        if (opts.manual){
+          if (!confirm('ATENCIÓN: esta subida dejaría casi vacía(s) ' + (shrunk.length > 1 ? 'estas capas' : 'esta capa') + ': ' + desc + '.\n\nSi no borró usted esos objetos a propósito, pulse Cancelar y use "Descargar última versión" o el historial para recuperarlos.\n\n¿Subir de todos modos?')){
+            updateSyncStatus('error', 'Subida cancelada: ' + desc + '. Sus cambios no se subieron.');
+            return Promise.resolve(false);
+          }
+        } else {
+          updateSyncStatus('error', 'Subida automática BLOQUEADA para proteger sus datos: ' + desc + '. Si fue a propósito, pulse "Subir cambios" y confirme; si no, pulse "Descargar última versión" o recupere una versión desde el historial.');
+          return Promise.resolve(false);
+        }
+      }
+    }
     syncInProgress = true;
     updateSyncStatus('syncing','Subiendo…');
-
-    var tasks = computeGithubPushTasks();
 
     if (!tasks.length){
       syncInProgress = false;
@@ -5412,7 +5459,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         }
         if (task.kind === 'index'){ githubShas.index = data.content.sha; lastPushedIndexSig = task.sig; }
         else if (task.kind === 'enfoque'){ githubShas.enfoque = data.content.sha; lastPushedEnfoqueSig = task.sig; }
-        else { githubShas.layers[task.id] = data.content.sha; lastPushedLayerSig[task.id] = task.sig; }
+        else { githubShas.layers[task.id] = data.content.sha; lastPushedLayerSig[task.id] = task.sig; if (task.count != null) lastPushedLayerCount[task.id] = task.count; }
       });
     });
   }
@@ -6496,7 +6543,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       }).then(function(sha2){
         if (sha2 == null) return;
         githubShas.index = sha2;
-        githubPush();
+        githubPush({ force: true });
       }).catch(function(err){
         updateSyncStatus('error','No se pudo restaurar: ' + err.message);
         alert('No se pudo restaurar esa versión: ' + err.message);
@@ -6532,7 +6579,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         return githubRefreshSha(githubLayerFilePath(layerId));
       }).then(function(sha2){
         githubShas.layers[layerId] = sha2;
-        githubPush();
+        githubPush({ force: true });
       }).catch(function(err){
         updateSyncStatus('error','No se pudo restaurar la capa: ' + err.message);
         alert('No se pudo restaurar esa versión de la capa: ' + err.message);
@@ -6574,7 +6621,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   function ghCancelPushRetry(){ if (ghPushRetryTimer){ clearTimeout(ghPushRetryTimer); ghPushRetryTimer = null; } }
   function ghManualPush(){
     ghCancelPushRetry();
-    return githubPush().then(function(ok){
+    return githubPush({ manual: true }).then(function(ok){
       if (ok){ ghPushRetryN = 0; if (ghToastEl && ghToastEl.style.display !== 'none') ghToast('Cambios subidos a GitHub.', 'ok', 4000); return true; }
       var err = githubLastPushError;
       var statusEl = document.getElementById('gh-status');
