@@ -701,13 +701,13 @@
   .mccl-picker{ display:flex; flex-direction:column; gap:4px; }
   .mccl-search{ width:100%; border:1px solid var(--border); border-radius:6px; padding:5px 8px; font-family:inherit; font-size:12px; background:var(--surface); color:var(--text); }
   .mccl-sec-title{ font-size:11px; font-weight:700; color:var(--navy); margin:8px 0 4px; }
-  .mccl-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
-  .mccl-item{ border:2px solid var(--border); border-radius:8px; background:var(--surface-alt); padding:4px 2px 3px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; font-family:inherit; color:var(--text); min-width:0; }
+  .mccl-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; }
+  .mccl-item{ border:2px solid var(--border); border-radius:8px; background:var(--surface-alt); padding:3px; cursor:pointer; display:flex; align-items:center; justify-content:center; min-width:0; }
+  .mccl-item:focus-visible{ outline:2px solid var(--navy); outline-offset:1px; }
   .mccl-item.selected{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-light) inset; }
-  .mccl-thumb{ display:flex; justify-content:center; align-items:flex-end; background:#F4F6F9; border-radius:5px; width:100%; padding:11px 0 3px; }
+  .mccl-thumb{ display:flex; justify-content:center; align-items:flex-end; background:#F4F6F9; border-radius:5px; width:100%; padding:9px 0 3px; }
   .mccl-thumb svg, .mccl-pick-thumb svg, .mccl-preview svg{ display:block; overflow:visible; }
   .mccl-pick-thumb{ display:flex; align-items:center; justify-content:center; background:#F4F6F9; border-radius:4px; width:100%; height:100%; }
-  .mccl-cap{ font-size:8.5px; line-height:1.15; text-align:center; color:var(--muted); display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; line-clamp:3; overflow:hidden; width:100%; }
   .mccl-preview{ padding-top:14px; }
 
   /* ---------- RESPONSIVE (iPad / narrow) ---------- */
@@ -21447,6 +21447,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
   function mccaNormalizeParams(type, saved){
     var p = Object.assign(mccaDefaults(type), saved || {});
+    if (mcclIs(type)){ delete p.scale; delete p.refZoom; }       // MCC Logísticas: tamaño fijo, se ignora el campo antiguo
     if (type === 'a_corredor') p.box = Object.assign(mccaDefaults(type).box, (saved && saved.box) || {});
     return p;
   }
@@ -23050,9 +23051,9 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
      de Vehículos (MIL_AFFILIATION_COLORS / VEH_CONDITIONS) y SOLO cambian color de relleno y estilo de
      línea (Futuro = punteado, Simulado = "sombrero" punteado): NUNCA la forma.
      Marco: "B" = básico (rectángulo + triángulo); "D" = "distribución" (con una franja horizontal angosta
-     entre el rectángulo grande y el triángulo). Tamaño: ancho del marco W = 34 px * "Tamaño" en el zoom
-     de referencia (refZoom) y luego escala 2^(zoom - refZoom). Todos los textos escalan con W. */
-  var MCCL_W0 = 34, MCCL_W_MIN = 5, MCCL_W_MAX = 700;
+     entre el rectángulo grande y el triángulo). Tamaño FIJO en píxeles (como Unidades y Vehículos, sin escalar con el zoom y sin control de tamaño):
+     ancho del marco W = 40 px (= el marco de 40 px de Vehículos). Los 5 textos y el texto interior son proporcionales a W. */
+  var MCCL_W0 = 40;
   var MCCL_HC_B = 1.29, MCCL_HC_D = 1.11, MCCL_YSEP = 1.29, MCCL_YTIP = 1.98;   // en unidades de W
   var MCCL_FS = 0.30;                                                            // tamaño de letra de los 5 campos = 0.30 W
   var MCCL_SECTIONS = [
@@ -23116,25 +23117,21 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   function mcclIs(t){ return typeof t === 'string' && t.indexOf('l_') === 0 && !!MCCL_DEFS[t]; }
   function mcclDefaults(type){
     var def = MCCL_DEFS[type] || MCCL_DEFS.l_reunion;
-    var p = { type: def.id, air: true, bgOpacity: 0, affiliation: 'friendly', condition: 'present', scale: 1,
-      refZoom: (typeof map !== 'undefined' && map && map.getZoom) ? map.getZoom() : 14,
+    var p = { type: def.id, air: true, bgOpacity: 0, affiliation: 'friendly', condition: 'present',
       H: '', W: '', W1: '', T: '', N: '' };
     if (def.edit) p.inner = '';
     return p;
   }
   function mcclNorm(mp){
     var p = Object.assign(mcclDefaults(mp && mp.type), mp || {});
+    delete p.scale; delete p.refZoom;
     if (!MIL_AFFILIATION_COLORS[p.affiliation]) p.affiliation = 'friendly';
     if (!VEH_CONDITIONS.some(function(c){ return c[0] === p.condition; })) p.condition = 'present';
     return p;
   }
 
   /* ---------------- Geometría en píxeles ---------------- */
-  function mcclWidthPx(mp){
-    var z = (typeof map !== 'undefined' && map && map.getZoom) ? map.getZoom() : null;
-    var k = (mp.scale || 1) * ((z != null && mp.refZoom != null && isFinite(mp.refZoom)) ? Math.pow(2, z - mp.refZoom) : 1);
-    return Math.min(MCCL_W_MAX, Math.max(MCCL_W_MIN, MCCL_W0 * k));
-  }
+  function mcclWidthPx(mp){ return MCCL_W0; }   // tamaño fijo (los datos antiguos con scale/refZoom se ignoran)
   // Ancho estimado (em) de un texto, tipo Arial/Calibri; solo para ajustar textos a un ancho máximo.
   function mcclEm(str, bold){
     var w = 0;
@@ -23329,7 +23326,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   }
   // Miniatura para el selector / panel (ancho fijo, sin los 5 textos).
   function mcclThumbSVG(type, aff, W, cond){
-    var mp = { type: type, affiliation: aff || 'friendly', condition: cond || 'present', scale: 1, refZoom: null };
+    var mp = { type: type, affiliation: aff || 'friendly', condition: cond || 'present' };
     return mcclBuild(mp, { W: W || 26, noText: true }).svg;
   }
   // Re-dibuja el ícono de todos los símbolos (cambio de zoom, recarga, capas de la Dirección).
@@ -23370,9 +23367,17 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       sec.items.forEach(function(it){
         var btn = document.createElement('button'); btn.type = 'button';
         btn.className = 'mccl-item' + (it[0] === currentType ? ' selected' : '');
-        btn.title = it[1]; btn.setAttribute('data-mccl-type', it[0]); btn.setAttribute('aria-label', it[1]);
-        btn.innerHTML = '<span class="mccl-thumb">' + mcclThumbSVG(it[0], aff, 32) + '</span><span class="mccl-cap">' + escapeHtmlText(it[1]) + '</span>';
-        btn.addEventListener('click', function(ev){ ev.stopPropagation(); onPick(it[0]); });
+        btn.setAttribute('data-mccl-type', it[0]); btn.setAttribute('aria-label', it[1]);
+        btn.innerHTML = '<span class="mccl-thumb">' + mcclThumbSVG(it[0], aff, 24) + '</span>';
+        // nombre completo en la etiqueta flotante reutilizable de la app (mouse y foco de teclado)
+        function tipAt(ev){ showFloatingTooltip('<b>' + escapeHtmlText(it[1]) + '</b>', ev); }
+        function tipFocus(){ var r = btn.getBoundingClientRect(); showFloatingTooltip('<b>' + escapeHtmlText(it[1]) + '</b>', { clientX: r.left + r.width / 2 - 14, clientY: r.bottom - 14 }); }
+        btn.addEventListener('mouseenter', tipAt);
+        btn.addEventListener('mousemove', positionFloatingTooltip);
+        btn.addEventListener('mouseleave', hideFloatingTooltip);
+        btn.addEventListener('focus', tipFocus);
+        btn.addEventListener('blur', hideFloatingTooltip);
+        btn.addEventListener('click', function(ev){ ev.stopPropagation(); hideFloatingTooltip(); onPick(it[0]); });
         grid.appendChild(btn);
         items.push({ btn: btn, text: mcclNorm0(it[1]), sec: secEl });
       });
@@ -23380,6 +23385,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     });
     search.addEventListener('input', function(){
       var q = mcclNorm0(search.value).trim();
+      hideFloatingTooltip();
       items.forEach(function(e){ e.btn.style.display = (!q || e.text.indexOf(q) !== -1) ? '' : 'none'; });
       [].slice.call(root.querySelectorAll('.mccl-sec')).forEach(function(secEl){
         var any = [].slice.call(secEl.querySelectorAll('.mccl-item')).some(function(b){ return b.style.display !== 'none'; });
@@ -23478,7 +23484,6 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var pv = document.createElement('div'); pv.className = 'veh-preview-box mccl-preview';
     pv.innerHTML = mcclBuild(m, { W: 44, noText: true }).svg;
     block.appendChild(pv);
-    kit.range('Tamaño', function(){ return m.scale || 1; }, function(v){ m.scale = v; }, 0.5, 3, 0.1, function(v){ return Math.round(v * 100) + '%'; }, 'scale');
     if (def.edit){
       kit.text('Texto interior', function(){ return m.inner || ''; }, function(v){ m.inner = v; }, { dataKey: 'inner', placeholder: 'escriba dentro del rectángulo' });
     }
@@ -23630,7 +23635,6 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     map.on('zoomend', syncAllMccZonaCompanions);
     map.on('zoomend', syncAllMccTextCompanions);
     map.on('zoomend', syncAllMccAereo);
-    map.on('zoomend', syncAllMccLog);
     map.on('zoomend', syncAllArrowOutlines);
     setInterval(saveStateToStorage, 8000);
 
