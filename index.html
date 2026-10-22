@@ -4861,7 +4861,10 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     });
 
     layerCounter = state.layerCounter || layers.length;
-    shapeCounter = state.shapeCounter || shapeCounter;
+    // El contador de formas NUNCA retrocede: los objetos de las capas de Dirección (overlay) ya usan ids 'forma-N' de esta
+    // sesión; si el contador bajara, un objeto propio nuevo repetiría el id de uno de Dirección y compartiría sus
+    // companions (etiquetas, contornos...), haciendo que aparezcan/desaparezcan al activar capas propias.
+    shapeCounter = Math.max(shapeCounter, state.shapeCounter || 0);
     paletteIdx = state.paletteIdx || paletteIdx;
 
     if (state.baseLayer && baseLayers[state.baseLayer] && state.baseLayer !== currentBase){
