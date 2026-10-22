@@ -23052,8 +23052,8 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
      línea (Futuro = punteado, Simulado = "sombrero" punteado): NUNCA la forma.
      Marco: "B" = básico (rectángulo + triángulo); "D" = "distribución" (con una franja horizontal angosta
      entre el rectángulo grande y el triángulo). Tamaño FIJO en píxeles (como Unidades y Vehículos, sin escalar con el zoom y sin control de tamaño):
-     ancho del marco W = 20 px (50 % del tamaño anterior). Los 5 textos y el texto interior son proporcionales a W. */
-  var MCCL_W0 = 20;
+     ancho del marco W = 24 px. Los 5 textos y el texto interior son proporcionales a W. */
+  var MCCL_W0 = 24;
   var MCCL_HC_B = 1.29, MCCL_HC_D = 1.11, MCCL_YSEP = 1.29, MCCL_YTIP = 1.98;   // en unidades de W
   var MCCL_FS = 0.30;                                                            // tamaño de letra de los 5 campos = 0.30 W
   var MCCL_SECTIONS = [
@@ -23296,7 +23296,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       wr.lines.forEach(function(ln, i){
         tsp += '<tspan x="' + mcclF(W / 2) + '" y="' + mcclF(Hc / 2 + (i - (wr.lines.length - 1) / 2) * lh + capK * ifs / 2) + '">' + escapeHtmlText(ln) + (i < wr.lines.length - 1 ? ' ' : '') + '</tspan>';
       });
-      svg += '<text class="mccl-inner" data-mccl="inner" text-anchor="middle" font-family="' + MCCA_FAM + '" font-size="' + mcclF(ifs) + '" fill="#000">' + tsp + '</text>';
+      svg += '<text class="mccl-inner" data-mccl="inner" text-anchor="middle" font-family="' + MCCA_FAM + '" font-weight="700" font-size="' + mcclF(ifs) + '" fill="#000">' + tsp + '</text>';
     }
     // sombrero punteado (condición Simulado), solo una decoración encima del marco
     if (cond === 'dummy'){
@@ -23308,7 +23308,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
       var gap = 0.10 * W + sw * 0.5, yTop = sw * 0.5 + 0.02 * W, bW = yTop + 0.75 * fs, yN = 0.5 * (Hc + yS);
       function T(key, txt, x, y, anchor){
         if (!txt) return '';
-        return '<text class="mccl-t" data-mccl="' + key + '" x="' + mcclF(x) + '" y="' + mcclF(y) + '" text-anchor="' + anchor + '" font-family="' + MCCA_FAM + '" font-size="' + mcclF(fs) +
+        return '<text class="mccl-t" data-mccl="' + key + '" x="' + mcclF(x) + '" y="' + mcclF(y) + '" text-anchor="' + anchor + '" font-family="' + MCCA_FAM + '" font-weight="700" font-size="' + mcclF(fs) +
           '" fill="#000" stroke="#fff" stroke-opacity="0.85" stroke-width="' + mcclF(fs * 0.2) + '" paint-order="stroke" stroke-linejoin="round">' + escapeHtmlText(String(txt)) + '</text>';
       }
       svg += T('H', mp.H, W / 2, hBase, 'middle');
