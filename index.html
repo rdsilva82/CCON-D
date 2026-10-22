@@ -23052,8 +23052,8 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
      línea (Futuro = punteado, Simulado = "sombrero" punteado): NUNCA la forma.
      Marco: "B" = básico (rectángulo + triángulo); "D" = "distribución" (con una franja horizontal angosta
      entre el rectángulo grande y el triángulo). Tamaño FIJO en píxeles (como Unidades y Vehículos, sin escalar con el zoom y sin control de tamaño):
-     ancho del marco W = 40 px (= el marco de 40 px de Vehículos). Los 5 textos y el texto interior son proporcionales a W. */
-  var MCCL_W0 = 40;
+     ancho del marco W = 20 px (50 % del tamaño anterior). Los 5 textos y el texto interior son proporcionales a W. */
+  var MCCL_W0 = 20;
   var MCCL_HC_B = 1.29, MCCL_HC_D = 1.11, MCCL_YSEP = 1.29, MCCL_YTIP = 1.98;   // en unidades de W
   var MCCL_FS = 0.30;                                                            // tamaño de letra de los 5 campos = 0.30 W
   var MCCL_SECTIONS = [
@@ -23254,7 +23254,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     var fill = MIL_AFFILIATION_COLORS[mp.affiliation] || MIL_AFFILIATION_COLORS.friendly;
     var cond = mp.condition;
     var dash = cond === 'planned' ? ' stroke-dasharray="' + mcclF(sw * 3) + ' ' + mcclF(sw * 2) + '"' : '';
-    var fs = MCCL_FS * W, svg = '';
+    var fs = Math.max(8, MCCL_FS * W), svg = '';
     // marco: contorno (rectángulo + triángulo) + línea que los separa + (D) línea superior de la franja
     svg += '<path class="mccl-frame" d="M0,0 L' + mcclF(W) + ',0 L' + mcclF(W) + ',' + mcclF(yS) + ' L' + mcclF(W / 2) + ',' + mcclF(yT) + ' L0,' + mcclF(yS) + ' Z" fill="' + fill +
       '" stroke="#000" stroke-width="' + mcclF(sw) + '" stroke-linejoin="miter" stroke-miterlimit="10"' + dash + '/>';
