@@ -697,6 +697,18 @@
   .veh-type-btn svg{ display:block; }
   .veh-type-empty{ font-size:11.5px; color:var(--muted); padding:6px 0; }
   .veh-section-label{ font-size:11px; color:var(--muted); margin:4px 0 2px; }
+  /* MCC Logísticas: selector de símbolos (panel lateral) */
+  .mccl-picker{ display:flex; flex-direction:column; gap:4px; }
+  .mccl-search{ width:100%; border:1px solid var(--border); border-radius:6px; padding:5px 8px; font-family:inherit; font-size:12px; background:var(--surface); color:var(--text); }
+  .mccl-sec-title{ font-size:11px; font-weight:700; color:var(--navy); margin:8px 0 4px; }
+  .mccl-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+  .mccl-item{ border:2px solid var(--border); border-radius:8px; background:var(--surface-alt); padding:4px 2px 3px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; font-family:inherit; color:var(--text); min-width:0; }
+  .mccl-item.selected{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-light) inset; }
+  .mccl-thumb{ display:flex; justify-content:center; align-items:flex-end; background:#F4F6F9; border-radius:5px; width:100%; padding:11px 0 3px; }
+  .mccl-thumb svg, .mccl-pick-thumb svg, .mccl-preview svg{ display:block; overflow:visible; }
+  .mccl-pick-thumb{ display:flex; align-items:center; justify-content:center; background:#F4F6F9; border-radius:4px; width:100%; height:100%; }
+  .mccl-cap{ font-size:8.5px; line-height:1.15; text-align:center; color:var(--muted); display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; line-clamp:3; overflow:hidden; width:100%; }
+  .mccl-preview{ padding-top:14px; }
 
   /* ---------- RESPONSIVE (iPad / narrow) ---------- */
   @media (max-width: 980px){
@@ -1756,6 +1768,7 @@
           <button class="tool-btn" data-tool="mcc-ter-toggle" title="MCC Terrestres: medidas de coordinación y control terrestres"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4"/></svg><span>MCC Terrestres</span></button>
           <button class="tool-btn" data-tool="mcc-aer-toggle" title="MCC Aéreas: medidas de coordinación y control aéreas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 L12 21.5"/><path d="M3 9.5 L21 14.5"/><path d="M8 16 L5 20 M16 16 L19 20"/></svg><span>MCC Aéreas</span></button>
           <button class="tool-btn" data-tool="mcc-apy-toggle" title="MCC Apy Fgo: medidas de coordinación y control del apoyo de fuegos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L14 9 L20 7.5 L16 12 L21 16 L14.5 15 L12 21 L9.5 15 L3 16 L8 12 L4 7.5 L10 9 Z"/></svg><span>MCC Apy Fgo</span></button>
+          <button class="tool-btn" data-tool="mcc-log-toggle" title="MCC Logísticas: símbolos puntuales logísticos (lugares de reunión, distribución, control de tránsito, efectos por clase)" aria-label="MCC Logísticas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="12" rx="0.5"/><path d="M6.5 14.5 L12 21.5 L17.5 14.5"/><path d="M6.5 11h11"/></svg><span>MCC Logísticas</span></button>
         </div>
       </div>
       <div id="mcc-ter-submenu" class="tool-submenu-row" style="flex-wrap:wrap;">
@@ -8079,9 +8092,11 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     // "MCC" agrupa varias herramientas propias (mccpoint, mccline, mcczona) además de reutilizar
     // 'tacticaltask' (Emboscada/Misiones) y 'arrow' (Dirección de ataque/Eje de avance, marcado
     // con mccArrowPending) — se resalta el botón contenedor mientras cualquiera esté activa.
+    var mccLogBtn = document.querySelector('[data-tool="mcc-log-toggle"]');   // vive en el submenú flotante MCC (fuera de #draw-toolbar)
+    if (mccLogBtn) mccLogBtn.classList.toggle('active', activeToolName === 'mcclog');
     var mccToggleBtn = document.querySelector('#draw-toolbar [data-tool="mcc-toggle"]');
     if (mccToggleBtn){
-      var mccToolActive = ['mccpoint','mccline','mcczona','mccaplace','mccacorredor'].indexOf(activeToolName) !== -1 ||
+      var mccToolActive = ['mccpoint','mccline','mcczona','mccaplace','mccacorredor','mcclog'].indexOf(activeToolName) !== -1 ||
         (activeToolName === 'arrow' && (!!arrowPendingMccKind || arrowPendingAv)) ||
         (activeToolName === 'tacticaltask' && mccTacticalTaskPending);
       mccToggleBtn.classList.toggle('active', mccToolActive);
@@ -10240,6 +10255,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     if (cmPolyActive) stopCamposMinadosMode();
     if (arrowActive) stopArrowTool();
     stopMccPointTool();
+    stopMcclTool();
     stopMccLineTool();
     stopMccZonaTool();
     stopMccaTools();
@@ -14081,6 +14097,13 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         if (nowOpenMD) positionFloatingSubmenu(mccDerivSub, document.getElementById('mcc-submenu') || btn);
         return;
       }
+      if (tool === 'mcc-log-toggle'){
+        // MCC Logísticas: no abre una fila de botones; arma la colocación y muestra el selector de símbolos en el panel lateral.
+        ev.stopPropagation();
+        closeToolSubmenus();
+        activateMcclTool();
+        return;
+      }
       if (tool === 'mcc-misiones-toggle'){
         ev.stopPropagation();
         renderMccMisionesSubmenu();
@@ -14337,6 +14360,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       if (activeToolName === 'unidades' && unidadesClickHandler){ unidadesClickHandler(e); return; }
       if (activeToolName === 'equipos' && equiposClickHandler){ equiposClickHandler(e); return; }
       if (activeToolName === 'vehiculos' && vehiculosClickHandler){ vehiculosClickHandler(e); return; }
+      if (activeToolName === 'mcclog' && mcclClickHandler){ mcclClickHandler(e); return; }
       if (activeToolName === 'armas' && armasClickHandler){ armasClickHandler(e); return; }
       if (activeToolName === 'text' && textClickHandler){ textClickHandler(e); return; }
       if (activeToolName === 'target' && targetClickHandler){ targetClickHandler(e); return; }
@@ -14645,6 +14669,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     syncAllMccZonaCompanions();
     syncAllMccTextCompanions();
     syncAllMccAereo();
+    syncAllMccLog();
   }
 
   function renderLayerList(){
@@ -21406,6 +21431,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
 
   function mccaDefaults(type){
     if (mccfIs(type)) return mccfDefaults(type);       // MCC Apy Fgo
+    if (mcclIs(type)) return mcclDefaults(type);       // MCC Logísticas
     var p = { type: type, air: true, bgOpacity: 0 };
     if (MCCA_POINT_KINDS.indexOf(type) !== -1){ p.text = ''; p.text2 = ''; p.textBelow = ''; p.scale = 1; p.color = '#1F3864'; }
     else if (type === 'a_rumbo'){ p.num1 = ''; p.num2 = ''; p.scale = 1; }
@@ -21506,7 +21532,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     else if (t === 'a_pt'){ o.ring = 'double'; o.sw = 2.3 * sc; o.gap = 2.8 * sc; o.line1 = 'PT'; }
     return o;
   }
-  function buildMccAereoPointIcon(mp){ if (mccfIs(mp.type)) return mccfPointIcon(mp); return mccaSymbolIcon(mccaCircleSymbol(mccaPointSymbolOpts(mp))); }
+  function buildMccAereoPointIcon(mp){ if (mcclIs(mp.type)) return mcclIcon(mp); if (mccfIs(mp.type)) return mccfPointIcon(mp); return mccaSymbolIcon(mccaCircleSymbol(mccaPointSymbolOpts(mp))); }
 
   /* ---------------- Historial (undo/redo) de las MCC aéreas ---------------- */
   function mccaSnapshot(shape){
@@ -21574,7 +21600,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
   var arrowPendingAereoDA = false;
   var arrowPendingAv = false;
   function mccaClickToolActive(){
-    return activeToolName === 'mccaplace' || activeToolName === 'mccacorredor';
+    return activeToolName === 'mccaplace' || activeToolName === 'mccacorredor' || activeToolName === 'mcclog';
   }
   function dispatchMccaTool(key){
     if (['pca','pll','piaa','pcc','pt'].indexOf(key) !== -1) activateMccPointTool('a_' + key);
@@ -22407,6 +22433,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     shape._mccaRefresh = null;
 
     if (mccfIs(t)){ mccfFillPanel(shape, kit, block); return block; }
+    if (mcclIs(t)){ mcclFillPanel(shape, kit, block); return block; }
     if (MCCA_POINT_KINDS.indexOf(t) !== -1){
       if (t === 'a_pca') kit.text('Número (segunda línea)', function(){ return m.text2 || ''; }, function(v){ m.text2 = v; }, { dataKey: 'text2', placeholder: 'en blanco' });
       if (t === 'a_pll' || t === 'a_pcc') kit.text('Texto (segunda línea)', function(){ return m.text2 || ''; }, function(v){ m.text2 = v; }, { dataKey: 'text2', placeholder: 'en blanco' });
@@ -23012,6 +23039,464 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     }
   }
 
+  /* =================================================================================
+     ===================  MCC LOGÍSTICAS (símbolos puntuales tipo "pin")  ===========
+     =================================================================================
+     Cuarta derivada de "MCC". Cada símbolo es UN punto (marcador) con forma de pin de mapa: rectángulo
+     vertical + triángulo invertido ("banderín"). El ANCLA geográfica es el VÉRTICE INFERIOR del triángulo.
+     Reutiliza el motor de los puntos MCC aéreos (shape._isMccPoint + shape._mcc con air:true y tipo "l_*"),
+     así que hereda GeoJSON (guardar / recargar / Dirección), historial deshacer-rehacer, copia de capa,
+     cuadro de coordenadas Dec/GMS, exportación y lista de capas. Afiliación y condición reutilizan las
+     de Vehículos (MIL_AFFILIATION_COLORS / VEH_CONDITIONS) y SOLO cambian color de relleno y estilo de
+     línea (Futuro = punteado, Simulado = "sombrero" punteado): NUNCA la forma.
+     Marco: "B" = básico (rectángulo + triángulo); "D" = "distribución" (con una franja horizontal angosta
+     entre el rectángulo grande y el triángulo). Tamaño: ancho del marco W = 34 px * "Tamaño" en el zoom
+     de referencia (refZoom) y luego escala 2^(zoom - refZoom). Todos los textos escalan con W. */
+  var MCCL_W0 = 34, MCCL_W_MIN = 5, MCCL_W_MAX = 700;
+  var MCCL_HC_B = 1.29, MCCL_HC_D = 1.11, MCCL_YSEP = 1.29, MCCL_YTIP = 1.98;   // en unidades de W
+  var MCCL_FS = 0.30;                                                            // tamaño de letra de los 5 campos = 0.30 W
+  var MCCL_SECTIONS = [
+    { id: 'reunion', title: 'Lugares de reunión, intercambio y control', items: [
+      ['l_reunion', 'Lugar de reunión', 'B', { edit: true }],
+      ['l_reunion_necro', 'Lugar de reunión necrológico', 'B', { icon: 'necro' }],
+      ['l_reunion_pacientes', 'Lugar de reunión de pacientes', 'B', { fixed: 'LRP', icon: 'plus' }],
+      ['l_reunion_arsenales', 'Lugar de reunión de efectos de arsenales', 'B', { icon: 'arsenal' }],
+      ['l_reunion_intendencia', 'Lugar de reunión de efectos de intendencia', 'B', { icon: 'key' }],
+      ['l_reunion_pg', 'Lugar de reunión de Prisioneros de Guerra', 'B', { fixed: 'PG' }],
+      ['l_intercambio_ambulancias', 'Lugar de intercambio de Ambulancias', 'B', { fixed: 'AXP' }],
+      ['l_descontaminacion', 'Lugar de descontaminación', 'B', { fixed: 'DCN' }],
+      ['l_canibalizacion', 'Lugar de canibalización', 'B', { fixed: 'CAN' }],
+      ['l_recuperacion', 'Lugar de recuperación de tripulaciones derribadas o en emergencias', 'B', { icon: 'tripulante' }],
+      ['l_prt', 'Puesto de regulación de tránsito', 'B', { fixed: 'PRT' }],
+      ['l_pct', 'Puesto de control de tránsito', 'B', { fixed: 'PCT' }]
+    ] },
+    { id: 'distribucion', title: 'Lugares de distribución', items: [
+      ['l_distribucion', 'Lugar de distribución', 'D', { edit: true }],
+      ['l_dist_agua', 'Lugar de distribución de agua', 'D', { icon: 'agua' }],
+      ['l_dist_cl1', 'Lugar de distribución de efectos Cl I', 'D', { icon: 'luna' }],
+      ['l_dist_intendencia', 'Lugar de distribución de efectos de Intendencia', 'D', { icon: 'key' }],
+      ['l_dist_arsenales', 'Lugar de distribución de efectos de arsenales', 'D', { icon: 'arsenal' }],
+      ['l_dist_cl3', 'Lugar de distribución de efectos Cl III', 'D', { icon: 'cl3' }],
+      ['l_dist_cl5', 'Lugar de distribución de efectos Cl V', 'D', { icon: 'cl5' }],
+      ['l_dist_cl1_vet', 'Lugar de distribución de efectos Cl I (Veterinaria)', 'D', { icon: 'lunavet' }],
+      ['l_dist_cl24_vet', 'Lugar de distribución de efectos Cl II y IV (Veterinaria)', 'D', { icon: 'cl24vet' }],
+      ['l_dist_animales', 'Lugar de distribución de animales', 'D', { icon: 'animales' }],
+      ['l_dist_sanidad', 'Lugar de distribución de efectos de Sanidad', 'D', { icon: 'sanidad' }],
+      ['l_dist_ingenieros', 'Lugar de distribución de efectos de Ingenieros', 'D', { icon: 'ingenieros' }]
+    ] },
+    { id: 'reabast', title: 'Reabastecimiento', items: [
+      ['l_larca', 'Lugar adelantado de reabastecimiento de efectos Cl II(a) y V(a)', 'D', { fixed: 'LARCA', fixMode: 'above', icon: 'bowtie' }]
+    ] },
+    { id: 'clases', title: 'Efectos por clase', items: [
+      ['l_cl9', 'Efectos Cl IX', 'D', { icon: 'sol' }],
+      ['l_cl10', 'Efectos Cl X', 'D', { fixed: 'CA', fixMode: 'center' }],
+      ['l_cl7', 'Efectos Cl VII', 'D', { icon: 'arco' }],
+      ['l_cl6', 'Efectos Cl VI', 'D', { icon: 'persona' }]
+    ] }
+  ];
+  var MCCL_DEFS = {}, MCCL_TYPES = [], MCCL_LABELS = {};
+  MCCL_SECTIONS.forEach(function(sec){
+    sec.items.forEach(function(it){
+      var o = it[3] || {};
+      MCCL_DEFS[it[0]] = { id: it[0], label: it[1], frame: it[2], edit: !!o.edit, fixed: o.fixed || '', fixMode: o.fixMode || 'top', icon: o.icon || '', section: sec.id };
+      MCCL_TYPES.push(it[0]);
+      MCCL_LABELS[it[0]] = it[1];
+      MCC_KIND_LABELS[it[0]] = it[1];
+    });
+  });
+  MCCL_TYPES.forEach(function(k){ MCCA_POINT_KINDS.push(k); });
+  // Los cinco campos de texto alrededor del símbolo (todos vacíos por defecto).
+  var MCCL_FIELDS = [
+    ['H', 'H · Información adicional', 'ej. datos adicionales'],
+    ['W', 'W · Desde (grupo fecha hora)', 'ej. 121000AgoXX'],
+    ['W1', 'W1 · Hasta (grupo fecha hora)', 'ej. 131800AgoXX'],
+    ['T', 'T · Unidad o elemento responsable', 'ej. BAL 5'],
+    ['N', 'N · Enemigo (colocar ENO)', 'ENO']
+  ];
+  function mcclIs(t){ return typeof t === 'string' && t.indexOf('l_') === 0 && !!MCCL_DEFS[t]; }
+  function mcclDefaults(type){
+    var def = MCCL_DEFS[type] || MCCL_DEFS.l_reunion;
+    var p = { type: def.id, air: true, bgOpacity: 0, affiliation: 'friendly', condition: 'present', scale: 1,
+      refZoom: (typeof map !== 'undefined' && map && map.getZoom) ? map.getZoom() : 14,
+      H: '', W: '', W1: '', T: '', N: '' };
+    if (def.edit) p.inner = '';
+    return p;
+  }
+  function mcclNorm(mp){
+    var p = Object.assign(mcclDefaults(mp && mp.type), mp || {});
+    if (!MIL_AFFILIATION_COLORS[p.affiliation]) p.affiliation = 'friendly';
+    if (!VEH_CONDITIONS.some(function(c){ return c[0] === p.condition; })) p.condition = 'present';
+    return p;
+  }
+
+  /* ---------------- Geometría en píxeles ---------------- */
+  function mcclWidthPx(mp){
+    var z = (typeof map !== 'undefined' && map && map.getZoom) ? map.getZoom() : null;
+    var k = (mp.scale || 1) * ((z != null && mp.refZoom != null && isFinite(mp.refZoom)) ? Math.pow(2, z - mp.refZoom) : 1);
+    return Math.min(MCCL_W_MAX, Math.max(MCCL_W_MIN, MCCL_W0 * k));
+  }
+  // Ancho estimado (em) de un texto, tipo Arial/Calibri; solo para ajustar textos a un ancho máximo.
+  function mcclEm(str, bold){
+    var w = 0;
+    String(str).split('').forEach(function(c){
+      if ('il1I|.,:;!\' '.indexOf(c) !== -1) w += 0.3;
+      else if ('mwMW@'.indexOf(c) !== -1) w += 0.86;
+      else if (c >= 'A' && c <= 'Z') w += 0.68;
+      else if (c >= '0' && c <= '9') w += 0.56;
+      else w += 0.52;
+    });
+    return w * (bold ? 1.06 : 1);
+  }
+  function mcclF(n){ return (Math.round(n * 100) / 100).toString(); }
+
+  /* ---------------- Glifos interiores (coordenadas 0..100; (50,50) = centro del área de contenido) ---------------- */
+  var MCCL_IS = 4;       // grosor de trazo de los glifos (unidades del glifo)
+  function mclLn(x1, y1, x2, y2, w, cap){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="#000" stroke-width="' + (w || MCCL_IS) + '" stroke-linecap="' + (cap || 'butt') + '"/>';
+  }
+  function mclPath(d, w, fill, join){
+    return '<path d="' + d + '" fill="' + (fill || 'none') + '" stroke="' + (fill ? 'none' : '#000') + '" stroke-width="' + (w || MCCL_IS) + '" stroke-linejoin="' + (join || 'miter') + '" stroke-linecap="butt"/>';
+  }
+  function mclTxt(t, x, y, fs){
+    return '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-family="' + MCCA_FAM + '" font-weight="700" font-size="' + fs + '" fill="#000">' + t + '</text>';
+  }
+  var MCCL_MOON = 'M74,7 C24,17 18,78 72,95 C44,72 46,28 74,7 Z';
+  var MCCL_ICONS = {
+    luna: function(){ return mclPath(MCCL_MOON, 3.6); },
+    lunavet: function(){ return mclPath(MCCL_MOON, 3.6) + mclTxt('V', 84, 98, 30); },
+    cl24vet: function(){
+      return '<rect x="38" y="8" width="9" height="37" fill="#000"/><rect x="54" y="8" width="9" height="37" fill="#000"/>' + mclTxt('V', 83, 98, 30);
+    },
+    agua: function(){
+      return mclPath('M8,43 L62,43 C80,43 88,51 90,67', 4.6) + mclLn(49, 43, 49, 33, 4) + mclLn(39, 31, 59, 31, 4);
+    },
+    key: function(){
+      return '<rect x="10" y="44" width="11" height="12" fill="none" stroke="#000" stroke-width="3.4"/>' +
+        mclLn(21, 44, 68, 44, 3.4) + '<ellipse cx="77" cy="44" rx="9" ry="14" fill="none" stroke="#000" stroke-width="3.4"/>';
+    },
+    arsenal: function(){
+      return '<ellipse cx="50" cy="56" rx="27" ry="15" fill="none" stroke="#000" stroke-width="3.6"/>' +
+        mclLn(33, 44, 26, 21, 3.4) + mclLn(42, 42, 41, 19, 3.4) + mclLn(58, 42, 60, 19, 3.4) + mclLn(67, 44, 74, 21, 3.4);
+    },
+    cl3: function(){ return mclPath('M24,8 L76,8 L50,54 Z', 4) + mclLn(50, 54, 50, 94, 4); },
+    cl5: function(){
+      return mclPath('M27,88 L27,34 A23.5,23.5 0 0 1 74,34 L74,88', 4) + mclLn(12, 88, 88, 88, 4);
+    },
+    animales: function(){ return mclPath('M19,60 L34,10 L48,60 L63,10 L77,58', 3.4); },
+    ingenieros: function(){ return mclPath('M20,58 L20,22 L80,22 L80,58', 4) + mclLn(50, 22, 50, 46, 4); },
+    necro: function(){
+      return '<rect x="31" y="23" width="40" height="52" fill="none" stroke="#000" stroke-width="3.4"/>' + mclLn(51, 31, 51, 67, 3.2) + mclLn(42, 41, 60, 41, 3.2);
+    },
+    plus: function(){ return '<rect x="32" y="47" width="36" height="13" fill="#000"/><rect x="43.5" y="36" width="13" height="36" fill="#000"/>'; },
+    tripulante: function(){
+      return '<circle cx="50.5" cy="15" r="17" fill="#000"/>' + mclPath('M15,10 L50,44 L85,10', 5) + mclLn(50, 44, 50, 101, 5) + mclLn(19, 101, 80, 101, 5);
+    },
+    bowtie: function(){ return '<polygon points="10,19 10,51 50,35" fill="#000"/><polygon points="90,19 90,51 50,35" fill="#000"/>'; },
+    sol: function(){
+      var s = '<circle cx="50" cy="48" r="25" fill="none" stroke="#000" stroke-width="3"/>';
+      for (var i = 0; i < 8; i++){
+        var a = i * Math.PI / 4, c = Math.cos(a), sn = Math.sin(a);
+        s += mclLn(mcclF(50 + c * 29), mcclF(48 + sn * 29), mcclF(50 + c * 44), mcclF(48 + sn * 44), 2.6);
+      }
+      return s;
+    },
+    arco: function(){
+      return mclPath('M20,65 Q50,25 80,65', 3) + '<circle cx="20" cy="65" r="7" fill="#000"/><circle cx="80" cy="65" r="7" fill="#000"/>';
+    },
+    persona: function(){
+      return '<circle cx="50" cy="23" r="12" fill="none" stroke="#000" stroke-width="3"/>' + mclLn(50, 35, 50, 76, 3) + mclLn(26, 50, 74, 50, 3) +
+        mclLn(50, 76, 34, 94, 3) + mclLn(50, 76, 66, 94, 3);
+    }
+  };
+  // Glifo de Sanidad: cruz que atraviesa TODA el área de contenido (4 cuadrantes), en píxeles.
+  function mcclSanidadPx(W, Hc, sw){
+    return '<line x1="' + mcclF(W / 2) + '" y1="0" x2="' + mcclF(W / 2) + '" y2="' + mcclF(Hc) + '" stroke="#000" stroke-width="' + mcclF(sw) + '"/>' +
+      '<line x1="0" y1="' + mcclF(Hc / 2) + '" x2="' + mcclF(W) + '" y2="' + mcclF(Hc / 2) + '" stroke="#000" stroke-width="' + mcclF(sw) + '"/>';
+  }
+
+  // Divide un texto en líneas (por saltos y palabras) que caben en 0,86 W; reduce la letra si una palabra o el conjunto no caben.
+  function mcclWrap(text, W, Hc){
+    var maxW = 0.86 * W, fs0 = 0.30 * W, fsMin = 0.1 * W, fs = fs0, lines = [];
+    var paras = String(text).split(/\n/);
+    function build(f, hard){
+      var out = [];
+      paras.forEach(function(par){
+        var words = par.split(/\s+/).filter(Boolean), cur = '';
+        if (!words.length){ out.push(''); return; }
+        words.forEach(function(w){
+          if (hard && mcclEm(w, false) * f > maxW){        // palabra más ancha que el rectángulo aun con la letra mínima: se corta
+            if (cur){ out.push(cur); cur = ''; }
+            var piece = '';
+            w.split('').forEach(function(c){ if (piece && mcclEm(piece + c, false) * f > maxW){ out.push(piece); piece = c; } else piece += c; });
+            cur = piece; return;
+          }
+          var t = cur ? cur + ' ' + w : w;
+          if (cur && mcclEm(t, false) * f > maxW){ out.push(cur); cur = w; } else cur = t;
+        });
+        out.push(cur);
+      });
+      return out;
+    }
+    lines = build(fs);
+    var widest = 0; lines.forEach(function(l){ widest = Math.max(widest, mcclEm(l, false)); });
+    if (widest * fs > maxW){ fs = Math.max(fsMin, maxW / widest); lines = build(fs, fs <= fsMin * 1.0001); }
+    var maxLines = Math.max(1, Math.floor((0.92 * Hc) / (1.15 * fs)));
+    while (lines.length > maxLines && fs > fsMin * 0.5){ fs *= 0.9; lines = build(fs, fs <= fsMin * 1.0001 || widest * fs > maxW); maxLines = Math.max(1, Math.floor((0.92 * Hc) / (1.15 * fs))); }
+    return { lines: lines, fs: fs };
+  }
+
+  /* ---------------- Construcción del símbolo (SVG) ---------------- */
+  // Devuelve { svg, w, h, ax, ay, W, fs }: w x h = caja del marco (rectángulo + triángulo); (ax, ay) = vértice inferior.
+  function mcclBuild(mp, opt){
+    opt = opt || {};
+    var def = MCCL_DEFS[mp.type] || MCCL_DEFS.l_reunion;
+    var W = opt.W != null ? opt.W : mcclWidthPx(mp);
+    var dist = def.frame === 'D';
+    var Hc = (dist ? MCCL_HC_D : MCCL_HC_B) * W, yS = MCCL_YSEP * W, yT = MCCL_YTIP * W;
+    var sw = Math.max(0.5, 0.05 * W), swS = sw * 0.75;
+    var fill = MIL_AFFILIATION_COLORS[mp.affiliation] || MIL_AFFILIATION_COLORS.friendly;
+    var cond = mp.condition;
+    var dash = cond === 'planned' ? ' stroke-dasharray="' + mcclF(sw * 3) + ' ' + mcclF(sw * 2) + '"' : '';
+    var fs = MCCL_FS * W, svg = '';
+    // marco: contorno (rectángulo + triángulo) + línea que los separa + (D) línea superior de la franja
+    svg += '<path class="mccl-frame" d="M0,0 L' + mcclF(W) + ',0 L' + mcclF(W) + ',' + mcclF(yS) + ' L' + mcclF(W / 2) + ',' + mcclF(yT) + ' L0,' + mcclF(yS) + ' Z" fill="' + fill +
+      '" stroke="#000" stroke-width="' + mcclF(sw) + '" stroke-linejoin="miter" stroke-miterlimit="10"' + dash + '/>';
+    svg += '<line class="mccl-sep" x1="0" y1="' + mcclF(yS) + '" x2="' + mcclF(W) + '" y2="' + mcclF(yS) + '" stroke="#000" stroke-width="' + mcclF(sw) + '"' + dash + '/>';
+    if (dist) svg += '<line class="mccl-strip" x1="0" y1="' + mcclF(Hc) + '" x2="' + mcclF(W) + '" y2="' + mcclF(Hc) + '" stroke="#000" stroke-width="' + mcclF(swS) + '"' + dash + '/>';
+    // contenido
+    var icon = def.icon;
+    if (icon === 'sanidad') svg += '<g class="mccl-glyph" data-glyph="sanidad">' + mcclSanidadPx(W, Hc, swS) + '</g>';
+    else if (icon && MCCL_ICONS[icon]){
+      svg += '<g class="mccl-glyph" data-glyph="' + icon + '" transform="translate(0,' + mcclF((Hc - W) / 2) + ') scale(' + mcclF(W / 100) + ')">' + MCCL_ICONS[icon]() + '</g>';
+    }
+    var capK = 0.716;
+    var topY = -(cond === 'dummy' ? 0.30 * W : 0) - sw * 0.5, hBase = topY - 0.07 * W;   // línea base del campo H
+    if (def.fixed){
+      var bold = true, em = mcclEm(def.fixed, bold);
+      var base, x = W / 2, ffs;
+      if (def.fixMode === 'above'){
+        ffs = Math.min(0.32 * W, (1.12 * W) / em);
+      } else if (def.fixMode === 'center'){
+        ffs = Math.min(0.54 * W, (0.86 * W) / em);
+      } else {
+        ffs = Math.min(0.46 * W, (0.9 * W) / em);
+      }
+      var tl = ' textLength="' + mcclF(em * ffs * 0.97) + '" lengthAdjust="spacingAndGlyphs"';
+      if (def.fixMode === 'above'){
+        base = topY - 0.07 * W;
+        hBase = base - capK * ffs - 0.14 * fs;
+      } else if (def.fixMode === 'center'){
+        base = Hc / 2 + capK * ffs / 2;
+      } else {
+        base = 0.12 * W + capK * ffs;
+      }
+      svg += '<text class="mccl-fixed" data-mccl="fixed" x="' + mcclF(x) + '" y="' + mcclF(base) + '" text-anchor="middle" font-family="' + MCCA_FAM + '" font-weight="700" font-size="' + mcclF(ffs) + '"' + tl + ' fill="#000">' + escapeHtmlText(def.fixed) + '</text>';
+    }
+    // texto interior editable (Lugar de reunión / Lugar de distribución): centrado en el área de contenido, con
+    // ajuste de línea por palabras y reducción de letra para que SIEMPRE quede dentro del rectángulo
+    if (def.edit && mp.inner && !opt.noText){
+      var wr = mcclWrap(mp.inner, W, Hc), ifs = wr.fs, lh = 1.15 * ifs, tsp = '';
+      wr.lines.forEach(function(ln, i){
+        tsp += '<tspan x="' + mcclF(W / 2) + '" y="' + mcclF(Hc / 2 + (i - (wr.lines.length - 1) / 2) * lh + capK * ifs / 2) + '">' + escapeHtmlText(ln) + (i < wr.lines.length - 1 ? ' ' : '') + '</tspan>';
+      });
+      svg += '<text class="mccl-inner" data-mccl="inner" text-anchor="middle" font-family="' + MCCA_FAM + '" font-size="' + mcclF(ifs) + '" fill="#000">' + tsp + '</text>';
+    }
+    // sombrero punteado (condición Simulado), solo una decoración encima del marco
+    if (cond === 'dummy'){
+      svg += '<path class="mccl-dummy" d="M' + mcclF(-0.05 * W) + ',' + mcclF(-0.02 * W) + ' L' + mcclF(W / 2) + ',' + mcclF(-0.30 * W) + ' L' + mcclF(1.05 * W) + ',' + mcclF(-0.02 * W) +
+        '" fill="none" stroke="#000" stroke-width="' + mcclF(Math.max(0.8, sw * 1.25)) + '" stroke-dasharray="' + mcclF(sw * 3) + ' ' + mcclF(sw * 2.2) + '" stroke-linecap="round"/>';
+    }
+    // los 5 campos alrededor del símbolo
+    if (!opt.noText && fs >= MCCA_FS_MIN_VISIBLE){
+      var gap = 0.10 * W + sw * 0.5, yTop = sw * 0.5 + 0.02 * W, bW = yTop + 0.75 * fs, yN = 0.5 * (Hc + yS);
+      function T(key, txt, x, y, anchor){
+        if (!txt) return '';
+        return '<text class="mccl-t" data-mccl="' + key + '" x="' + mcclF(x) + '" y="' + mcclF(y) + '" text-anchor="' + anchor + '" font-family="' + MCCA_FAM + '" font-size="' + mcclF(fs) +
+          '" fill="#000" stroke="#fff" stroke-opacity="0.85" stroke-width="' + mcclF(fs * 0.2) + '" paint-order="stroke" stroke-linejoin="round">' + escapeHtmlText(String(txt)) + '</text>';
+      }
+      svg += T('H', mp.H, W / 2, hBase, 'middle');
+      svg += T('W', mp.W, -gap, bW, 'end');
+      svg += T('W1', mp.W1, -gap, bW + 1.22 * fs, 'end');
+      svg += T('T', mp.T, W + gap, bW, 'start');
+      svg += T('N', mp.N, W + gap, yN + 0.36 * fs, 'start');
+    }
+    var html = '<svg xmlns="http://www.w3.org/2000/svg" class="mccl-svg" width="' + mcclF(W) + '" height="' + mcclF(yT) + '" viewBox="0 0 ' + mcclF(W) + ' ' + mcclF(yT) + '" style="overflow:visible;">' + svg + '</svg>';
+    return { svg: html, w: W, h: yT, ax: W / 2, ay: yT, W: W, fs: fs, Hc: Hc, yS: yS };
+  }
+  function mcclIcon(mp){
+    var b = mcclBuild(mp);
+    return L.divIcon({ className: 'mccl-marker', html: b.svg, iconSize: [mcclF(b.w) * 1, mcclF(b.h) * 1], iconAnchor: [b.ax, b.ay] });
+  }
+  // Miniatura para el selector / panel (ancho fijo, sin los 5 textos).
+  function mcclThumbSVG(type, aff, W, cond){
+    var mp = { type: type, affiliation: aff || 'friendly', condition: cond || 'present', scale: 1, refZoom: null };
+    return mcclBuild(mp, { W: W || 26, noText: true }).svg;
+  }
+  // Re-dibuja el ícono de todos los símbolos (cambio de zoom, recarga, capas de la Dirección).
+  function syncMccLog(shape){
+    if (!shape || !shape._isMccPoint || !shape._mcc || !mcclIs(shape._mcc.type)) return;
+    shape.setIcon(buildMccPointIcon(shape._mcc));
+  }
+  function syncAllMccLog(){
+    renderedLayers().forEach(function(l){
+      l.group.eachLayer(function(s){ if (s._isMccPoint && s._mcc && mcclIs(s._mcc.type)) syncMccLog(s); });
+    });
+  }
+
+  /* ---------------- Alta (herramienta con selector en el panel lateral) ---------------- */
+  var mcclClickHandler = null;
+  var mcclPendingType = 'l_reunion';
+  function stopMcclTool(){
+    if (mcclClickHandler){ map.off('click', mcclClickHandler); mcclClickHandler = null; }
+    mapContainer.style.cursor = '';
+    var body = document.getElementById('properties-body');
+    if (body && body.getAttribute('data-mccl-picker')){
+      body.removeAttribute('data-mccl-picker');
+      if (!selectedShape) clearProperties();
+    }
+  }
+  function mcclNorm0(s){ return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+  // Cuadrícula de símbolos agrupada por secciones, con buscador. onPick(type) al elegir uno.
+  function mcclBuildPicker(currentType, aff, onPick){
+    var root = document.createElement('div'); root.className = 'mccl-picker';
+    var search = document.createElement('input'); search.type = 'search'; search.className = 'mccl-search'; search.placeholder = 'Buscar símbolo…';
+    search.setAttribute('data-mccl-search', '1');
+    root.appendChild(search);
+    var items = [];
+    MCCL_SECTIONS.forEach(function(sec){
+      var secEl = document.createElement('div'); secEl.className = 'mccl-sec'; secEl.setAttribute('data-mccl-sec', sec.id);
+      var tt = document.createElement('div'); tt.className = 'mccl-sec-title'; tt.textContent = sec.title; secEl.appendChild(tt);
+      var grid = document.createElement('div'); grid.className = 'mccl-grid'; secEl.appendChild(grid);
+      sec.items.forEach(function(it){
+        var btn = document.createElement('button'); btn.type = 'button';
+        btn.className = 'mccl-item' + (it[0] === currentType ? ' selected' : '');
+        btn.title = it[1]; btn.setAttribute('data-mccl-type', it[0]); btn.setAttribute('aria-label', it[1]);
+        btn.innerHTML = '<span class="mccl-thumb">' + mcclThumbSVG(it[0], aff, 32) + '</span><span class="mccl-cap">' + escapeHtmlText(it[1]) + '</span>';
+        btn.addEventListener('click', function(ev){ ev.stopPropagation(); onPick(it[0]); });
+        grid.appendChild(btn);
+        items.push({ btn: btn, text: mcclNorm0(it[1]), sec: secEl });
+      });
+      root.appendChild(secEl);
+    });
+    search.addEventListener('input', function(){
+      var q = mcclNorm0(search.value).trim();
+      items.forEach(function(e){ e.btn.style.display = (!q || e.text.indexOf(q) !== -1) ? '' : 'none'; });
+      [].slice.call(root.querySelectorAll('.mccl-sec')).forEach(function(secEl){
+        var any = [].slice.call(secEl.querySelectorAll('.mccl-item')).some(function(b){ return b.style.display !== 'none'; });
+        secEl.style.display = any ? '' : 'none';
+      });
+    });
+    return root;
+  }
+  function showMcclPicker(){
+    var body = document.getElementById('properties-body');
+    if (!body) return;
+    body.className = ''; body.innerHTML = ''; body.setAttribute('data-mccl-picker', '1');
+    var blk = document.createElement('div'); blk.className = 'style-block';
+    var title = document.createElement('div'); title.className = 'veh-section-label'; title.textContent = 'MCC Logísticas';
+    blk.appendChild(title);
+    var hint = document.createElement('div'); hint.className = 'hint';
+    hint.textContent = 'Elija un símbolo y haga clic en el mapa: el vértice inferior del triángulo queda en el punto marcado.';
+    blk.appendChild(hint);
+    blk.appendChild(mcclBuildPicker(mcclPendingType, 'friendly', function(type){
+      mcclPendingType = type;
+      [].slice.call(blk.querySelectorAll('.mccl-item')).forEach(function(b){ b.classList.toggle('selected', b.getAttribute('data-mccl-type') === type); });
+    }));
+    body.appendChild(blk);
+  }
+  function activateMcclTool(type){
+    if (activeToolName === 'mcclog' && !type){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de colocar el símbolo.'); return; }
+    disableAllTools();
+    if (type && MCCL_DEFS[type]) mcclPendingType = type;
+    activeToolName = 'mcclog';
+    updateToolbarUI();
+    mapContainer.style.cursor = 'crosshair';
+    if (selectedShape){ selectedShape = null; syncOtherHandlesForSelection(null); syncArrowHandlesForSelection(null); }
+    showMcclPicker();
+    mcclClickHandler = function(e){
+      var activeNow = getActiveLayer();
+      if (!activeNow) return;
+      var mp = mcclDefaults(mcclPendingType);
+      var layer = L.marker(e.latlng, { icon: buildMccPointIcon(mp) });
+      layer._isMccPoint = true;
+      layer._mcc = mp;
+      activeNow.group.addLayer(layer);
+      attachShapeInteractivity(layer, activeNow);
+      recordAddShape(activeNow, layer);
+      renderLayerList();
+      selectedShape = layer;
+      var bodyEl = document.getElementById('properties-body'); if (bodyEl) bodyEl.removeAttribute('data-mccl-picker');
+      showProperties(layer, activeNow);
+      disableAllTools();
+    };
+    map.on('click', mcclClickHandler);
+  }
+
+  /* ---------------- Panel de propiedades ---------------- */
+  // Cambio hecho desde los botones del panel (afiliación, condición, símbolo) con deshacer/rehacer. Si el nombre
+  // era el automático ("<símbolo> <n>") y cambia el símbolo, el nombre se actualiza con el del símbolo nuevo.
+  function mcclChange(shape, mutate){
+    var before = mccaSnapshot(shape), nb = shape._customName, oldLabel = MCCL_LABELS[shape._mcc.type] || '';
+    mutate(shape._mcc);
+    var na = nb;
+    if (nb && oldLabel && nb.indexOf(oldLabel + ' ') === 0 && /^\d+$/.test(nb.slice(oldLabel.length + 1)) && MCCL_LABELS[shape._mcc.type] !== oldLabel){
+      na = MCCL_LABELS[shape._mcc.type] + ' ' + nb.slice(oldLabel.length + 1);
+    }
+    shape._customName = na;
+    mccaRefreshShape(shape);
+    var after = mccaSnapshot(shape);
+    if (JSON.stringify(before) !== JSON.stringify(after) || nb !== na){
+      pushAction(function(){ shape._customName = nb; mccaRestore(shape, before); }, function(){ shape._customName = na; mccaRestore(shape, after); });
+    }
+    renderLayerList();
+    if (selectedShape === shape) showProperties(shape, findLayerOfShape(shape));
+  }
+  function mcclFillPanel(shape, kit, block){
+    var m = shape._mcc, def = MCCL_DEFS[m.type];
+    function pickRow(attr, options, current, iconFn, onPick){
+      var row = document.createElement('div'); row.className = 'veh-pick-row';
+      options.forEach(function(opt){
+        var btn = document.createElement('button'); btn.type = 'button';
+        btn.className = 'veh-pick-btn' + (current === opt[0] ? ' selected' : '');
+        btn.title = opt[1]; btn.setAttribute(attr, opt[0]);
+        btn.innerHTML = iconFn(opt[0]);
+        btn.addEventListener('click', function(){ onPick(opt[0]); });
+        row.appendChild(btn);
+      });
+      return row;
+    }
+    var aL = document.createElement('div'); aL.className = 'veh-section-label'; aL.textContent = 'Afiliación'; block.appendChild(aL);
+    block.appendChild(pickRow('data-mccl-aff', MIL_AFFILIATIONS, m.affiliation, function(v){
+      return '<span class="mccl-pick-thumb">' + mcclThumbSVG(m.type, v, 13) + '</span>';
+    }, function(v){ mcclChange(shape, function(mm){ mm.affiliation = v; }); }));
+    var cL = document.createElement('div'); cL.className = 'veh-section-label'; cL.textContent = 'Condición'; block.appendChild(cL);
+    block.appendChild(pickRow('data-mccl-cond', VEH_CONDITIONS, m.condition, function(v){
+      return '<span class="mccl-pick-thumb">' + mcclThumbSVG(m.type, m.affiliation, 13, v) + '</span>';
+    }, function(v){ mcclChange(shape, function(mm){ mm.condition = v; }); }));
+    var pv = document.createElement('div'); pv.className = 'veh-preview-box mccl-preview';
+    pv.innerHTML = mcclBuild(m, { W: 44, noText: true }).svg;
+    block.appendChild(pv);
+    kit.range('Tamaño', function(){ return m.scale || 1; }, function(v){ m.scale = v; }, 0.5, 3, 0.1, function(v){ return Math.round(v * 100) + '%'; }, 'scale');
+    if (def.edit){
+      kit.text('Texto interior', function(){ return m.inner || ''; }, function(v){ m.inner = v; }, { dataKey: 'inner', placeholder: 'escriba dentro del rectángulo' });
+    }
+    MCCL_FIELDS.forEach(function(f){
+      kit.text(f[1], function(){ return m[f[0]] || ''; }, function(v){ m[f[0]] = v; }, { dataKey: f[0], placeholder: f[2], css: MCCA_INPUT_CSS.replace('width:92px', 'width:112px').replace('text-align:right', 'text-align:left') });
+    });
+    kit.note('H arriba, W/W1 a la izquierda, T/N a la derecha del símbolo. Todos nacen vacíos; N: colocar ENO si es del enemigo. El ancla es el vértice inferior del triángulo.');
+    var sL = document.createElement('div'); sL.className = 'veh-section-label'; sL.textContent = 'Símbolo'; sL.style.marginTop = '6px'; block.appendChild(sL);
+    block.appendChild(mcclBuildPicker(m.type, m.affiliation, function(type){
+      if (type === m.type) return;
+      mcclChange(shape, function(mm){
+        var n = mcclDefaults(type);
+        mm.type = type;
+        if (n.inner === undefined) delete mm.inner; else if (mm.inner === undefined) mm.inner = '';
+      });
+    }));
+  }
+
   function startApp(){
     loadGithubConfig();
     document.querySelectorAll('.collapsible-header').forEach(function(header){
@@ -23038,6 +23523,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
         parts.push(shape._infra.activo || '', shape._infra.codigo || '', shape._infra.denominacion || '', shape._infra.identificacion || '');
       }
       if (shape._isText && shape._text) parts.push(String(shape._text.text || '').replace(/<[^>]+>/g, ' '));
+      if (shape._isMccPoint && shape._mcc && mcclIs(shape._mcc.type)) parts.push(shape._mcc.inner || '', shape._mcc.H || '', shape._mcc.W || '', shape._mcc.W1 || '', shape._mcc.T || '', shape._mcc.N || '', MCCL_DEFS[shape._mcc.type].fixed);
       return parts.join(' ').toLowerCase();
     }
 
@@ -23144,6 +23630,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
     map.on('zoomend', syncAllMccZonaCompanions);
     map.on('zoomend', syncAllMccTextCompanions);
     map.on('zoomend', syncAllMccAereo);
+    map.on('zoomend', syncAllMccLog);
     map.on('zoomend', syncAllArrowOutlines);
     setInterval(saveStateToStorage, 8000);
 
