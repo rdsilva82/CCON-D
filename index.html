@@ -7182,7 +7182,8 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     ['mechanized','Infantería mecanizada'],
     ['armor','Blindada / Tanques'],
     ['artillery','Artillería'],
-    ['cavalry','Caballería / Reconocimiento'],
+    ['cavalryligera','Caballería Ligera'],
+    ['cavalry','Caballería Blindada'],
     ['aviation','Ala Fija (Aviación)'],
     ['rotarywing','Ala Rotatoria'],
     ['airdefense','Defensa aérea'],
@@ -7265,7 +7266,8 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       ['ev','BAEV']
     ],
     caballeria: [
-      ['cavalry','Reconocimiento'],
+      ['cavalryligera','Ligera'],
+      ['cavalry','Blindada'],
       ['gmar','GMAR']
     ],
     artilleria: [
@@ -7360,6 +7362,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   Object.keys(MIL_UNIT_TYPES_BY_BASE).forEach(function(baseKey){
     if (baseKey === 'generic') return;
     MIL_COMMON_SUBTYPES.forEach(function(entry){
+      if (baseKey === 'caballeria' && entry[0] === 'armor') return;   // en Caballería la "Blindada" es el símbolo propio (diagonal + óvalo)
       MIL_UNIT_TYPES_BY_BASE[baseKey].push(entry);
     });
   });
@@ -7377,7 +7380,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   var MIL_BASE_PRIMARY_GLYPH = {
     generic: 'generic',
     infanteria: 'infantry',
-    caballeria: 'cavalry',
+    caballeria: 'cavalryligera',
     artilleria: 'artillery',
     ingenieros: 'engineer',
     comunicaciones: 'signal',
@@ -7753,8 +7756,16 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         return '<ellipse cx="30" cy="30" rx="17" ry="10" fill="none" stroke="'+g+'" stroke-width="1.2"/>';
       case 'artillery':
         return '<circle cx="30" cy="30" r="3.25" fill="'+g+'"/>';
-      case 'cavalry':
-        return '<ellipse cx="30" cy="30" rx="15" ry="9" fill="none" stroke="'+g+'" stroke-width="2.2"/><line x1="17" y1="39" x2="43" y2="21" stroke="'+g+'" stroke-width="2.4" stroke-linecap="round"/>';
+      case 'cavalryligera': {
+        // Caballería Ligera: solo la diagonal (abajo-izquierda → arriba-derecha), de esquina a esquina del marco
+        var cb = frameBoundsForAffiliation(affiliation);
+        return '<line x1="'+cb.x1+'" y1="'+cb.y2+'" x2="'+cb.x2+'" y2="'+cb.y1+'" stroke="'+g+'" stroke-width="2.4"/>';
+      }
+      case 'cavalry': {
+        // Caballería Blindada: la diagonal completa + el óvalo en el centro
+        var cb2 = frameBoundsForAffiliation(affiliation);
+        return '<ellipse cx="30" cy="30" rx="15" ry="9" fill="none" stroke="'+g+'" stroke-width="2.2"/><line x1="'+cb2.x1+'" y1="'+cb2.y2+'" x2="'+cb2.x2+'" y2="'+cb2.y1+'" stroke="'+g+'" stroke-width="2.4"/>';
+      }
       case 'aviation':
         return '<path d="M30,30 C30,25 27,22 22,22 C17,22 14,26 14,30 C14,34 17,38 22,38 C27,38 30,35 30,30 C30,25 33,22 38,22 C43,22 46,26 46,30 C46,34 43,38 38,38 C33,38 30,35 30,30 Z" fill="none" stroke="'+g+'" stroke-width="2.4" stroke-linejoin="round"/>';
       case 'rotarywing':
