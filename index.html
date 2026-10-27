@@ -1754,10 +1754,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.3"/></svg>
         <span>Círculo</span>
       </button>
-      <button class="tool-btn" data-tool="selectarea" title="Seleccionar área: dibuje un polígono y se seleccionan los objetos de la capa activa que queden dentro">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7.5L12 4l7 4.5-1.5 8.5-6.5 3-6-3.5z" stroke-dasharray="3 2.4"/><path d="M11 11l4.2 8 1.3-3.2 3.2-1.3z" fill="currentColor"/></svg>
-        <span>Selecc. área</span>
-      </button>
       <div class="tool-btn-wrap" id="tactica-wrap">
         <button class="tool-btn" data-tool="tactica-toggle" title="Táctica: flechas y líneas de obstáculos/fortificación">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5L18 6"/><path d="M18 6h-6.5"/><path d="M18 6v6.5"/></svg>
@@ -1977,6 +1973,10 @@
       <button class="tool-btn danger" data-tool="delete" title="Eliminar elementos (clic sobre la forma)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15"/><path d="M9 7V4.3h6V7"/><path d="M6.5 7l1 12.5h9L17.5 7"/></svg>
         <span>Eliminar</span>
+      </button>
+      <button class="tool-btn" data-tool="selectarea" title="Seleccionar área: dibuje el área a mano alzada y se seleccionan los objetos de la capa activa que queden dentro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7.5L12 4l7 4.5-1.5 8.5-6.5 3-6-3.5z" stroke-dasharray="3 2.4"/><path d="M11 11l4.2 8 1.3-3.2 3.2-1.3z" fill="currentColor"/></svg>
+        <span>Selecc. área</span>
       </button>
       <hr>
       <button class="tool-btn" data-tool="undo" id="undo-btn" title="Deshacer">
@@ -10580,91 +10580,71 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   }
 
   /* ---- Seleccionar área: polígono que selecciona los objetos de la capa ACTIVA que quedan por completo dentro ----
-     Clic = vértice · doble clic / Enter / clic sobre el primer vértice = cerrar · Esc = cancelar · Retroceso = quitar último vértice.
+     Se dibuja a mano alzada (mantener presionado y arrastrar); al soltar se cierra y selecciona · Esc = cancelar.
      El resultado usa la selección múltiple existente (eliminar, color, grosor, transparencia, mover a otra capa...). */
   var selAreaActive = false;
-  var selAreaPts = [];          // vértices (L.LatLng)
+  var selAreaPts = [];          // trazo a mano alzada (L.LatLng)
   var selAreaPoly = null;       // polígono de vista previa
-  var selAreaRubber = null;     // segmento hacia el cursor
   var selAreaBar = null;
-  var selAreaDown = null;
-  var selAreaLastClickAt = 0;
+  var selAreaPointerId = null;
+  var selAreaLastPt = null;
 
-  function selAreaUpdatePreview(cursor){
-    var pts = selAreaPts.slice();
+  function selAreaUpdatePreview(){
     if (!selAreaPoly){
-      selAreaPoly = L.polygon(pts.length ? pts : [[0,0]], { color:'#B8962E', weight:2, dashArray:'6 5', fillColor:'#B8962E', fillOpacity:.12, interactive:false });
-      selAreaPoly.addTo(map);
+      selAreaPoly = L.polygon(selAreaPts.length ? selAreaPts : [[0,0]], { color:'#B8962E', weight:2, dashArray:'6 5', fillColor:'#B8962E', fillOpacity:.15, interactive:false }).addTo(map);
     }
-    selAreaPoly.setLatLngs(pts.length ? pts : [[0,0]]);
-    if (!selAreaRubber){
-      selAreaRubber = L.polyline([], { color:'#B8962E', weight:2, dashArray:'2 6', interactive:false }).addTo(map);
-    }
-    selAreaRubber.setLatLngs(cursor && pts.length ? [pts[pts.length - 1], cursor] : []);
-    if (selAreaBar){
-      var n = pts.length;
-      selAreaBar.querySelector('.sa-msg').textContent = n === 0
-        ? 'Seleccionar área: haga clic en el mapa para marcar los vértices del polígono.'
-        : 'Seleccionar área: ' + n + (n === 1 ? ' vértice' : ' vértices') + (n < 3 ? ' (mínimo 3)' : ' · doble clic o «Seleccionar» para cerrar') + '.';
-      selAreaBar.querySelector('.sa-go').disabled = n < 3;
-      selAreaBar.querySelector('.sa-undo').disabled = n === 0;
-    }
+    selAreaPoly.setLatLngs(selAreaPts.length ? selAreaPts : [[0,0]]);
   }
   function selAreaBuildBar(){
     var bar = document.createElement('div');
     bar.id = 'select-area-bar';
-    bar.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--hdr-h,56px) + 10px);z-index:2500;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:min(94vw,640px);padding:8px 12px;border-radius:10px;background:var(--navy,#1F3864);color:#fff;border-left:4px solid #B8962E;box-shadow:0 4px 16px rgba(0,0,0,.3);font-size:12px;';
-    bar.innerHTML = '<span class="sa-msg"></span>' +
-      '<button type="button" class="outline-btn sa-undo" style="padding:4px 10px;">↶ Quitar vértice</button>' +
-      '<button type="button" class="primary-btn sa-go" style="padding:4px 12px;">✔ Seleccionar</button>' +
+    bar.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--hdr-h,56px) + 10px);z-index:2500;display:flex;gap:8px;align-items:center;justify-content:center;max-width:min(94vw,640px);padding:8px 12px;border-radius:10px;background:var(--navy,#1F3864);color:#fff;border-left:4px solid #B8962E;box-shadow:0 4px 16px rgba(0,0,0,.3);font-size:12px;';
+    bar.innerHTML = '<span class="sa-msg">Seleccionar área: mantenga presionado y dibuje el contorno a mano alzada; al soltar se selecciona lo que quede dentro.</span>' +
       '<button type="button" class="outline-btn sa-cancel" style="padding:4px 10px;">✕ Cancelar</button>';
-    bar.querySelector('.sa-undo').addEventListener('click', function(){ selAreaPts.pop(); selAreaUpdatePreview(null); });
-    bar.querySelector('.sa-go').addEventListener('click', function(){ selAreaFinish(); });
     bar.querySelector('.sa-cancel').addEventListener('click', function(){ disableAllTools(); });
     document.body.appendChild(bar);
     return bar;
   }
   function selAreaPointerDown(ev){
     if (ev.button !== undefined && ev.button !== 0) return;
+    if (selAreaPointerId !== null) return;
     if (ev.target && ev.target.closest && ev.target.closest('#select-area-bar')) return;
-    selAreaDown = { x: ev.clientX, y: ev.clientY, id: ev.pointerId };
-  }
-  function selAreaPointerUp(ev){
-    var d = selAreaDown; selAreaDown = null;
-    if (!d || d.id !== ev.pointerId) return;
-    if (Math.abs(ev.clientX - d.x) > 6 || Math.abs(ev.clientY - d.y) > 6) return;   // fue un arrastre (mover el mapa)
+    selAreaPointerId = ev.pointerId;
+    ev.preventDefault();
+    if (mapContainer.setPointerCapture){ try{ mapContainer.setPointerCapture(ev.pointerId); }catch(err){} }
     var cp = containerPointFromEvent(ev);
-    var ll = map.containerPointToLatLng(cp);
-    if (selAreaPts.length >= 3){
-      var first = map.latLngToContainerPoint(selAreaPts[0]);
-      if (first.distanceTo(cp) <= 12){ selAreaFinish(); return; }
-    }
-    // el segundo clic de un doble clic cae en el mismo sitio: no duplicar vértice
-    if (selAreaPts.length){
-      var last = map.latLngToContainerPoint(selAreaPts[selAreaPts.length - 1]);
-      if (last.distanceTo(cp) < 4) return;
-    }
-    selAreaPts.push(ll);
-    selAreaUpdatePreview(ll);
+    selAreaLastPt = cp;
+    selAreaPts = [map.containerPointToLatLng(cp)];
+    selAreaUpdatePreview();
+    mapContainer.addEventListener('pointermove', selAreaPointerMove);
+    mapContainer.addEventListener('pointerup', selAreaPointerUp);
+    mapContainer.addEventListener('pointercancel', selAreaPointerUp);
   }
   function selAreaPointerMove(ev){
-    if (!selAreaPts.length) return;
-    selAreaUpdatePreview(map.containerPointToLatLng(containerPointFromEvent(ev)));
-  }
-  function selAreaBlockClick(ev){
-    // evita que un clic sobre un objeto lo seleccione/edite mientras se dibuja el área
-    if (ev.target && ev.target.closest && ev.target.closest('#select-area-bar')) return;
-    ev.stopPropagation();
-  }
-  function selAreaDblClick(ev){
-    ev.stopPropagation();
+    if (ev.pointerId !== selAreaPointerId) return;
     ev.preventDefault();
-    if (selAreaPts.length >= 3) selAreaFinish();
+    var cp = containerPointFromEvent(ev);
+    if (selAreaLastPt && selAreaLastPt.distanceTo(cp) < 3) return;
+    selAreaLastPt = cp;
+    selAreaPts.push(map.containerPointToLatLng(cp));
+    selAreaUpdatePreview();
+  }
+  function selAreaPointerUp(ev){
+    if (ev.pointerId !== selAreaPointerId) return;
+    mapContainer.removeEventListener('pointermove', selAreaPointerMove);
+    mapContainer.removeEventListener('pointerup', selAreaPointerUp);
+    mapContainer.removeEventListener('pointercancel', selAreaPointerUp);
+    selAreaPointerId = null;
+    if (selAreaPts.length < 3){
+      // trazo demasiado corto: se descarta y la herramienta sigue activa
+      selAreaPts = [];
+      if (selAreaPoly){ map.removeLayer(selAreaPoly); selAreaPoly = null; }
+      return;
+    }
+    selAreaFinish();
   }
   function selAreaKeyDown(ev){
     if (ev.key === 'Escape'){ ev.preventDefault(); disableAllTools(); }
-    else if (ev.key === 'Enter'){ ev.preventDefault(); if (selAreaPts.length >= 3) selAreaFinish(); }
-    else if (ev.key === 'Backspace' && !/INPUT|TEXTAREA|SELECT/.test((ev.target && ev.target.tagName) || '')){ ev.preventDefault(); selAreaPts.pop(); selAreaUpdatePreview(null); }
   }
   function selAreaFlat(ll, out){
     if (Array.isArray(ll)) ll.forEach(function(x){ selAreaFlat(x, out); });
@@ -10729,32 +10709,28 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     if (multiSelectedShapes.length){ clearMultiSelect(); clearProperties(); }
     selAreaActive = true;
     selAreaPts = [];
-    map.doubleClickZoom.disable();
+    selAreaPointerId = null;
+    map.dragging.disable();
     mapContainer.style.cursor = 'crosshair';
+    mapContainer.style.touchAction = 'none';
     mapContainer.addEventListener('pointerdown', selAreaPointerDown);
-    mapContainer.addEventListener('pointerup', selAreaPointerUp);
-    mapContainer.addEventListener('pointermove', selAreaPointerMove);
-    mapContainer.addEventListener('click', selAreaBlockClick, true);
-    mapContainer.addEventListener('dblclick', selAreaDblClick, true);
     document.addEventListener('keydown', selAreaKeyDown);
     selAreaBar = selAreaBuildBar();
-    selAreaUpdatePreview(null);
     activeToolName = 'selectarea';
     updateToolbarUI();
   }
   function stopSelectAreaMode(){
     selAreaActive = false;
-    selAreaDown = null;
-    map.doubleClickZoom.enable();
+    selAreaPointerId = null;
+    map.dragging.enable();
     mapContainer.style.cursor = '';
+    mapContainer.style.touchAction = '';
     mapContainer.removeEventListener('pointerdown', selAreaPointerDown);
-    mapContainer.removeEventListener('pointerup', selAreaPointerUp);
     mapContainer.removeEventListener('pointermove', selAreaPointerMove);
-    mapContainer.removeEventListener('click', selAreaBlockClick, true);
-    mapContainer.removeEventListener('dblclick', selAreaDblClick, true);
+    mapContainer.removeEventListener('pointerup', selAreaPointerUp);
+    mapContainer.removeEventListener('pointercancel', selAreaPointerUp);
     document.removeEventListener('keydown', selAreaKeyDown);
     if (selAreaPoly){ map.removeLayer(selAreaPoly); selAreaPoly = null; }
-    if (selAreaRubber){ map.removeLayer(selAreaRubber); selAreaRubber = null; }
     if (selAreaBar){ selAreaBar.remove(); selAreaBar = null; }
     selAreaPts = [];
   }
