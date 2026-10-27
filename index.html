@@ -943,6 +943,20 @@
   body.clima-nav #clima-panel #map{ pointer-events:auto !important; }
   body.clima-no-calcos #clima-panel #map{ visibility:hidden; }
 
+  /* ---------- PANEL PICC (pestaña reservada: el contenido se integra aquí) ---------- */
+  #picc-panel{
+    display:none; position:fixed; inset:var(--hdr-h,56px) 0 0 0; z-index:1100;
+    background:var(--bg); overflow:auto;
+  }
+  body.mode-picc #picc-panel{ display:block; }
+  #picc-root{ min-height:100%; box-sizing:border-box; }
+  #picc-placeholder{
+    max-width:560px; margin:12vh auto 0; padding:28px 24px; text-align:center;
+    background:var(--panel-bg); border:1px solid var(--border); border-radius:12px; color:var(--navy);
+  }
+  #picc-placeholder h2{ margin:0 0 8px; font-size:20px; letter-spacing:.04em; }
+  #picc-placeholder p{ margin:0; font-size:13px; opacity:.75; }
+
   /* ---------- PANEL PERSONAL ---------- */
   #personal-panel{
     display:none; position:fixed; inset:var(--hdr-h,56px) 0 0 0; z-index:1100;
@@ -1527,6 +1541,7 @@
   </div>
   <div class="mode-switcher">
     <button class="mode-btn active" id="mode-edicion-btn">✎ Edición</button>
+    <button class="mode-btn" id="mode-picc-btn">▦ PICC</button>
     <button class="mode-btn" id="mode-coa-btn">◎ COA</button>
     <button class="mode-btn" id="mode-enfoque-btn">🖼 Enfoque</button>
     <button class="mode-btn" id="mode-personal-btn">👤 Personal</button>
@@ -1738,6 +1753,10 @@
       <button class="tool-btn" data-tool="circle" title="Círculo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.3"/></svg>
         <span>Círculo</span>
+      </button>
+      <button class="tool-btn" data-tool="selectarea" title="Seleccionar área: dibuje un polígono y se seleccionan los objetos de la capa activa que queden dentro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7.5L12 4l7 4.5-1.5 8.5-6.5 3-6-3.5z" stroke-dasharray="3 2.4"/><path d="M11 11l4.2 8 1.3-3.2 3.2-1.3z" fill="currentColor"/></svg>
+        <span>Selecc. área</span>
       </button>
       <div class="tool-btn-wrap" id="tactica-wrap">
         <button class="tool-btn" data-tool="tactica-toggle" title="Táctica: flechas y líneas de obstáculos/fortificación">
@@ -2080,6 +2099,17 @@
 
 <div id="personal-panel">
   <div id="personal-panel-inner"></div>
+</div>
+
+<div id="picc-panel">
+  <!-- PICC: contenedor reservado. El contenido de esta pestaña se integra dentro de #picc-root
+       (las funciones piccOnEnter / piccOnLeave de setMode son los puntos de enganche). -->
+  <div id="picc-root">
+    <div id="picc-placeholder">
+      <h2>PICC</h2>
+      <p>Esta pestaña está preparada. Su contenido se integrará próximamente.</p>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -10263,6 +10293,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     if (defensiveLineActive) stopDefensiveLineMode();
     stopTacticalTaskTool();
     if (freePolyActive) stopFreePolygonMode();
+    if (selAreaActive) stopSelectAreaMode();
     if (cmPolyActive) stopCamposMinadosMode();
     if (arrowActive) stopArrowTool();
     stopMccPointTool();
@@ -10546,6 +10577,186 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     mapContainer.removeEventListener('pointercancel', freePolyPointerUp);
     if (freePolyShape){ map.removeLayer(freePolyShape); freePolyShape = null; }
     freePolyLatLngs = [];
+  }
+
+  /* ---- Seleccionar área: polígono que selecciona los objetos de la capa ACTIVA que quedan por completo dentro ----
+     Clic = vértice · doble clic / Enter / clic sobre el primer vértice = cerrar · Esc = cancelar · Retroceso = quitar último vértice.
+     El resultado usa la selección múltiple existente (eliminar, color, grosor, transparencia, mover a otra capa...). */
+  var selAreaActive = false;
+  var selAreaPts = [];          // vértices (L.LatLng)
+  var selAreaPoly = null;       // polígono de vista previa
+  var selAreaRubber = null;     // segmento hacia el cursor
+  var selAreaBar = null;
+  var selAreaDown = null;
+  var selAreaLastClickAt = 0;
+
+  function selAreaUpdatePreview(cursor){
+    var pts = selAreaPts.slice();
+    if (!selAreaPoly){
+      selAreaPoly = L.polygon(pts.length ? pts : [[0,0]], { color:'#B8962E', weight:2, dashArray:'6 5', fillColor:'#B8962E', fillOpacity:.12, interactive:false });
+      selAreaPoly.addTo(map);
+    }
+    selAreaPoly.setLatLngs(pts.length ? pts : [[0,0]]);
+    if (!selAreaRubber){
+      selAreaRubber = L.polyline([], { color:'#B8962E', weight:2, dashArray:'2 6', interactive:false }).addTo(map);
+    }
+    selAreaRubber.setLatLngs(cursor && pts.length ? [pts[pts.length - 1], cursor] : []);
+    if (selAreaBar){
+      var n = pts.length;
+      selAreaBar.querySelector('.sa-msg').textContent = n === 0
+        ? 'Seleccionar área: haga clic en el mapa para marcar los vértices del polígono.'
+        : 'Seleccionar área: ' + n + (n === 1 ? ' vértice' : ' vértices') + (n < 3 ? ' (mínimo 3)' : ' · doble clic o «Seleccionar» para cerrar') + '.';
+      selAreaBar.querySelector('.sa-go').disabled = n < 3;
+      selAreaBar.querySelector('.sa-undo').disabled = n === 0;
+    }
+  }
+  function selAreaBuildBar(){
+    var bar = document.createElement('div');
+    bar.id = 'select-area-bar';
+    bar.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--hdr-h,56px) + 10px);z-index:2500;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:min(94vw,640px);padding:8px 12px;border-radius:10px;background:var(--navy,#1F3864);color:#fff;border-left:4px solid #B8962E;box-shadow:0 4px 16px rgba(0,0,0,.3);font-size:12px;';
+    bar.innerHTML = '<span class="sa-msg"></span>' +
+      '<button type="button" class="outline-btn sa-undo" style="padding:4px 10px;">↶ Quitar vértice</button>' +
+      '<button type="button" class="primary-btn sa-go" style="padding:4px 12px;">✔ Seleccionar</button>' +
+      '<button type="button" class="outline-btn sa-cancel" style="padding:4px 10px;">✕ Cancelar</button>';
+    bar.querySelector('.sa-undo').addEventListener('click', function(){ selAreaPts.pop(); selAreaUpdatePreview(null); });
+    bar.querySelector('.sa-go').addEventListener('click', function(){ selAreaFinish(); });
+    bar.querySelector('.sa-cancel').addEventListener('click', function(){ disableAllTools(); });
+    document.body.appendChild(bar);
+    return bar;
+  }
+  function selAreaPointerDown(ev){
+    if (ev.button !== undefined && ev.button !== 0) return;
+    if (ev.target && ev.target.closest && ev.target.closest('#select-area-bar')) return;
+    selAreaDown = { x: ev.clientX, y: ev.clientY, id: ev.pointerId };
+  }
+  function selAreaPointerUp(ev){
+    var d = selAreaDown; selAreaDown = null;
+    if (!d || d.id !== ev.pointerId) return;
+    if (Math.abs(ev.clientX - d.x) > 6 || Math.abs(ev.clientY - d.y) > 6) return;   // fue un arrastre (mover el mapa)
+    var cp = containerPointFromEvent(ev);
+    var ll = map.containerPointToLatLng(cp);
+    if (selAreaPts.length >= 3){
+      var first = map.latLngToContainerPoint(selAreaPts[0]);
+      if (first.distanceTo(cp) <= 12){ selAreaFinish(); return; }
+    }
+    // el segundo clic de un doble clic cae en el mismo sitio: no duplicar vértice
+    if (selAreaPts.length){
+      var last = map.latLngToContainerPoint(selAreaPts[selAreaPts.length - 1]);
+      if (last.distanceTo(cp) < 4) return;
+    }
+    selAreaPts.push(ll);
+    selAreaUpdatePreview(ll);
+  }
+  function selAreaPointerMove(ev){
+    if (!selAreaPts.length) return;
+    selAreaUpdatePreview(map.containerPointToLatLng(containerPointFromEvent(ev)));
+  }
+  function selAreaBlockClick(ev){
+    // evita que un clic sobre un objeto lo seleccione/edite mientras se dibuja el área
+    if (ev.target && ev.target.closest && ev.target.closest('#select-area-bar')) return;
+    ev.stopPropagation();
+  }
+  function selAreaDblClick(ev){
+    ev.stopPropagation();
+    ev.preventDefault();
+    if (selAreaPts.length >= 3) selAreaFinish();
+  }
+  function selAreaKeyDown(ev){
+    if (ev.key === 'Escape'){ ev.preventDefault(); disableAllTools(); }
+    else if (ev.key === 'Enter'){ ev.preventDefault(); if (selAreaPts.length >= 3) selAreaFinish(); }
+    else if (ev.key === 'Backspace' && !/INPUT|TEXTAREA|SELECT/.test((ev.target && ev.target.tagName) || '')){ ev.preventDefault(); selAreaPts.pop(); selAreaUpdatePreview(null); }
+  }
+  function selAreaFlat(ll, out){
+    if (Array.isArray(ll)) ll.forEach(function(x){ selAreaFlat(x, out); });
+    else if (ll && ll.lat != null) out.push(ll);
+    return out;
+  }
+  // Puntos que definen un objeto (todos deben quedar dentro del área para considerarlo "contenido").
+  function selAreaShapePoints(s){
+    var out = [];
+    if (s instanceof L.Circle){ var b = s.getBounds(); [b.getNorthWest(), b.getNorthEast(), b.getSouthEast(), b.getSouthWest()].forEach(function(x){ out.push(x); }); return out; }
+    if (s.getLatLngs) return selAreaFlat(s.getLatLngs(), out);
+    if (s.getLatLng) { out.push(s.getLatLng()); return out; }
+    if (s.getBounds){ var bb = s.getBounds(); [bb.getNorthWest(), bb.getNorthEast(), bb.getSouthEast(), bb.getSouthWest()].forEach(function(x){ out.push(x); }); }
+    return out;
+  }
+  function selAreaContainedShapes(areaLatLngs, layerObj){
+    var ring = areaLatLngs.map(function(p){ return [p.lng, p.lat]; });
+    ring.push(ring[0]);
+    var area = turf.polygon([ring]);
+    return layerObj.group.getLayers().filter(function(s){
+      if (s._broadcastReadOnly) return false;
+      var pts = selAreaShapePoints(s);
+      if (!pts.length) return false;
+      return pts.every(function(p){ return turf.booleanPointInPolygon(turf.point([p.lng, p.lat]), area); });
+    });
+  }
+  function selAreaFinish(){
+    if (selAreaPts.length < 3) return;
+    var area = selAreaPts.slice();
+    var active = getActiveLayer();
+    disableAllTools();
+    if (!active) return;
+    if (typeof turf === 'undefined'){ alert('No se pudo cargar el motor de geometría (revise su conexión a internet e intente de nuevo).'); return; }
+    var found = selAreaContainedShapes(area, active);
+    clearMultiSelect();
+    selectedShape = null;
+    if (!found.length){
+      ghToast('No hay objetos de la capa activa «' + active.name + '» dentro del área dibujada.', 'info', 4500);
+      clearProperties();
+      return;
+    }
+    if (found.length === 1){
+      selectedShape = found[0];
+      showProperties(found[0], active);
+      renderLayerList();
+      ghToast('1 objeto seleccionado en «' + active.name + '».', 'ok', 3000);
+      return;
+    }
+    multiSelectedShapes = found.slice();
+    found.forEach(addMultiSelectHighlight);
+    document.addEventListener('keydown', multiSelectEscHandler);
+    showMultiProperties(found.slice());
+    renderLayerList();
+    ghToast(found.length + ' objetos seleccionados en «' + active.name + '». Use el panel derecho para eliminar o cambiar color, grosor o transparencia.', 'ok', 5000);
+  }
+  function activateSelectArea(){
+    if (activeToolName === 'selectarea'){ disableAllTools(); return; }
+    var active = getActiveLayer();
+    if (!active){ alert('Cree o seleccione una capa antes de seleccionar objetos.'); return; }
+    if (isBroadcastLayerObj && isBroadcastLayerObj(active)){ alert('La capa activa es de solo lectura (Dirección).'); return; }
+    disableAllTools();
+    if (multiSelectedShapes.length){ clearMultiSelect(); clearProperties(); }
+    selAreaActive = true;
+    selAreaPts = [];
+    map.doubleClickZoom.disable();
+    mapContainer.style.cursor = 'crosshair';
+    mapContainer.addEventListener('pointerdown', selAreaPointerDown);
+    mapContainer.addEventListener('pointerup', selAreaPointerUp);
+    mapContainer.addEventListener('pointermove', selAreaPointerMove);
+    mapContainer.addEventListener('click', selAreaBlockClick, true);
+    mapContainer.addEventListener('dblclick', selAreaDblClick, true);
+    document.addEventListener('keydown', selAreaKeyDown);
+    selAreaBar = selAreaBuildBar();
+    selAreaUpdatePreview(null);
+    activeToolName = 'selectarea';
+    updateToolbarUI();
+  }
+  function stopSelectAreaMode(){
+    selAreaActive = false;
+    selAreaDown = null;
+    map.doubleClickZoom.enable();
+    mapContainer.style.cursor = '';
+    mapContainer.removeEventListener('pointerdown', selAreaPointerDown);
+    mapContainer.removeEventListener('pointerup', selAreaPointerUp);
+    mapContainer.removeEventListener('pointermove', selAreaPointerMove);
+    mapContainer.removeEventListener('click', selAreaBlockClick, true);
+    mapContainer.removeEventListener('dblclick', selAreaDblClick, true);
+    document.removeEventListener('keydown', selAreaKeyDown);
+    if (selAreaPoly){ map.removeLayer(selAreaPoly); selAreaPoly = null; }
+    if (selAreaRubber){ map.removeLayer(selAreaRubber); selAreaRubber = null; }
+    if (selAreaBar){ selAreaBar.remove(); selAreaBar = null; }
+    selAreaPts = [];
   }
 
   /* ---- Campo minado (polígono a mano alzada con letras "M" orientadas hacia el centro) ---- */
@@ -14188,6 +14399,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       else if (tool === 'delete') activateDelete();
       else if (tool === 'freehand') activateFreehand();
       else if (tool === 'freepolygon') activateFreePolygon();
+      else if (tool === 'selectarea') activateSelectArea();
       else if (tool === 'arrow') activateArrowTool();
       else if (tool === 'defensiveline') activateDefensiveLineTool();
       else if (tool === 'unidades') activateUnidadesTool();
@@ -18785,20 +18997,35 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 
   /* ---------------- MODOS: EDICIÓN / COA / PERSONAL ---------------- */
   var modeEdicionBtn = document.getElementById('mode-edicion-btn');
+  var modePiccBtn = document.getElementById('mode-picc-btn');
   var modeCoaBtn = document.getElementById('mode-coa-btn');
   var modeEnfoqueBtn = document.getElementById('mode-enfoque-btn');
   var modePersonalBtn = document.getElementById('mode-personal-btn');
   var modeClimaBtn = document.getElementById('mode-clima-btn');
 
+  /* Puntos de enganche de la pestaña PICC (el contenido real se integra en #picc-root). */
+  function piccOnEnter(){}
+  function piccOnLeave(){}
+  var piccActive = false;
+
   function setMode(mode){
-    document.body.classList.remove('mode-edicion','mode-coa','mode-enfoque','mode-personal','mode-clima');
+    document.body.classList.remove('mode-edicion','mode-picc','mode-coa','mode-enfoque','mode-personal','mode-clima');
     document.body.classList.add('mode-' + mode);
     if (mode !== 'clima') leaveClima();
     modeEdicionBtn.classList.toggle('active', mode === 'edicion');
+    modePiccBtn.classList.toggle('active', mode === 'picc');
     modeCoaBtn.classList.toggle('active', mode === 'coa');
     modeEnfoqueBtn.classList.toggle('active', mode === 'enfoque');
     modePersonalBtn.classList.toggle('active', mode === 'personal');
     modeClimaBtn.classList.toggle('active', mode === 'clima');
+    if (piccActive && mode !== 'picc'){ piccActive = false; piccOnLeave(); }
+    if (mode === 'picc'){
+      disableAllTools();
+      exitMoveMode();
+      selectedShape = null;
+      piccActive = true;
+      piccOnEnter();
+    }
     if (mode === 'coa'){
       disableAllTools();
       exitMoveMode();
@@ -18827,6 +19054,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     map.invalidateSize();
   }
   modeEdicionBtn.addEventListener('click', function(){ setMode('edicion'); });
+  modePiccBtn.addEventListener('click', function(){ setMode('picc'); });
   modeCoaBtn.addEventListener('click', function(){ setMode('coa'); });
   modeEnfoqueBtn.addEventListener('click', function(){ setMode('enfoque'); });
   modePersonalBtn.addEventListener('click', function(){ setMode('personal'); });
