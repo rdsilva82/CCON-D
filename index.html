@@ -367,6 +367,13 @@
   .layer-row .vis-btn.is-visible{ color:var(--gold); }
   .layer-row .vis-btn:hover{ background:var(--hover-tint); }
   .layer-row .vis-btn:not(.is-visible):hover{ color:var(--navy); }
+  .layer-row .sel-strip{ align-self:stretch; flex:none; width:34px; min-width:34px; min-height:46px; margin:-7px 2px -7px -6px; padding:0; border:none; border-right:1px solid var(--border); border-radius:0; background:var(--surface); display:flex; align-items:center; justify-content:center; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .layer-row .sel-strip::before{ content:''; width:18px; height:18px; border:2px solid var(--muted); border-radius:50%; box-sizing:border-box; }
+  .layer-row .sel-strip:hover{ background:var(--hover-tint); color:inherit; }
+  .layer-card.active .layer-row .sel-strip{ background:var(--gold); border-right-color:var(--gold); }
+  .layer-card.active .layer-row .sel-strip::before{ border-color:#fff; background:#fff; box-shadow:inset 0 0 0 3px var(--gold); }
+  .hide-all-btn{ width:100%; margin:0 0 8px; padding:11px 12px; min-height:44px; font-size:13.5px; cursor:pointer; touch-action:manipulation; }
+  .hide-all-btn.on{ background:var(--gold); color:#fff; border-color:var(--gold); }
   .layer-row .reorder-btn{ font-size:9px; padding:2px 3px; }
   .layer-row .reorder-btn:hover{ color:var(--navy); background:var(--hover-tint); }
   .expand-btn{ font-size:11px; width:18px; text-align:center; transition:transform .15s; }
@@ -1848,6 +1855,9 @@ body:not(.mode-picc) .leaflet-piccLine-pane, body:not(.mode-picc) .leaflet-piccL
   <!-- LEFT PANEL -->
   <aside id="left-panel">
    <div id="left-picc-content" class="mode-content">
+    <section class="block" id="pc-hide-all-sec">
+      <button class="outline-btn hide-all-btn" id="pc-hide-all" type="button" title="Oculta todas las capas del PICC y de Edición para ver el mapa limpio; púlselo de nuevo para devolverlas como estaban" style="margin:0">👁 Ocultar todas las capas</button>
+    </section>
     <section class="block">
       <h2>Pasos del PICC · BR 9</h2>
       <div class="pc-steps" id="pc-steps"></div>
@@ -1881,6 +1891,7 @@ body:not(.mode-picc) .leaflet-piccLine-pane, body:not(.mode-picc) .leaflet-piccL
    <div id="left-edicion-content" class="mode-content">
     <section class="block" id="own-layers-section">
       <h2>Capas de dibujo</h2>
+      <button class="outline-btn hide-all-btn" id="hide-all-layers-btn" type="button" title="Oculta todas las capas para ver el mapa limpio; púlselo de nuevo para devolverlas como estaban">👁 Ocultar todas las capas</button>
       <div id="object-search-wrap">
         <input type="text" id="object-search-input" placeholder="🔎 Buscar objeto por nombre…" autocomplete="off">
         <div id="object-search-results"></div>
@@ -15385,6 +15396,16 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       });
     });
 
+    if (!opts.getChildren){
+      // franja de selección: zona grande a la izquierda para elegir la capa de trabajo con el dedo o el clic, sin tocar el nombre ni otros botones
+      var selStrip = document.createElement('button');
+      selStrip.className = 'sel-strip';
+      selStrip.type = 'button';
+      selStrip.title = 'Seleccionar esta capa para trabajar';
+      selStrip.setAttribute('aria-label', 'Seleccionar la capa ' + l.name);
+      selStrip.addEventListener('click', function(ev){ ev.stopPropagation(); setActiveLayer(l.id); showLayerBulkProperties(l); });
+      row.appendChild(selStrip);
+    }
     row.appendChild(expandBtn);
     row.appendChild(colorInput);
     row.appendChild(nameInput);
@@ -19958,6 +19979,35 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     (function rec(n){ piccEdSel[n.id] = !!want; piccEdPut(n, want); kids(n.id).forEach(rec); })(l);
     syncAllCompanions();
   }
+  // Edición: ocultar / devolver todas las capas (propias y de Dirección) de una vez
+  var edCleanSnap = null;
+  function edHideAllUpdateBtn(){
+    var b = document.getElementById('hide-all-layers-btn'); if (!b) return;
+    b.classList.toggle('on', !!edCleanSnap);
+    b.innerHTML = edCleanSnap ? '👁 Mostrar las capas ocultadas' : '👁 Ocultar todas las capas';
+  }
+  function edHideAllToggle(){
+    var all = layers.concat(broadcastLayers);
+    if (!edCleanSnap){
+      edCleanSnap = {};
+      all.forEach(function(l){ edCleanSnap[l.id] = !!l.visible; });
+      all.forEach(function(l){ piccEdPut(l, false); });
+    } else {
+      all.forEach(function(l){ if (edCleanSnap[l.id] !== undefined) piccEdPut(l, edCleanSnap[l.id]); });
+      edCleanSnap = null;
+    }
+    syncAllCompanions();
+    renderLayerList();
+    try{ renderDireccionBroadcastList(); }catch(e){}
+    edHideAllUpdateBtn();
+  }
+  document.getElementById('hide-all-layers-btn').addEventListener('click', edHideAllToggle);
+  // PICC: lo mismo para las capas de Edición (selección «ver»); el módulo se ocupa de las capas propias del PICC
+  var piccEdSnap = null;
+  function piccEdHideAllToggle(){
+    if (!piccEdSnap){ piccEdSnap = Object.assign({}, piccEdSel); piccEdSel = {}; piccEdReapply(); return true; }
+    piccEdSel = piccEdSnap; piccEdSnap = null; piccEdReapply(); return false;
+  }
   function piccLayerVis(l){ return l._piccVisStash !== undefined ? l._piccVisStash : l.visible; }
 
   window.__ccApi = {
@@ -20001,7 +20051,8 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     edEnter: piccEdEnter,
     edLeave: piccEdLeave,
     edReapply: piccEdReapply,
-    dataUpload: function(files){ return piccDataUploadUI(files); }
+    dataUpload: function(files){ return piccDataUploadUI(files); },
+    edHideAllToggle: piccEdHideAllToggle
   };
 
   /* ---------------- PANEL ENFOQUE OPERACIONAL (imagen a pantalla completa) ---------------- */
@@ -24965,7 +25016,7 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
         var ids = (q.refs || [q.ref]).map(refId).filter(Boolean);
         if (!ids.length) return;
         var x = { name:q.name, sw:q.sw, on:!!q.on };
-        box.appendChild(togRow(x, function(y){ ids.forEach(function(id){ api.setRefVisible(id, y.on); }); }));
+        box.appendChild(togRow(x, function(y){ q.on = y.on; ids.forEach(function(id){ api.setRefVisible(id, y.on); }); }));
       });
     }
 
@@ -26670,6 +26721,25 @@ var PERSONAL_SECTIONS = [{"key":"capacidad","label":"Capacidad de Personal","gro
         '</div><div class="pc-save-st" id="pc-save-st">La información del PICC de esta aula (notas, registros manuales y efectivos) se guarda sola en este navegador y se sincroniza con el repositorio del aula, igual que la graficación.</div>' +
         '<div class="pc-note">El respaldo incluye los registros manuales (con coordenadas), la información manual de capas y fichas, los efectivos de las unidades y las capas encendidas. La graficación se respalda con el resto del aula.</div>';
       left.insertBefore(sec, left.children[1]);
+      (function(){
+        var snap = null, btn = $('pc-hide-all');
+        function refIds(q){ return (q.refs || [q.ref]).map(refId).filter(Boolean); }
+        btn.onclick = function(){
+          if (!snap){
+            snap = { lim: LIM.map(function(x){ return x.on; }), lay: LAY.map(function(x){ return x.on; }), ref: REFQ.map(function(q){ return !!q.on; }) };
+            LIM.forEach(function(x){ x.on = false; apply(x); }); LAY.forEach(function(x){ x.on = false; apply(x); });
+            REFQ.forEach(function(q){ q.on = false; refIds(q).forEach(function(id){ api.setRefVisible(id, false); }); });
+          } else {
+            var s0 = snap; snap = null;
+            LIM.forEach(function(x, i){ x.on = s0.lim[i]; apply(x); }); LAY.forEach(function(x, i){ x.on = s0.lay[i]; apply(x); });
+            REFQ.forEach(function(q, i){ q.on = s0.ref[i]; if (q.on) refIds(q).forEach(function(id){ api.setRefVisible(id, true); }); });
+          }
+          api.edHideAllToggle();
+          btn.classList.toggle('on', !!snap);
+          btn.innerHTML = snap ? '👁 Mostrar las capas ocultadas' : '👁 Ocultar todas las capas';
+          renderLayers(); renderRef(); renderGraf();
+        };
+      })();
       $('pc-b-save').onclick = guardar; $('pc-b-exp').onclick = exportar; $('pc-b-geo').onclick = exportarGeo;
       $('pc-b-imp').querySelector('input').addEventListener('change', function(ev){ var f = ev.target.files[0]; if (f){ if (/\.html?$/i.test(f.name) || /^(PICC|data)_[A-Z_]+\.json$/i.test(f.name)) api.dataUpload([f]); else importar(f); } ev.target.value = ''; });
       document.addEventListener('keydown', function(e){ if (document.body.classList.contains('mode-picc') && (e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')){ e.preventDefault(); guardar(); } });
