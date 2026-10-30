@@ -372,6 +372,9 @@
   .layer-card.active .layer-row .sel-strip{ background:var(--gold); border-right-color:var(--gold); }
   .hide-all-btn{ width:100%; margin:0 0 8px; padding:11px 12px; min-height:44px; font-size:13.5px; cursor:pointer; touch-action:manipulation; }
   .hide-all-btn.on{ background:var(--gold); color:#fff; border-color:var(--gold); }
+  .layer-row .share-btn{ font-size:13px; padding:2px 4px; opacity:.4; filter:grayscale(1); }
+  .layer-row .share-btn.on{ opacity:1; filter:none; background:var(--gold-light); }
+  .layer-row .share-btn:hover{ color:inherit; background:var(--hover-tint); opacity:1; }
   .layer-row .reorder-btn{ font-size:9px; padding:2px 3px; }
   .layer-row .reorder-btn:hover{ color:var(--navy); background:var(--hover-tint); }
   .expand-btn{ font-size:11px; width:18px; text-align:center; transition:transform .15s; }
@@ -1911,6 +1914,11 @@ body:not(.mode-picc) .leaflet-piccLine-pane, body:not(.mode-picc) .leaflet-piccL
 
     <section class="block">
       <h2>Importar / Exportar</h2>
+      <div id="cfg-xlsx-box" style="display:none;">
+        <button class="outline-btn" id="cfg-export-xlsx-btn" type="button" title="Descarga en Excel el título, las aulas (designación, visibilidad) y las contraseñas del ejercicio">⇩ Descargar configuración del ejercicio</button>
+        <label class="outline-btn" style="text-align:center;display:block;" for="cfg-import-xlsx-input" title="Carga un Excel de configuración: agrega o oculta aulas, cambia designaciones, título y contraseñas">⇪ Cargar configuración del ejercicio</label>
+        <input type="file" id="cfg-import-xlsx-input" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+      </div>
       <label class="outline-btn" style="text-align:center;display:block;" for="import-input">⇪ Importar GeoJSON</label>
       <input type="file" id="import-input" accept=".json,.geojson,application/geo+json,application/json">
       <button class="outline-btn" id="export-active-btn">⇩ Exportar capa activa</button>
@@ -3156,6 +3164,171 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     return { ok: ok, error: ok ? null : 'No se pudo guardar la configuración en este navegador (' + (aulasLastSaveError || 'almacenamiento no disponible') + (/quota/i.test(aulasLastSaveError) ? ': almacenamiento lleno' : '') + ').' };
   }
 
+
+  /* --- Configuración del ejercicio en Excel (solo Dirección): descargar y volver a cargar título, aulas, visibilidad y contraseñas --- */
+  var CFG_XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  function cfgLoadXlsx(){
+    return new Promise(function(res, rej){
+      if (window.XLSX) return res(window.XLSX);
+      var sc = document.createElement('script');
+      sc.src = CFG_XLSX_URL;
+      sc.onload = function(){ window.XLSX ? res(window.XLSX) : rej(new Error('No se pudo iniciar el componente de Excel.')); };
+      sc.onerror = function(){ rej(new Error('No se pudo cargar el componente de Excel (se necesita conexión a internet).')); };
+      document.head.appendChild(sc);
+    });
+  }
+  function cfgNorm(v){ return String(v == null ? '' : v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); }
+  function cfgExportXlsx(){
+    if (!userContext || userContext.role !== 'direccion') return;
+    if (!aulasCfg) aulasLoadLocal();
+    cfgLoadXlsx().then(function(X){
+      var cfg = aulasCfg, wb = X.utils.book_new();
+      function sheet(aoa, widths){ var ws = X.utils.aoa_to_sheet(aoa); ws['!cols'] = widths.map(function(w){ return { wch: w }; }); return ws; }
+      X.utils.book_append_sheet(wb, sheet([
+        ['CONFIGURACIÓN DEL EJERCICIO · ' + APP_NOMBRE],
+        ['Generado', new Date().toLocaleString('es-CO')],
+        [''],
+        ['Cómo usar este archivo'],
+        ['1. Hoja «General»: título del encabezado, designación de Dirección y (opcional) su contraseña nueva.'],
+        ['2. Hoja «Aulas»: una fila por aula. Cambie la «Designación» y ponga «Visible» en SÍ o NO para mostrar u ocultar el aula.'],
+        ['3. Para AGREGAR un aula, escriba una fila nueva al final (deje el ID vacío y se le asigna el siguiente, o escriba un ID de 1 a 3 letras mayúsculas, p. ej. I).'],
+        ['4. «Contraseña nueva»: escriba aquí la contraseña (6 a 64 caracteres) solo si quiere cambiarla; vacía = no se toca. Las contraseñas guardadas NO se pueden leer: en el sistema están cifradas.'],
+        ['5. Hoja «Respaldo técnico»: copia cifrada de las contraseñas actuales. No la modifique. Permite restaurarlas tal cual en otra instalación sin conocerlas.'],
+        ['6. Un aula no se elimina: si borra su fila, el aula conserva su configuración actual. Para quitarla de la pantalla de inicio, póngala en Visible = NO.'],
+        ['7. Este archivo contiene contraseñas nuevas en texto claro y el respaldo cifrado: bórrelas/protéjalo antes de compartirlo.'],
+        ['8. Para aplicar los cambios use, en Dirección, «Cargar configuración del ejercicio».']
+      ], [140]), 'Instrucciones');
+      X.utils.book_append_sheet(wb, sheet([
+        ['Campo', 'Valor'],
+        ['Título (encabezado)', cfg.titulo],
+        ['Designación de Dirección', cfg.direccion.name],
+        ['Contraseña nueva de Dirección', '']
+      ], [34, 60]), 'General');
+      var rows = [['ID', 'Designación', 'Visible', 'Contraseña nueva', 'Contraseña actual']];
+      cfg.aulas.forEach(function(a){ rows.push([a.id, a.name, a.visible ? 'SÍ' : 'NO', '', a.pw ? 'Personalizada' : 'Predeterminada']); });
+      X.utils.book_append_sheet(wb, sheet(rows, [8, 34, 10, 26, 22]), 'Aulas');
+      var bk = [['ID', 'Clave s', 'Clave h', 'Iteraciones i', 'Sello pwAt']];
+      if (cfg.direccion.pw) bk.push(['DIRECCION', cfg.direccion.pw.s, cfg.direccion.pw.h, cfg.direccion.pw.i || '', cfg.direccion.pwAt || '']);
+      cfg.aulas.forEach(function(a){ if (a.pw) bk.push([a.id, a.pw.s, a.pw.h, a.pw.i || '', a.pwAt || '']); });
+      X.utils.book_append_sheet(wb, sheet(bk, [12, 30, 68, 14, 16]), 'Respaldo técnico');
+      var d = new Date(), pad = function(n){ return (n < 10 ? '0' : '') + n; };
+      X.writeFile(wb, 'configuracion_ejercicio_' + slug(cfg.titulo).slice(0, 40) + '_' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '.xlsx');
+      ghToast('Configuración descargada en Excel', 'ok', 3500);
+    }).catch(function(err){ alert((err && err.message) || 'No se pudo generar el archivo de Excel.'); });
+  }
+  function cfgYes(v){
+    var t = cfgNorm(v);
+    if (t === '') return null;
+    if (['si', 's', 'sí', 'yes', 'y', 'true', '1', 'visible', 'x'].indexOf(t) !== -1) return true;
+    if (['no', 'n', 'false', '0', 'oculta', 'oculto', 'oculta (no visible)'].indexOf(t) !== -1) return false;
+    return undefined;   // valor no reconocido
+  }
+  function cfgImportXlsx(file){
+    if (!userContext || userContext.role !== 'direccion') return;
+    if (!aulasCfg) aulasLoadLocal();
+    var rd = new FileReader();
+    rd.onerror = function(){ alert('No se pudo leer el archivo.'); };
+    rd.onload = function(){
+      cfgLoadXlsx().then(function(X){
+        var wb = X.read(rd.result, { type: 'array' });
+        function sheetRows(name){
+          var real = wb.SheetNames.filter(function(n){ return cfgNorm(n) === cfgNorm(name); })[0];
+          return real ? X.utils.sheet_to_json(wb.Sheets[real], { header: 1, defval: '', raw: false }) : null;
+        }
+        var general = sheetRows('General'), aulas = sheetRows('Aulas'), backup = sheetRows('Respaldo tecnico');
+        if (!aulas && !general){ alert('El archivo no parece una configuración del ejercicio: faltan las hojas «General» y «Aulas».'); return; }
+        var errors = [], plan = { titulo: null, dirName: null, dirPw: null, dirBk: null, aulas: [] };
+        // General
+        (general || []).forEach(function(r){
+          var k = cfgNorm(r[0]), v = String(r[1] == null ? '' : r[1]).trim();
+          if (k.indexOf('titulo') === 0 && v) plan.titulo = v;
+          else if (k.indexOf('designacion de direccion') === 0 && v) plan.dirName = v;
+          else if (k.indexOf('contrasena nueva de direccion') === 0 && v) plan.dirPw = v;
+        });
+        // Respaldo técnico
+        var bk = {};
+        (backup || []).slice(1).forEach(function(r){
+          var id = String(r[0] || '').trim().toUpperCase();
+          if (!id) return;
+          var pw = aulasValidPw({ s: String(r[1] || '').trim(), h: String(r[2] || '').trim().toLowerCase(), i: Number(r[3]) || undefined });
+          if (pw) bk[id] = { pw: pw, at: aulasStamp(Number(r[4])) };
+        });
+        // Aulas
+        if (aulas && aulas.length){
+          var hdr = aulas[0].map(cfgNorm), col = function(prefix){ for (var i = 0; i < hdr.length; i++) if (hdr[i].indexOf(prefix) === 0) return i; return -1; };
+          var cId = col('id'), cName = col('designacion'), cVis = col('visible'), cPw = col('contrasena nueva');
+          if (cId < 0 || cName < 0){ alert('La hoja «Aulas» debe tener las columnas «ID» y «Designación» en la primera fila.'); return; }
+          var usedIds = aulasCfg.aulas.map(function(a){ return a.id; });
+          aulas.slice(1).forEach(function(r, idx){
+            var id = String(r[cId] || '').trim().toUpperCase(), name = String(r[cName] || '').trim();
+            var vis = cVis >= 0 ? cfgYes(r[cVis]) : null, pw = cPw >= 0 ? String(r[cPw] == null ? '' : r[cPw]).trim() : '';
+            if (!id && !name && !pw) return;   // fila vacía
+            var line = idx + 2;
+            if (vis === undefined){ errors.push('Aulas, fila ' + line + ': «Visible» debe ser SÍ o NO.'); vis = null; }
+            if (id && !/^[A-Z]{1,3}$/.test(id)){ errors.push('Aulas, fila ' + line + ': ID «' + id + '» inválido (1 a 3 letras mayúsculas).'); return; }
+            if (!id){ id = aulasNextId(usedIds); if (!id){ errors.push('Aulas, fila ' + line + ': no hay más identificadores libres.'); return; } }
+            if (plan.aulas.some(function(a){ return a.id === id; })){ errors.push('Aulas, fila ' + line + ': el ID ' + id + ' está repetido.'); return; }
+            if (usedIds.indexOf(id) === -1) usedIds.push(id);
+            if (pw){ var rule = aulasPwRuleError(pw); if (rule){ errors.push('Aulas, fila ' + line + ' (' + id + '): ' + rule); pw = ''; } }
+            plan.aulas.push({ id: id, name: name, visible: vis, pw: pw });
+          });
+        }
+        if (plan.dirPw){ var rd0 = aulasPwRuleError(plan.dirPw); if (rd0){ errors.push('General, contraseña de Dirección: ' + rd0); plan.dirPw = null; } }
+        // Resumen de lo que va a cambiar
+        var cfg = aulasCfg, ch = { nuevas: [], nombres: 0, mostrar: [], ocultar: [], pwNueva: 0, pwResp: 0, titulo: false, dir: false };
+        if (plan.titulo && aulasSanitizeTitle(plan.titulo) !== cfg.titulo) ch.titulo = true;
+        if (plan.dirName && aulasSanitizeName(plan.dirName, 'DIRECCIÓN') !== cfg.direccion.name) ch.dir = true;
+        if (plan.dirPw) ch.pwNueva++;
+        else if (bk.DIRECCION && (!cfg.direccion.pw || cfg.direccion.pw.h !== bk.DIRECCION.pw.h)) ch.pwResp++;
+        plan.aulas.forEach(function(a){
+          var e = aulasEntry(a.id);
+          if (!e){ ch.nuevas.push(a.id); if (a.pw) ch.pwNueva++; else if (bk[a.id]) ch.pwResp++; if (a.visible === false) ch.ocultar.push(a.id); return; }
+          if (a.name && aulasSanitizeName(a.name, aulaDefaultName(a.id)) !== e.name) ch.nombres++;
+          if (a.visible === true && !e.visible) ch.mostrar.push(a.id);
+          if (a.visible === false && e.visible) ch.ocultar.push(a.id);
+          if (a.pw) ch.pwNueva++; else if (bk[a.id] && (!e.pw || e.pw.h !== bk[a.id].pw.h)) ch.pwResp++;
+        });
+        var lines = [];
+        if (ch.titulo) lines.push('• Se cambia el título del encabezado.');
+        if (ch.dir) lines.push('• Se cambia la designación de Dirección.');
+        if (ch.nuevas.length) lines.push('• Aulas nuevas: ' + ch.nuevas.join(', ') + '.');
+        if (ch.nombres) lines.push('• Designaciones modificadas: ' + ch.nombres + '.');
+        if (ch.mostrar.length) lines.push('• Se muestran: ' + ch.mostrar.join(', ') + '.');
+        if (ch.ocultar.length) lines.push('• Se ocultan: ' + ch.ocultar.join(', ') + '.');
+        if (ch.pwNueva) lines.push('• Contraseñas nuevas: ' + ch.pwNueva + '.');
+        if (ch.pwResp) lines.push('• Contraseñas restauradas del respaldo: ' + ch.pwResp + '.');
+        if (!lines.length && !errors.length){ alert('El archivo no trae cambios respecto a la configuración actual.'); return; }
+        var msg = (lines.length ? 'Se aplicará esta configuración:\n' + lines.join('\n') : 'No hay cambios que aplicar.') +
+          (errors.length ? '\n\nFilas con problemas (se omiten):\n' + errors.slice(0, 8).join('\n') + (errors.length > 8 ? '\n… y ' + (errors.length - 8) + ' más.' : '') : '') + (lines.length ? '\n\n¿Continuar?' : '');
+        if (!lines.length){ alert(msg); return; }
+        showConfirm(msg, function(){
+          var now = Date.now();
+          function setPw(target, kind, id, plain, bkEntry){
+            if (plain){ target.pw = aulasMakePwEntry(kind, id, plain); target.pwAt = Math.max(now, (target.pwAt || 0) + 1); }
+            else if (bkEntry && (!target.pw || target.pw.h !== bkEntry.pw.h)){ target.pw = bkEntry.pw; target.pwAt = Math.max(now, (target.pwAt || 0) + 1); }
+          }
+          if (plan.titulo) cfg.titulo = aulasSanitizeTitle(plan.titulo);
+          if (plan.dirName) cfg.direccion.name = aulasSanitizeName(plan.dirName, 'DIRECCIÓN');
+          setPw(cfg.direccion, 'direccion', null, plan.dirPw, bk.DIRECCION);
+          plan.aulas.forEach(function(a){
+            var e = aulasEntry(a.id);
+            if (!e){ e = { id: a.id, name: aulaDefaultName(a.id), visible: true, pw: null, pwAt: 0 }; cfg.aulas.push(e); }
+            if (a.name) e.name = aulasSanitizeName(a.name, aulaDefaultName(a.id));
+            if (a.visible !== null) e.visible = a.visible;
+            setPw(e, 'aula', a.id, a.pw, bk[a.id]);
+          });
+          var r = aulasCommit();
+          try{ if (document.getElementById('cfg-scrim').classList.contains('show')) renderConfigPanel(); }catch(e2){}
+          if (r && r.ok === false) alert(r.error || 'No se pudo guardar la configuración.');
+          else ghToast('Configuración del ejercicio cargada' + (aulasRemoteAvailable() ? ' y compartida con los demás equipos' : ''), 'ok', 5000);
+        });
+      }).catch(function(err){ alert((err && err.message) || 'No se pudo leer el archivo de Excel.'); });
+    };
+    rd.readAsArrayBuffer(file);
+  }
+  document.getElementById('cfg-export-xlsx-btn').addEventListener('click', cfgExportXlsx);
+  document.getElementById('cfg-import-xlsx-input').addEventListener('change', function(ev){ var f = ev.target.files[0]; ev.target.value = ''; if (f) cfgImportXlsx(f); });
+
   /* --- Copia compartida opcional en el repositorio de GitHub (solo si esta sesión tiene la sincronización configurada) --- */
   var aulasRemoteSha = null;
   function aulasPathFor(syncPath){ return String(syncPath).replace(/\.json$/i, '') + '/aulas_config.json'; }
@@ -4259,6 +4432,8 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     }
     var cfgBtn = document.getElementById('config-btn');
     if (cfgBtn) cfgBtn.style.display = userContext.role === 'direccion' ? 'inline-block' : 'none';
+    var cfgXlsxBox = document.getElementById('cfg-xlsx-box');
+    if (cfgXlsxBox) cfgXlsxBox.style.display = userContext.role === 'direccion' ? 'block' : 'none';
     var chpwBtn = document.getElementById('chpw-btn');
     if (chpwBtn) chpwBtn.style.display = userContext.role === 'aula' ? 'inline-block' : 'none';
     if (isReadOnlyMode()){
@@ -4950,6 +5125,25 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
 
   /* ---------------- CAPAS DE DIRECCIÓN (panel de solo lectura para las aulas) ---------------- */
   var direccionBroadcastLoaded = false;
+  var direccionBroadcastSha = null, direccionBroadcastRestoreVis = null;
+  // Las aulas se enteran solas cuando Dirección comparte o deja de compartir una capa (revisan el índice cada ~45 s)
+  function direccionBroadcastPoll(){
+    if (!userContext || userContext.role !== 'aula' || !githubConfigured() || !direccionBroadcastLoaded || direccionBroadcastLoading || document.hidden) return;
+    githubFetch(githubContentsUrl(direccionBroadcastBasePath() + '/index.json', true), { headers: githubAuthHeaders() }, { retries: 0 })
+      .then(function(res){ if (res.status === 404) return { sha: 'none' }; if (!res.ok) return null; return res.json(); })
+      .then(function(d){
+        if (!d) return;
+        var sha = d.sha || 'none';
+        if (direccionBroadcastSha === null){ direccionBroadcastSha = sha; return; }
+        if (sha === direccionBroadcastSha) return;
+        var vis = {}; broadcastLayers.forEach(function(l){ if (l.visible) vis[l.id] = 1; });
+        direccionBroadcastRestoreVis = vis;
+        direccionBroadcastLoaded = false;
+        direccionBroadcastCache = null;
+        loadDireccionBroadcastPanel();
+      }).catch(function(){});
+  }
+  setInterval(direccionBroadcastPoll, 45000);
   var direccionBroadcastLoading = false;
 
   function direccionBroadcastBasePath(){
@@ -4973,13 +5167,14 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         return res.json();
       })
       .then(function(data){
+        direccionBroadcastSha = data ? (data.sha || 'none') : 'none';
         if (!data) return null;
         return resolveFileText(data).then(function(rawText){ return JSON.parse(rawText); });
       })
       .then(function(parsedIndex){
         indexState = parsedIndex;
         if (!indexState) return;
-        var rootIds = (indexState.layers || []).filter(function(e){ return !e.parentId; }).map(function(e){ return e.id; });
+        var rootIds = (indexState.layers || []).filter(function(e){ return !e.parentId && e.shared === true; }).map(function(e){ return e.id; });
         var chain = Promise.resolve();
         rootIds.forEach(function(id){
           chain = chain.then(function(){
@@ -5002,6 +5197,12 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       .then(function(){
         direccionBroadcastLoading = false;
         direccionBroadcastLoaded = true;
+        if (direccionBroadcastRestoreVis){
+          var keep = direccionBroadcastRestoreVis; direccionBroadcastRestoreVis = null;
+          broadcastLayers.forEach(function(l){ if (keep[l.id]) piccEdPut(l, true); });
+          syncAllCompanions();
+          if (typeof piccEdReapply === 'function') piccEdReapply();
+        }
         renderDireccionBroadcastList();
       })
       .catch(function(err){
@@ -5129,7 +5330,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       coaDesarrollo: document.getElementById('coa-desarrollo-text').innerHTML,
       personalData: personalData,
       layers: layers.map(function(l){
-        return { id: l.id, name: l.name, color: l.color, visible: (l._piccVisStash !== undefined ? l._piccVisStash : l.visible), expanded: l.expanded, parentId: l.parentId, sortIndex: l.sortIndex, geojson: layerToGeoJSON(l) };
+        return { id: l.id, name: l.name, color: l.color, visible: (l._piccVisStash !== undefined ? l._piccVisStash : l.visible), shared: !!l.shared, expanded: l.expanded, parentId: l.parentId, sortIndex: l.sortIndex, geojson: layerToGeoJSON(l) };
       })
     };
   }
@@ -5202,6 +5403,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
         id: entry.id, name: entry.name, color: entry.color,
         group: L.featureGroup().addTo(map),
         visible: entry.visible !== false,
+        shared: entry.shared === true,
         expanded: !!entry.expanded,
         parentId: entry.parentId || null,
         sortIndex: entry.sortIndex != null ? entry.sortIndex : idx
@@ -15353,6 +15555,23 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
       rerenderFn();
     });
 
+    var shareBtn = null;
+    if (!opts.getChildren && !l.parentId && userContext && userContext.role === 'direccion' && userContext.direccionEditMode){
+      // Dirección decide qué capas ven las aulas: apagada = las aulas no saben que la capa existe
+      shareBtn = document.createElement('button');
+      shareBtn.type = 'button';
+      shareBtn.className = 'share-btn' + (l.shared ? ' on' : '');
+      shareBtn.textContent = '📢';
+      shareBtn.title = l.shared ? 'Compartida: las aulas ven esta capa (pueden mostrarla, ocultarla o copiarla). Pulse para dejar de compartir.' : 'No compartida: las aulas no ven esta capa. Pulse para compartirla con todas las aulas.';
+      shareBtn.setAttribute('aria-pressed', l.shared ? 'true' : 'false');
+      shareBtn.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        l.shared = !l.shared;
+        scheduleSave();
+        rerenderFn();
+      });
+    }
+
     var delBtn = document.createElement('button');
     delBtn.className = 'del-layer-btn';
     delBtn.title = 'Eliminar capa';
@@ -15410,6 +15629,7 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
     row.appendChild(count);
     row.appendChild(upBtn);
     row.appendChild(downBtn);
+    if (shareBtn) row.appendChild(shareBtn);
     row.appendChild(visBtn);
     row.appendChild(delBtn);
     row.addEventListener('click', function(){ setActiveLayer(l.id); showLayerBulkProperties(l); });
