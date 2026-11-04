@@ -1654,6 +1654,18 @@ body:not(.mode-picc) .leaflet-piccLine-pane, body:not(.mode-picc) .leaflet-piccL
     .cfg-titulo .cfg-name{ grid-column:1 / -1; }
     .cfg-row > *:nth-child(n+3){ grid-column:1 / -1; }
   }
+
+  /* ---------- Botones flotantes: zoom a área / pantalla completa ---------- */
+  .leaflet-control.map-fx-ctl a{ display:flex; align-items:center; justify-content:center; font-size:18px; width:34px; height:34px; line-height:1; cursor:pointer; text-decoration:none; }
+  .leaflet-control.map-fx-ctl a.active{ background:var(--gold,#B8962E); color:#fff; }
+  #zoom-area-overlay{ position:absolute; inset:0; z-index:1200; cursor:crosshair; touch-action:none; background:rgba(0,0,0,.04); display:none; }
+  #zoom-area-overlay.on{ display:block; }
+  #zoom-area-rect{ position:absolute; border:2px dashed #B8962E; background:rgba(184,150,46,.18); display:none; pointer-events:none; }
+  #zoom-area-hint{ position:absolute; top:10px; left:50%; transform:translateX(-50%); background:#1F3864; color:#fff; padding:6px 12px; border-radius:4px; font-size:13px; pointer-events:none; }
+  body.clean-map header, body.clean-map #left-panel, body.clean-map #direccion-panel, body.clean-map #right-panel,
+  body.clean-map #read-only-banner, body.clean-map #map-wrapper > :not(#map):not(.leaflet-container),
+  body.clean-map .leaflet-top, body.clean-map .leaflet-control-layers { display:none !important; }
+  body.clean-map #map-wrapper{ position:fixed !important; inset:0; z-index:5000; width:100vw; height:100vh; }
 </style>
 </head>
 <body>
@@ -7290,6 +7302,56 @@ var AULAS_PUBLIC_CONFIG = { repo: '', branch: '', path: '' };
   var map = L.map('map', { zoomControl:false }).setView([7.92, -72.85], 9);
   L.control.zoom({ position:'topright' }).addTo(map);
   L.control.scale({ metric:true, imperial:false, position:'bottomright' }).addTo(map);
+
+  /* ---------------- ZOOM A ÁREA + PANTALLA COMPLETA ---------------- */
+  (function(){
+    var wrap = document.getElementById('map-wrapper');
+    var ov = document.createElement('div'); ov.id='zoom-area-overlay';
+    ov.innerHTML='<div id="zoom-area-rect"></div><div id="zoom-area-hint">Arrastre para dibujar el área · Esc cancela</div>';
+    wrap.appendChild(ov);
+    var rect = ov.querySelector('#zoom-area-rect'), x0=0,y0=0,drag=false, zBtn=null, fBtn=null;
+    function zoomOff(){ ov.classList.remove('on'); rect.style.display='none'; drag=false; if(zBtn) zBtn.classList.remove('active'); }
+    function zoomOn(){ ov.classList.add('on'); if(zBtn) zBtn.classList.add('active'); }
+    function pt(e){ var r=ov.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+    ov.addEventListener('pointerdown', function(e){ e.preventDefault(); var p=pt(e); x0=p.x; y0=p.y; drag=true; try{ov.setPointerCapture(e.pointerId);}catch(_){}
+      rect.style.display='block'; rect.style.left=x0+'px'; rect.style.top=y0+'px'; rect.style.width='0px'; rect.style.height='0px'; });
+    ov.addEventListener('pointermove', function(e){ if(!drag) return; var p=pt(e);
+      rect.style.left=Math.min(x0,p.x)+'px'; rect.style.top=Math.min(y0,p.y)+'px';
+      rect.style.width=Math.abs(p.x-x0)+'px'; rect.style.height=Math.abs(p.y-y0)+'px'; });
+    ov.addEventListener('pointerup', function(e){ if(!drag) return; var p=pt(e); drag=false;
+      var w=Math.abs(p.x-x0), h=Math.abs(p.y-y0); zoomOff();
+      if(w<8 || h<8) return;
+      var a=map.containerPointToLatLng([Math.min(x0,p.x),Math.min(y0,p.y)]), b=map.containerPointToLatLng([Math.max(x0,p.x),Math.max(y0,p.y)]);
+      map.fitBounds(L.latLngBounds(a,b), {animate:true}); });
+    ov.addEventListener('pointercancel', zoomOff);
+
+    var cleanOn=false;
+    function setClean(on){
+      if(on===cleanOn) return; cleanOn=on;
+      document.body.classList.toggle('clean-map', on);
+      if(on){ try{ var el=document.documentElement; if(el.requestFullscreen){ var pr=el.requestFullscreen(); if(pr&&pr.catch) pr.catch(function(){}); } }catch(_){}
+        zoomOff();
+      } else { try{ if(document.fullscreenElement && document.exitFullscreen){ var q=document.exitFullscreen(); if(q&&q.catch) q.catch(function(){}); } }catch(_){} }
+      setTimeout(function(){ map.invalidateSize(); }, 60);
+      setTimeout(function(){ map.invalidateSize(); }, 400);
+    }
+    document.addEventListener('keydown', function(e){
+      if(e.key!=='Escape') return;
+      if(ov.classList.contains('on')){ zoomOff(); return; }
+      if(cleanOn){ setClean(false); }
+    }, true);
+    document.addEventListener('fullscreenchange', function(){ if(!document.fullscreenElement && cleanOn) setClean(false); });
+
+    var Ctl = L.Control.extend({ options:{position:'topright'}, onAdd:function(){
+      var c=L.DomUtil.create('div','leaflet-bar leaflet-control map-fx-ctl');
+      zBtn=L.DomUtil.create('a','',c); zBtn.href='#'; zBtn.innerHTML='⬚'; zBtn.title='Zoom a un área: dibuje un rectángulo'; zBtn.setAttribute('role','button');
+      fBtn=L.DomUtil.create('a','',c); fBtn.href='#'; fBtn.innerHTML='⛶'; fBtn.title='Pantalla completa (Esc para volver)'; fBtn.setAttribute('role','button');
+      L.DomEvent.disableClickPropagation(c);
+      L.DomEvent.on(zBtn,'click',function(e){ L.DomEvent.preventDefault(e); if(ov.classList.contains('on')) zoomOff(); else zoomOn(); });
+      L.DomEvent.on(fBtn,'click',function(e){ L.DomEvent.preventDefault(e); setClean(true); });
+      return c; } });
+    new Ctl().addTo(map);
+  })();
 
   var baseLayers = {
     street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
